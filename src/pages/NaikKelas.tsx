@@ -108,6 +108,18 @@ export default function NaikKelas() {
     }
 
     const siswaFromTaLama = siswaList.filter(s => s.ta_id === tahunAjaranLama);
+    
+    const taLamaName = tahunAjaranList.find(ta => ta.id === tahunAjaranLama)?.nama_ta || '';
+
+    if (siswaFromTaLama.length === 0) {
+      toast({ 
+        title: 'Tidak Ada Siswa', 
+        description: `Tidak ada siswa yang terdaftar di Tahun Ajaran ${taLamaName}`, 
+        variant: 'destructive' 
+      });
+      setSiswaAssignments([]);
+      return;
+    }
 
     const assignments: SiswaWithAssignment[] = siswaFromTaLama.map(siswa => {
       const kelasLama = kelasList.find(k => k.id === siswa.kelas_id) || null;
@@ -130,6 +142,10 @@ export default function NaikKelas() {
     });
 
     setSiswaAssignments(assignments);
+    toast({ 
+      title: 'Berhasil', 
+      description: `Ditemukan ${assignments.length} siswa dari TA ${taLamaName}` 
+    });
     setCompleted(false);
   };
 
