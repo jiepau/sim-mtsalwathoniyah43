@@ -2,95 +2,113 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Design System - Sistem Informasi Madrasah */
+/* Tema: Hijau Islami - Elegan & Profesional */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
+    /* Primary - Hijau Islami */
+    --primary: 152 60% 32%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Background & Surfaces */
+    --background: 140 20% 98%;
+    --foreground: 150 25% 15%;
+    
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 150 25% 15%;
+    
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --popover-foreground: 150 25% 15%;
+    
+    /* Secondary - Hijau Terang */
+    --secondary: 145 30% 94%;
+    --secondary-foreground: 152 60% 25%;
+    
+    /* Muted - Abu Kehijauan */
+    --muted: 140 15% 92%;
+    --muted-foreground: 150 10% 45%;
+    
+    /* Accent - Emas */
+    --accent: 45 90% 50%;
+    --accent-foreground: 30 60% 15%;
+    
+    /* Destructive */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Success */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    
+    /* Warning */
+    --warning: 38 92% 50%;
+    --warning-foreground: 30 60% 15%;
+    
+    /* Info */
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+    
+    /* Border & Input */
+    --border: 145 20% 85%;
+    --input: 145 20% 85%;
+    --ring: 152 60% 32%;
+    
+    --radius: 0.75rem;
+    
+    /* Sidebar - Hijau Gelap */
+    --sidebar-background: 152 65% 22%;
+    --sidebar-foreground: 140 20% 95%;
+    --sidebar-primary: 45 90% 55%;
+    --sidebar-primary-foreground: 30 60% 15%;
+    --sidebar-accent: 152 50% 28%;
+    --sidebar-accent-foreground: 140 20% 95%;
+    --sidebar-border: 152 40% 30%;
+    --sidebar-ring: 45 90% 55%;
+    
+    /* Custom Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(152, 65%, 22%) 0%, hsl(152, 55%, 35%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(45, 90%, 55%) 0%, hsl(38, 92%, 50%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(152, 65%, 22%) 0%, hsl(152, 50%, 30%) 50%, hsl(145, 40%, 40%) 100%);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --primary: 152 50% 45%;
+    --primary-foreground: 0 0% 100%;
+    
+    --background: 150 20% 8%;
+    --foreground: 140 15% 95%;
+    
+    --card: 150 20% 12%;
+    --card-foreground: 140 15% 95%;
+    
+    --popover: 150 20% 12%;
+    --popover-foreground: 140 15% 95%;
+    
+    --secondary: 150 20% 18%;
+    --secondary-foreground: 140 15% 95%;
+    
+    --muted: 150 15% 20%;
+    --muted-foreground: 140 10% 60%;
+    
+    --accent: 45 80% 45%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 150 15% 25%;
+    --input: 150 15% 25%;
+    --ring: 152 50% 45%;
+    
+    --sidebar-background: 150 25% 10%;
+    --sidebar-foreground: 140 15% 90%;
+    --sidebar-primary: 45 80% 50%;
+    --sidebar-primary-foreground: 30 60% 10%;
+    --sidebar-accent: 150 20% 18%;
+    --sidebar-accent-foreground: 140 15% 90%;
+    --sidebar-border: 150 15% 20%;
+    --sidebar-ring: 45 80% 50%;
   }
 }
 
@@ -100,6 +118,133 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  /* Sidebar Styles */
+  .sidebar-gradient {
+    background: var(--gradient-primary);
+  }
+  
+  /* Card Hover Effects */
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+  
+  /* Stats Card */
+  .stats-card {
+    @apply bg-card rounded-xl p-6 shadow-sm border border-border card-hover;
+  }
+  
+  /* Islamic Pattern Overlay */
+  .islamic-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  
+  /* Button Variants */
+  .btn-islamic {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 shadow-md;
+  }
+  
+  .btn-gold {
+    background: var(--gradient-accent);
+    @apply text-accent-foreground font-semibold shadow-md hover:opacity-90 transition-opacity;
+  }
+  
+  /* Table Styles */
+  .table-islamic thead {
+    @apply bg-primary text-primary-foreground;
+  }
+  
+  .table-islamic tbody tr:hover {
+    @apply bg-secondary/50;
+  }
+  
+  /* Badge Variants */
+  .badge-success {
+    @apply bg-success/15 text-success border-success/30;
+  }
+  
+  .badge-warning {
+    @apply bg-warning/15 text-warning border-warning/30;
+  }
+  
+  .badge-danger {
+    @apply bg-destructive/15 text-destructive border-destructive/30;
+  }
+  
+  .badge-info {
+    @apply bg-info/15 text-info border-info/30;
+  }
+  
+  /* Form Input Focus */
+  .input-islamic:focus {
+    @apply ring-2 ring-primary/30 border-primary;
+  }
+  
+  /* Scrollbar */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-muted rounded-full;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-primary/30 rounded-full hover:bg-primary/50;
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+  
+  .animate-fadeIn {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+  
+  .animate-slideIn {
+    animation: slideIn 0.3s ease-out forwards;
+  }
+  
+  .animate-pulse-soft {
+    animation: pulse-soft 2s ease-in-out infinite;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+  
+  .bg-gradient-accent {
+    background: var(--gradient-accent);
+  }
+  
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
   }
 }
