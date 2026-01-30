@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      alumni: {
+        Row: {
+          alamat: string | null
+          created_at: string
+          id: string
+          kelas_terakhir: string | null
+          nama: string
+          nis: string
+          original_kelas_id: string | null
+          original_siswa_id: string | null
+          original_ta_id: string | null
+          tahun_lulus: string | null
+          wa_ortu: string | null
+        }
+        Insert: {
+          alamat?: string | null
+          created_at?: string
+          id?: string
+          kelas_terakhir?: string | null
+          nama: string
+          nis: string
+          original_kelas_id?: string | null
+          original_siswa_id?: string | null
+          original_ta_id?: string | null
+          tahun_lulus?: string | null
+          wa_ortu?: string | null
+        }
+        Update: {
+          alamat?: string | null
+          created_at?: string
+          id?: string
+          kelas_terakhir?: string | null
+          nama?: string
+          nis?: string
+          original_kelas_id?: string | null
+          original_siswa_id?: string | null
+          original_ta_id?: string | null
+          tahun_lulus?: string | null
+          wa_ortu?: string | null
+        }
+        Relationships: []
+      }
       gtk_ptk: {
         Row: {
           alamat: string | null
@@ -224,6 +266,7 @@ export type Database = {
           kelas_id: string | null
           nama: string
           nis: string
+          status: string | null
           ta_id: string | null
           updated_at: string
           wa_ortu: string | null
@@ -235,6 +278,7 @@ export type Database = {
           kelas_id?: string | null
           nama: string
           nis: string
+          status?: string | null
           ta_id?: string | null
           updated_at?: string
           wa_ortu?: string | null
@@ -246,6 +290,7 @@ export type Database = {
           kelas_id?: string | null
           nama?: string
           nis?: string
+          status?: string | null
           ta_id?: string | null
           updated_at?: string
           wa_ortu?: string | null

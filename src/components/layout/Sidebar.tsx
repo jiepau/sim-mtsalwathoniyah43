@@ -17,7 +17,9 @@ import {
   ChevronRight,
   Menu,
   X,
-  Building2
+  Building2,
+  ArrowUpCircle,
+  GraduationCap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -48,6 +50,8 @@ const menuItems: MenuItem[] = [
   { title: 'Pemasukan', icon: TrendingUp, path: '/pemasukan' },
   { title: 'Pengeluaran', icon: TrendingDown, path: '/pengeluaran' },
   { title: 'Tunggakan', icon: AlertTriangle, path: '/tunggakan' },
+  { title: 'Naik Kelas', icon: ArrowUpCircle, path: '/naik-kelas' },
+  { title: 'Alumni', icon: GraduationCap, path: '/alumni' },
 ];
 
 export function Sidebar() {

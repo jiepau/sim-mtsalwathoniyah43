@@ -134,12 +134,10 @@ export default function Dashboard() {
         description="Selamat datang di Sistem Informasi Madrasah"
         icon={<Calendar className="h-6 w-6" />}
         actions={
-          !setupStatus.isComplete && (
-            <Button variant="outline" onClick={() => setWizardOpen(true)}>
-              <Sparkles className="h-4 w-4 mr-2" />
-              Setup Wizard
-            </Button>
-          )
+          <Button variant="outline" onClick={() => setWizardOpen(true)}>
+            <Sparkles className="h-4 w-4 mr-2" />
+            Setup Wizard
+          </Button>
         }
       />
 
