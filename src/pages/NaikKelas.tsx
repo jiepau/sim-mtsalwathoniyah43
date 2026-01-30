@@ -291,9 +291,9 @@ export default function NaikKelas() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Tahun Ajaran Lama (Asal)</Label>
+              <Label>Tahun Ajaran Lama (Asal) <span className="text-destructive">*</span></Label>
               <Select value={tahunAjaranLama} onValueChange={setTahunAjaranLama}>
-                <SelectTrigger>
+                <SelectTrigger className={!tahunAjaranLama ? 'border-destructive/50' : 'border-success/50'}>
                   <SelectValue placeholder="Pilih TA Lama" />
                 </SelectTrigger>
                 <SelectContent>
@@ -307,9 +307,9 @@ export default function NaikKelas() {
             </div>
 
             <div className="space-y-2">
-              <Label>Tahun Ajaran Baru (Tujuan)</Label>
+              <Label>Tahun Ajaran Baru (Tujuan) <span className="text-destructive">*</span></Label>
               <Select value={tahunAjaranBaru} onValueChange={setTahunAjaranBaru}>
-                <SelectTrigger>
+                <SelectTrigger className={!tahunAjaranBaru ? 'border-destructive/50' : 'border-success/50'}>
                   <SelectValue placeholder="Pilih TA Baru" />
                 </SelectTrigger>
                 <SelectContent>
@@ -323,9 +323,16 @@ export default function NaikKelas() {
             </div>
           </div>
 
-          <Button onClick={generatePreview} disabled={!tahunAjaranLama || !tahunAjaranBaru}>
-            Lihat Daftar Siswa
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button onClick={generatePreview} disabled={!tahunAjaranLama || !tahunAjaranBaru}>
+              Lihat Daftar Siswa
+            </Button>
+            {(!tahunAjaranLama || !tahunAjaranBaru) && (
+              <p className="text-sm text-muted-foreground">
+                * Pilih kedua tahun ajaran terlebih dahulu
+              </p>
+            )}
+          </div>
         </CardContent>
       </Card>
 
