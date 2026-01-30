@@ -66,11 +66,26 @@ export default function TunggakanPage() {
     'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
   ];
 
-  const sendWhatsApp = (wa: string, nama: string, sisa: number) => {
+  const formatPhoneNumber = (phone: string): string => {
+    // Remove all non-numeric characters
+    let cleaned = phone.replace(/[^0-9]/g, '');
+    // Convert 08xx to 628xx
+    if (cleaned.startsWith('0')) {
+      cleaned = '62' + cleaned.substring(1);
+    }
+    // Add 62 prefix if not present
+    if (!cleaned.startsWith('62')) {
+      cleaned = '62' + cleaned;
+    }
+    return cleaned;
+  };
+
+  const getWhatsAppUrl = (wa: string, nama: string, sisa: number): string => {
+    const phone = formatPhoneNumber(wa);
     const message = encodeURIComponent(
       `Assalamu'alaikum Bapak/Ibu Wali dari ${nama},\n\nKami ingin menginformasikan bahwa terdapat tunggakan pembayaran sebesar ${formatCurrency(sisa)}.\n\nMohon segera melakukan pembayaran. Terima kasih.\n\nWassalamu'alaikum`
     );
-    window.open(`https://wa.me/${wa.replace(/[^0-9]/g, '')}?text=${message}`, '_blank');
+    return `https://wa.me/${phone}?text=${message}`;
   };
 
   const columns = [
@@ -110,19 +125,19 @@ export default function TunggakanPage() {
     { 
       header: 'Hubungi Ortu', 
       cell: (item: Tunggakan) => item.siswa?.wa_ortu && (
-        <Button 
-          size="sm" 
-          variant="outline" 
-          className="text-success"
-          onClick={() => sendWhatsApp(
+        <a 
+          href={getWhatsAppUrl(
             item.siswa!.wa_ortu!, 
             item.siswa!.nama, 
             item.nominal - item.nominal_bayar
           )}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 px-2 py-1 text-sm font-medium text-green-600 hover:text-green-700 border border-green-200 rounded-md hover:bg-green-50 transition-colors"
         >
-          <Phone className="h-3 w-3 mr-1" />
+          <Phone className="h-3 w-3" />
           WA
-        </Button>
+        </a>
       ),
       className: 'w-24'
     },
