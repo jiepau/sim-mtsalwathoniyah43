@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Users, Plus, Search, Upload, Pencil, Trash2, Phone } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Users, Plus, Search, Upload, Pencil, Trash2, Phone, X } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -46,6 +47,9 @@ interface TahunAjaran {
 }
 
 export default function SiswaPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const kelasFilter = searchParams.get('kelas');
+  
   const [siswa, setSiswa] = useState<Siswa[]>([]);
   const [kelas, setKelas] = useState<Kelas[]>([]);
   const [tahunAjaran, setTahunAjaran] = useState<TahunAjaran[]>([]);
@@ -153,10 +157,19 @@ export default function SiswaPage() {
     }
   };
 
-  const filteredSiswa = siswa.filter(s => 
-    s.nama.toLowerCase().includes(search.toLowerCase()) ||
-    s.nis.toLowerCase().includes(search.toLowerCase())
-  );
+  // Filter by search and kelas from URL
+  const filteredSiswa = siswa.filter(s => {
+    const matchesSearch = s.nama.toLowerCase().includes(search.toLowerCase()) ||
+      s.nis.toLowerCase().includes(search.toLowerCase());
+    const matchesKelas = !kelasFilter || s.kelas_id === kelasFilter;
+    return matchesSearch && matchesKelas;
+  });
+
+  const filterKelasName = kelasFilter ? kelas.find(k => k.id === kelasFilter)?.nama_kelas : null;
+
+  const clearKelasFilter = () => {
+    setSearchParams({});
+  };
 
   const columns = [
     { 
@@ -237,8 +250,8 @@ export default function SiswaPage() {
         }
       />
 
-      {/* Search */}
-      <div className="mb-4">
+      {/* Search & Filter */}
+      <div className="mb-4 flex flex-wrap gap-2 items-center">
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -248,6 +261,14 @@ export default function SiswaPage() {
             className="pl-10"
           />
         </div>
+        {filterKelasName && (
+          <Badge variant="secondary" className="gap-1 py-1.5">
+            Filter: {filterKelasName}
+            <button onClick={clearKelasFilter} className="ml-1 hover:text-destructive">
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
+        )}
       </div>
 
       {/* Table */}

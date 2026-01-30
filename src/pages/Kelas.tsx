@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { School, Plus, Pencil, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { School, Plus, Pencil, Trash2, Users } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,7 @@ interface Kelas {
 }
 
 export default function KelasPage() {
+  const navigate = useNavigate();
   const [kelas, setKelas] = useState<Kelas[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -152,7 +154,15 @@ export default function KelasPage() {
     { 
       header: 'Jumlah Siswa', 
       cell: (item: Kelas) => (
-        <Badge variant="outline">{item.siswa_count || 0} siswa</Badge>
+        <Button 
+          variant="ghost" 
+          size="sm"
+          className="gap-1"
+          onClick={() => navigate(`/siswa?kelas=${item.id}`)}
+        >
+          <Users className="h-4 w-4" />
+          <Badge variant="outline">{item.siswa_count || 0} siswa</Badge>
+        </Button>
       )
     },
     { 

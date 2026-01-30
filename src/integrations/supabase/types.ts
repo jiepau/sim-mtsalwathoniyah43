@@ -60,31 +60,43 @@ export type Database = {
         Row: {
           alamat: string | null
           created_at: string
+          email: string | null
           id: string
           jabatan: string | null
+          lulusan: string | null
           nama: string
+          nik: string | null
           nip: string | null
           no_hp: string | null
+          nuptk: string | null
           updated_at: string
         }
         Insert: {
           alamat?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           jabatan?: string | null
+          lulusan?: string | null
           nama: string
+          nik?: string | null
           nip?: string | null
           no_hp?: string | null
+          nuptk?: string | null
           updated_at?: string
         }
         Update: {
           alamat?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           jabatan?: string | null
+          lulusan?: string | null
           nama?: string
+          nik?: string | null
           nip?: string | null
           no_hp?: string | null
+          nuptk?: string | null
           updated_at?: string
         }
         Relationships: []
