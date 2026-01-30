@@ -45,10 +45,16 @@ export default function UserManagement() {
   const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Role editing dialog
-  const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+  // Edit user dialog
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserWithRoles | null>(null);
-  const [selectedRoles, setSelectedRoles] = useState<AppRole[]>([]);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editData, setEditData] = useState({
+    full_name: '',
+    email: '',
+    password: '',
+    roles: [] as AppRole[],
+  });
 
   // Create user dialog
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -101,51 +107,69 @@ export default function UserManagement() {
     }
   };
 
-  // Role editing handlers
-  const handleOpenRoleDialog = (userData: UserWithRoles) => {
+  // Edit user handlers
+  const handleOpenEditDialog = (userData: UserWithRoles) => {
     setEditingUser(userData);
-    setSelectedRoles(userData.roles);
-    setRoleDialogOpen(true);
+    setEditData({
+      full_name: userData.full_name,
+      email: userData.email,
+      password: '',
+      roles: userData.roles,
+    });
+    setEditDialogOpen(true);
   };
 
-  const handleRoleToggle = (role: AppRole) => {
-    setSelectedRoles(prev =>
-      prev.includes(role)
-        ? prev.filter(r => r !== role)
-        : [...prev, role]
-    );
+  const handleEditRoleToggle = (role: AppRole) => {
+    setEditData(prev => ({
+      ...prev,
+      roles: prev.roles.includes(role)
+        ? prev.roles.filter(r => r !== role)
+        : [...prev.roles, role]
+    }));
   };
 
-  const handleSaveRoles = async () => {
+  const handleSaveEdit = async () => {
     if (!editingUser) return;
 
+    if (!editData.full_name.trim()) {
+      toast.error('Nama tidak boleh kosong');
+      return;
+    }
+
+    if (editData.password && editData.password.length < 6) {
+      toast.error('Password minimal 6 karakter');
+      return;
+    }
+
+    if (editData.roles.length === 0) {
+      toast.error('Pilih minimal 1 role');
+      return;
+    }
+
+    setEditLoading(true);
     try {
-      const { error: deleteError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', editingUser.id);
-
-      if (deleteError) throw deleteError;
-
-      if (selectedRoles.length > 0) {
-        const rolesToInsert = selectedRoles.map(role => ({
+      const response = await supabase.functions.invoke('manage-user', {
+        body: {
+          action: 'update',
           user_id: editingUser.id,
-          role: role,
-        }));
+          full_name: editData.full_name,
+          email: editData.email || undefined,
+          password: editData.password || undefined,
+          roles: editData.roles,
+        },
+      });
 
-        const { error: insertError } = await supabase
-          .from('user_roles')
-          .insert(rolesToInsert);
+      if (response.error) throw new Error(response.error.message);
+      if (response.data?.error) throw new Error(response.data.error);
 
-        if (insertError) throw insertError;
-      }
-
-      toast.success('Role berhasil diupdate');
-      setRoleDialogOpen(false);
+      toast.success('User berhasil diupdate');
+      setEditDialogOpen(false);
       fetchUsers();
     } catch (error: any) {
-      console.error('Error saving roles:', error);
-      toast.error(error.message || 'Gagal menyimpan role');
+      console.error('Error updating user:', error);
+      toast.error(error.message || 'Gagal mengupdate user');
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -155,21 +179,26 @@ export default function UserManagement() {
       return;
     }
 
-    if (!confirm('Yakin ingin menghapus semua role user ini? User tidak akan bisa mengakses sistem.')) {
+    if (!confirm('Yakin ingin menghapus user ini? Akun akan dihapus permanen.')) {
       return;
     }
 
     try {
-      const { error } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
+      const response = await supabase.functions.invoke('manage-user', {
+        body: {
+          action: 'delete',
+          user_id: userId,
+        },
+      });
 
-      if (error) throw error;
-      toast.success('Role user berhasil dihapus');
+      if (response.error) throw new Error(response.error.message);
+      if (response.data?.error) throw new Error(response.data.error);
+
+      toast.success('User berhasil dihapus');
       fetchUsers();
     } catch (error: any) {
-      toast.error(error.message || 'Gagal menghapus role');
+      console.error('Error deleting user:', error);
+      toast.error(error.message || 'Gagal menghapus user');
     }
   };
 
@@ -205,8 +234,9 @@ export default function UserManagement() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
-      const response = await supabase.functions.invoke('create-user', {
+      const response = await supabase.functions.invoke('manage-user', {
         body: {
+          action: 'create',
           email: newUserData.email,
           password: newUserData.password,
           full_name: newUserData.full_name,
@@ -272,7 +302,7 @@ export default function UserManagement() {
       header: 'Aksi',
       cell: (item: UserWithRoles) => (
         <div className="flex items-center gap-1">
-          <Button size="sm" variant="ghost" onClick={() => handleOpenRoleDialog(item)}>
+          <Button size="sm" variant="ghost" onClick={() => handleOpenEditDialog(item)}>
             <Pencil className="h-4 w-4" />
           </Button>
           <Button
@@ -320,28 +350,74 @@ export default function UserManagement() {
         emptyMessage="Belum ada user terdaftar"
       />
 
-      {/* Edit Role Dialog */}
-      <Dialog open={roleDialogOpen} onOpenChange={setRoleDialogOpen}>
+      {/* Edit User Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Atur Role User</DialogTitle>
+            <DialogTitle>Edit User</DialogTitle>
             <DialogDescription>
-              {editingUser?.full_name}
+              Ubah data user {editingUser?.full_name}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit_full_name">Nama Lengkap</Label>
+              <Input
+                id="edit_full_name"
+                value={editData.full_name}
+                onChange={(e) => setEditData({ ...editData, full_name: e.target.value })}
+                placeholder="Nama lengkap"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit_email">Email</Label>
+              <Input
+                id="edit_email"
+                type="email"
+                value={editData.email}
+                onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                placeholder="Email baru (kosongkan jika tidak diubah)"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit_password">Password Baru</Label>
+              <div className="relative">
+                <Input
+                  id="edit_password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={editData.password}
+                  onChange={(e) => setEditData({ ...editData, password: e.target.value })}
+                  placeholder="Kosongkan jika tidak diubah"
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">Minimal 6 karakter</p>
+            </div>
+
             <div className="space-y-3">
-              <Label>Pilih Role</Label>
+              <Label>Role <span className="text-destructive">*</span></Label>
               {(['admin', 'bendahara', 'operator'] as AppRole[]).map(role => (
                 <div key={role} className="flex items-center space-x-3 p-3 border rounded-lg">
                   <Checkbox
-                    id={`edit-${role}`}
-                    checked={selectedRoles.includes(role)}
-                    onCheckedChange={() => handleRoleToggle(role)}
+                    id={`edit-role-${role}`}
+                    checked={editData.roles.includes(role)}
+                    onCheckedChange={() => handleEditRoleToggle(role)}
+                    disabled={editingUser?.id === currentUser?.id && role === 'admin'}
                   />
                   <div className="flex-1">
-                    <Label htmlFor={`edit-${role}`} className="font-medium cursor-pointer">
+                    <Label htmlFor={`edit-role-${role}`} className="font-medium cursor-pointer">
                       {ROLE_LABELS[role]}
                     </Label>
                     <p className="text-xs text-muted-foreground">
@@ -356,11 +432,11 @@ export default function UserManagement() {
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setRoleDialogOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
               Batal
             </Button>
-            <Button onClick={handleSaveRoles}>
-              Simpan
+            <Button onClick={handleSaveEdit} disabled={editLoading}>
+              {editLoading ? 'Menyimpan...' : 'Simpan'}
             </Button>
           </DialogFooter>
         </DialogContent>
