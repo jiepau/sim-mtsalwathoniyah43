@@ -155,13 +155,16 @@ export default function KelasPage() {
       header: 'Jumlah Siswa', 
       cell: (item: Kelas) => (
         <Button 
-          variant="ghost" 
+          variant="outline" 
           size="sm"
-          className="gap-1"
-          onClick={() => navigate(`/siswa?kelas=${item.id}`)}
+          className="gap-1 cursor-pointer hover:bg-primary hover:text-primary-foreground"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/siswa?kelas=${item.id}`);
+          }}
         >
           <Users className="h-4 w-4" />
-          <Badge variant="outline">{item.siswa_count || 0} siswa</Badge>
+          <span>{item.siswa_count || 0} siswa</span>
         </Button>
       )
     },
