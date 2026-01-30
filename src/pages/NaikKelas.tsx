@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -42,9 +43,11 @@ interface Siswa {
   wa_ortu: string | null;
 }
 
-interface PreviewData {
-  naikKelas: { siswa: Siswa; kelasLama: Kelas | null; kelasBaru: Kelas | null }[];
-  lulus: { siswa: Siswa; kelasLama: Kelas | null }[];
+interface SiswaWithAssignment extends Siswa {
+  kelasLama: Kelas | null;
+  kelasBaru: Kelas | null;
+  isLulus: boolean;
+  selected: boolean;
 }
 
 export default function NaikKelas() {
@@ -58,9 +61,12 @@ export default function NaikKelas() {
   const [tahunAjaranLama, setTahunAjaranLama] = useState<string>('');
   const [tahunAjaranBaru, setTahunAjaranBaru] = useState<string>('');
   
-  const [preview, setPreview] = useState<PreviewData | null>(null);
+  const [siswaAssignments, setSiswaAssignments] = useState<SiswaWithAssignment[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [completed, setCompleted] = useState(false);
+
+  // Bulk assignment
+  const [bulkTargetKelas, setBulkTargetKelas] = useState<string>('');
 
   useEffect(() => {
     fetchData();
@@ -78,7 +84,6 @@ export default function NaikKelas() {
       setKelasList(kelasRes.data || []);
       setSiswaList(siswaRes.data || []);
 
-      // Set default TA lama to active one
       const activeTa = taRes.data?.find(ta => ta.is_active);
       if (activeTa) {
         setTahunAjaranLama(activeTa.id);
@@ -102,60 +107,116 @@ export default function NaikKelas() {
       return;
     }
 
-    // Filter siswa from TA lama
     const siswaFromTaLama = siswaList.filter(s => s.ta_id === tahunAjaranLama);
 
-    const naikKelas: PreviewData['naikKelas'] = [];
-    const lulus: PreviewData['lulus'] = [];
-
-    siswaFromTaLama.forEach(siswa => {
+    const assignments: SiswaWithAssignment[] = siswaFromTaLama.map(siswa => {
       const kelasLama = kelasList.find(k => k.id === siswa.kelas_id) || null;
+      const isLulus = kelasLama ? kelasLama.tingkat >= 9 : false;
       
-      if (kelasLama && kelasLama.tingkat >= 9) {
-        // Siswa kelas 9 = lulus
-        lulus.push({ siswa, kelasLama });
-      } else {
-        // Find next tingkat kelas
-        const nextTingkat = kelasLama ? kelasLama.tingkat + 1 : 7;
-        const kelasBaru = kelasList.find(k => k.tingkat === nextTingkat) || null;
-        naikKelas.push({ siswa, kelasLama, kelasBaru });
+      // Default: suggest next tingkat kelas (first one found)
+      let kelasBaru: Kelas | null = null;
+      if (!isLulus && kelasLama) {
+        const nextTingkat = kelasLama.tingkat + 1;
+        kelasBaru = kelasList.find(k => k.tingkat === nextTingkat) || null;
       }
+
+      return {
+        ...siswa,
+        kelasLama,
+        kelasBaru,
+        isLulus,
+        selected: false,
+      };
     });
 
-    setPreview({ naikKelas, lulus });
+    setSiswaAssignments(assignments);
+    setCompleted(false);
+  };
+
+  const toggleSelectSiswa = (siswaId: string) => {
+    setSiswaAssignments(prev => prev.map(s => 
+      s.id === siswaId ? { ...s, selected: !s.selected } : s
+    ));
+  };
+
+  const toggleSelectAll = (isLulus: boolean) => {
+    const allSelected = siswaAssignments
+      .filter(s => s.isLulus === isLulus)
+      .every(s => s.selected);
+
+    setSiswaAssignments(prev => prev.map(s => 
+      s.isLulus === isLulus ? { ...s, selected: !allSelected } : s
+    ));
+  };
+
+  const updateSiswaKelas = (siswaId: string, kelasBaruId: string) => {
+    const kelasBaru = kelasList.find(k => k.id === kelasBaruId) || null;
+    setSiswaAssignments(prev => prev.map(s => 
+      s.id === siswaId ? { ...s, kelasBaru } : s
+    ));
+  };
+
+  const applyBulkAssignment = () => {
+    if (!bulkTargetKelas) {
+      toast({ title: 'Peringatan', description: 'Pilih kelas tujuan terlebih dahulu', variant: 'destructive' });
+      return;
+    }
+
+    const kelasBaru = kelasList.find(k => k.id === bulkTargetKelas) || null;
+    const selectedCount = siswaAssignments.filter(s => s.selected && !s.isLulus).length;
+
+    if (selectedCount === 0) {
+      toast({ title: 'Peringatan', description: 'Pilih siswa yang akan dipindahkan', variant: 'destructive' });
+      return;
+    }
+
+    setSiswaAssignments(prev => prev.map(s => 
+      s.selected && !s.isLulus ? { ...s, kelasBaru, selected: false } : s
+    ));
+
+    setBulkTargetKelas('');
+    toast({ 
+      title: 'Berhasil', 
+      description: `${selectedCount} siswa dipindahkan ke ${kelasBaru?.nama_kelas}` 
+    });
+  };
+
+  const getAvailableKelasForTingkat = (currentTingkat: number) => {
+    const nextTingkat = currentTingkat + 1;
+    return kelasList.filter(k => k.tingkat === nextTingkat);
   };
 
   const executeNaikKelas = async () => {
-    if (!preview) return;
-    
     setProcessing(true);
     setConfirmOpen(false);
 
     try {
+      const lulusSiswa = siswaAssignments.filter(s => s.isLulus);
+      const naikKelasSiswa = siswaAssignments.filter(s => !s.isLulus);
+
       // 1. Pindahkan siswa lulus ke alumni
-      for (const item of preview.lulus) {
+      for (const item of lulusSiswa) {
         await supabase.from('alumni').insert({
-          nis: item.siswa.nis,
-          nama: item.siswa.nama,
-          alamat: item.siswa.alamat,
-          wa_ortu: item.siswa.wa_ortu,
+          nis: item.nis,
+          nama: item.nama,
+          alamat: item.alamat,
+          wa_ortu: item.wa_ortu,
           kelas_terakhir: item.kelasLama?.nama_kelas || 'Tidak diketahui',
           tahun_lulus: tahunAjaranList.find(ta => ta.id === tahunAjaranLama)?.nama_ta || '',
-          original_siswa_id: item.siswa.id,
-          original_kelas_id: item.siswa.kelas_id,
-          original_ta_id: item.siswa.ta_id,
+          original_siswa_id: item.id,
+          original_kelas_id: item.kelas_id,
+          original_ta_id: item.ta_id,
         });
 
-        // Hapus dari tabel siswa
-        await supabase.from('siswa').delete().eq('id', item.siswa.id);
+        await supabase.from('siswa').delete().eq('id', item.id);
       }
 
       // 2. Update siswa yang naik kelas
-      for (const item of preview.naikKelas) {
+      for (const item of naikKelasSiswa) {
         await supabase.from('siswa').update({
-          kelas_id: item.kelasBaru?.id || item.siswa.kelas_id,
+          kelas_id: item.kelasBaru?.id || item.kelas_id,
           ta_id: tahunAjaranBaru,
-        }).eq('id', item.siswa.id);
+        }).eq('id', item.id);
       }
 
       // 3. Set TA baru sebagai aktif
@@ -165,12 +226,11 @@ export default function NaikKelas() {
       setCompleted(true);
       toast({ 
         title: 'Berhasil!', 
-        description: `${preview.naikKelas.length} siswa naik kelas, ${preview.lulus.length} siswa lulus ke alumni` 
+        description: `${naikKelasSiswa.length} siswa naik kelas, ${lulusSiswa.length} siswa lulus ke alumni` 
       });
 
-      // Refresh data
       fetchData();
-      setPreview(null);
+      setSiswaAssignments([]);
 
     } catch (error) {
       console.error('Error executing naik kelas:', error);
@@ -179,6 +239,20 @@ export default function NaikKelas() {
       setProcessing(false);
     }
   };
+
+  const naikKelasSiswa = siswaAssignments.filter(s => !s.isLulus);
+  const lulusSiswa = siswaAssignments.filter(s => s.isLulus);
+  const selectedNaikKelasCount = naikKelasSiswa.filter(s => s.selected).length;
+
+  // Group siswa by kelas lama
+  const siswaByKelasLama = naikKelasSiswa.reduce((acc, siswa) => {
+    const kelasName = siswa.kelasLama?.nama_kelas || 'Tanpa Kelas';
+    if (!acc[kelasName]) {
+      acc[kelasName] = [];
+    }
+    acc[kelasName].push(siswa);
+    return acc;
+  }, {} as Record<string, SiswaWithAssignment[]>);
 
   if (loading) {
     return (
@@ -250,13 +324,13 @@ export default function NaikKelas() {
           </div>
 
           <Button onClick={generatePreview} disabled={!tahunAjaranLama || !tahunAjaranBaru}>
-            Lihat Preview
+            Lihat Daftar Siswa
           </Button>
         </CardContent>
       </Card>
 
-      {/* Preview Card */}
-      {preview && (
+      {/* Preview & Assignment */}
+      {siswaAssignments.length > 0 && (
         <div className="space-y-4">
           {/* Summary */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -267,7 +341,7 @@ export default function NaikKelas() {
                     <Users className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">{preview.naikKelas.length}</p>
+                    <p className="text-2xl font-bold">{naikKelasSiswa.length}</p>
                     <p className="text-sm text-muted-foreground">Siswa Naik Kelas</p>
                   </div>
                 </div>
@@ -281,7 +355,7 @@ export default function NaikKelas() {
                     <GraduationCap className="h-6 w-6 text-success" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">{preview.lulus.length}</p>
+                    <p className="text-2xl font-bold">{lulusSiswa.length}</p>
                     <p className="text-sm text-muted-foreground">Siswa Lulus (Pindah ke Alumni)</p>
                   </div>
                 </div>
@@ -289,36 +363,121 @@ export default function NaikKelas() {
             </Card>
           </div>
 
-          {/* Detail Lists */}
-          {preview.naikKelas.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Siswa Naik Kelas
+          {/* Bulk Assignment Tool */}
+          {naikKelasSiswa.length > 0 && (
+            <Card className="border-primary/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5" />
+                  Pindahkan Siswa Terpilih ({selectedNaikKelasCount} dipilih)
                 </CardTitle>
+                <CardDescription>
+                  Centang siswa, lalu pilih kelas tujuan dan klik "Pindahkan"
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {preview.naikKelas.map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-2 rounded bg-muted/50">
-                      <div>
-                        <span className="font-medium">{item.siswa.nama}</span>
-                        <span className="text-muted-foreground ml-2">({item.siswa.nis})</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary">{item.kelasLama?.nama_kelas || 'Belum ada kelas'}</Badge>
-                        <span>→</span>
-                        <Badge variant="default">{item.kelasBaru?.nama_kelas || 'Tidak ditemukan'}</Badge>
-                      </div>
-                    </div>
-                  ))}
+                <div className="flex flex-wrap gap-3 items-end">
+                  <div className="flex-1 min-w-[200px]">
+                    <Label className="text-xs">Kelas Tujuan</Label>
+                    <Select value={bulkTargetKelas} onValueChange={setBulkTargetKelas}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih kelas tujuan" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {kelasList.filter(k => k.tingkat >= 8).map(kelas => (
+                          <SelectItem key={kelas.id} value={kelas.id}>
+                            {kelas.nama_kelas} (Tingkat {kelas.tingkat})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button 
+                    onClick={applyBulkAssignment} 
+                    disabled={selectedNaikKelasCount === 0 || !bulkTargetKelas}
+                  >
+                    Pindahkan {selectedNaikKelasCount} Siswa
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {preview.lulus.length > 0 && (
+          {/* Siswa Naik Kelas - Grouped by Kelas */}
+          {Object.entries(siswaByKelasLama).map(([kelasName, siswas]) => {
+            const allSelected = siswas.every(s => s.selected);
+            const currentTingkat = siswas[0]?.kelasLama?.tingkat || 7;
+            const availableKelas = getAvailableKelasForTingkat(currentTingkat);
+
+            return (
+              <Card key={kelasName}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      {kelasName} ({siswas.length} siswa)
+                    </CardTitle>
+                    <div className="flex items-center gap-2">
+                      <Checkbox 
+                        checked={allSelected}
+                        onCheckedChange={() => {
+                          setSiswaAssignments(prev => prev.map(s => 
+                            siswas.some(ss => ss.id === s.id) 
+                              ? { ...s, selected: !allSelected } 
+                              : s
+                          ));
+                        }}
+                      />
+                      <span className="text-sm text-muted-foreground">Pilih Semua</span>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {siswas.map((item) => (
+                      <div 
+                        key={item.id} 
+                        className={`flex items-center justify-between p-2 rounded ${item.selected ? 'bg-primary/10 border border-primary/30' : 'bg-muted/50'}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Checkbox 
+                            checked={item.selected}
+                            onCheckedChange={() => toggleSelectSiswa(item.id)}
+                          />
+                          <div>
+                            <span className="font-medium">{item.nama}</span>
+                            <span className="text-muted-foreground ml-2 text-sm">({item.nis})</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary">{kelasName}</Badge>
+                          <span>→</span>
+                          <Select 
+                            value={item.kelasBaru?.id || ''} 
+                            onValueChange={(val) => updateSiswaKelas(item.id, val)}
+                          >
+                            <SelectTrigger className="w-32 h-8">
+                              <SelectValue placeholder="Pilih kelas" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {availableKelas.map(k => (
+                                <SelectItem key={k.id} value={k.id}>
+                                  {k.nama_kelas}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+
+          {/* Siswa Lulus */}
+          {lulusSiswa.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -328,11 +487,11 @@ export default function NaikKelas() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {preview.lulus.map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-2 rounded bg-success/10">
+                  {lulusSiswa.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between p-2 rounded bg-success/10">
                       <div>
-                        <span className="font-medium">{item.siswa.nama}</span>
-                        <span className="text-muted-foreground ml-2">({item.siswa.nis})</span>
+                        <span className="font-medium">{item.nama}</span>
+                        <span className="text-muted-foreground ml-2">({item.nis})</span>
                       </div>
                       <Badge variant="outline" className="text-success border-success">
                         {item.kelasLama?.nama_kelas} → Alumni
@@ -363,7 +522,7 @@ export default function NaikKelas() {
             size="lg" 
             className="w-full"
             onClick={() => setConfirmOpen(true)}
-            disabled={processing}
+            disabled={processing || naikKelasSiswa.some(s => !s.kelasBaru)}
           >
             {processing ? (
               <>
@@ -377,6 +536,12 @@ export default function NaikKelas() {
               </>
             )}
           </Button>
+          
+          {naikKelasSiswa.some(s => !s.kelasBaru) && (
+            <p className="text-sm text-destructive text-center">
+              Semua siswa harus memiliki kelas tujuan sebelum diproses
+            </p>
+          )}
         </div>
       )}
 
@@ -388,8 +553,8 @@ export default function NaikKelas() {
             <AlertDialogDescription>
               Anda akan memproses kenaikan kelas untuk:
               <ul className="list-disc list-inside mt-2">
-                <li>{preview?.naikKelas.length || 0} siswa naik kelas</li>
-                <li>{preview?.lulus.length || 0} siswa lulus (dipindah ke Alumni)</li>
+                <li>{naikKelasSiswa.length} siswa naik kelas</li>
+                <li>{lulusSiswa.length} siswa lulus (dipindah ke Alumni)</li>
               </ul>
               <br />
               <strong>Apakah Anda yakin ingin melanjutkan?</strong>
