@@ -3,18 +3,21 @@ import {
   Users, 
   School, 
   UserCog, 
-  Wallet, 
   TrendingUp, 
   TrendingDown,
   AlertTriangle,
-  Calendar
+  Calendar,
+  Sparkles
 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { StatsCard } from '@/components/ui/stats-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/supabase-helpers';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { useSetupWizard } from '@/hooks/useSetupWizard';
+import { SetupWizardDialog } from '@/components/wizard/SetupWizardDialog';
 
 interface DashboardStats {
   totalSiswa: number;
@@ -28,6 +31,8 @@ interface DashboardStats {
 const COLORS = ['hsl(152, 60%, 32%)', 'hsl(45, 90%, 50%)', 'hsl(199, 89%, 48%)', 'hsl(0, 72%, 51%)'];
 
 export default function Dashboard() {
+  const setupStatus = useSetupWizard();
+  const [wizardOpen, setWizardOpen] = useState(false);
   const [stats, setStats] = useState<DashboardStats>({
     totalSiswa: 0,
     totalKelas: 0,
@@ -39,9 +44,24 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [kelasData, setKelasData] = useState<{ name: string; jumlah: number }[]>([]);
 
+  // Auto-open wizard for new users
+  useEffect(() => {
+    if (!setupStatus.loading && !setupStatus.isComplete) {
+      const dismissed = localStorage.getItem('setup-wizard-dismissed');
+      if (!dismissed) {
+        setWizardOpen(true);
+      }
+    }
+  }, [setupStatus.loading, setupStatus.isComplete]);
+
   useEffect(() => {
     fetchStats();
   }, []);
+
+  const handleWizardClose = () => {
+    setWizardOpen(false);
+    localStorage.setItem('setup-wizard-dismissed', 'true');
+  };
 
   const fetchStats = async () => {
     try {
@@ -107,10 +127,20 @@ export default function Dashboard() {
 
   return (
     <div className="animate-fadeIn">
+      <SetupWizardDialog open={wizardOpen} onOpenChange={handleWizardClose} />
+      
       <PageHeader 
         title="Dashboard" 
         description="Selamat datang di Sistem Informasi Madrasah"
         icon={<Calendar className="h-6 w-6" />}
+        actions={
+          !setupStatus.isComplete && (
+            <Button variant="outline" onClick={() => setWizardOpen(true)}>
+              <Sparkles className="h-4 w-4 mr-2" />
+              Setup Wizard
+            </Button>
+          )
+        }
       />
 
       {/* Stats Grid */}
