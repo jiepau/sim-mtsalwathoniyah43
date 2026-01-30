@@ -19,7 +19,8 @@ import {
   X,
   Building2,
   ArrowUpCircle,
-  GraduationCap
+  GraduationCap,
+  Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -55,6 +56,7 @@ const allMenuItems: MenuItem[] = [
   },
   { title: 'Naik Kelas', icon: ArrowUpCircle, path: '/naik-kelas', roles: ['admin', 'operator'] },
   { title: 'Alumni', icon: GraduationCap, path: '/alumni', roles: ['admin', 'operator'] },
+  { title: 'Manajemen User', icon: Shield, path: '/user-management', roles: ['admin'] },
 ];
 
 export function Sidebar() {

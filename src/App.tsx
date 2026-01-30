@@ -24,6 +24,7 @@ import Pengeluaran from "@/pages/Pengeluaran";
 import Tunggakan from "@/pages/Tunggakan";
 import NaikKelas from "@/pages/NaikKelas";
 import Alumni from "@/pages/Alumni";
+import UserManagement from "@/pages/UserManagement";
 
 import NotFound from "./pages/NotFound";
 
@@ -61,6 +62,7 @@ const App = () => (
               <Route path="/tunggakan" element={<Tunggakan />} />
               <Route path="/naik-kelas" element={<NaikKelas />} />
               <Route path="/alumni" element={<Alumni />} />
+              <Route path="/user-management" element={<UserManagement />} />
             </Route>
             
             {/* Redirects */}

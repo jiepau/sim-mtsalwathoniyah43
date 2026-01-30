@@ -330,18 +330,21 @@ export type Database = {
           id: string
           is_active: boolean | null
           nama_ta: string
+          semester: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           is_active?: boolean | null
           nama_ta: string
+          semester?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           is_active?: boolean | null
           nama_ta?: string
+          semester?: string | null
         }
         Relationships: []
       }

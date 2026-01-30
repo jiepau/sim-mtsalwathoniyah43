@@ -13,6 +13,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -20,6 +27,7 @@ import { toast } from 'sonner';
 interface TahunAjaran {
   id: string;
   nama_ta: string;
+  semester: string;
   is_active: boolean;
 }
 
@@ -30,6 +38,7 @@ export default function TahunAjaranPage() {
   const [editingTa, setEditingTa] = useState<TahunAjaran | null>(null);
   const [formData, setFormData] = useState({
     nama_ta: '',
+    semester: 'ganjil',
     is_active: false,
   });
 
@@ -43,7 +52,8 @@ export default function TahunAjaranPage() {
       const { data, error } = await supabase
         .from('tahun_ajaran')
         .select('*')
-        .order('nama_ta', { ascending: false });
+        .order('nama_ta', { ascending: false })
+        .order('semester', { ascending: false });
 
       if (error) throw error;
       setTahunAjaran(data || []);
@@ -60,11 +70,12 @@ export default function TahunAjaranPage() {
       setEditingTa(ta);
       setFormData({
         nama_ta: ta.nama_ta,
+        semester: ta.semester || 'ganjil',
         is_active: ta.is_active,
       });
     } else {
       setEditingTa(null);
-      setFormData({ nama_ta: '', is_active: false });
+      setFormData({ nama_ta: '', semester: 'ganjil', is_active: false });
     }
     setDialogOpen(true);
   };
@@ -83,6 +94,7 @@ export default function TahunAjaranPage() {
 
       const payload = {
         nama_ta: formData.nama_ta,
+        semester: formData.semester,
         is_active: formData.is_active,
       };
 
@@ -134,17 +146,30 @@ export default function TahunAjaranPage() {
         .eq('id', ta.id);
       
       if (error) throw error;
-      toast.success(`${ta.nama_ta} diaktifkan`);
+      toast.success(`${ta.nama_ta} ${ta.semester === 'genap' ? 'Genap' : 'Ganjil'} diaktifkan`);
       fetchData();
     } catch (error: any) {
       toast.error(error.message || 'Gagal mengubah status');
     }
   };
 
+  const formatTaName = (ta: TahunAjaran) => {
+    const semesterLabel = ta.semester === 'genap' ? 'Genap' : 'Ganjil';
+    return `${ta.nama_ta} - ${semesterLabel}`;
+  };
+
   const columns = [
     { 
-      header: 'Nama Tahun Ajaran', 
+      header: 'Tahun Ajaran', 
       cell: (item: TahunAjaran) => <span className="font-medium">{item.nama_ta}</span>
+    },
+    { 
+      header: 'Semester', 
+      cell: (item: TahunAjaran) => (
+        <Badge variant={item.semester === 'genap' ? 'default' : 'secondary'}>
+          {item.semester === 'genap' ? 'Genap' : 'Ganjil'}
+        </Badge>
+      )
     },
     { 
       header: 'Status', 
@@ -208,7 +233,7 @@ export default function TahunAjaranPage() {
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="nama_ta">Nama Tahun Ajaran</Label>
+              <Label htmlFor="nama_ta">Tahun Ajaran</Label>
               <Input
                 id="nama_ta"
                 value={formData.nama_ta}
@@ -216,6 +241,21 @@ export default function TahunAjaranPage() {
                 placeholder="Contoh: 2024/2025"
                 required
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="semester">Semester</Label>
+              <Select 
+                value={formData.semester} 
+                onValueChange={(v) => setFormData({ ...formData, semester: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih Semester" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ganjil">Ganjil</SelectItem>
+                  <SelectItem value="genap">Genap</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex items-center justify-between">
               <Label htmlFor="is_active">Set sebagai aktif</Label>
