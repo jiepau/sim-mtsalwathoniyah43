@@ -24,42 +24,60 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { AppRole } from '@/lib/supabase-helpers';
 
 interface MenuItem {
   title: string;
   icon: React.ElementType;
   path?: string;
   children?: MenuItem[];
-  roles?: string[];
+  roles?: AppRole[]; // Which roles can see this menu
 }
 
-const menuItems: MenuItem[] = [
-  { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-  { title: 'Siswa', icon: Users, path: '/siswa' },
-  { title: 'Kelas', icon: School, path: '/kelas' },
-  { title: 'Tahun Ajaran', icon: Calendar, path: '/tahun-ajaran' },
-  { title: 'GTK/PTK', icon: UserCog, path: '/gtk-ptk' },
+// All menu items with role restrictions
+const allMenuItems: MenuItem[] = [
+  { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' }, // All roles
+  { title: 'Siswa', icon: Users, path: '/siswa' }, // All roles (bendahara = read-only handled in page)
+  { title: 'Kelas', icon: School, path: '/kelas', roles: ['admin', 'operator'] },
+  { title: 'Tahun Ajaran', icon: Calendar, path: '/tahun-ajaran', roles: ['admin', 'operator'] },
+  { title: 'GTK/PTK', icon: UserCog, path: '/gtk-ptk', roles: ['admin', 'operator'] },
   { 
-    title: 'Bendahara', 
+    title: 'Keuangan', 
     icon: Wallet,
     children: [
       { title: 'Jenis Tagihan', icon: Receipt, path: '/jenis-tagihan' },
       { title: 'Pembayaran', icon: CreditCard, path: '/pembayaran' },
-    ]
+      { title: 'Pemasukan', icon: TrendingUp, path: '/pemasukan' },
+      { title: 'Pengeluaran', icon: TrendingDown, path: '/pengeluaran' },
+      { title: 'Tunggakan', icon: AlertTriangle, path: '/tunggakan' },
+    ],
+    roles: ['admin', 'bendahara']
   },
-  { title: 'Pemasukan', icon: TrendingUp, path: '/pemasukan' },
-  { title: 'Pengeluaran', icon: TrendingDown, path: '/pengeluaran' },
-  { title: 'Tunggakan', icon: AlertTriangle, path: '/tunggakan' },
-  { title: 'Naik Kelas', icon: ArrowUpCircle, path: '/naik-kelas' },
-  { title: 'Alumni', icon: GraduationCap, path: '/alumni' },
+  { title: 'Naik Kelas', icon: ArrowUpCircle, path: '/naik-kelas', roles: ['admin', 'operator'] },
+  { title: 'Alumni', icon: GraduationCap, path: '/alumni', roles: ['admin', 'operator'] },
 ];
 
 export function Sidebar() {
   const location = useLocation();
-  const { signOut, user } = useAuth();
+  const { signOut, hasRole, isAdmin } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<string[]>(['Bendahara']);
+  const [expandedItems, setExpandedItems] = useState<string[]>(['Keuangan']);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Filter menu items based on user roles
+  const filterMenuItems = (items: MenuItem[]): MenuItem[] => {
+    return items.filter(item => {
+      // If no roles specified, show to everyone
+      if (!item.roles || item.roles.length === 0) return true;
+      // Check if user has any of the required roles
+      return item.roles.some(role => hasRole(role));
+    }).map(item => ({
+      ...item,
+      children: item.children ? filterMenuItems(item.children) : undefined
+    }));
+  };
+
+  const menuItems = filterMenuItems(allMenuItems);
 
   const toggleExpand = (title: string) => {
     setExpandedItems(prev => 
