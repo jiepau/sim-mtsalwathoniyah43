@@ -22,6 +22,8 @@ import Pembayaran from "@/pages/Pembayaran";
 import Pemasukan from "@/pages/Pemasukan";
 import Pengeluaran from "@/pages/Pengeluaran";
 import Tunggakan from "@/pages/Tunggakan";
+import NaikKelas from "@/pages/NaikKelas";
+import Alumni from "@/pages/Alumni";
 
 import NotFound from "./pages/NotFound";
 
@@ -57,6 +59,8 @@ const App = () => (
               <Route path="/pemasukan" element={<Pemasukan />} />
               <Route path="/pengeluaran" element={<Pengeluaran />} />
               <Route path="/tunggakan" element={<Tunggakan />} />
+              <Route path="/naik-kelas" element={<NaikKelas />} />
+              <Route path="/alumni" element={<Alumni />} />
             </Route>
             
             {/* Redirects */}
