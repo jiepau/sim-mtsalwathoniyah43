@@ -33,19 +33,19 @@ export function StatsCard({
 }: StatsCardProps) {
   return (
     <div className={cn(
-      'bg-card rounded-xl p-6 shadow-card border border-border/50 card-hover',
+      'bg-card rounded-xl p-4 sm:p-6 shadow-card border border-border/50 card-hover overflow-hidden',
       className
     )}>
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-3xl font-bold mt-2 text-foreground">{value}</p>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{title}</p>
+          <p className="text-xl sm:text-2xl lg:text-3xl font-bold mt-1 sm:mt-2 text-foreground truncate">{value}</p>
           {description && (
-            <p className="text-sm text-muted-foreground mt-1">{description}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1 truncate">{description}</p>
           )}
           {trend && (
             <p className={cn(
-              'text-sm font-medium mt-2',
+              'text-xs sm:text-sm font-medium mt-1 sm:mt-2',
               trend.isPositive ? 'text-success' : 'text-destructive'
             )}>
               {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
@@ -54,7 +54,7 @@ export function StatsCard({
           )}
         </div>
         <div className={cn(
-          'h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0',
+          'h-10 w-10 sm:h-12 sm:w-12 rounded-xl flex items-center justify-center flex-shrink-0',
           variantStyles[variant]
         )}>
           {icon}

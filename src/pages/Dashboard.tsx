@@ -142,45 +142,45 @@ export default function Dashboard() {
       />
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <StatsCard
           title="Total Siswa"
           value={stats.totalSiswa}
-          icon={<Users className="h-6 w-6" />}
+          icon={<Users className="h-5 w-5 sm:h-6 sm:w-6" />}
           variant="default"
         />
         <StatsCard
           title="Jumlah Kelas"
           value={stats.totalKelas}
-          icon={<School className="h-6 w-6" />}
+          icon={<School className="h-5 w-5 sm:h-6 sm:w-6" />}
           variant="info"
         />
         <StatsCard
           title="GTK/PTK"
           value={stats.totalGtk}
-          icon={<UserCog className="h-6 w-6" />}
+          icon={<UserCog className="h-5 w-5 sm:h-6 sm:w-6" />}
           variant="success"
         />
         <StatsCard
-          title="Total Tunggakan"
+          title="Tunggakan"
           value={formatCurrency(stats.totalTunggakan)}
-          icon={<AlertTriangle className="h-6 w-6" />}
+          icon={<AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6" />}
           variant="danger"
         />
       </div>
 
       {/* Financial Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <StatsCard
-          title="Total Pemasukan"
+          title="Pemasukan"
           value={formatCurrency(stats.totalPemasukan)}
-          icon={<TrendingUp className="h-6 w-6" />}
+          icon={<TrendingUp className="h-5 w-5 sm:h-6 sm:w-6" />}
           variant="success"
         />
         <StatsCard
-          title="Total Pengeluaran"
+          title="Pengeluaran"
           value={formatCurrency(stats.totalPengeluaran)}
-          icon={<TrendingDown className="h-6 w-6" />}
+          icon={<TrendingDown className="h-5 w-5 sm:h-6 sm:w-6" />}
           variant="warning"
         />
       </div>
