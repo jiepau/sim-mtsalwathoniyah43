@@ -41,6 +41,7 @@ interface Kelas {
 interface TahunAjaran {
   id: string;
   nama_ta: string;
+  semester: string | null;
   is_active: boolean | null;
 }
 
@@ -160,8 +161,9 @@ export default function KelasPage() {
         }
       });
 
+      const semesterLabel = ta.semester === 'genap' ? 'Genap' : 'Ganjil';
       return {
-        ta_name: ta.nama_ta,
+        ta_name: `${ta.nama_ta} ${semesterLabel}`,
         total: taSiswa.length,
         kelas7,
         kelas8,
@@ -228,9 +230,15 @@ export default function KelasPage() {
     }
   };
 
-  const selectedTAName = selectedTA === 'all' 
-    ? 'Semua Tahun Ajaran' 
-    : tahunAjaranList.find(ta => ta.id === selectedTA)?.nama_ta || '';
+  const getSelectedTAName = () => {
+    if (selectedTA === 'all') return 'Semua Tahun Ajaran';
+    const ta = tahunAjaranList.find(ta => ta.id === selectedTA);
+    if (!ta) return '';
+    const semesterLabel = ta.semester === 'genap' ? 'Genap' : 'Ganjil';
+    return `${ta.nama_ta} - ${semesterLabel}`;
+  };
+
+  const selectedTAName = getSelectedTAName();
 
   const columns = [
     { 
@@ -316,11 +324,14 @@ export default function KelasPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Semua Tahun Ajaran</SelectItem>
-                {tahunAjaranList.map(ta => (
-                  <SelectItem key={ta.id} value={ta.id}>
-                    {ta.nama_ta} {ta.is_active && '(Aktif)'}
-                  </SelectItem>
-                ))}
+                {tahunAjaranList.map(ta => {
+                  const semesterLabel = ta.semester === 'genap' ? 'Genap' : 'Ganjil';
+                  return (
+                    <SelectItem key={ta.id} value={ta.id}>
+                      {ta.nama_ta} - {semesterLabel} {ta.is_active && '(Aktif)'}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </CardContent>
