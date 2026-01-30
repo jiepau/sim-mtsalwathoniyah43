@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ImportDialog, ImportResult } from '@/components/import/ImportDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -56,6 +57,7 @@ export default function SiswaPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [editingSiswa, setEditingSiswa] = useState<Siswa | null>(null);
   const [formData, setFormData] = useState({
     nis: '',
@@ -65,6 +67,65 @@ export default function SiswaPage() {
     wa_ortu: '',
     alamat: '',
   });
+
+  // Import configuration
+  const importHeaders = ['NIS', 'Nama', 'Kelas', 'Tahun Ajaran', 'WA Ortu', 'Alamat'];
+  const importSampleData = [
+    ['001', 'Ahmad Fauzi', '7A', '2024/2025', '081234567890', 'Jl. Merdeka No. 1'],
+    ['002', 'Siti Aminah', '7B', '2024/2025', '081234567891', 'Jl. Sudirman No. 2'],
+  ];
+
+  const handleImport = async (data: Record<string, string>[]): Promise<ImportResult> => {
+    let success = 0;
+    let failed = 0;
+    const errors: string[] = [];
+
+    for (const row of data) {
+      try {
+        const nis = row['NIS']?.trim();
+        const nama = row['Nama']?.trim();
+        const kelasNama = row['Kelas']?.trim();
+        const taNama = row['Tahun Ajaran']?.trim();
+        const waOrtu = row['WA Ortu']?.trim();
+        const alamat = row['Alamat']?.trim();
+
+        if (!nis || !nama) {
+          throw new Error('NIS dan Nama harus diisi');
+        }
+
+        // Find kelas_id by name
+        let kelasId: string | null = null;
+        if (kelasNama) {
+          const foundKelas = kelas.find(k => k.nama_kelas.toLowerCase() === kelasNama.toLowerCase());
+          if (foundKelas) kelasId = foundKelas.id;
+        }
+
+        // Find ta_id by name
+        let taId: string | null = null;
+        if (taNama) {
+          const foundTa = tahunAjaran.find(ta => ta.nama_ta.toLowerCase() === taNama.toLowerCase());
+          if (foundTa) taId = foundTa.id;
+        }
+
+        const { error } = await supabase.from('siswa').insert({
+          nis,
+          nama,
+          kelas_id: kelasId,
+          ta_id: taId,
+          wa_ortu: waOrtu || null,
+          alamat: alamat || null,
+        });
+
+        if (error) throw error;
+        success++;
+      } catch (error: any) {
+        failed++;
+        errors.push(`Baris ${row['NIS'] || '?'}: ${error.message}`);
+      }
+    }
+
+    return { success, failed, errors };
+  };
 
   useEffect(() => {
     fetchData();
@@ -238,7 +299,7 @@ export default function SiswaPage() {
         icon={<Users className="h-6 w-6" />}
         actions={
           <div className="flex gap-2">
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
               <Upload className="h-4 w-4 mr-2" />
               Import
             </Button>
@@ -361,6 +422,18 @@ export default function SiswaPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        title="Import Data Siswa"
+        templateHeaders={importHeaders}
+        templateFileName="template_siswa.csv"
+        templateSampleData={importSampleData}
+        onImport={handleImport}
+        onSuccess={fetchData}
+      />
     </div>
   );
 }

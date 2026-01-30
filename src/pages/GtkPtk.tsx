@@ -13,6 +13,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { ImportDialog, ImportResult } from '@/components/import/ImportDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -34,6 +35,7 @@ export default function GtkPtkPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [editingGtk, setEditingGtk] = useState<GtkPtk | null>(null);
   const [formData, setFormData] = useState({
     nip: '',
@@ -46,6 +48,48 @@ export default function GtkPtkPage() {
     lulusan: '',
     email: '',
   });
+
+  // Import configuration
+  const importHeaders = ['NUPTK', 'NIP', 'NIK', 'Nama', 'Jabatan', 'Lulusan', 'No HP', 'Email', 'Alamat'];
+  const importSampleData = [
+    ['1234567890123456', '198501012010011001', '3201010101010001', 'Ahmad Hidayat, S.Pd', 'Guru', 'S1 Pendidikan', '081234567890', 'ahmad@email.com', 'Jl. Merdeka No. 1'],
+    ['1234567890123457', '', '3201010101010002', 'Siti Rahayu, S.Pd', 'TU', 'S1 Administrasi', '081234567891', 'siti@email.com', 'Jl. Sudirman No. 2'],
+  ];
+
+  const handleImport = async (data: Record<string, string>[]): Promise<ImportResult> => {
+    let success = 0;
+    let failed = 0;
+    const errors: string[] = [];
+
+    for (const row of data) {
+      try {
+        const nama = row['Nama']?.trim();
+        if (!nama) {
+          throw new Error('Nama harus diisi');
+        }
+
+        const { error } = await supabase.from('gtk_ptk').insert({
+          nama,
+          nuptk: row['NUPTK']?.trim() || null,
+          nip: row['NIP']?.trim() || null,
+          nik: row['NIK']?.trim() || null,
+          jabatan: row['Jabatan']?.trim() || null,
+          lulusan: row['Lulusan']?.trim() || null,
+          no_hp: row['No HP']?.trim() || null,
+          email: row['Email']?.trim() || null,
+          alamat: row['Alamat']?.trim() || null,
+        });
+
+        if (error) throw error;
+        success++;
+      } catch (error: any) {
+        failed++;
+        errors.push(`${row['Nama'] || 'Baris ?'}: ${error.message}`);
+      }
+    }
+
+    return { success, failed, errors };
+  };
 
   useEffect(() => {
     fetchData();
@@ -218,7 +262,7 @@ export default function GtkPtkPage() {
         icon={<UserCog className="h-6 w-6" />}
         actions={
           <div className="flex gap-2">
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
               <Upload className="h-4 w-4 mr-2" />
               Import
             </Button>
@@ -355,6 +399,18 @@ export default function GtkPtkPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        title="Import Data GTK/PTK"
+        templateHeaders={importHeaders}
+        templateFileName="template_gtk_ptk.csv"
+        templateSampleData={importSampleData}
+        onImport={handleImport}
+        onSuccess={fetchData}
+      />
     </div>
   );
 }
