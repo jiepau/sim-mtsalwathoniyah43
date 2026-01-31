@@ -47,20 +47,21 @@ export function ImportDialog({
   const [parseError, setParseError] = useState<string | null>(null);
 
   const handleDownloadTemplate = () => {
-    // Create CSV content with BOM for Excel compatibility
+    // Create tab-separated content for easy Excel copy-paste
     const BOM = '\uFEFF';
-    let csvContent = BOM + templateHeaders.join(';') + '\n';
+    let content = BOM + templateHeaders.join('\t') + '\n';
     
     // Add sample data rows
     templateSampleData.forEach(row => {
-      csvContent += row.join(';') + '\n';
+      content += row.join('\t') + '\n';
     });
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Download as .xls for better Excel compatibility
+    const blob = new Blob([content], { type: 'application/vnd.ms-excel;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = templateFileName;
+    link.download = templateFileName.replace('.csv', '.xls');
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -71,9 +72,14 @@ export function ImportDialog({
       throw new Error('File harus memiliki minimal 1 baris data selain header');
     }
 
-    // Detect delimiter (semicolon or comma)
+    // Detect delimiter: tab first (from Excel), then semicolon, then comma
     const firstLine = lines[0];
-    const delimiter = firstLine.includes(';') ? ';' : ',';
+    let delimiter = ',';
+    if (firstLine.includes('\t')) {
+      delimiter = '\t';
+    } else if (firstLine.includes(';')) {
+      delimiter = ';';
+    }
     
     const headers = lines[0].split(delimiter).map(h => h.trim().replace(/^["']|["']$/g, ''));
     const data: Record<string, string>[] = [];
@@ -165,8 +171,11 @@ export function ImportDialog({
                 </p>
                 <Button variant="outline" size="sm" onClick={handleDownloadTemplate}>
                   <Download className="h-4 w-4 mr-2" />
-                  Download Template CSV
+                  Download Template Excel
                 </Button>
+                <p className="text-xs text-muted-foreground mt-2">
+                  💡 Bisa langsung copy-paste dari Excel karena menggunakan format tab
+                </p>
               </div>
             </div>
           </div>
@@ -176,7 +185,7 @@ export function ImportDialog({
             <input
               ref={fileInputRef}
               type="file"
-              accept=".csv,.txt"
+              accept=".csv,.txt,.xls,.xlsx"
               onChange={handleFileChange}
               className="hidden"
             />

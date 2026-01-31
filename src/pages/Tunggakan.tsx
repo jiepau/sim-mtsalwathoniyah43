@@ -4,29 +4,30 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/supabase-helpers';
 
-interface Tunggakan {
-  id: string;
-  siswa_id: string;
-  nominal: number;
-  nominal_bayar: number;
+interface TunggakanItem {
+  jenis_tagihan: string;
   bulan: number | null;
   tahun: number | null;
-  siswa?: { 
-    nama: string; 
-    nis: string; 
-    wa_ortu: string | null;
-    kelas?: { nama_kelas: string };
-  };
-  jenis_tagihan?: { nama_tagihan: string };
+  sisa: number;
+}
+
+interface SiswaTunggakan {
+  id: string;
+  siswa_id: string;
+  nama: string;
+  nis: string;
+  kelas: string;
+  wa_ortu: string | null;
+  total_tunggakan: number;
+  items: TunggakanItem[];
 }
 
 export default function TunggakanPage() {
-  const [tunggakan, setTunggakan] = useState<Tunggakan[]>([]);
+  const [tunggakanData, setTunggakanData] = useState<SiswaTunggakan[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [totalTunggakan, setTotalTunggakan] = useState(0);
@@ -40,14 +41,45 @@ export default function TunggakanPage() {
     try {
       const { data, error } = await supabase
         .from('pembayaran')
-        .select(`*, siswa(nama, nis, wa_ortu, kelas(nama_kelas)), jenis_tagihan(nama_tagihan)`)
+        .select(`*, siswa(id, nama, nis, wa_ortu, kelas(nama_kelas)), jenis_tagihan(nama_tagihan)`)
         .or('status.eq.belum_lunas,status.eq.cicil')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      const total = data?.reduce((acc, p) => acc + (Number(p.nominal) - Number(p.nominal_bayar)), 0) || 0;
-      setTunggakan(data || []);
+      // Group by siswa
+      const grouped: Record<string, SiswaTunggakan> = {};
+      
+      data?.forEach(p => {
+        const siswaId = p.siswa?.id || p.siswa_id;
+        const sisa = Number(p.nominal) - Number(p.nominal_bayar);
+        
+        if (!grouped[siswaId]) {
+          grouped[siswaId] = {
+            id: siswaId,
+            siswa_id: siswaId,
+            nama: p.siswa?.nama || '-',
+            nis: p.siswa?.nis || '-',
+            kelas: p.siswa?.kelas?.nama_kelas || '-',
+            wa_ortu: p.siswa?.wa_ortu || null,
+            total_tunggakan: 0,
+            items: [],
+          };
+        }
+        
+        grouped[siswaId].total_tunggakan += sisa;
+        grouped[siswaId].items.push({
+          jenis_tagihan: p.jenis_tagihan?.nama_tagihan || '-',
+          bulan: p.bulan,
+          tahun: p.tahun,
+          sisa: sisa,
+        });
+      });
+      
+      const groupedArray = Object.values(grouped).sort((a, b) => b.total_tunggakan - a.total_tunggakan);
+      const total = groupedArray.reduce((acc, s) => acc + s.total_tunggakan, 0);
+      
+      setTunggakanData(groupedArray);
       setTotalTunggakan(total);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -56,9 +88,9 @@ export default function TunggakanPage() {
     }
   };
 
-  const filteredData = tunggakan.filter(t => 
-    t.siswa?.nama.toLowerCase().includes(search.toLowerCase()) ||
-    t.siswa?.nis.toLowerCase().includes(search.toLowerCase())
+  const filteredData = tunggakanData.filter(t => 
+    t.nama.toLowerCase().includes(search.toLowerCase()) ||
+    t.nis.toLowerCase().includes(search.toLowerCase())
   );
 
   const bulanOptions = [
@@ -67,23 +99,35 @@ export default function TunggakanPage() {
   ];
 
   const formatPhoneNumber = (phone: string): string => {
-    // Remove all non-numeric characters
     let cleaned = phone.replace(/[^0-9]/g, '');
-    // Convert 08xx to 628xx
     if (cleaned.startsWith('0')) {
       cleaned = '62' + cleaned.substring(1);
     }
-    // Add 62 prefix if not present
     if (!cleaned.startsWith('62')) {
       cleaned = '62' + cleaned;
     }
     return cleaned;
   };
 
-  const getWhatsAppUrl = (wa: string, nama: string, sisa: number): string => {
-    const phone = formatPhoneNumber(wa);
+  const getWhatsAppUrl = (siswa: SiswaTunggakan): string => {
+    if (!siswa.wa_ortu) return '#';
+    
+    const phone = formatPhoneNumber(siswa.wa_ortu);
+    
+    // Build detailed message with all tunggakan
+    let itemsText = siswa.items.map(item => {
+      const periode = item.bulan && item.tahun 
+        ? ` (${bulanOptions[item.bulan - 1]} ${item.tahun})`
+        : '';
+      return `• ${item.jenis_tagihan}${periode}: ${formatCurrency(item.sisa)}`;
+    }).join('\n');
+    
     const message = encodeURIComponent(
-      `Assalamu'alaikum Bapak/Ibu Wali dari ${nama},\n\nKami ingin menginformasikan bahwa terdapat tunggakan pembayaran sebesar ${formatCurrency(sisa)}.\n\nMohon segera melakukan pembayaran. Terima kasih.\n\nWassalamu'alaikum`
+      `Assalamu'alaikum Bapak/Ibu Wali dari ${siswa.nama},\n\n` +
+      `Kami ingin menginformasikan bahwa terdapat tunggakan pembayaran sebagai berikut:\n\n` +
+      `${itemsText}\n\n` +
+      `Total Tunggakan: ${formatCurrency(siswa.total_tunggakan)}\n\n` +
+      `Mohon segera melakukan pembayaran. Terima kasih.\n\nWassalamu'alaikum`
     );
     return `https://wa.me/${phone}?text=${message}`;
   };
@@ -91,55 +135,63 @@ export default function TunggakanPage() {
   const columns = [
     { 
       header: 'Siswa', 
-      cell: (item: Tunggakan) => (
+      cell: (item: SiswaTunggakan) => (
         <div>
-          <p className="font-medium">{item.siswa?.nama || '-'}</p>
-          <p className="text-xs text-muted-foreground">{item.siswa?.nis}</p>
+          <p className="font-medium">{item.nama}</p>
+          <p className="text-xs text-muted-foreground">{item.nis}</p>
         </div>
       )
     },
     { 
       header: 'Kelas', 
-      cell: (item: Tunggakan) => (
-        <Badge variant="outline">{item.siswa?.kelas?.nama_kelas || '-'}</Badge>
+      cell: (item: SiswaTunggakan) => (
+        <Badge variant="outline">{item.kelas}</Badge>
       )
     },
     { 
-      header: 'Tagihan', 
-      cell: (item: Tunggakan) => item.jenis_tagihan?.nama_tagihan || '-'
+      header: 'Rincian Tunggakan', 
+      cell: (item: SiswaTunggakan) => (
+        <div className="space-y-1">
+          {item.items.slice(0, 3).map((t, idx) => (
+            <div key={idx} className="text-sm">
+              <span className="font-medium">{t.jenis_tagihan}</span>
+              {t.bulan && t.tahun && (
+                <span className="text-muted-foreground"> ({bulanOptions[t.bulan - 1]} {t.tahun})</span>
+              )}
+              <span className="text-destructive ml-2">{formatCurrency(t.sisa)}</span>
+            </div>
+          ))}
+          {item.items.length > 3 && (
+            <p className="text-xs text-muted-foreground">+{item.items.length - 3} tagihan lainnya</p>
+          )}
+        </div>
+      )
     },
     { 
-      header: 'Periode', 
-      cell: (item: Tunggakan) => item.bulan && item.tahun ? (
-        <span>{bulanOptions[item.bulan - 1]} {item.tahun}</span>
-      ) : '-'
-    },
-    { 
-      header: 'Sisa Tunggakan', 
-      cell: (item: Tunggakan) => (
-        <span className="font-semibold text-destructive">
-          {formatCurrency(item.nominal - item.nominal_bayar)}
-        </span>
+      header: 'Total Tunggakan', 
+      cell: (item: SiswaTunggakan) => (
+        <div className="text-right">
+          <span className="font-bold text-lg text-destructive">
+            {formatCurrency(item.total_tunggakan)}
+          </span>
+          <p className="text-xs text-muted-foreground">{item.items.length} tagihan</p>
+        </div>
       )
     },
     { 
       header: 'Hubungi Ortu', 
-      cell: (item: Tunggakan) => item.siswa?.wa_ortu && (
+      cell: (item: SiswaTunggakan) => item.wa_ortu && (
         <a 
-          href={getWhatsAppUrl(
-            item.siswa!.wa_ortu!, 
-            item.siswa!.nama, 
-            item.nominal - item.nominal_bayar
-          )}
+          href={getWhatsAppUrl(item)}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 px-2 py-1 text-sm font-medium text-green-600 hover:text-green-700 border border-green-200 rounded-md hover:bg-green-50 transition-colors"
+          className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
         >
-          <Phone className="h-3 w-3" />
-          WA
+          <Phone className="h-4 w-4" />
+          Kirim WA
         </a>
       ),
-      className: 'w-24'
+      className: 'w-32'
     },
   ];
 
@@ -147,7 +199,7 @@ export default function TunggakanPage() {
     <div className="animate-fadeIn">
       <PageHeader 
         title="Tunggakan" 
-        description="Daftar siswa dengan tunggakan pembayaran"
+        description="Daftar siswa dengan tunggakan pembayaran (dikelompokkan per siswa)"
         icon={<AlertTriangle className="h-6 w-6" />}
       />
 
@@ -160,7 +212,7 @@ export default function TunggakanPage() {
         </CardHeader>
         <CardContent>
           <p className="text-3xl font-bold text-destructive">{formatCurrency(totalTunggakan)}</p>
-          <p className="text-sm text-muted-foreground mt-1">{tunggakan.length} tagihan belum lunas</p>
+          <p className="text-sm text-muted-foreground mt-1">{tunggakanData.length} siswa memiliki tunggakan</p>
         </CardContent>
       </Card>
 
