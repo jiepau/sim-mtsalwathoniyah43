@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { ImportDialog, ImportResult } from '@/components/import/ImportDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { mapDatabaseError } from '@/lib/error-mapper';
 
 interface GtkPtk {
   id: string;
@@ -171,7 +172,7 @@ export default function GtkPtkPage() {
       setDialogOpen(false);
       fetchData();
     } catch (error: any) {
-      toast.error(error.message || 'Gagal menyimpan data');
+      toast.error(mapDatabaseError(error));
     }
   };
 
@@ -184,7 +185,7 @@ export default function GtkPtkPage() {
       toast.success('Data berhasil dihapus');
       fetchData();
     } catch (error: any) {
-      toast.error(error.message || 'Gagal menghapus data');
+      toast.error(mapDatabaseError(error));
     }
   };
 

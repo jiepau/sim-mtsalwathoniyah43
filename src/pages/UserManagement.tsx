@@ -19,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDateTime, AppRole } from '@/lib/supabase-helpers';
+import { mapDatabaseError } from '@/lib/error-mapper';
 
 interface UserWithRoles {
   id: string;
@@ -167,7 +168,7 @@ export default function UserManagement() {
       fetchUsers();
     } catch (error: any) {
       console.error('Error updating user:', error);
-      toast.error(error.message || 'Gagal mengupdate user');
+      toast.error(mapDatabaseError(error));
     } finally {
       setEditLoading(false);
     }
@@ -198,7 +199,7 @@ export default function UserManagement() {
       fetchUsers();
     } catch (error: any) {
       console.error('Error deleting user:', error);
-      toast.error(error.message || 'Gagal menghapus user');
+      toast.error(mapDatabaseError(error));
     }
   };
 
@@ -258,7 +259,7 @@ export default function UserManagement() {
       fetchUsers();
     } catch (error: any) {
       console.error('Error creating user:', error);
-      toast.error(error.message || 'Gagal membuat user');
+      toast.error(mapDatabaseError(error));
     } finally {
       setCreateLoading(false);
     }

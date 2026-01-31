@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/supabase-helpers';
+import { mapDatabaseError } from '@/lib/error-mapper';
 
 interface JenisTagihan {
   id: string;
@@ -99,7 +100,7 @@ export default function JenisTagihanPage() {
       setDialogOpen(false);
       fetchData();
     } catch (error: any) {
-      toast.error(error.message || 'Gagal menyimpan data');
+      toast.error(mapDatabaseError(error));
     }
   };
 
@@ -112,7 +113,7 @@ export default function JenisTagihanPage() {
       toast.success('Jenis Tagihan berhasil dihapus');
       fetchData();
     } catch (error: any) {
-      toast.error(error.message || 'Gagal menghapus data');
+      toast.error(mapDatabaseError(error));
     }
   };
 
