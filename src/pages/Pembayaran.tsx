@@ -23,6 +23,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/supabase-helpers';
+import { mapDatabaseError } from '@/lib/error-mapper';
 
 interface Pembayaran {
   id: string;
@@ -148,7 +149,7 @@ export default function PembayaranPage() {
       setDialogOpen(false);
       fetchData();
     } catch (error: any) {
-      toast.error(error.message || 'Gagal menyimpan data');
+      toast.error(mapDatabaseError(error));
     }
   };
 
@@ -180,7 +181,7 @@ export default function PembayaranPage() {
       toast.success('Pembayaran berhasil diupdate');
       fetchData();
     } catch (error: any) {
-      toast.error(error.message || 'Gagal memproses pembayaran');
+      toast.error(mapDatabaseError(error));
     }
   };
 

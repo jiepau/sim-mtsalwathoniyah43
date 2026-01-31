@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { mapDatabaseError } from '@/lib/error-mapper';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -250,7 +251,7 @@ export default function NaikKelas() {
 
     } catch (error) {
       console.error('Error executing naik kelas:', error);
-      toast({ title: 'Error', description: 'Gagal memproses naik kelas', variant: 'destructive' });
+      toast({ title: 'Error', description: mapDatabaseError(error), variant: 'destructive' });
     } finally {
       setProcessing(false);
     }

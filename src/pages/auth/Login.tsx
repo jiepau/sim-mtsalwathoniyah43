@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Mail, Lock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { mapAuthError } from "@/lib/error-mapper";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -22,13 +23,13 @@ export default function Login() {
     try {
       const { error } = await signIn(email, password);
       if (error) {
-        toast.error("Gagal masuk: " + error.message);
+        toast.error(mapAuthError(error));
       } else {
         toast.success("Berhasil masuk!");
         navigate("/dashboard");
       }
     } catch (error) {
-      toast.error("Terjadi kesalahan");
+      toast.error("Terjadi kesalahan. Silakan coba lagi.");
     } finally {
       setLoading(false);
     }
@@ -84,10 +85,7 @@ export default function Login() {
               Masuk
             </Button>
             <p className="text-sm text-muted-foreground text-center">
-              Belum punya akun?{" "}
-              <Link to="/register" className="text-primary hover:underline font-medium">
-                Daftar
-              </Link>
+              Hubungi administrator untuk mendapatkan akun.
             </p>
           </CardFooter>
         </form>

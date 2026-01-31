@@ -9,7 +9,6 @@ import { MainLayout } from "@/components/layout/MainLayout";
 
 // Auth pages
 import Login from "@/pages/auth/Login";
-import Register from "@/pages/auth/Register";
 
 // Main pages
 import Dashboard from "@/pages/Dashboard";
@@ -40,7 +39,6 @@ const App = () => (
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
             
             {/* Protected routes */}
             <Route

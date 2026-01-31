@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/supabase-helpers';
+import { mapDatabaseError } from '@/lib/error-mapper';
 import {
   Dialog,
   DialogContent,
@@ -91,7 +92,7 @@ export default function AlumniPage() {
       }
     } catch (error) {
       console.error('Error fetching alumni:', error);
-      toast({ title: 'Error', description: 'Gagal memuat data alumni', variant: 'destructive' });
+      toast({ title: 'Error', description: mapDatabaseError(error), variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -125,7 +126,7 @@ export default function AlumniPage() {
       setTunggakanList(list);
     } catch (error) {
       console.error('Error fetching tunggakan:', error);
-      toast({ title: 'Error', description: 'Gagal memuat data tunggakan', variant: 'destructive' });
+      toast({ title: 'Error', description: mapDatabaseError(error), variant: 'destructive' });
     } finally {
       setLoadingTunggakan(false);
     }

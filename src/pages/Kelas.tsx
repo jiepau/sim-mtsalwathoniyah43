@@ -30,6 +30,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { mapDatabaseError } from '@/lib/error-mapper';
 
 interface Kelas {
   id: string;
@@ -228,7 +229,7 @@ export default function KelasPage() {
       setDialogOpen(false);
       fetchData();
     } catch (error: any) {
-      toast.error(error.message || 'Gagal menyimpan data');
+      toast.error(mapDatabaseError(error));
     }
   };
 
@@ -241,7 +242,7 @@ export default function KelasPage() {
       toast.success('Kelas berhasil dihapus');
       fetchData();
     } catch (error: any) {
-      toast.error(error.message || 'Gagal menghapus data');
+      toast.error(mapDatabaseError(error));
     }
   };
 

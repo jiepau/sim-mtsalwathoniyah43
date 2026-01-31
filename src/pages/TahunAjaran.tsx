@@ -23,6 +23,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { mapDatabaseError } from '@/lib/error-mapper';
 
 interface TahunAjaran {
   id: string;
@@ -114,7 +115,7 @@ export default function TahunAjaranPage() {
       setDialogOpen(false);
       fetchData();
     } catch (error: any) {
-      toast.error(error.message || 'Gagal menyimpan data');
+      toast.error(mapDatabaseError(error));
     }
   };
 
@@ -127,7 +128,7 @@ export default function TahunAjaranPage() {
       toast.success('Tahun Ajaran berhasil dihapus');
       fetchData();
     } catch (error: any) {
-      toast.error(error.message || 'Gagal menghapus data');
+      toast.error(mapDatabaseError(error));
     }
   };
 
@@ -149,7 +150,7 @@ export default function TahunAjaranPage() {
       toast.success(`${ta.nama_ta} ${ta.semester === 'genap' ? 'Genap' : 'Ganjil'} diaktifkan`);
       fetchData();
     } catch (error: any) {
-      toast.error(error.message || 'Gagal mengubah status');
+      toast.error(mapDatabaseError(error));
     }
   };
 

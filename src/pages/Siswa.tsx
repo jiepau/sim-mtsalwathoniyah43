@@ -24,6 +24,7 @@ import {
 import { ImportDialog, ImportResult } from '@/components/import/ImportDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { mapDatabaseError } from '@/lib/error-mapper';
 
 interface Siswa {
   id: string;
@@ -201,7 +202,7 @@ export default function SiswaPage() {
       setDialogOpen(false);
       fetchData();
     } catch (error: any) {
-      toast.error(error.message || 'Gagal menyimpan data');
+      toast.error(mapDatabaseError(error));
     }
   };
 
@@ -214,7 +215,7 @@ export default function SiswaPage() {
       toast.success('Siswa berhasil dihapus');
       fetchData();
     } catch (error: any) {
-      toast.error(error.message || 'Gagal menghapus data');
+      toast.error(mapDatabaseError(error));
     }
   };
 
