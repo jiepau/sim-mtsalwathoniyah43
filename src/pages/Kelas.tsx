@@ -36,6 +36,14 @@ interface Kelas {
   nama_kelas: string;
   tingkat: number;
   siswa_count?: number;
+  wali_kelas_id: string | null;
+  wali_kelas?: GtkPtk | null;
+}
+
+interface GtkPtk {
+  id: string;
+  nama: string;
+  jabatan: string | null;
 }
 
 interface TahunAjaran {
@@ -62,6 +70,7 @@ interface TASummary {
 export default function KelasPage() {
   const navigate = useNavigate();
   const [kelas, setKelas] = useState<Kelas[]>([]);
+  const [gtkList, setGtkList] = useState<GtkPtk[]>([]);
   const [tahunAjaranList, setTahunAjaranList] = useState<TahunAjaran[]>([]);
   const [siswaList, setSiswaList] = useState<Siswa[]>([]);
   const [selectedTA, setSelectedTA] = useState<string>('all');
@@ -71,6 +80,7 @@ export default function KelasPage() {
   const [formData, setFormData] = useState({
     nama_kelas: '',
     tingkat: '7',
+    wali_kelas_id: '',
   });
 
   useEffect(() => {
@@ -90,19 +100,22 @@ export default function KelasPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [kelasRes, taRes, siswaRes] = await Promise.all([
-        supabase.from('kelas').select('*').order('tingkat').order('nama_kelas'),
+      const [kelasRes, taRes, siswaRes, gtkRes] = await Promise.all([
+        supabase.from('kelas').select('*, wali_kelas:gtk_ptk!wali_kelas_id(id, nama, jabatan)').order('tingkat').order('nama_kelas'),
         supabase.from('tahun_ajaran').select('*').order('nama_ta', { ascending: false }),
         supabase.from('siswa').select('id, kelas_id, ta_id'),
+        supabase.from('gtk_ptk').select('id, nama, jabatan').order('nama'),
       ]);
 
       if (kelasRes.error) throw kelasRes.error;
       if (taRes.error) throw taRes.error;
       if (siswaRes.error) throw siswaRes.error;
+      if (gtkRes.error) throw gtkRes.error;
 
       setKelas(kelasRes.data || []);
       setTahunAjaranList(taRes.data || []);
       setSiswaList(siswaRes.data || []);
+      setGtkList(gtkRes.data || []);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Gagal memuat data');
@@ -180,10 +193,11 @@ export default function KelasPage() {
       setFormData({
         nama_kelas: kelasData.nama_kelas,
         tingkat: String(kelasData.tingkat),
+        wali_kelas_id: kelasData.wali_kelas_id || '',
       });
     } else {
       setEditingKelas(null);
-      setFormData({ nama_kelas: '', tingkat: '7' });
+      setFormData({ nama_kelas: '', tingkat: '7', wali_kelas_id: '' });
     }
     setDialogOpen(true);
   };
@@ -195,6 +209,7 @@ export default function KelasPage() {
       const payload = {
         nama_kelas: formData.nama_kelas,
         tingkat: parseInt(formData.tingkat),
+        wali_kelas_id: formData.wali_kelas_id || null,
       };
 
       if (editingKelas) {
@@ -249,6 +264,21 @@ export default function KelasPage() {
       header: 'Tingkat', 
       cell: (item: Kelas) => (
         <Badge variant="secondary">Kelas {item.tingkat}</Badge>
+      )
+    },
+    { 
+      header: 'Wali Kelas', 
+      cell: (item: Kelas) => (
+        item.wali_kelas ? (
+          <div>
+            <span className="font-medium">{item.wali_kelas.nama}</span>
+            {item.wali_kelas.jabatan && (
+              <span className="text-xs text-muted-foreground block">{item.wali_kelas.jabatan}</span>
+            )}
+          </div>
+        ) : (
+          <span className="text-muted-foreground">-</span>
+        )
       )
     },
     { 
@@ -487,6 +517,22 @@ export default function KelasPage() {
                   <SelectItem value="7">Kelas VII</SelectItem>
                   <SelectItem value="8">Kelas VIII</SelectItem>
                   <SelectItem value="9">Kelas IX</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="wali_kelas">Wali Kelas</Label>
+              <Select value={formData.wali_kelas_id} onValueChange={(v) => setFormData({ ...formData, wali_kelas_id: v })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih Wali Kelas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Tidak ada</SelectItem>
+                  {gtkList.map(gtk => (
+                    <SelectItem key={gtk.id} value={gtk.id}>
+                      {gtk.nama} {gtk.jabatan && `(${gtk.jabatan})`}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
