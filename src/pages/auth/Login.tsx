@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Mail, Lock, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Building2, Mail, Lock, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
@@ -22,13 +22,13 @@ export default function Login() {
     try {
       const { error } = await signIn(email, password);
       if (error) {
-        toast.error('Gagal masuk: ' + error.message);
+        toast.error("Gagal masuk: " + error.message);
       } else {
-        toast.success('Berhasil masuk!');
-        navigate('/dashboard');
+        toast.success("Berhasil masuk!");
+        navigate("/dashboard");
       }
     } catch (error) {
-      toast.error('Terjadi kesalahan');
+      toast.error("Terjadi kesalahan");
     } finally {
       setLoading(false);
     }
@@ -42,9 +42,7 @@ export default function Login() {
             <Building2 className="h-9 w-9 text-primary-foreground" />
           </div>
           <CardTitle className="text-2xl font-bold">Masuk</CardTitle>
-          <CardDescription>
-            Sistem Informasi Manajemen Madrasah
-          </CardDescription>
+          <CardDescription>Sistem Informasi Manajemen Madrasah MTS AL WATHONIYAH 43</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -85,7 +83,7 @@ export default function Login() {
               Masuk
             </Button>
             <p className="text-sm text-muted-foreground text-center">
-              Belum punya akun?{' '}
+              Belum punya akun?{" "}
               <Link to="/register" className="text-primary hover:underline font-medium">
                 Daftar
               </Link>
