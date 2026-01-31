@@ -1,105 +1,114 @@
 
+# Perbaikan Definitif Bug Login "Muter-Muter"
 
-# Perbaikan Bug Login "Muter-Muter"
+## Diagnosa Final
 
-## Diagnosa Masalah
+Setelah investigasi mendalam dengan browser debugging, saya menemukan:
 
-Setelah investigasi mendalam, saya menemukan **race condition** pada alur autentikasi yang menyebabkan halaman login "muter-muter" (stuck di loading):
+1. **Query ke `user_roles` TIDAK PERNAH terkirim ke server** - Tidak ada network request dan tidak ada postgres log
+2. **`fetchRoles()` stuck tanpa timeout** - Promise tidak pernah resolve atau reject
+3. **Loading state tetap `true` selamanya** - Karena rolesLoading tidak pernah selesai
 
-### Alur yang Bermasalah
+### Alur Masalah
 
 ```text
-Login.tsx                          AuthContext.tsx
-    |                                    |
-    |-- signIn() ----------------------->|
-    |                                    |-- setLoading(false)
-    |<-- return (no error) --------------|
-    |                                    |
-    |-- navigate("/dashboard") --------->|
-    |                                    |-- onAuthStateChange dipanggil
-    |                                    |-- setLoading(true) IMPLISIT dari fetchRoles
-    |                                    |
-    |                              ProtectedRoute
-    |                                    |
-    |                                    |-- loading = true (dari rolesLoading)
-    |                                    |-- tampilkan spinner
-    |                                    |
-    |<-- useEffect navigate() ---------- |-- loading = false
-    |                                    |-- user ada
-    |-- navigate("/dashboard") lagi ---->|
-    |                                    |
-    [LOOP TERCIPTA]
+[Browser Load]
+     |
+     v
+initializeAuth() --> getSession() OK
+     |
+     v
+fetchRoles() --> supabase.from('user_roles').select() 
+     |
+     [STUCK - TIDAK TERKIRIM KE SERVER]
+     |
+     v
+authLoading tetap true --> ProtectedRoute spinner --> MUTER-MUTER
 ```
-
-### Akar Masalah
-
-1. **Double Navigation**: `handleSubmit` memanggil `navigate()` langsung, sementara `useEffect` di Login.tsx juga memanggil `navigate()` saat user berubah.
-
-2. **Inconsistent Loading State**: Ada `loading` dan `rolesLoading` yang tidak disinkronisasi. ProtectedRoute hanya cek `loading` tapi tidak cek apakah roles sudah selesai diambil.
-
-3. **Race Condition di AuthContext**: 
-   - `signIn()` set `setLoading(false)` 
-   - `onAuthStateChange` juga akan dipanggil dan set ulang state
-   - Keduanya memanggil `fetchRoles()` yang bisa tumpang tindih
 
 ## Solusi
 
-### 1. Perbaiki AuthContext.tsx
+### Pendekatan: Defensive Coding dengan Timeout
 
-- Gunakan **satu sumber kebenaran** untuk loading state
-- Gabungkan `loading` dengan pengecekan `rolesLoading` jika user ada
-- Cegah `onAuthStateChange` trigger ulang jika `signIn()` sudah handle
+Tambahkan timeout pada `fetchRoles()` agar jika query stuck, aplikasi tetap bisa berjalan dengan roles kosong (graceful degradation).
 
-```typescript
-// Perubahan utama:
-// - Tambah flag untuk mencegah double trigger
-// - Loading = true sampai user DAN roles siap
-// - signIn() tidak perlu manual set state karena onAuthStateChange akan handle
-```
+### Perubahan File
 
-### 2. Perbaiki Login.tsx
-
-- Hapus navigasi langsung di `handleSubmit` 
-- Biarkan `useEffect` yang handle navigasi (single source of navigation)
-- Ini mencegah double navigation
+#### 1. `src/contexts/AuthContext.tsx`
 
 ```typescript
-// handleSubmit hanya fokus pada login, tidak navigate
-// useEffect akan navigate ketika user sudah ada dan authLoading false
+// Tambah helper function dengan timeout
+const fetchWithTimeout = async (promise, timeoutMs) => {
+  let timeoutId;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error('Timeout')), timeoutMs);
+  });
+  
+  try {
+    const result = await Promise.race([promise, timeoutPromise]);
+    clearTimeout(timeoutId);
+    return result;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+};
+
+// Modifikasi fetchRoles untuk menggunakan timeout
+const fetchRoles = async (userId) => {
+  setRolesLoading(true);
+  try {
+    const userRoles = await fetchWithTimeout(
+      getUserRoles(userId),
+      5000 // 5 detik timeout
+    );
+    setRoles(userRoles);
+  } catch (error) {
+    console.error('Error/timeout fetching roles:', error);
+    setRoles([]); // Graceful degradation
+  } finally {
+    setRolesLoading(false);
+  }
+};
 ```
 
-### 3. Perbaiki ProtectedRoute.tsx
+#### 2. `src/lib/supabase-helpers.ts`
 
-- Tambah pengecekan roles selain loading
-- Pastikan tidak redirect ke login saat roles masih loading
+```typescript
+// Tambah logging untuk debug
+export async function getUserRoles(userId) {
+  console.log('getUserRoles: Starting query for', userId);
+  
+  const { data, error } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', userId);
+  
+  console.log('getUserRoles: Query completed', { data, error });
+  
+  if (error) throw error;
+  return data?.map(r => r.role) || [];
+}
+```
+
+### Mengapa Ini Lebih Baik?
+
+1. **Tidak ada infinite loading** - Timeout memastikan loading selalu selesai
+2. **Graceful degradation** - Jika roles gagal diambil, user tetap bisa masuk (dengan akses terbatas)
+3. **Tidak perlu rebuild besar** - Perubahan minimal dan targeted
+4. **Debugging lebih mudah** - Console log membantu identifikasi masalah di masa depan
+
+## Investigasi Lanjutan
+
+Setelah fix ini berjalan, perlu investigasi kenapa Supabase client tidak mengirim query:
+- Kemungkinan bug di Supabase JS client dengan timing tertentu
+- Kemungkinan issue dengan token refresh internal
+- Kemungkinan race condition di Supabase client
 
 ## Langkah Implementasi
 
-### Langkah 1: Update AuthContext.tsx
-- Gabungkan loading state dengan rolesLoading
-- Expose combined loading ke consumer
-- Cegah race condition dengan proper state management
-
-### Langkah 2: Update Login.tsx  
-- Hapus `navigate()` dari handleSubmit
-- Biarkan useEffect handle semua navigasi
-
-### Langkah 3: Update ProtectedRoute.tsx
-- Tidak perlu perubahan besar jika AuthContext sudah benar
-
-## Kenapa Ini Terjadi Sekarang?
-
-Ini **bukan** langsung disebabkan oleh penambahan fitur User Management. Masalah ini sudah ada tapi menjadi lebih terlihat karena:
-- Password reset menyebabkan session lama invalid
-- Re-login memicu race condition yang sebelumnya "kebetulan" tidak terjadi
-- Timing yang sedikit berbeda dalam network response
-
-## Detail Teknis
-
-Perubahan akan dilakukan di file-file berikut:
-
-| File | Perubahan |
-|------|-----------|
-| `src/contexts/AuthContext.tsx` | Perbaiki loading state management, cegah double trigger |
-| `src/pages/auth/Login.tsx` | Hapus navigate di handleSubmit, serahkan ke useEffect |
-
+| Langkah | File | Aksi |
+|---------|------|------|
+| 1 | `src/contexts/AuthContext.tsx` | Tambah timeout wrapper di fetchRoles |
+| 2 | `src/lib/supabase-helpers.ts` | Tambah console.log untuk debug |
+| 3 | Test | Coba login dan verifikasi tidak muter-muter |
