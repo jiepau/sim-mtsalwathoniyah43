@@ -11,7 +11,7 @@ export function Footer() {
           <div className="flex items-center gap-2">
             <Building2 className="h-4 w-4 text-primary" />
             <span>
-              © {currentYear} <span className="font-medium text-foreground">MTs AL WATHONIYAH 43</span>
+              <span className="font-medium text-foreground">© 2025 MTs AL WATHONIYAH 43</span>
             </span>
           </div>
 
