@@ -23,6 +23,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [rolesLoading, setRolesLoading] = useState(true);
+
+  const fetchRoles = async (userId: string) => {
+    setRolesLoading(true);
+    try {
+      const userRoles = await getUserRoles(userId);
+      setRoles(userRoles);
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+      setRoles([]);
+    } finally {
+      setRolesLoading(false);
+    }
+  };
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -32,18 +46,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch roles after auth state change
-          setTimeout(async () => {
-            try {
-              const userRoles = await getUserRoles(session.user.id);
-              setRoles(userRoles);
-            } catch (error) {
-              console.error('Error fetching roles:', error);
-              setRoles([]);
-            }
-          }, 0);
+          // Fetch roles after auth state change - await properly
+          await fetchRoles(session.user.id);
         } else {
           setRoles([]);
+          setRolesLoading(false);
         }
         
         setLoading(false);
@@ -51,18 +58,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     // THEN get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        getUserRoles(session.user.id)
-          .then(setRoles)
-          .catch(() => setRoles([]))
-          .finally(() => setLoading(false));
+        await fetchRoles(session.user.id);
       } else {
-        setLoading(false);
+        setRolesLoading(false);
       }
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();

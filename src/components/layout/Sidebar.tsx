@@ -61,7 +61,7 @@ const allMenuItems: MenuItem[] = [
 
 export function Sidebar() {
   const location = useLocation();
-  const { signOut, hasRole, isAdmin } = useAuth();
+  const { signOut, hasRole, roles } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>(['Keuangan']);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -79,6 +79,7 @@ export function Sidebar() {
     }));
   };
 
+  // Recalculate when roles change
   const menuItems = filterMenuItems(allMenuItems);
 
   const toggleExpand = (title: string) => {
