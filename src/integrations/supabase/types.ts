@@ -64,6 +64,7 @@ export type Database = {
           id: string
           jabatan: string | null
           lulusan: string | null
+          mapel: string | null
           nama: string
           nik: string | null
           nip: string | null
@@ -78,6 +79,7 @@ export type Database = {
           id?: string
           jabatan?: string | null
           lulusan?: string | null
+          mapel?: string | null
           nama: string
           nik?: string | null
           nip?: string | null
@@ -92,6 +94,7 @@ export type Database = {
           id?: string
           jabatan?: string | null
           lulusan?: string | null
+          mapel?: string | null
           nama?: string
           nik?: string | null
           nip?: string | null
@@ -131,20 +134,31 @@ export type Database = {
           id: string
           nama_kelas: string
           tingkat: number
+          wali_kelas_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           nama_kelas: string
           tingkat?: number
+          wali_kelas_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           nama_kelas?: string
           tingkat?: number
+          wali_kelas_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "kelas_wali_kelas_id_fkey"
+            columns: ["wali_kelas_id"]
+            isOneToOne: false
+            referencedRelation: "gtk_ptk"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pembayaran: {
         Row: {

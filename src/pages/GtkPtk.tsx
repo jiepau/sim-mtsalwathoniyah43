@@ -28,6 +28,7 @@ interface GtkPtk {
   nik: string | null;
   lulusan: string | null;
   email: string | null;
+  mapel: string | null;
 }
 
 export default function GtkPtkPage() {
@@ -47,13 +48,14 @@ export default function GtkPtkPage() {
     nik: '',
     lulusan: '',
     email: '',
+    mapel: '',
   });
 
   // Import configuration
-  const importHeaders = ['NUPTK', 'NIP', 'NIK', 'Nama', 'Jabatan', 'Lulusan', 'No HP', 'Email', 'Alamat'];
+  const importHeaders = ['NUPTK', 'NIP', 'NIK', 'Nama', 'Jabatan', 'Lulusan', 'Mapel', 'No HP', 'Email', 'Alamat'];
   const importSampleData = [
-    ['1234567890123456', '198501012010011001', '3201010101010001', 'Ahmad Hidayat, S.Pd', 'Guru', 'S1 Pendidikan', '081234567890', 'ahmad@email.com', 'Jl. Merdeka No. 1'],
-    ['1234567890123457', '', '3201010101010002', 'Siti Rahayu, S.Pd', 'TU', 'S1 Administrasi', '081234567891', 'siti@email.com', 'Jl. Sudirman No. 2'],
+    ['1234567890123456', '198501012010011001', '3201010101010001', 'Ahmad Hidayat, S.Pd', 'Guru', 'S1 Pendidikan', 'Matematika, IPA', '081234567890', 'ahmad@email.com', 'Jl. Merdeka No. 1'],
+    ['1234567890123457', '', '3201010101010002', 'Siti Rahayu, S.Pd', 'Guru', 'S1 Bahasa', 'Bahasa Indonesia', '081234567891', 'siti@email.com', 'Jl. Sudirman No. 2'],
   ];
 
   const handleImport = async (data: Record<string, string>[]): Promise<ImportResult> => {
@@ -75,6 +77,7 @@ export default function GtkPtkPage() {
           nik: row['NIK']?.trim() || null,
           jabatan: row['Jabatan']?.trim() || null,
           lulusan: row['Lulusan']?.trim() || null,
+          mapel: row['Mapel']?.trim() || null,
           no_hp: row['No HP']?.trim() || null,
           email: row['Email']?.trim() || null,
           alamat: row['Alamat']?.trim() || null,
@@ -126,10 +129,11 @@ export default function GtkPtkPage() {
         nik: gtk.nik || '',
         lulusan: gtk.lulusan || '',
         email: gtk.email || '',
+        mapel: gtk.mapel || '',
       });
     } else {
       setEditingGtk(null);
-      setFormData({ nip: '', nama: '', jabatan: '', no_hp: '', alamat: '', nuptk: '', nik: '', lulusan: '', email: '' });
+      setFormData({ nip: '', nama: '', jabatan: '', no_hp: '', alamat: '', nuptk: '', nik: '', lulusan: '', email: '', mapel: '' });
     }
     setDialogOpen(true);
   };
@@ -148,6 +152,7 @@ export default function GtkPtkPage() {
         nik: formData.nik || null,
         lulusan: formData.lulusan || null,
         email: formData.email || null,
+        mapel: formData.mapel || null,
       };
 
       if (editingGtk) {
@@ -211,6 +216,10 @@ export default function GtkPtkPage() {
     { 
       header: 'Lulusan', 
       cell: (item: GtkPtk) => item.lulusan || '-'
+    },
+    { 
+      header: 'Mapel Diampu', 
+      cell: (item: GtkPtk) => item.mapel || '-'
     },
     { 
       header: 'Kontak', 
@@ -379,6 +388,15 @@ export default function GtkPtkPage() {
                   placeholder="email@domain.com"
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="mapel">Mapel yang Diampu</Label>
+              <Input
+                id="mapel"
+                value={formData.mapel}
+                onChange={(e) => setFormData({ ...formData, mapel: e.target.value })}
+                placeholder="Contoh: Matematika, IPA"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="alamat">Alamat</Label>
