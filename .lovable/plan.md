@@ -1,49 +1,105 @@
 
 
-# Reset Password Admin Account
+# Perbaikan Bug Login "Muter-Muter"
 
-## Situasi
-Akun admin `achmadruz@gmail.com` tidak bisa login karena credential invalid. Karena ini adalah satu-satunya admin, kita perlu cara untuk reset password tanpa perlu login terlebih dahulu.
+## Diagnosa Masalah
+
+Setelah investigasi mendalam, saya menemukan **race condition** pada alur autentikasi yang menyebabkan halaman login "muter-muter" (stuck di loading):
+
+### Alur yang Bermasalah
+
+```text
+Login.tsx                          AuthContext.tsx
+    |                                    |
+    |-- signIn() ----------------------->|
+    |                                    |-- setLoading(false)
+    |<-- return (no error) --------------|
+    |                                    |
+    |-- navigate("/dashboard") --------->|
+    |                                    |-- onAuthStateChange dipanggil
+    |                                    |-- setLoading(true) IMPLISIT dari fetchRoles
+    |                                    |
+    |                              ProtectedRoute
+    |                                    |
+    |                                    |-- loading = true (dari rolesLoading)
+    |                                    |-- tampilkan spinner
+    |                                    |
+    |<-- useEffect navigate() ---------- |-- loading = false
+    |                                    |-- user ada
+    |-- navigate("/dashboard") lagi ---->|
+    |                                    |
+    [LOOP TERCIPTA]
+```
+
+### Akar Masalah
+
+1. **Double Navigation**: `handleSubmit` memanggil `navigate()` langsung, sementara `useEffect` di Login.tsx juga memanggil `navigate()` saat user berubah.
+
+2. **Inconsistent Loading State**: Ada `loading` dan `rolesLoading` yang tidak disinkronisasi. ProtectedRoute hanya cek `loading` tapi tidak cek apakah roles sudah selesai diambil.
+
+3. **Race Condition di AuthContext**: 
+   - `signIn()` set `setLoading(false)` 
+   - `onAuthStateChange` juga akan dipanggil dan set ulang state
+   - Keduanya memanggil `fetchRoles()` yang bisa tumpang tindih
 
 ## Solusi
-Membuat edge function baru `admin-password-reset` yang dapat mereset password menggunakan secret key khusus (bukan auth token).
+
+### 1. Perbaiki AuthContext.tsx
+
+- Gunakan **satu sumber kebenaran** untuk loading state
+- Gabungkan `loading` dengan pengecekan `rolesLoading` jika user ada
+- Cegah `onAuthStateChange` trigger ulang jika `signIn()` sudah handle
+
+```typescript
+// Perubahan utama:
+// - Tambah flag untuk mencegah double trigger
+// - Loading = true sampai user DAN roles siap
+// - signIn() tidak perlu manual set state karena onAuthStateChange akan handle
+```
+
+### 2. Perbaiki Login.tsx
+
+- Hapus navigasi langsung di `handleSubmit` 
+- Biarkan `useEffect` yang handle navigasi (single source of navigation)
+- Ini mencegah double navigation
+
+```typescript
+// handleSubmit hanya fokus pada login, tidak navigate
+// useEffect akan navigate ketika user sudah ada dan authLoading false
+```
+
+### 3. Perbaiki ProtectedRoute.tsx
+
+- Tambah pengecekan roles selain loading
+- Pastikan tidak redirect ke login saat roles masih loading
 
 ## Langkah Implementasi
 
-### 1. Buat Edge Function Baru
-**File:** `supabase/functions/admin-password-reset/index.ts`
+### Langkah 1: Update AuthContext.tsx
+- Gabungkan loading state dengan rolesLoading
+- Expose combined loading ke consumer
+- Cegah race condition dengan proper state management
 
-Function ini akan:
-- Menerima email, password baru, dan secret key
-- Memvalidasi secret key yang cocok dengan environment variable
-- Menggunakan Supabase Admin API untuk update password user
-- Menghapus function setelah digunakan (one-time use)
+### Langkah 2: Update Login.tsx  
+- Hapus `navigate()` dari handleSubmit
+- Biarkan useEffect handle semua navigasi
 
-### 2. Set Secret Key
-Menambahkan secret `ADMIN_RESET_SECRET` sebagai kunci untuk mengakses function ini.
+### Langkah 3: Update ProtectedRoute.tsx
+- Tidak perlu perubahan besar jika AuthContext sudah benar
 
-### 3. Eksekusi Reset
-Memanggil function untuk reset password.
+## Kenapa Ini Terjadi Sekarang?
 
-### 4. Cleanup
-Setelah berhasil login, hapus edge function ini untuk keamanan.
-
----
+Ini **bukan** langsung disebabkan oleh penambahan fitur User Management. Masalah ini sudah ada tapi menjadi lebih terlihat karena:
+- Password reset menyebabkan session lama invalid
+- Re-login memicu race condition yang sebelumnya "kebetulan" tidak terjadi
+- Timing yang sedikit berbeda dalam network response
 
 ## Detail Teknis
 
-### Edge Function Code
-```typescript
-// Memvalidasi secret key dari request
-// Menggunakan supabaseAdmin.auth.admin.updateUserById()
-// untuk update password berdasarkan email
-```
+Perubahan akan dilakukan di file-file berikut:
 
-### Keamanan
-- Function dilindungi dengan secret key
-- Akan dihapus setelah password berhasil direset
-- Hanya bisa digunakan untuk akun yang sudah ada
-
-### Password Baru
-Setelah diimplementasikan, password baru akan di-set dan Anda bisa langsung login.
+| File | Perubahan |
+|------|-----------|
+| `src/contexts/AuthContext.tsx` | Perbaiki loading state management, cegah double trigger |
+| `src/pages/auth/Login.tsx` | Hapus navigate di handleSubmit, serahkan ke useEffect |
 
