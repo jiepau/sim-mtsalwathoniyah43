@@ -1,79 +1,49 @@
 
-# Perbaikan Tombol "Lihat Daftar Siswa" di Halaman Naik Kelas
 
-## Analisis Masalah
+# Reset Password Admin Account
 
-Setelah memeriksa kode di `src/pages/NaikKelas.tsx`, saya menemukan bahwa tombol "Lihat Daftar Siswa" memiliki kondisi disabled:
+## Situasi
+Akun admin `achmadruz@gmail.com` tidak bisa login karena credential invalid. Karena ini adalah satu-satunya admin, kita perlu cara untuk reset password tanpa perlu login terlebih dahulu.
 
-```jsx
-<Button onClick={generatePreview} disabled={!tahunAjaranLama || !tahunAjaranBaru}>
-  Lihat Daftar Siswa
-</Button>
+## Solusi
+Membuat edge function baru `admin-password-reset` yang dapat mereset password menggunakan secret key khusus (bukan auth token).
+
+## Langkah Implementasi
+
+### 1. Buat Edge Function Baru
+**File:** `supabase/functions/admin-password-reset/index.ts`
+
+Function ini akan:
+- Menerima email, password baru, dan secret key
+- Memvalidasi secret key yang cocok dengan environment variable
+- Menggunakan Supabase Admin API untuk update password user
+- Menghapus function setelah digunakan (one-time use)
+
+### 2. Set Secret Key
+Menambahkan secret `ADMIN_RESET_SECRET` sebagai kunci untuk mengakses function ini.
+
+### 3. Eksekusi Reset
+Memanggil function untuk reset password.
+
+### 4. Cleanup
+Setelah berhasil login, hapus edge function ini untuk keamanan.
+
+---
+
+## Detail Teknis
+
+### Edge Function Code
+```typescript
+// Memvalidasi secret key dari request
+// Menggunakan supabaseAdmin.auth.admin.updateUserById()
+// untuk update password berdasarkan email
 ```
 
-**Penyebab tombol tidak bisa diklik:**
-- Tombol akan disabled jika **Tahun Ajaran Lama** atau **Tahun Ajaran Baru** belum dipilih
-- Meskipun TA Lama otomatis terisi dari TA aktif, TA Baru harus dipilih manual
+### Keamanan
+- Function dilindungi dengan secret key
+- Akan dihapus setelah password berhasil direset
+- Hanya bisa digunakan untuk akun yang sudah ada
 
-**Kemungkinan masalah lain:**
-- Select component mungkin tidak merespons klik karena ada overlay atau z-index issue
-- Atau ada error saat fetch data sehingga `tahunAjaranList` kosong
+### Password Baru
+Setelah diimplementasikan, password baru akan di-set dan Anda bisa langsung login.
 
----
-
-## Solusi yang Akan Diterapkan
-
-### 1. Tambahkan Indikator Visual yang Lebih Jelas
-Menambahkan pesan helper yang menunjukkan apa yang harus dilakukan sebelum tombol bisa diklik.
-
-### 2. Debugging State
-Menambahkan console.log sementara untuk melihat apakah state ter-update dengan benar.
-
-### 3. Pastikan Select Berfungsi
-Memastikan Select component dapat menerima klik dengan benar.
-
----
-
-## Perubahan Kode
-
-### File: `src/pages/NaikKelas.tsx`
-
-**Perubahan 1: Tambahkan pesan helper di bawah tombol**
-```jsx
-<Button onClick={generatePreview} disabled={!tahunAjaranLama || !tahunAjaranBaru}>
-  Lihat Daftar Siswa
-</Button>
-
-{/* Tambahan: Pesan helper */}
-{(!tahunAjaranLama || !tahunAjaranBaru) && (
-  <p className="text-sm text-muted-foreground">
-    * Pilih kedua tahun ajaran terlebih dahulu untuk melihat daftar siswa
-  </p>
-)}
-```
-
-**Perubahan 2: Tambahkan indikator wajib pada label**
-```jsx
-<Label>Tahun Ajaran Lama (Asal) <span className="text-destructive">*</span></Label>
-...
-<Label>Tahun Ajaran Baru (Tujuan) <span className="text-destructive">*</span></Label>
-```
-
-**Perubahan 3: Menampilkan badge status pada dropdown**
-Menunjukkan secara visual apakah field sudah terisi atau belum.
-
----
-
-## Ringkasan Perubahan
-
-| File | Perubahan |
-|------|-----------|
-| `src/pages/NaikKelas.tsx` | Tambah pesan helper dan indikator visual untuk membantu user memahami mengapa tombol disabled |
-
----
-
-## Catatan Teknis
-
-- Tombol sengaja di-disable untuk mencegah error jika salah satu TA belum dipilih
-- Dengan menambahkan pesan helper, user akan lebih mudah memahami apa yang harus dilakukan
-- Tidak ada bug - ini adalah UX improvement untuk kejelasan
