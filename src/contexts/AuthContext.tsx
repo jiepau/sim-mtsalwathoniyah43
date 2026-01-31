@@ -28,16 +28,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Flag to prevent double handling from signIn and onAuthStateChange
   const isSigningIn = useRef(false);
 
+  // Helper to add timeout to any promise
+  const fetchWithTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+    let timeoutId: NodeJS.Timeout;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error('Timeout')), timeoutMs);
+    });
+    
+    try {
+      const result = await Promise.race([promise, timeoutPromise]);
+      clearTimeout(timeoutId!);
+      return result;
+    } catch (error) {
+      clearTimeout(timeoutId!);
+      throw error;
+    }
+  };
+
   const fetchRoles = async (userId: string) => {
     console.log('fetchRoles called with userId:', userId);
     setRolesLoading(true);
     try {
-      const userRoles = await getUserRoles(userId);
+      const userRoles = await fetchWithTimeout(getUserRoles(userId), 5000);
       console.log('fetchRoles result:', userRoles);
       setRoles(userRoles);
     } catch (error) {
-      console.error('Error fetching roles:', error);
-      setRoles([]);
+      console.error('Error/timeout fetching roles:', error);
+      setRoles([]); // Graceful degradation - user can still login with no roles
     } finally {
       setRolesLoading(false);
     }

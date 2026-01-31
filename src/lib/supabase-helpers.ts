@@ -19,10 +19,14 @@ export async function getUserProfile(userId: string) {
 }
 
 export async function getUserRoles(userId: string): Promise<AppRole[]> {
+  console.log('getUserRoles: Starting query for', userId);
+  
   const { data, error } = await supabase
     .from('user_roles')
     .select('role')
     .eq('user_id', userId);
+  
+  console.log('getUserRoles: Query completed', { data, error });
   
   if (error) throw error;
   return data?.map(r => r.role as AppRole) || [];
