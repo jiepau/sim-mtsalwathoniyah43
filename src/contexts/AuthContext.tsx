@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { AppRole, getUserRoles } from '@/lib/supabase-helpers';
@@ -22,8 +22,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [rolesLoading, setRolesLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [rolesLoading, setRolesLoading] = useState(false);
+  
+  // Flag to prevent double handling from signIn and onAuthStateChange
+  const isSigningIn = useRef(false);
 
   const fetchRoles = async (userId: string) => {
     console.log('fetchRoles called with userId:', userId);
@@ -41,60 +44,89 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+    let mounted = true;
+
+    // Get initial session first
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch roles after auth state change - await properly
+          await fetchRoles(session.user.id);
+        }
+      } catch (error) {
+        console.error('Error getting session:', error);
+      } finally {
+        if (mounted) {
+          setAuthLoading(false);
+        }
+      }
+    };
+
+    initializeAuth();
+
+    // Set up auth state listener for subsequent changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return;
+        
+        // Skip if we're in the middle of signIn (it will handle state itself)
+        if (isSigningIn.current) {
+          console.log('Skipping onAuthStateChange - signIn in progress');
+          return;
+        }
+        
+        console.log('onAuthStateChange:', event);
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
           await fetchRoles(session.user.id);
         } else {
           setRoles([]);
-          setRolesLoading(false);
         }
         
-        setLoading(false);
+        setAuthLoading(false);
       }
     );
 
-    // THEN get initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        await fetchRoles(session.user.id);
-      } else {
-        setRolesLoading(false);
-      }
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
     console.log('signIn called');
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    isSigningIn.current = true;
     
-    console.log('signIn result:', { error, hasUser: !!data.user });
-    
-    // If login successful, manually trigger role fetch since onAuthStateChange might not fire
-    if (!error && data.user) {
-      console.log('Setting user and fetching roles...');
-      setUser(data.user);
-      setSession(data.session);
-      await fetchRoles(data.user.id);
-      setLoading(false);
-      console.log('Login complete, loading set to false');
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      console.log('signIn result:', { error, hasUser: !!data.user });
+      
+      if (!error && data.user) {
+        console.log('Setting user and fetching roles...');
+        setUser(data.user);
+        setSession(data.session);
+        await fetchRoles(data.user.id);
+        setAuthLoading(false);
+        console.log('Login complete');
+      }
+      
+      return { error };
+    } finally {
+      isSigningIn.current = false;
     }
-    
-    return { error };
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
@@ -117,6 +149,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const hasRoleCheck = (role: AppRole) => roles.includes(role);
+
+  // Combined loading: auth is loading OR (user exists AND roles are still loading)
+  const loading = authLoading || (!!user && rolesLoading);
 
   const value = {
     user,
