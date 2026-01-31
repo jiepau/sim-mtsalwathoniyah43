@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -16,8 +16,15 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  
+  // Redirect to dashboard if already logged in
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [user, authLoading, navigate]);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -32,14 +39,14 @@ export default function Login() {
       
       if (error) {
         toast.error("Gagal masuk dengan Google. Silakan coba lagi.");
+        setGoogleLoading(false);
         return;
       }
       
       toast.success("Berhasil masuk dengan Google!");
-      navigate("/dashboard");
+      // Navigation will be handled by useEffect when user state updates
     } catch (error) {
       toast.error("Terjadi kesalahan. Silakan coba lagi.");
-    } finally {
       setGoogleLoading(false);
     }
   };
@@ -52,13 +59,13 @@ export default function Login() {
       const { error } = await signIn(email, password);
       if (error) {
         toast.error(mapAuthError(error));
+        setLoading(false);
       } else {
         toast.success("Berhasil masuk!");
-        navigate("/dashboard");
+        // Navigation will be handled by useEffect when user state updates
       }
     } catch (error) {
       toast.error("Terjadi kesalahan. Silakan coba lagi.");
-    } finally {
       setLoading(false);
     }
   };
