@@ -62,7 +62,8 @@ export default function Login() {
         setLoading(false);
       } else {
         toast.success("Berhasil masuk!");
-        // Navigation will be handled by useEffect when user state updates
+        // Navigate directly after successful login
+        navigate("/dashboard", { replace: true });
       }
     } catch (error) {
       toast.error("Terjadi kesalahan. Silakan coba lagi.");

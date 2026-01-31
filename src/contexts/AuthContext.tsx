@@ -26,9 +26,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [rolesLoading, setRolesLoading] = useState(true);
 
   const fetchRoles = async (userId: string) => {
+    console.log('fetchRoles called with userId:', userId);
     setRolesLoading(true);
     try {
       const userRoles = await getUserRoles(userId);
+      console.log('fetchRoles result:', userRoles);
       setRoles(userRoles);
     } catch (error) {
       console.error('Error fetching roles:', error);
@@ -74,10 +76,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    console.log('signIn called');
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+    
+    console.log('signIn result:', { error, hasUser: !!data.user });
+    
+    // If login successful, manually trigger role fetch since onAuthStateChange might not fire
+    if (!error && data.user) {
+      console.log('Setting user and fetching roles...');
+      setUser(data.user);
+      setSession(data.session);
+      await fetchRoles(data.user.id);
+      setLoading(false);
+      console.log('Login complete, loading set to false');
+    }
+    
     return { error };
   };
 
