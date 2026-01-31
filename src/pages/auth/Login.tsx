@@ -42,8 +42,8 @@ export default function Login() {
             <Building2 className="h-9 w-9 text-primary-foreground" />
           </div>
           <CardTitle className="text-2xl font-bold">Masuk</CardTitle>
-          <CardDescription>Sistem Informasi Manajemen</CardDescription>
-          <CardDescription>Madrasah MTS AL WATHONIYAH 43</CardDescription>
+          <CardDescription>Sistem Informasi Manajemen Madrasah </CardDescription>
+          <CardDescription>MTS AL WATHONIYAH 43</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
