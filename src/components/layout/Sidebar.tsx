@@ -61,13 +61,21 @@ const allMenuItems: MenuItem[] = [
 
 export function Sidebar() {
   const location = useLocation();
-  const { signOut, hasRole, roles } = useAuth();
+  const { signOut, hasRole, roles, loading } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>(['Keuangan']);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Filter menu items based on user roles
   const filterMenuItems = (items: MenuItem[]): MenuItem[] => {
+    // If still loading roles, show all menu items to prevent flicker
+    if (loading) {
+      return items.map(item => ({
+        ...item,
+        children: item.children ? filterMenuItems(item.children) : undefined
+      }));
+    }
+    
     return items.filter(item => {
       // If no roles specified, show to everyone
       if (!item.roles || item.roles.length === 0) return true;
