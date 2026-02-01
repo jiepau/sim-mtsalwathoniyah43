@@ -105,6 +105,70 @@ export default function SiswaPage() {
     { header: 'Alamat', accessor: (s: Siswa) => s.alamat },
   ];
 
+  // Helper to parse Indonesian date format
+  const parseIndonesianDate = (dateStr: string): string | null => {
+    if (!dateStr) return null;
+    
+    // Map Indonesian month names to numbers
+    const monthMap: Record<string, string> = {
+      'jan': '01', 'januari': '01',
+      'feb': '02', 'februari': '02',
+      'mar': '03', 'maret': '03',
+      'apr': '04', 'april': '04',
+      'mei': '05',
+      'jun': '06', 'juni': '06',
+      'jul': '07', 'juli': '07',
+      'agu': '08', 'agus': '08', 'agustus': '08',
+      'sep': '09', 'sept': '09', 'september': '09',
+      'okt': '10', 'oktober': '10',
+      'nov': '11', 'november': '11',
+      'des': '12', 'desember': '12',
+    };
+
+    // Try ISO format first (yyyy-MM-dd)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      return dateStr;
+    }
+
+    // Try dd-MMM-yyyy or d-MMM-yyyy format (Indonesian)
+    const match = dateStr.match(/^(\d{1,2})-([a-zA-Z]+)-(\d{2,4})$/i);
+    if (match) {
+      const day = match[1].padStart(2, '0');
+      const monthName = match[2].toLowerCase();
+      let year = match[3];
+      
+      // Handle 2-digit year
+      if (year.length === 2) {
+        year = parseInt(year) > 50 ? '19' + year : '20' + year;
+      }
+      
+      const month = monthMap[monthName];
+      if (month) {
+        return `${year}-${month}-${day}`;
+      }
+    }
+
+    // Try dd/MM/yyyy format
+    const slashMatch = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (slashMatch) {
+      const day = slashMatch[1].padStart(2, '0');
+      const month = slashMatch[2].padStart(2, '0');
+      const year = slashMatch[3];
+      return `${year}-${month}-${day}`;
+    }
+
+    return null; // Return null if format not recognized
+  };
+
+  // Helper to normalize gender
+  const normalizeGender = (gender: string): string | null => {
+    if (!gender) return null;
+    const g = gender.trim().toLowerCase();
+    if (g === 'l' || g === 'laki-laki' || g === 'laki' || g === 'pria') return 'Laki-laki';
+    if (g === 'p' || g === 'perempuan' || g === 'wanita') return 'Perempuan';
+    return null;
+  };
+
   const handleImport = async (data: Record<string, string>[]): Promise<ImportResult> => {
     let success = 0;
     let failed = 0;
@@ -119,17 +183,23 @@ export default function SiswaPage() {
         const waOrtu = row['WA Ortu']?.trim();
         const alamat = row['Alamat']?.trim();
         const tempatLahir = row['Tempat Lahir']?.trim();
-        const tanggalLahir = row['Tanggal Lahir']?.trim();
-        const jenisKelamin = row['Jenis Kelamin']?.trim();
+        const tanggalLahirRaw = row['Tanggal Lahir']?.trim();
+        const jenisKelaminRaw = row['Jenis Kelamin']?.trim();
 
         if (!nis || !nama) {
           throw new Error('NIS dan Nama harus diisi');
         }
 
-        // Find kelas_id by name
+        // Parse date from Indonesian format
+        const tanggalLahir = parseIndonesianDate(tanggalLahirRaw);
+        
+        // Normalize gender (L -> Laki-laki, P -> Perempuan)
+        const jenisKelamin = normalizeGender(jenisKelaminRaw);
+
+        // Find kelas_id by name (case-insensitive, trim spaces)
         let kelasId: string | null = null;
         if (kelasNama) {
-          const foundKelas = kelas.find(k => k.nama_kelas.toLowerCase() === kelasNama.toLowerCase());
+          const foundKelas = kelas.find(k => k.nama_kelas.trim().toLowerCase() === kelasNama.toLowerCase());
           if (foundKelas) kelasId = foundKelas.id;
         }
 
@@ -148,8 +218,8 @@ export default function SiswaPage() {
           wa_ortu: waOrtu || null,
           alamat: alamat || null,
           tempat_lahir: tempatLahir || null,
-          tanggal_lahir: tanggalLahir || null,
-          jenis_kelamin: jenisKelamin || null,
+          tanggal_lahir: tanggalLahir,
+          jenis_kelamin: jenisKelamin,
         });
 
         if (error) throw error;
