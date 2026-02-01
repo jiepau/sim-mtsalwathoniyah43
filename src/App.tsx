@@ -25,6 +25,8 @@ const Tunggakan = lazy(() => import("@/pages/Tunggakan"));
 const NaikKelas = lazy(() => import("@/pages/NaikKelas"));
 const Alumni = lazy(() => import("@/pages/Alumni"));
 const UserManagement = lazy(() => import("@/pages/UserManagement"));
+const ATP = lazy(() => import("@/pages/ATP"));
+const KKTP = lazy(() => import("@/pages/KKTP"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -68,6 +70,8 @@ const App = () => (
                 <Route path="/tunggakan" element={<Tunggakan />} />
                 <Route path="/naik-kelas" element={<NaikKelas />} />
                 <Route path="/alumni" element={<Alumni />} />
+                <Route path="/atp" element={<ATP />} />
+                <Route path="/kktp" element={<KKTP />} />
                 <Route path="/user-management" element={<UserManagement />} />
               </Route>
               
