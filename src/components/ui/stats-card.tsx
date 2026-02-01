@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
 interface StatsCardProps {
@@ -22,7 +22,7 @@ const variantStyles = {
   info: 'bg-info/10 text-info',
 };
 
-export function StatsCard({ 
+export const StatsCard = forwardRef<HTMLDivElement, StatsCardProps>(({ 
   title, 
   value, 
   icon, 
@@ -30,12 +30,14 @@ export function StatsCard({
   trend, 
   variant = 'default',
   className 
-}: StatsCardProps) {
+}, ref) => {
   return (
-    <div className={cn(
-      'bg-card rounded-xl p-4 sm:p-6 shadow-card border border-border/50 card-hover overflow-hidden',
-      className
-    )}>
+    <div 
+      ref={ref}
+      className={cn(
+        'bg-card rounded-xl p-4 sm:p-6 shadow-card border border-border/50 card-hover overflow-hidden',
+        className
+      )}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{title}</p>
@@ -62,4 +64,6 @@ export function StatsCard({
       </div>
     </div>
   );
-}
+});
+
+StatsCard.displayName = 'StatsCard';
