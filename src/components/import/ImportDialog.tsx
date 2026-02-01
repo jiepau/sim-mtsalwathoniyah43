@@ -47,21 +47,30 @@ export function ImportDialog({
   const [parseError, setParseError] = useState<string | null>(null);
 
   const handleDownloadTemplate = () => {
-    // Create tab-separated content for easy Excel copy-paste
+    // Create proper CSV with semicolon separator (Excel compatible)
     const BOM = '\uFEFF';
-    let content = BOM + templateHeaders.join('\t') + '\n';
+    
+    // Helper function to escape CSV values
+    const escapeCSV = (value: string) => {
+      if (value.includes(';') || value.includes('"') || value.includes('\n')) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return value;
+    };
+    
+    let content = BOM + templateHeaders.map(escapeCSV).join(';') + '\n';
     
     // Add sample data rows
     templateSampleData.forEach(row => {
-      content += row.join('\t') + '\n';
+      content += row.map(escapeCSV).join(';') + '\n';
     });
 
-    // Download as .xls for better Excel compatibility
-    const blob = new Blob([content], { type: 'application/vnd.ms-excel;charset=utf-8' });
+    // Download as .csv with proper MIME type
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = templateFileName.replace('.csv', '.xls');
+    link.download = templateFileName.endsWith('.csv') ? templateFileName : templateFileName.replace(/\.[^/.]+$/, '.csv');
     link.click();
     URL.revokeObjectURL(url);
   };
