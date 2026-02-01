@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { AppRole, getUserRoles } from '@/lib/supabase-helpers';
@@ -25,68 +25,94 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authLoading, setAuthLoading] = useState(true);
   const [rolesLoading, setRolesLoading] = useState(false);
   
-  // Flag to prevent double handling from signIn and onAuthStateChange
+  // Refs for preventing race conditions
   const isSigningIn = useRef(false);
+  const currentFetchId = useRef(0); // Track which fetch is "current"
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Helper to add timeout to any promise
-  const fetchWithTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
-    let timeoutId: NodeJS.Timeout;
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      timeoutId = setTimeout(() => reject(new Error('Timeout')), timeoutMs);
-    });
+  // Memoized role fetcher with abort capability
+  const fetchRoles = useCallback(async (userId: string, retryCount = 0): Promise<void> => {
+    // Increment fetch ID to invalidate any previous in-flight requests
+    const thisFetchId = ++currentFetchId.current;
+    console.log('fetchRoles started - fetchId:', thisFetchId, 'userId:', userId, 'retry:', retryCount);
     
-    try {
-      const result = await Promise.race([promise, timeoutPromise]);
-      clearTimeout(timeoutId!);
-      return result;
-    } catch (error) {
-      clearTimeout(timeoutId!);
-      throw error;
+    // Cancel any previous fetch
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
-  };
-
-  const fetchRoles = async (userId: string, retryCount = 0): Promise<void> => {
-    console.log('fetchRoles called with userId:', userId, 'retry:', retryCount);
+    abortControllerRef.current = new AbortController();
+    
     setRolesLoading(true);
     
     try {
-      // Increased timeout to 15 seconds and use direct query without race condition
-      const userRoles = await getUserRoles(userId);
-      console.log('fetchRoles result:', userRoles);
-      setRoles(userRoles);
-      setRolesLoading(false);
+      // Create a timeout promise
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Role fetch timeout')), 10000); // 10 second timeout
+      });
+      
+      // Race between the actual query and timeout
+      const userRoles = await Promise.race([
+        getUserRoles(userId),
+        timeoutPromise
+      ]);
+      
+      // Only update state if this is still the current fetch
+      if (thisFetchId === currentFetchId.current) {
+        console.log('fetchRoles success - fetchId:', thisFetchId, 'roles:', userRoles);
+        setRoles(userRoles);
+        setRolesLoading(false);
+      } else {
+        console.log('fetchRoles stale - ignoring result for fetchId:', thisFetchId);
+      }
     } catch (error) {
-      console.error('Error fetching roles:', error);
+      console.error('fetchRoles error - fetchId:', thisFetchId, 'error:', error);
+      
+      // Only retry if this is still the current fetch
+      if (thisFetchId !== currentFetchId.current) {
+        console.log('fetchRoles stale on error - skipping retry for fetchId:', thisFetchId);
+        return;
+      }
+      
       // Retry up to 2 times with increasing delay
       if (retryCount < 2) {
-        console.log('Retrying fetchRoles in', (retryCount + 1) * 1000, 'ms...');
-        await new Promise(resolve => setTimeout(resolve, (retryCount + 1) * 1000));
-        return fetchRoles(userId, retryCount + 1);
+        const delay = (retryCount + 1) * 1500;
+        console.log('fetchRoles retrying in', delay, 'ms...');
+        await new Promise(resolve => setTimeout(resolve, delay));
+        
+        // Check again after delay if we're still current
+        if (thisFetchId === currentFetchId.current) {
+          return fetchRoles(userId, retryCount + 1);
+        }
+      } else {
+        console.error('fetchRoles all retries failed');
+        setRoles([]);
+        setRolesLoading(false);
       }
-      console.error('All retries failed, setting empty roles');
-      setRoles([]);
-      setRolesLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
 
-    // Get initial session first
     const initializeAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        console.log('initializeAuth: Getting session...');
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
         
-        if (!mounted) return;
+        if (!mounted) {
+          console.log('initializeAuth: Component unmounted, aborting');
+          return;
+        }
         
-        setSession(session);
-        setUser(session?.user ?? null);
+        console.log('initializeAuth: Session found:', !!currentSession);
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
         
-        if (session?.user) {
-          await fetchRoles(session.user.id);
+        if (currentSession?.user) {
+          await fetchRoles(currentSession.user.id);
         }
       } catch (error) {
-        console.error('Error getting session:', error);
+        console.error('initializeAuth error:', error);
       } finally {
         if (mounted) {
           setAuthLoading(false);
@@ -98,22 +124,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Set up auth state listener for subsequent changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (event, newSession) => {
         if (!mounted) return;
         
         // Skip if we're in the middle of signIn (it will handle state itself)
         if (isSigningIn.current) {
-          console.log('Skipping onAuthStateChange - signIn in progress');
+          console.log('onAuthStateChange: Skipping - signIn in progress');
           return;
         }
         
-        console.log('onAuthStateChange:', event);
+        console.log('onAuthStateChange:', event, 'hasSession:', !!newSession);
         
-        setSession(session);
-        setUser(session?.user ?? null);
+        // Use functional updates to avoid stale closures
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
         
-        if (session?.user) {
-          await fetchRoles(session.user.id);
+        if (newSession?.user) {
+          // Small delay to let state settle
+          setTimeout(() => {
+            if (mounted && !isSigningIn.current) {
+              fetchRoles(newSession.user.id);
+            }
+          }, 100);
         } else {
           setRoles([]);
         }
@@ -124,13 +156,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       mounted = false;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
       subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchRoles]);
 
   const signIn = async (email: string, password: string) => {
-    console.log('signIn called');
+    console.log('signIn: Starting...');
     isSigningIn.current = true;
+    
+    // Reset state before signing in
+    setRoles([]);
+    setRolesLoading(true);
     
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -138,20 +177,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
       });
       
-      console.log('signIn result:', { error, hasUser: !!data.user });
+      console.log('signIn: Auth result - error:', !!error, 'hasUser:', !!data.user);
       
-      if (!error && data.user) {
-        console.log('Setting user and fetching roles...');
+      if (!error && data.user && data.session) {
+        console.log('signIn: Setting user and session...');
         setUser(data.user);
         setSession(data.session);
+        
+        // Fetch roles synchronously before returning
+        console.log('signIn: Fetching roles...');
         await fetchRoles(data.user.id);
-        setAuthLoading(false);
-        console.log('Login complete');
+        console.log('signIn: Complete');
       }
       
       return { error };
+    } catch (err) {
+      console.error('signIn: Unexpected error:', err);
+      return { error: err as Error };
     } finally {
       isSigningIn.current = false;
+      setAuthLoading(false);
     }
   };
 
@@ -170,11 +215,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    console.log('signOut: Starting...');
+    // Clear roles immediately
     setRoles([]);
+    currentFetchId.current++; // Invalidate any in-flight fetches
+    await supabase.auth.signOut();
+    console.log('signOut: Complete');
   };
 
-  const hasRoleCheck = (role: AppRole) => roles.includes(role);
+  const hasRoleCheck = useCallback((role: AppRole) => roles.includes(role), [roles]);
 
   // Combined loading: auth is loading OR (user exists AND roles are still loading)
   const loading = authLoading || (!!user && rolesLoading);
