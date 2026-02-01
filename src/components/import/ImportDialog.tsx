@@ -47,25 +47,27 @@ export function ImportDialog({
   const [parseError, setParseError] = useState<string | null>(null);
 
   const handleDownloadTemplate = () => {
-    // Create proper CSV with semicolon separator (Excel compatible)
+    // Create proper CSV with sep directive for Excel
     const BOM = '\uFEFF';
     
     // Helper function to escape CSV values
     const escapeCSV = (value: string) => {
-      if (value.includes(';') || value.includes('"') || value.includes('\n')) {
+      if (value.includes(',') || value.includes('"') || value.includes('\n')) {
         return `"${value.replace(/"/g, '""')}"`;
       }
       return value;
     };
     
-    let content = BOM + templateHeaders.map(escapeCSV).join(';') + '\n';
+    // sep=, tells Excel to use comma as separator
+    let content = BOM + 'sep=,\n';
+    content += templateHeaders.map(escapeCSV).join(',') + '\n';
     
     // Add sample data rows
     templateSampleData.forEach(row => {
-      content += row.map(escapeCSV).join(';') + '\n';
+      content += row.map(escapeCSV).join(',') + '\n';
     });
 
-    // Download as .csv with proper MIME type
+    // Download as .csv
     const blob = new Blob([content], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
