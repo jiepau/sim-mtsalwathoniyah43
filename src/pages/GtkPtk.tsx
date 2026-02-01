@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { UserCog, Plus, Search, Upload, Pencil, Trash2, Phone, Mail, CalendarIcon } from 'lucide-react';
+import { UserCog, Plus, Search, Upload, Pencil, Trash2, Phone, Mail, CalendarIcon, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
@@ -30,6 +30,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { ImportDialog, ImportResult } from '@/components/import/ImportDialog';
 import { ExportButton } from '@/components/export/ExportButton';
+import { GtkDetailDialog } from '@/components/gtk/GtkDetailDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
@@ -57,6 +58,8 @@ export default function GtkPtkPage() {
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [selectedGtk, setSelectedGtk] = useState<GtkPtk | null>(null);
   const [editingGtk, setEditingGtk] = useState<GtkPtk | null>(null);
   const [formData, setFormData] = useState({
     nip: '',
@@ -313,15 +316,26 @@ export default function GtkPtkPage() {
       header: 'Aksi', 
       cell: (item: GtkPtk) => (
         <div className="flex items-center gap-1">
-          <Button size="sm" variant="ghost" onClick={() => handleOpenDialog(item)}>
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            onClick={() => {
+              setSelectedGtk(item);
+              setDetailDialogOpen(true);
+            }}
+            title="Detail GTK"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => handleOpenDialog(item)} title="Edit">
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleDelete(item.id)}>
+          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleDelete(item.id)} title="Hapus">
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       ),
-      className: 'w-24'
+      className: 'w-32'
     },
   ];
 
@@ -547,6 +561,13 @@ export default function GtkPtkPage() {
         templateSampleData={importSampleData}
         onImport={handleImport}
         onSuccess={fetchData}
+      />
+
+      {/* Detail Dialog */}
+      <GtkDetailDialog
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+        gtk={selectedGtk}
       />
     </div>
   );
