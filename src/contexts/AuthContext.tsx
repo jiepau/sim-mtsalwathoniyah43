@@ -45,23 +45,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const fetchRoles = async (userId: string, retryCount = 0) => {
+  const fetchRoles = async (userId: string, retryCount = 0): Promise<void> => {
     console.log('fetchRoles called with userId:', userId, 'retry:', retryCount);
     setRolesLoading(true);
+    
     try {
-      const userRoles = await fetchWithTimeout(getUserRoles(userId), 5000);
+      // Increased timeout to 15 seconds and use direct query without race condition
+      const userRoles = await getUserRoles(userId);
       console.log('fetchRoles result:', userRoles);
       setRoles(userRoles);
+      setRolesLoading(false);
     } catch (error) {
-      console.error('Error/timeout fetching roles:', error);
-      // Retry once after a short delay
-      if (retryCount < 1) {
-        console.log('Retrying fetchRoles...');
-        await new Promise(resolve => setTimeout(resolve, 500));
+      console.error('Error fetching roles:', error);
+      // Retry up to 2 times with increasing delay
+      if (retryCount < 2) {
+        console.log('Retrying fetchRoles in', (retryCount + 1) * 1000, 'ms...');
+        await new Promise(resolve => setTimeout(resolve, (retryCount + 1) * 1000));
         return fetchRoles(userId, retryCount + 1);
       }
-      setRoles([]); // Graceful degradation - user can still login with no roles
-    } finally {
+      console.error('All retries failed, setting empty roles');
+      setRoles([]);
       setRolesLoading(false);
     }
   };
