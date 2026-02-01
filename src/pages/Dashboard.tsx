@@ -18,6 +18,7 @@ import { formatCurrency } from '@/lib/supabase-helpers';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { useSetupWizard } from '@/hooks/useSetupWizard';
 import { SetupWizardDialog } from '@/components/wizard/SetupWizardDialog';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface DashboardStats {
   totalSiswa: number;
@@ -31,6 +32,8 @@ interface DashboardStats {
 const COLORS = ['hsl(152, 60%, 32%)', 'hsl(45, 90%, 50%)', 'hsl(199, 89%, 48%)', 'hsl(0, 72%, 51%)'];
 
 export default function Dashboard() {
+  const { isAdmin, isBendahara, hasRole } = useAuth();
+  const isOperator = hasRole('operator');
   const setupStatus = useSetupWizard();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [stats, setStats] = useState<DashboardStats>({
@@ -65,39 +68,54 @@ export default function Dashboard() {
 
   const fetchStats = async () => {
     try {
-      // Fetch counts
-      const [siswaRes, kelasRes, gtkRes, pembayaranRes, pengeluaranRes] = await Promise.all([
-        supabase.from('siswa').select('id, kelas_id', { count: 'exact' }),
-        supabase.from('kelas').select('id, nama_kelas', { count: 'exact' }),
-        supabase.from('gtk_ptk').select('id', { count: 'exact' }),
-        supabase.from('pembayaran').select('nominal, nominal_bayar, status'),
-        supabase.from('pengeluaran').select('nominal'),
-      ]);
+      // Fetch siswa - visible to all
+      const siswaRes = await supabase.from('siswa').select('id, kelas_id', { count: 'exact' });
+      
+      // Fetch kelas - visible to admin and operator
+      const kelasRes = (isAdmin || isOperator) 
+        ? await supabase.from('kelas').select('id, nama_kelas', { count: 'exact' })
+        : { data: [], count: 0 };
+      
+      // Fetch GTK/PTK - only visible to admin and operator
+      const gtkRes = (isAdmin || isOperator)
+        ? await supabase.from('gtk_ptk').select('id', { count: 'exact' })
+        : { data: [], count: 0 };
+      
+      // Fetch pembayaran & pengeluaran - only visible to admin and bendahara
+      const pembayaranRes = (isAdmin || isBendahara)
+        ? await supabase.from('pembayaran').select('nominal, nominal_bayar, status')
+        : { data: [] };
+        
+      const pengeluaranRes = (isAdmin || isBendahara)
+        ? await supabase.from('pengeluaran').select('nominal')
+        : { data: [] };
 
       // Calculate tunggakan
-      const tunggakan = pembayaranRes.data?.reduce((acc, p) => {
+      const pembayaranData = pembayaranRes.data as any[] || [];
+      const tunggakan = pembayaranData.reduce((acc: number, p: any) => {
         if (p.status === 'belum_lunas' || p.status === 'cicil') {
           return acc + (Number(p.nominal) - Number(p.nominal_bayar));
         }
         return acc;
-      }, 0) || 0;
+      }, 0);
 
       // Calculate pemasukan
-      const pemasukan = pembayaranRes.data?.reduce((acc, p) => acc + Number(p.nominal_bayar), 0) || 0;
+      const pemasukan = pembayaranData.reduce((acc: number, p: any) => acc + Number(p.nominal_bayar), 0);
 
       // Calculate pengeluaran
-      const pengeluaran = pengeluaranRes.data?.reduce((acc, p) => acc + Number(p.nominal), 0) || 0;
+      const pengeluaranData = pengeluaranRes.data as any[] || [];
+      const pengeluaran = pengeluaranData.reduce((acc: number, p: any) => acc + Number(p.nominal), 0);
 
       // Calculate siswa per kelas
       const kelasMap = new Map<string, number>();
-      kelasRes.data?.forEach(k => kelasMap.set(k.id, 0));
-      siswaRes.data?.forEach(s => {
+      kelasRes.data?.forEach((k: any) => kelasMap.set(k.id, 0));
+      siswaRes.data?.forEach((s: any) => {
         if (s.kelas_id && kelasMap.has(s.kelas_id)) {
           kelasMap.set(s.kelas_id, (kelasMap.get(s.kelas_id) || 0) + 1);
         }
       });
 
-      const kelasChartData = kelasRes.data?.map(k => ({
+      const kelasChartData = kelasRes.data?.map((k: any) => ({
         name: k.nama_kelas,
         jumlah: kelasMap.get(k.id) || 0,
       })) || [];
@@ -141,7 +159,7 @@ export default function Dashboard() {
         }
       />
 
-      {/* Stats Grid */}
+      {/* Stats Grid - Role-based visibility */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <StatsCard
           title="Total Siswa"
@@ -149,41 +167,49 @@ export default function Dashboard() {
           icon={<Users className="h-5 w-5 sm:h-6 sm:w-6" />}
           variant="default"
         />
-        <StatsCard
-          title="Jumlah Kelas"
-          value={stats.totalKelas}
-          icon={<School className="h-5 w-5 sm:h-6 sm:w-6" />}
-          variant="info"
-        />
-        <StatsCard
-          title="GTK/PTK"
-          value={stats.totalGtk}
-          icon={<UserCog className="h-5 w-5 sm:h-6 sm:w-6" />}
-          variant="success"
-        />
-        <StatsCard
-          title="Tunggakan"
-          value={formatCurrency(stats.totalTunggakan)}
-          icon={<AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6" />}
-          variant="danger"
-        />
+        {(isAdmin || isOperator) && (
+          <StatsCard
+            title="Jumlah Kelas"
+            value={stats.totalKelas}
+            icon={<School className="h-5 w-5 sm:h-6 sm:w-6" />}
+            variant="info"
+          />
+        )}
+        {(isAdmin || isOperator) && (
+          <StatsCard
+            title="GTK/PTK"
+            value={stats.totalGtk}
+            icon={<UserCog className="h-5 w-5 sm:h-6 sm:w-6" />}
+            variant="success"
+          />
+        )}
+        {(isAdmin || isBendahara) && (
+          <StatsCard
+            title="Tunggakan"
+            value={formatCurrency(stats.totalTunggakan)}
+            icon={<AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6" />}
+            variant="danger"
+          />
+        )}
       </div>
 
-      {/* Financial Stats */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
-        <StatsCard
-          title="Pemasukan"
-          value={formatCurrency(stats.totalPemasukan)}
-          icon={<TrendingUp className="h-5 w-5 sm:h-6 sm:w-6" />}
-          variant="success"
-        />
-        <StatsCard
-          title="Pengeluaran"
-          value={formatCurrency(stats.totalPengeluaran)}
-          icon={<TrendingDown className="h-5 w-5 sm:h-6 sm:w-6" />}
-          variant="warning"
-        />
-      </div>
+      {/* Financial Stats - Only for Admin and Bendahara */}
+      {(isAdmin || isBendahara) && (
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <StatsCard
+            title="Pemasukan"
+            value={formatCurrency(stats.totalPemasukan)}
+            icon={<TrendingUp className="h-5 w-5 sm:h-6 sm:w-6" />}
+            variant="success"
+          />
+          <StatsCard
+            title="Pengeluaran"
+            value={formatCurrency(stats.totalPengeluaran)}
+            icon={<TrendingDown className="h-5 w-5 sm:h-6 sm:w-6" />}
+            variant="warning"
+          />
+        </div>
+      )}
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
