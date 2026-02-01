@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, Plus, Search, Pencil, Trash2, ChevronDown, ChevronRight, Target } from 'lucide-react';
+import { BookOpen, Plus, Search, Pencil, Trash2, ChevronDown, ChevronRight, Target, Sparkles } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -59,6 +59,16 @@ interface ATP {
   tahun_ajaran?: TahunAjaran;
 }
 
+interface CPTemplate {
+  id: string;
+  mapel: string;
+  fase: string;
+  elemen: string[];
+  capaian_pembelajaran: string;
+  tujuan_pembelajaran: string[];
+  sumber: string | null;
+}
+
 const FASE_OPTIONS = [
   { value: 'A', label: 'Fase A (Kelas 1-2 SD)' },
   { value: 'B', label: 'Fase B (Kelas 3-4 SD)' },
@@ -73,6 +83,7 @@ export default function ATPPage() {
   const [data, setData] = useState<ATP[]>([]);
   const [gurus, setGurus] = useState<GtkPtk[]>([]);
   const [tahunAjarans, setTahunAjarans] = useState<TahunAjaran[]>([]);
+  const [cpTemplates, setCpTemplates] = useState<CPTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -107,6 +118,7 @@ export default function ATPPage() {
     fetchData();
     fetchGurus();
     fetchTahunAjaran();
+    fetchCpTemplates();
   }, []);
 
   const fetchData = async () => {
@@ -156,6 +168,49 @@ export default function ATPPage() {
       console.error('Error fetching tahun ajaran:', error);
     }
   };
+
+  const fetchCpTemplates = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('cp_templates')
+        .select('*')
+        .order('mapel');
+      if (error) throw error;
+      setCpTemplates(data || []);
+    } catch (error) {
+      console.error('Error fetching CP templates:', error);
+    }
+  };
+
+  // Get available templates for current mapel selection
+  const getAvailableMapels = () => {
+    const templateMapels = [...new Set(cpTemplates.map(t => t.mapel))];
+    return templateMapels;
+  };
+
+  // Load template when mapel and fase are selected
+  const loadTemplate = () => {
+    const template = cpTemplates.find(
+      t => t.mapel === formData.mapel && t.fase === formData.fase
+    );
+    
+    if (template) {
+      setFormData(prev => ({
+        ...prev,
+        elemen: template.elemen.join(', '),
+        capaian_pembelajaran: template.capaian_pembelajaran,
+        tujuan_pembelajaran: template.tujuan_pembelajaran.length > 0 ? template.tujuan_pembelajaran : [''],
+      }));
+      toast.success('Template CP berhasil dimuat!');
+    } else {
+      toast.info('Template tidak tersedia untuk kombinasi mapel dan fase ini');
+    }
+  };
+
+  // Check if template is available for current selection
+  const hasTemplate = cpTemplates.some(
+    t => t.mapel === formData.mapel && t.fase === formData.fase
+  );
 
   const handleOpenDialog = (item?: ATP) => {
     if (item) {
@@ -445,16 +500,61 @@ export default function ATPPage() {
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Template loader */}
+            {!editingItem && cpTemplates.length > 0 && (
+              <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">Template Tersedia</span>
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    disabled={!hasTemplate}
+                    onClick={loadTemplate}
+                  >
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    Muat Template
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Pilih mapel dan fase, lalu klik "Muat Template" untuk mengisi CP & TP secara otomatis
+                </p>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="mapel">Mata Pelajaran *</Label>
-                <Input
-                  id="mapel"
-                  value={formData.mapel}
-                  onChange={(e) => setFormData({ ...formData, mapel: e.target.value })}
-                  placeholder="Contoh: Matematika"
-                  required
-                />
+                {cpTemplates.length > 0 ? (
+                  <Select
+                    value={formData.mapel}
+                    onValueChange={(value) => setFormData({ ...formData, mapel: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih mapel..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getAvailableMapels().map(m => (
+                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                      ))}
+                      <div className="border-t my-1" />
+                      <div className="px-2 py-1 text-xs text-muted-foreground">
+                        Atau ketik mapel lain:
+                      </div>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    id="mapel"
+                    value={formData.mapel}
+                    onChange={(e) => setFormData({ ...formData, mapel: e.target.value })}
+                    placeholder="Contoh: Matematika"
+                    required
+                  />
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="fase">Fase *</Label>

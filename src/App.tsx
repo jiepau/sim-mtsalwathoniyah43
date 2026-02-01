@@ -27,6 +27,8 @@ const Alumni = lazy(() => import("@/pages/Alumni"));
 const UserManagement = lazy(() => import("@/pages/UserManagement"));
 const ATP = lazy(() => import("@/pages/ATP"));
 const KKTP = lazy(() => import("@/pages/KKTP"));
+const CPTemplates = lazy(() => import("@/pages/CPTemplates"));
+const PengaturanMadrasah = lazy(() => import("@/pages/PengaturanMadrasah"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -72,6 +74,8 @@ const App = () => (
                 <Route path="/alumni" element={<Alumni />} />
                 <Route path="/atp" element={<ATP />} />
                 <Route path="/kktp" element={<KKTP />} />
+                <Route path="/cp-templates" element={<CPTemplates />} />
+                <Route path="/pengaturan-madrasah" element={<PengaturanMadrasah />} />
                 <Route path="/user-management" element={<UserManagement />} />
               </Route>
               

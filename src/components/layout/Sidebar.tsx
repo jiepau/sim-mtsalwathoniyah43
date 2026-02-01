@@ -23,6 +23,8 @@ import {
   Shield,
   BookOpen,
   Target,
+  FileText,
+  Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -50,6 +52,7 @@ const allMenuItems: MenuItem[] = [
     children: [
       { title: 'ATP', icon: BookOpen, path: '/atp' },
       { title: 'KKTP', icon: Target, path: '/kktp' },
+      { title: 'Template CP', icon: FileText, path: '/cp-templates' },
     ],
     roles: ['admin', 'operator']
   },
@@ -67,6 +70,7 @@ const allMenuItems: MenuItem[] = [
   },
   { title: 'Naik Kelas', icon: ArrowUpCircle, path: '/naik-kelas', roles: ['admin', 'operator'] },
   { title: 'Alumni', icon: GraduationCap, path: '/alumni', roles: ['admin', 'operator'] },
+  { title: 'Pengaturan Madrasah', icon: Settings, path: '/pengaturan-madrasah', roles: ['admin'] },
   { title: 'Manajemen User', icon: Shield, path: '/user-management', roles: ['admin'] },
 ];
 
@@ -86,7 +90,7 @@ export function Sidebar() {
       expanded.push('Keuangan');
     }
     // Check Kurikulum routes
-    if (['/atp', '/kktp'].includes(path)) {
+    if (['/atp', '/kktp', '/cp-templates'].includes(path)) {
       expanded.push('Kurikulum');
     }
     
