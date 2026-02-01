@@ -161,13 +161,15 @@ export function Sidebar() {
       {/* Header */}
       <div className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-sidebar-primary flex items-center justify-center">
-            <Building2 className="h-6 w-6 text-sidebar-primary-foreground" />
-          </div>
+          <img 
+            src="/favicon.svg" 
+            alt="Logo MTs Al Wathoniyah 43" 
+            className="h-10 w-10 rounded-lg"
+          />
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <h1 className="font-bold text-sidebar-foreground truncate">
-                MTs AL WATHONIYAH
+              <h1 className="font-bold text-sidebar-foreground truncate text-sm">
+                MTs Al Wathoniyah 43
               </h1>
               <p className="text-xs text-sidebar-foreground/60">Sistem Informasi</p>
             </div>
