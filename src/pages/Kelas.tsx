@@ -523,12 +523,15 @@ export default function KelasPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="wali_kelas">Wali Kelas</Label>
-              <Select value={formData.wali_kelas_id} onValueChange={(v) => setFormData({ ...formData, wali_kelas_id: v })}>
+              <Select 
+                value={formData.wali_kelas_id || 'none'} 
+                onValueChange={(v) => setFormData({ ...formData, wali_kelas_id: v === 'none' ? '' : v })}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih Wali Kelas" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tidak ada</SelectItem>
+                  <SelectItem value="none">Tidak ada</SelectItem>
                   {gtkList.map(gtk => (
                     <SelectItem key={gtk.id} value={gtk.id}>
                       {gtk.nama} {gtk.jabatan && `(${gtk.jabatan})`}
