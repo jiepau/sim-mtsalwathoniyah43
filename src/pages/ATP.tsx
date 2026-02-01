@@ -49,6 +49,8 @@ interface ATP {
   ta_id: string | null;
   mapel: string;
   fase: string;
+  kelas: number | null;
+  semester: string | null;
   elemen: string | null;
   capaian_pembelajaran: string;
   tujuan_pembelajaran: string[];
@@ -78,6 +80,17 @@ const FASE_OPTIONS = [
   { value: 'F', label: 'Fase F (Kelas 11-12 SMA/MA)' },
 ];
 
+const KELAS_OPTIONS = [
+  { value: '7', label: 'Kelas 7' },
+  { value: '8', label: 'Kelas 8' },
+  { value: '9', label: 'Kelas 9' },
+];
+
+const SEMESTER_OPTIONS = [
+  { value: 'ganjil', label: 'Ganjil' },
+  { value: 'genap', label: 'Genap' },
+];
+
 export default function ATPPage() {
   const navigate = useNavigate();
   const [data, setData] = useState<ATP[]>([]);
@@ -97,6 +110,8 @@ export default function ATPPage() {
     ta_id: string;
     mapel: string;
     fase: FaseType;
+    kelas: string;
+    semester: string;
     elemen: string;
     capaian_pembelajaran: string;
     tujuan_pembelajaran: string[];
@@ -107,6 +122,8 @@ export default function ATPPage() {
     ta_id: '',
     mapel: '',
     fase: 'D',
+    kelas: '',
+    semester: '',
     elemen: '',
     capaian_pembelajaran: '',
     tujuan_pembelajaran: [''],
@@ -220,6 +237,8 @@ export default function ATPPage() {
         ta_id: item.ta_id || '',
         mapel: item.mapel,
         fase: item.fase as FaseType,
+        kelas: item.kelas?.toString() || '',
+        semester: item.semester || '',
         elemen: item.elemen || '',
         capaian_pembelajaran: item.capaian_pembelajaran,
         tujuan_pembelajaran: item.tujuan_pembelajaran.length > 0 ? item.tujuan_pembelajaran : [''],
@@ -234,6 +253,8 @@ export default function ATPPage() {
         ta_id: activeTa?.id || '',
         mapel: '',
         fase: 'D' as FaseType,
+        kelas: '',
+        semester: '',
         elemen: '',
         capaian_pembelajaran: '',
         tujuan_pembelajaran: [''],
@@ -261,6 +282,8 @@ export default function ATPPage() {
         ta_id: formData.ta_id || null,
         mapel: formData.mapel,
         fase: formData.fase,
+        kelas: formData.kelas ? parseInt(formData.kelas) : null,
+        semester: formData.semester || null,
         elemen: formData.elemen || null,
         capaian_pembelajaran: formData.capaian_pembelajaran,
         tujuan_pembelajaran: filteredTP,
@@ -375,11 +398,26 @@ export default function ATPPage() {
       ),
     },
     {
+      header: 'Kelas/Smt',
+      cell: (item: ATP) => (
+        <div className="text-sm">
+          {item.kelas ? (
+            <Badge variant="outline">
+              Kelas {item.kelas}{item.semester ? ` / ${item.semester === 'ganjil' ? 'Ganjil' : 'Genap'}` : ''}
+            </Badge>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          )}
+        </div>
+      ),
+      className: 'w-32'
+    },
+    {
       header: 'Fase',
       cell: (item: ATP) => (
         <Badge variant="secondary">{item.fase}</Badge>
       ),
-      className: 'w-20'
+      className: 'w-16'
     },
     {
       header: 'Tahun Ajaran',
@@ -393,13 +431,13 @@ export default function ATPPage() {
       ),
     },
     {
-      header: 'Tujuan Pembelajaran',
+      header: 'TP',
       cell: (item: ATP) => (
         <div className="text-sm">
-          {item.tujuan_pembelajaran.length} TP
+          {item.tujuan_pembelajaran.length}
         </div>
       ),
-      className: 'w-32'
+      className: 'w-16'
     },
     {
       header: 'Aksi',
@@ -567,6 +605,45 @@ export default function ATPPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {FASE_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="kelas">Kelas Target</Label>
+                <Select
+                  value={formData.kelas}
+                  onValueChange={(value) => setFormData({ ...formData, kelas: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih kelas..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {KELAS_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="semester">Semester</Label>
+                <Select
+                  value={formData.semester}
+                  onValueChange={(value) => setFormData({ ...formData, semester: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih semester..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SEMESTER_OPTIONS.map(opt => (
                       <SelectItem key={opt.value} value={opt.value}>
                         {opt.label}
                       </SelectItem>

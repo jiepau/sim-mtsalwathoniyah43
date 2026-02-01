@@ -65,8 +65,10 @@ export type Database = {
           fase: Database["public"]["Enums"]["fase_pembelajaran"]
           guru_id: string | null
           id: string
+          kelas: number | null
           keterangan: string | null
           mapel: string
+          semester: string | null
           ta_id: string | null
           tujuan_pembelajaran: string[] | null
           updated_at: string
@@ -79,8 +81,10 @@ export type Database = {
           fase?: Database["public"]["Enums"]["fase_pembelajaran"]
           guru_id?: string | null
           id?: string
+          kelas?: number | null
           keterangan?: string | null
           mapel: string
+          semester?: string | null
           ta_id?: string | null
           tujuan_pembelajaran?: string[] | null
           updated_at?: string
@@ -93,8 +97,10 @@ export type Database = {
           fase?: Database["public"]["Enums"]["fase_pembelajaran"]
           guru_id?: string | null
           id?: string
+          kelas?: number | null
           keterangan?: string | null
           mapel?: string
+          semester?: string | null
           ta_id?: string | null
           tujuan_pembelajaran?: string[] | null
           updated_at?: string
