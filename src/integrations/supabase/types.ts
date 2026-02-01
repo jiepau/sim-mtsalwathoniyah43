@@ -56,6 +56,66 @@ export type Database = {
         }
         Relationships: []
       }
+      atp: {
+        Row: {
+          alokasi_waktu: string | null
+          capaian_pembelajaran: string
+          created_at: string
+          elemen: string | null
+          fase: Database["public"]["Enums"]["fase_pembelajaran"]
+          guru_id: string | null
+          id: string
+          keterangan: string | null
+          mapel: string
+          ta_id: string | null
+          tujuan_pembelajaran: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          alokasi_waktu?: string | null
+          capaian_pembelajaran: string
+          created_at?: string
+          elemen?: string | null
+          fase?: Database["public"]["Enums"]["fase_pembelajaran"]
+          guru_id?: string | null
+          id?: string
+          keterangan?: string | null
+          mapel: string
+          ta_id?: string | null
+          tujuan_pembelajaran?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          alokasi_waktu?: string | null
+          capaian_pembelajaran?: string
+          created_at?: string
+          elemen?: string | null
+          fase?: Database["public"]["Enums"]["fase_pembelajaran"]
+          guru_id?: string | null
+          id?: string
+          keterangan?: string | null
+          mapel?: string
+          ta_id?: string | null
+          tujuan_pembelajaran?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "atp_guru_id_fkey"
+            columns: ["guru_id"]
+            isOneToOne: false
+            referencedRelation: "gtk_ptk"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "atp_ta_id_fkey"
+            columns: ["ta_id"]
+            isOneToOne: false
+            referencedRelation: "tahun_ajaran"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gtk_ptk: {
         Row: {
           alamat: string | null
@@ -156,6 +216,50 @@ export type Database = {
             columns: ["wali_kelas_id"]
             isOneToOne: false
             referencedRelation: "gtk_ptk"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kktp: {
+        Row: {
+          atp_id: string
+          bentuk_instrumen: string | null
+          created_at: string
+          id: string
+          keterangan: string | null
+          kriteria_ketercapaian: string[] | null
+          teknik_penilaian: string | null
+          tujuan_pembelajaran: string
+          updated_at: string
+        }
+        Insert: {
+          atp_id: string
+          bentuk_instrumen?: string | null
+          created_at?: string
+          id?: string
+          keterangan?: string | null
+          kriteria_ketercapaian?: string[] | null
+          teknik_penilaian?: string | null
+          tujuan_pembelajaran: string
+          updated_at?: string
+        }
+        Update: {
+          atp_id?: string
+          bentuk_instrumen?: string | null
+          created_at?: string
+          id?: string
+          keterangan?: string | null
+          kriteria_ketercapaian?: string[] | null
+          teknik_penilaian?: string | null
+          tujuan_pembelajaran?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kktp_atp_id_fkey"
+            columns: ["atp_id"]
+            isOneToOne: false
+            referencedRelation: "atp"
             referencedColumns: ["id"]
           },
         ]
@@ -399,6 +503,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "bendahara" | "operator"
+      fase_pembelajaran: "A" | "B" | "C" | "D" | "E" | "F"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -527,6 +632,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "bendahara", "operator"],
+      fase_pembelajaran: ["A", "B", "C", "D", "E", "F"],
     },
   },
 } as const

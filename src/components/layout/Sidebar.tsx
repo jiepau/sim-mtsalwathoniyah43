@@ -20,7 +20,9 @@ import {
   Building2,
   ArrowUpCircle,
   GraduationCap,
-  Shield
+  Shield,
+  BookOpen,
+  Target,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -42,6 +44,15 @@ const allMenuItems: MenuItem[] = [
   { title: 'Kelas', icon: School, path: '/kelas', roles: ['admin', 'operator'] },
   { title: 'Tahun Ajaran', icon: Calendar, path: '/tahun-ajaran', roles: ['admin', 'operator'] },
   { title: 'GTK/PTK', icon: UserCog, path: '/gtk-ptk', roles: ['admin', 'operator'] },
+  { 
+    title: 'Kurikulum', 
+    icon: BookOpen,
+    children: [
+      { title: 'ATP', icon: BookOpen, path: '/atp' },
+      { title: 'KKTP', icon: Target, path: '/kktp' },
+    ],
+    roles: ['admin', 'operator']
+  },
   { 
     title: 'Keuangan', 
     icon: Wallet,
