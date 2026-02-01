@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Users, Plus, Search, Upload, Pencil, Trash2, Phone, X } from 'lucide-react';
+import { format } from 'date-fns';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { ImportDialog, ImportResult } from '@/components/import/ImportDialog';
+import { ExportButton } from '@/components/export/ExportButton';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
@@ -34,6 +44,9 @@ interface Siswa {
   ta_id: string | null;
   wa_ortu: string | null;
   alamat: string | null;
+  tempat_lahir: string | null;
+  tanggal_lahir: string | null;
+  jenis_kelamin: string | null;
   kelas?: { nama_kelas: string };
   tahun_ajaran?: { nama_ta: string };
 }
@@ -67,13 +80,29 @@ export default function SiswaPage() {
     ta_id: '',
     wa_ortu: '',
     alamat: '',
+    tempat_lahir: '',
+    tanggal_lahir: undefined as Date | undefined,
+    jenis_kelamin: '',
   });
 
   // Import configuration
-  const importHeaders = ['NIS', 'Nama', 'Kelas', 'Tahun Ajaran', 'WA Ortu', 'Alamat'];
+  const importHeaders = ['NIS', 'Nama', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Kelas', 'Tahun Ajaran', 'WA Ortu', 'Alamat'];
   const importSampleData = [
-    ['001', 'Ahmad Fauzi', '7A', '2024/2025', '081234567890', 'Jl. Merdeka No. 1'],
-    ['002', 'Siti Aminah', '7B', '2024/2025', '081234567891', 'Jl. Sudirman No. 2'],
+    ['001', 'Ahmad Fauzi', 'Laki-laki', 'Jakarta', '2010-05-15', '7A', '2024/2025', '081234567890', 'Jl. Merdeka No. 1'],
+    ['002', 'Siti Aminah', 'Perempuan', 'Bandung', '2010-08-20', '7B', '2024/2025', '081234567891', 'Jl. Sudirman No. 2'],
+  ];
+
+  // Export columns configuration
+  const exportColumns = [
+    { header: 'NIS', accessor: (s: Siswa) => s.nis },
+    { header: 'Nama', accessor: (s: Siswa) => s.nama },
+    { header: 'Jenis Kelamin', accessor: (s: Siswa) => s.jenis_kelamin },
+    { header: 'Tempat Lahir', accessor: (s: Siswa) => s.tempat_lahir },
+    { header: 'Tanggal Lahir', accessor: (s: Siswa) => s.tanggal_lahir },
+    { header: 'Kelas', accessor: (s: Siswa) => s.kelas?.nama_kelas },
+    { header: 'Tahun Ajaran', accessor: (s: Siswa) => s.tahun_ajaran?.nama_ta },
+    { header: 'WA Ortu', accessor: (s: Siswa) => s.wa_ortu },
+    { header: 'Alamat', accessor: (s: Siswa) => s.alamat },
   ];
 
   const handleImport = async (data: Record<string, string>[]): Promise<ImportResult> => {
@@ -89,6 +118,9 @@ export default function SiswaPage() {
         const taNama = row['Tahun Ajaran']?.trim();
         const waOrtu = row['WA Ortu']?.trim();
         const alamat = row['Alamat']?.trim();
+        const tempatLahir = row['Tempat Lahir']?.trim();
+        const tanggalLahir = row['Tanggal Lahir']?.trim();
+        const jenisKelamin = row['Jenis Kelamin']?.trim();
 
         if (!nis || !nama) {
           throw new Error('NIS dan Nama harus diisi');
@@ -115,6 +147,9 @@ export default function SiswaPage() {
           ta_id: taId,
           wa_ortu: waOrtu || null,
           alamat: alamat || null,
+          tempat_lahir: tempatLahir || null,
+          tanggal_lahir: tanggalLahir || null,
+          jenis_kelamin: jenisKelamin || null,
         });
 
         if (error) throw error;
@@ -165,10 +200,16 @@ export default function SiswaPage() {
         ta_id: siswaData.ta_id || '',
         wa_ortu: siswaData.wa_ortu || '',
         alamat: siswaData.alamat || '',
+        tempat_lahir: siswaData.tempat_lahir || '',
+        tanggal_lahir: siswaData.tanggal_lahir ? new Date(siswaData.tanggal_lahir) : undefined,
+        jenis_kelamin: siswaData.jenis_kelamin || '',
       });
     } else {
       setEditingSiswa(null);
-      setFormData({ nis: '', nama: '', kelas_id: '', ta_id: '', wa_ortu: '', alamat: '' });
+      setFormData({ 
+        nis: '', nama: '', kelas_id: '', ta_id: '', wa_ortu: '', alamat: '',
+        tempat_lahir: '', tanggal_lahir: undefined, jenis_kelamin: ''
+      });
     }
     setDialogOpen(true);
   };
@@ -184,6 +225,9 @@ export default function SiswaPage() {
         ta_id: formData.ta_id || null,
         wa_ortu: formData.wa_ortu || null,
         alamat: formData.alamat || null,
+        tempat_lahir: formData.tempat_lahir || null,
+        tanggal_lahir: formData.tanggal_lahir ? format(formData.tanggal_lahir, 'yyyy-MM-dd') : null,
+        jenis_kelamin: formData.jenis_kelamin || null,
       };
 
       if (editingSiswa) {
@@ -241,9 +285,18 @@ export default function SiswaPage() {
     },
     { header: 'Nama Siswa', accessorKey: 'nama' as keyof Siswa },
     { 
+      header: 'L/P', 
+      cell: (item: Siswa) => item.jenis_kelamin ? (
+        <Badge variant={item.jenis_kelamin === 'Laki-laki' ? 'default' : 'secondary'}>
+          {item.jenis_kelamin === 'Laki-laki' ? 'L' : 'P'}
+        </Badge>
+      ) : '-',
+      className: 'w-16'
+    },
+    { 
       header: 'Kelas', 
       cell: (item: Siswa) => item.kelas ? (
-        <Badge variant="secondary">{item.kelas.nama_kelas}</Badge>
+        <Badge variant="outline">{item.kelas.nama_kelas}</Badge>
       ) : '-'
     },
     { 
@@ -256,7 +309,6 @@ export default function SiswaPage() {
       header: 'WA Ortu', 
       cell: (item: Siswa) => {
         if (!item.wa_ortu) return '-';
-        // Convert 08xx to 628xx format
         let phone = item.wa_ortu.replace(/[^0-9]/g, '');
         if (phone.startsWith('0')) {
           phone = '62' + phone.substring(1);
@@ -300,6 +352,11 @@ export default function SiswaPage() {
         icon={<Users className="h-6 w-6" />}
         actions={
           <div className="flex gap-2">
+            <ExportButton 
+              data={filteredSiswa} 
+              columns={exportColumns} 
+              filename="data_siswa"
+            />
             <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
               <Upload className="h-4 w-4 mr-2" />
               Import
@@ -343,7 +400,7 @@ export default function SiswaPage() {
 
       {/* Dialog Form */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingSiswa ? 'Edit Siswa' : 'Tambah Siswa Baru'}
@@ -369,31 +426,85 @@ export default function SiswaPage() {
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="kelas">Kelas</Label>
-              <Select value={formData.kelas_id} onValueChange={(v) => setFormData({ ...formData, kelas_id: v })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih Kelas" />
-                </SelectTrigger>
-                <SelectContent>
-                  {kelas.map(k => (
-                    <SelectItem key={k.id} value={k.id}>{k.nama_kelas}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="jenis_kelamin">Jenis Kelamin</Label>
+                <Select value={formData.jenis_kelamin} onValueChange={(v) => setFormData({ ...formData, jenis_kelamin: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                    <SelectItem value="Perempuan">Perempuan</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tempat_lahir">Tempat Lahir</Label>
+                <Input
+                  id="tempat_lahir"
+                  value={formData.tempat_lahir}
+                  onChange={(e) => setFormData({ ...formData, tempat_lahir: e.target.value })}
+                  placeholder="Contoh: Jakarta"
+                />
+              </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="ta">Tahun Ajaran</Label>
-              <Select value={formData.ta_id} onValueChange={(v) => setFormData({ ...formData, ta_id: v })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih Tahun Ajaran" />
-                </SelectTrigger>
-                <SelectContent>
-                  {tahunAjaran.map(ta => (
-                    <SelectItem key={ta.id} value={ta.id}>{ta.nama_ta}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>Tanggal Lahir</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !formData.tanggal_lahir && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.tanggal_lahir ? format(formData.tanggal_lahir, "dd/MM/yyyy") : "Pilih tanggal"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.tanggal_lahir}
+                    onSelect={(date) => setFormData({ ...formData, tanggal_lahir: date })}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                    captionLayout="dropdown-buttons"
+                    fromYear={1990}
+                    toYear={new Date().getFullYear()}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="kelas">Kelas</Label>
+                <Select value={formData.kelas_id} onValueChange={(v) => setFormData({ ...formData, kelas_id: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih Kelas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {kelas.map(k => (
+                      <SelectItem key={k.id} value={k.id}>{k.nama_kelas}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ta">Tahun Ajaran</Label>
+                <Select value={formData.ta_id} onValueChange={(v) => setFormData({ ...formData, ta_id: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih TA" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tahunAjaran.map(ta => (
+                      <SelectItem key={ta.id} value={ta.id}>{ta.nama_ta}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="wa_ortu">No. WA Orang Tua</Label>
