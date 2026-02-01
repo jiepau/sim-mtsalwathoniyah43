@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Users, Plus, Search, Upload, Pencil, Trash2, Phone, X } from 'lucide-react';
+import { Users, Plus, Search, Upload, Pencil, Trash2, Phone, X, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
@@ -32,6 +32,7 @@ import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ImportDialog, ImportResult } from '@/components/import/ImportDialog';
 import { ExportButton } from '@/components/export/ExportButton';
+import { SiswaDetailDialog } from '@/components/siswa/SiswaDetailDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
@@ -48,7 +49,7 @@ interface Siswa {
   tanggal_lahir: string | null;
   jenis_kelamin: string | null;
   kelas?: { nama_kelas: string };
-  tahun_ajaran?: { nama_ta: string };
+  tahun_ajaran?: { nama_ta: string; semester?: string };
 }
 
 interface Kelas {
@@ -59,6 +60,7 @@ interface Kelas {
 interface TahunAjaran {
   id: string;
   nama_ta: string;
+  semester?: string;
 }
 
 export default function SiswaPage() {
@@ -72,6 +74,8 @@ export default function SiswaPage() {
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [selectedSiswa, setSelectedSiswa] = useState<Siswa | null>(null);
   const [editingSiswa, setEditingSiswa] = useState<Siswa | null>(null);
   const [formData, setFormData] = useState({
     nis: '',
@@ -243,7 +247,7 @@ export default function SiswaPage() {
       const [siswaRes, kelasRes, taRes] = await Promise.all([
         supabase
           .from('siswa')
-          .select(`*, kelas(nama_kelas), tahun_ajaran(nama_ta)`)
+          .select(`*, kelas(nama_kelas), tahun_ajaran(nama_ta, semester)`)
           .order('nama'),
         supabase.from('kelas').select('*').order('nama_kelas'),
         supabase.from('tahun_ajaran').select('*').order('nama_ta'),
@@ -371,9 +375,13 @@ export default function SiswaPage() {
     },
     { 
       header: 'Tahun Ajaran', 
-      cell: (item: Siswa) => item.tahun_ajaran ? (
-        <Badge variant="outline">{item.tahun_ajaran.nama_ta}</Badge>
-      ) : '-'
+      cell: (item: Siswa) => {
+        if (!item.tahun_ajaran) return '-';
+        const semester = item.tahun_ajaran.semester;
+        const semesterLabel = semester === 'genap' ? 'Genap' : semester === 'ganjil' ? 'Ganjil' : '';
+        const displayText = semesterLabel ? `${item.tahun_ajaran.nama_ta} ${semesterLabel}` : item.tahun_ajaran.nama_ta;
+        return <Badge variant="outline">{displayText}</Badge>;
+      }
     },
     { 
       header: 'WA Ortu', 
@@ -402,15 +410,26 @@ export default function SiswaPage() {
       header: 'Aksi', 
       cell: (item: Siswa) => (
         <div className="flex items-center gap-1">
-          <Button size="sm" variant="ghost" onClick={() => handleOpenDialog(item)}>
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            onClick={() => {
+              setSelectedSiswa(item);
+              setDetailDialogOpen(true);
+            }}
+            title="Detail Siswa"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => handleOpenDialog(item)} title="Edit">
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleDelete(item.id)}>
+          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleDelete(item.id)} title="Hapus">
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       ),
-      className: 'w-24'
+      className: 'w-32'
     },
   ];
 
@@ -569,9 +588,13 @@ export default function SiswaPage() {
                     <SelectValue placeholder="Pilih TA" />
                   </SelectTrigger>
                   <SelectContent>
-                    {tahunAjaran.map(ta => (
-                      <SelectItem key={ta.id} value={ta.id}>{ta.nama_ta}</SelectItem>
-                    ))}
+                    {tahunAjaran.map(ta => {
+                      const semesterLabel = ta.semester === 'genap' ? 'Genap' : ta.semester === 'ganjil' ? 'Ganjil' : '';
+                      const displayText = semesterLabel ? `${ta.nama_ta} ${semesterLabel}` : ta.nama_ta;
+                      return (
+                        <SelectItem key={ta.id} value={ta.id}>{displayText}</SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
@@ -615,6 +638,13 @@ export default function SiswaPage() {
         templateSampleData={importSampleData}
         onImport={handleImport}
         onSuccess={fetchData}
+      />
+
+      {/* Detail Dialog */}
+      <SiswaDetailDialog
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+        siswa={selectedSiswa}
       />
     </div>
   );
