@@ -116,6 +116,42 @@ export type Database = {
           },
         ]
       }
+      cp_templates: {
+        Row: {
+          capaian_pembelajaran: string
+          created_at: string
+          elemen: string[] | null
+          fase: Database["public"]["Enums"]["fase_pembelajaran"]
+          id: string
+          mapel: string
+          sumber: string | null
+          tujuan_pembelajaran: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          capaian_pembelajaran: string
+          created_at?: string
+          elemen?: string[] | null
+          fase?: Database["public"]["Enums"]["fase_pembelajaran"]
+          id?: string
+          mapel: string
+          sumber?: string | null
+          tujuan_pembelajaran?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          capaian_pembelajaran?: string
+          created_at?: string
+          elemen?: string[] | null
+          fase?: Database["public"]["Enums"]["fase_pembelajaran"]
+          id?: string
+          mapel?: string
+          sumber?: string | null
+          tujuan_pembelajaran?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       gtk_ptk: {
         Row: {
           alamat: string | null
@@ -263,6 +299,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      madrasah_settings: {
+        Row: {
+          alamat: string | null
+          created_at: string
+          email: string | null
+          id: string
+          kabupaten_kota: string | null
+          kepala_madrasah: string | null
+          kode_pos: string | null
+          nama_madrasah: string
+          nip_kepala: string | null
+          no_telp: string | null
+          npsn: string | null
+          provinsi: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          alamat?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          kabupaten_kota?: string | null
+          kepala_madrasah?: string | null
+          kode_pos?: string | null
+          nama_madrasah?: string
+          nip_kepala?: string | null
+          no_telp?: string | null
+          npsn?: string | null
+          provinsi?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          alamat?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          kabupaten_kota?: string | null
+          kepala_madrasah?: string | null
+          kode_pos?: string | null
+          nama_madrasah?: string
+          nip_kepala?: string | null
+          no_telp?: string | null
+          npsn?: string | null
+          provinsi?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
       }
       pembayaran: {
         Row: {
