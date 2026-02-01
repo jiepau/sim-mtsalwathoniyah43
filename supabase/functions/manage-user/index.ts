@@ -1,10 +1,73 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Valid roles enum
+const validRoles = ["admin", "bendahara", "operator"] as const;
+type AppRole = typeof validRoles[number];
+
+// Validation schemas
+const createUserSchema = z.object({
+  action: z.literal("create"),
+  email: z.string()
+    .trim()
+    .email({ message: "Format email tidak valid" })
+    .max(255, { message: "Email maksimal 255 karakter" }),
+  password: z.string()
+    .min(8, { message: "Password minimal 8 karakter" })
+    .max(72, { message: "Password maksimal 72 karakter" })
+    .regex(/[A-Za-z]/, { message: "Password harus mengandung huruf" })
+    .regex(/[0-9]/, { message: "Password harus mengandung angka" }),
+  full_name: z.string()
+    .trim()
+    .min(1, { message: "Nama lengkap tidak boleh kosong" })
+    .max(100, { message: "Nama lengkap maksimal 100 karakter" }),
+  roles: z.array(z.enum(validRoles)).optional().default([]),
+});
+
+const updateUserSchema = z.object({
+  action: z.literal("update"),
+  user_id: z.string().uuid({ message: "User ID tidak valid" }),
+  email: z.string()
+    .trim()
+    .email({ message: "Format email tidak valid" })
+    .max(255, { message: "Email maksimal 255 karakter" })
+    .optional(),
+  password: z.string()
+    .min(8, { message: "Password minimal 8 karakter" })
+    .max(72, { message: "Password maksimal 72 karakter" })
+    .regex(/[A-Za-z]/, { message: "Password harus mengandung huruf" })
+    .regex(/[0-9]/, { message: "Password harus mengandung angka" })
+    .optional()
+    .or(z.literal("")),
+  full_name: z.string()
+    .trim()
+    .min(1, { message: "Nama lengkap tidak boleh kosong" })
+    .max(100, { message: "Nama lengkap maksimal 100 karakter" })
+    .optional(),
+  roles: z.array(z.enum(validRoles)).optional(),
+});
+
+const deleteUserSchema = z.object({
+  action: z.literal("delete"),
+  user_id: z.string().uuid({ message: "User ID tidak valid" }),
+});
+
+const requestSchema = z.discriminatedUnion("action", [
+  createUserSchema,
+  updateUserSchema,
+  deleteUserSchema,
+]);
+
+// Helper to format Zod errors
+function formatZodErrors(error: z.ZodError): string {
+  return error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join(", ");
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -56,16 +119,22 @@ serve(async (req) => {
       );
     }
 
-    const { action, user_id, email, password, full_name, roles } = await req.json();
+    // Parse and validate request body
+    const rawBody = await req.json();
+    const parseResult = requestSchema.safeParse(rawBody);
+    
+    if (!parseResult.success) {
+      return new Response(
+        JSON.stringify({ error: formatZodErrors(parseResult.error) }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const body = parseResult.data;
 
     // CREATE USER
-    if (action === "create") {
-      if (!email || !password || !full_name) {
-        return new Response(
-          JSON.stringify({ error: "Email, password, and full_name are required" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+    if (body.action === "create") {
+      const { email, password, full_name, roles } = body;
 
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email,
@@ -83,7 +152,7 @@ serve(async (req) => {
 
       // Assign roles
       if (roles && roles.length > 0 && newUser.user) {
-        const rolesToInsert = roles.map((role: string) => ({
+        const rolesToInsert = roles.map((role: AppRole) => ({
           user_id: newUser.user!.id,
           role: role,
         }));
@@ -98,13 +167,8 @@ serve(async (req) => {
     }
 
     // UPDATE USER
-    if (action === "update") {
-      if (!user_id) {
-        return new Response(
-          JSON.stringify({ error: "user_id is required" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+    if (body.action === "update") {
+      const { user_id, email, password, full_name, roles } = body;
 
       // Prevent self-demotion from admin
       if (user_id === requestingUser.id && roles && !roles.includes('admin')) {
@@ -117,7 +181,7 @@ serve(async (req) => {
       // Update auth user (email, password)
       const updateData: { email?: string; password?: string; user_metadata?: { full_name: string } } = {};
       if (email) updateData.email = email;
-      if (password) updateData.password = password;
+      if (password && password.length > 0) updateData.password = password;
       if (full_name) updateData.user_metadata = { full_name };
 
       if (Object.keys(updateData).length > 0) {
@@ -139,13 +203,13 @@ serve(async (req) => {
       }
 
       // Update roles
-      if (roles) {
+      if (roles !== undefined) {
         // Delete existing roles
         await supabaseAdmin.from("user_roles").delete().eq("user_id", user_id);
         
         // Insert new roles
         if (roles.length > 0) {
-          const rolesToInsert = roles.map((role: string) => ({
+          const rolesToInsert = roles.map((role: AppRole) => ({
             user_id: user_id,
             role: role,
           }));
@@ -160,13 +224,8 @@ serve(async (req) => {
     }
 
     // DELETE USER
-    if (action === "delete") {
-      if (!user_id) {
-        return new Response(
-          JSON.stringify({ error: "user_id is required" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+    if (body.action === "delete") {
+      const { user_id } = body;
 
       // Prevent self-deletion
       if (user_id === requestingUser.id) {
