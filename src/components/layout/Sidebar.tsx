@@ -162,9 +162,9 @@ export function Sidebar() {
       <div className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
           <img 
-            src="/favicon.svg" 
+            src="/logo-alwathoniyah.png" 
             alt="Logo MTs Al Wathoniyah 43" 
-            className="h-10 w-10 rounded-lg"
+            className="h-10 w-10 rounded-lg object-contain"
           />
           {!collapsed && (
             <div className="flex-1 min-w-0">
