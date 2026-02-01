@@ -76,9 +76,11 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-hero islamic-pattern flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-2xl border-0">
         <CardHeader className="text-center pb-2">
-          <div className="mx-auto h-16 w-16 rounded-2xl bg-primary flex items-center justify-center mb-4">
-            <Building2 className="h-9 w-9 text-primary-foreground" />
-          </div>
+          <img 
+            src="/logo-alwathoniyah.png" 
+            alt="Logo MTs Al Wathoniyah 43" 
+            className="mx-auto h-20 w-20 rounded-2xl object-contain mb-4"
+          />
           <CardTitle className="text-2xl font-bold">Masuk</CardTitle>
           <CardDescription>Sistem Informasi Manajemen Madrasah </CardDescription>
           <CardDescription>MTS AL WATHONIYAH 43</CardDescription>
