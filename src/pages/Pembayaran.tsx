@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { CreditCard, Search, Check, Clock } from 'lucide-react';
+import { CreditCard, Search, Check, Clock, History } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { PaymentHistoryDialog } from '@/components/pembayaran/PaymentHistoryDialog';
 import {
   Dialog,
   DialogContent,
@@ -60,6 +61,8 @@ export default function PembayaranPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [selectedSiswa, setSelectedSiswa] = useState<{ id: string; nama: string; nis: string } | null>(null);
   const [formData, setFormData] = useState({
     siswa_id: '',
     jenis_tagihan_id: '',
@@ -185,6 +188,17 @@ export default function PembayaranPage() {
     }
   };
 
+  const handleViewHistory = (item: Pembayaran) => {
+    if (item.siswa) {
+      setSelectedSiswa({
+        id: item.siswa_id,
+        nama: item.siswa.nama,
+        nis: item.siswa.nis,
+      });
+      setHistoryDialogOpen(true);
+    }
+  };
+
   const filteredData = pembayaran.filter(p => 
     p.siswa?.nama.toLowerCase().includes(search.toLowerCase()) ||
     p.siswa?.nis.toLowerCase().includes(search.toLowerCase())
@@ -252,12 +266,24 @@ export default function PembayaranPage() {
     },
     { 
       header: 'Aksi', 
-      cell: (item: Pembayaran) => item.status !== 'lunas' && (
-        <Button size="sm" variant="outline" onClick={() => handleBayar(item)}>
-          Bayar
-        </Button>
+      cell: (item: Pembayaran) => (
+        <div className="flex gap-1">
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            onClick={() => handleViewHistory(item)}
+            title="Lihat Riwayat"
+          >
+            <History className="h-4 w-4" />
+          </Button>
+          {item.status !== 'lunas' && (
+            <Button size="sm" variant="outline" onClick={() => handleBayar(item)}>
+              Bayar
+            </Button>
+          )}
+        </div>
       ),
-      className: 'w-24'
+      className: 'w-32'
     },
   ];
 
@@ -377,6 +403,13 @@ export default function PembayaranPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <PaymentHistoryDialog
+        open={historyDialogOpen}
+        onOpenChange={setHistoryDialogOpen}
+        siswaId={selectedSiswa?.id || null}
+        siswaInfo={selectedSiswa || undefined}
+      />
     </div>
   );
 }
