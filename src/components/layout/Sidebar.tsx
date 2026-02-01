@@ -66,6 +66,19 @@ export function Sidebar() {
   const [expandedItems, setExpandedItems] = useState<string[]>(['Keuangan']);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Debug: log role state
+  console.log('Sidebar roles:', roles, 'loading:', loading);
+
+  // Get display role name
+  const getRoleDisplayName = () => {
+    if (roles.includes('admin')) return 'Admin';
+    if (roles.includes('bendahara')) return 'Bendahara';
+    if (roles.includes('operator')) return 'Operator';
+    return null;
+  };
+  
+  const roleDisplayName = getRoleDisplayName();
+
   // Filter menu items based on user roles
   const filterMenuItems = (items: MenuItem[]): MenuItem[] => {
     // If still loading roles, show all menu items to prevent flicker
@@ -182,8 +195,15 @@ export function Sidebar() {
         {menuItems.map(item => renderMenuItem(item))}
       </nav>
 
-      {/* Footer */}
-      <div className="p-3 border-t border-sidebar-border">
+      {/* Footer with user info */}
+      <div className="p-3 border-t border-sidebar-border space-y-2">
+        {/* User Role Badge */}
+        {!collapsed && roleDisplayName && (
+          <div className="px-4 py-2 rounded-lg bg-sidebar-accent/50">
+            <p className="text-xs text-sidebar-foreground/60">Login sebagai</p>
+            <p className="text-sm font-semibold text-sidebar-foreground">{roleDisplayName}</p>
+          </div>
+        )}
         <button
           onClick={signOut}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
