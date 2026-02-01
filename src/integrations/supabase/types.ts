@@ -165,6 +165,7 @@ export type Database = {
           email: string | null
           id: string
           jabatan: string | null
+          jenis_kelamin: string | null
           lulusan: string | null
           mapel: string | null
           nama: string
@@ -172,6 +173,8 @@ export type Database = {
           nip: string | null
           no_hp: string | null
           nuptk: string | null
+          tanggal_lahir: string | null
+          tempat_lahir: string | null
           updated_at: string
         }
         Insert: {
@@ -180,6 +183,7 @@ export type Database = {
           email?: string | null
           id?: string
           jabatan?: string | null
+          jenis_kelamin?: string | null
           lulusan?: string | null
           mapel?: string | null
           nama: string
@@ -187,6 +191,8 @@ export type Database = {
           nip?: string | null
           no_hp?: string | null
           nuptk?: string | null
+          tanggal_lahir?: string | null
+          tempat_lahir?: string | null
           updated_at?: string
         }
         Update: {
@@ -195,6 +201,7 @@ export type Database = {
           email?: string | null
           id?: string
           jabatan?: string | null
+          jenis_kelamin?: string | null
           lulusan?: string | null
           mapel?: string | null
           nama?: string
@@ -202,6 +209,8 @@ export type Database = {
           nip?: string | null
           no_hp?: string | null
           nuptk?: string | null
+          tanggal_lahir?: string | null
+          tempat_lahir?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -486,11 +495,14 @@ export type Database = {
           alamat: string | null
           created_at: string
           id: string
+          jenis_kelamin: string | null
           kelas_id: string | null
           nama: string
           nis: string
           status: string | null
           ta_id: string | null
+          tanggal_lahir: string | null
+          tempat_lahir: string | null
           updated_at: string
           wa_ortu: string | null
         }
@@ -498,11 +510,14 @@ export type Database = {
           alamat?: string | null
           created_at?: string
           id?: string
+          jenis_kelamin?: string | null
           kelas_id?: string | null
           nama: string
           nis: string
           status?: string | null
           ta_id?: string | null
+          tanggal_lahir?: string | null
+          tempat_lahir?: string | null
           updated_at?: string
           wa_ortu?: string | null
         }
@@ -510,11 +525,14 @@ export type Database = {
           alamat?: string | null
           created_at?: string
           id?: string
+          jenis_kelamin?: string | null
           kelas_id?: string | null
           nama?: string
           nis?: string
           status?: string | null
           ta_id?: string | null
+          tanggal_lahir?: string | null
+          tempat_lahir?: string | null
           updated_at?: string
           wa_ortu?: string | null
         }

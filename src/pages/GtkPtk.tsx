@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { UserCog, Plus, Search, Upload, Pencil, Trash2, Phone, Mail } from 'lucide-react';
+import { UserCog, Plus, Search, Upload, Pencil, Trash2, Phone, Mail, CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,22 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 import { ImportDialog, ImportResult } from '@/components/import/ImportDialog';
+import { ExportButton } from '@/components/export/ExportButton';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
@@ -30,6 +46,9 @@ interface GtkPtk {
   lulusan: string | null;
   email: string | null;
   mapel: string | null;
+  tempat_lahir: string | null;
+  tanggal_lahir: string | null;
+  jenis_kelamin: string | null;
 }
 
 export default function GtkPtkPage() {
@@ -50,13 +69,33 @@ export default function GtkPtkPage() {
     lulusan: '',
     email: '',
     mapel: '',
+    tempat_lahir: '',
+    tanggal_lahir: undefined as Date | undefined,
+    jenis_kelamin: '',
   });
 
   // Import configuration
-  const importHeaders = ['NUPTK', 'NIP', 'NIK', 'Nama', 'Jabatan', 'Lulusan', 'Mapel', 'No HP', 'Email', 'Alamat'];
+  const importHeaders = ['NUPTK', 'NIP', 'NIK', 'Nama', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Jabatan', 'Lulusan', 'Mapel', 'No HP', 'Email', 'Alamat'];
   const importSampleData = [
-    ['1234567890123456', '198501012010011001', '3201010101010001', 'Ahmad Hidayat, S.Pd', 'Guru', 'S1 Pendidikan', 'Matematika, IPA', '081234567890', 'ahmad@email.com', 'Jl. Merdeka No. 1'],
-    ['1234567890123457', '', '3201010101010002', 'Siti Rahayu, S.Pd', 'Guru', 'S1 Bahasa', 'Bahasa Indonesia', '081234567891', 'siti@email.com', 'Jl. Sudirman No. 2'],
+    ['1234567890123456', '198501012010011001', '3201010101010001', 'Ahmad Hidayat, S.Pd', 'Laki-laki', 'Jakarta', '1985-01-01', 'Guru', 'S1 Pendidikan', 'Matematika, IPA', '081234567890', 'ahmad@email.com', 'Jl. Merdeka No. 1'],
+    ['1234567890123457', '', '3201010101010002', 'Siti Rahayu, S.Pd', 'Perempuan', 'Bandung', '1988-05-15', 'Guru', 'S1 Bahasa', 'Bahasa Indonesia', '081234567891', 'siti@email.com', 'Jl. Sudirman No. 2'],
+  ];
+
+  // Export columns configuration
+  const exportColumns = [
+    { header: 'NUPTK', accessor: (g: GtkPtk) => g.nuptk },
+    { header: 'NIP', accessor: (g: GtkPtk) => g.nip },
+    { header: 'NIK', accessor: (g: GtkPtk) => g.nik },
+    { header: 'Nama', accessor: (g: GtkPtk) => g.nama },
+    { header: 'Jenis Kelamin', accessor: (g: GtkPtk) => g.jenis_kelamin },
+    { header: 'Tempat Lahir', accessor: (g: GtkPtk) => g.tempat_lahir },
+    { header: 'Tanggal Lahir', accessor: (g: GtkPtk) => g.tanggal_lahir },
+    { header: 'Jabatan', accessor: (g: GtkPtk) => g.jabatan },
+    { header: 'Lulusan', accessor: (g: GtkPtk) => g.lulusan },
+    { header: 'Mapel', accessor: (g: GtkPtk) => g.mapel },
+    { header: 'No HP', accessor: (g: GtkPtk) => g.no_hp },
+    { header: 'Email', accessor: (g: GtkPtk) => g.email },
+    { header: 'Alamat', accessor: (g: GtkPtk) => g.alamat },
   ];
 
   const handleImport = async (data: Record<string, string>[]): Promise<ImportResult> => {
@@ -82,6 +121,9 @@ export default function GtkPtkPage() {
           no_hp: row['No HP']?.trim() || null,
           email: row['Email']?.trim() || null,
           alamat: row['Alamat']?.trim() || null,
+          tempat_lahir: row['Tempat Lahir']?.trim() || null,
+          tanggal_lahir: row['Tanggal Lahir']?.trim() || null,
+          jenis_kelamin: row['Jenis Kelamin']?.trim() || null,
         });
 
         if (error) throw error;
@@ -131,10 +173,17 @@ export default function GtkPtkPage() {
         lulusan: gtk.lulusan || '',
         email: gtk.email || '',
         mapel: gtk.mapel || '',
+        tempat_lahir: gtk.tempat_lahir || '',
+        tanggal_lahir: gtk.tanggal_lahir ? new Date(gtk.tanggal_lahir) : undefined,
+        jenis_kelamin: gtk.jenis_kelamin || '',
       });
     } else {
       setEditingGtk(null);
-      setFormData({ nip: '', nama: '', jabatan: '', no_hp: '', alamat: '', nuptk: '', nik: '', lulusan: '', email: '', mapel: '' });
+      setFormData({ 
+        nip: '', nama: '', jabatan: '', no_hp: '', alamat: '', 
+        nuptk: '', nik: '', lulusan: '', email: '', mapel: '',
+        tempat_lahir: '', tanggal_lahir: undefined, jenis_kelamin: ''
+      });
     }
     setDialogOpen(true);
   };
@@ -154,6 +203,9 @@ export default function GtkPtkPage() {
         lulusan: formData.lulusan || null,
         email: formData.email || null,
         mapel: formData.mapel || null,
+        tempat_lahir: formData.tempat_lahir || null,
+        tanggal_lahir: formData.tanggal_lahir ? format(formData.tanggal_lahir, 'yyyy-MM-dd') : null,
+        jenis_kelamin: formData.jenis_kelamin || null,
       };
 
       if (editingGtk) {
@@ -209,9 +261,18 @@ export default function GtkPtkPage() {
     },
     { header: 'Nama', cell: (item: GtkPtk) => <span className="font-medium">{item.nama}</span> },
     { 
+      header: 'L/P', 
+      cell: (item: GtkPtk) => item.jenis_kelamin ? (
+        <Badge variant={item.jenis_kelamin === 'Laki-laki' ? 'default' : 'secondary'}>
+          {item.jenis_kelamin === 'Laki-laki' ? 'L' : 'P'}
+        </Badge>
+      ) : '-',
+      className: 'w-16'
+    },
+    { 
       header: 'Jabatan', 
       cell: (item: GtkPtk) => item.jabatan ? (
-        <Badge variant="secondary">{item.jabatan}</Badge>
+        <Badge variant="outline">{item.jabatan}</Badge>
       ) : '-'
     },
     { 
@@ -272,6 +333,11 @@ export default function GtkPtkPage() {
         icon={<UserCog className="h-6 w-6" />}
         actions={
           <div className="flex gap-2">
+            <ExportButton 
+              data={filteredData} 
+              columns={exportColumns} 
+              filename="data_gtk_ptk"
+            />
             <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
               <Upload className="h-4 w-4 mr-2" />
               Import
@@ -359,6 +425,58 @@ export default function GtkPtkPage() {
                 onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
                 required
               />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="jenis_kelamin">Jenis Kelamin</Label>
+                <Select value={formData.jenis_kelamin} onValueChange={(v) => setFormData({ ...formData, jenis_kelamin: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                    <SelectItem value="Perempuan">Perempuan</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tempat_lahir">Tempat Lahir</Label>
+                <Input
+                  id="tempat_lahir"
+                  value={formData.tempat_lahir}
+                  onChange={(e) => setFormData({ ...formData, tempat_lahir: e.target.value })}
+                  placeholder="Contoh: Jakarta"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Tanggal Lahir</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !formData.tanggal_lahir && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.tanggal_lahir ? format(formData.tanggal_lahir, "dd/MM/yyyy") : "Pilih tanggal"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.tanggal_lahir}
+                    onSelect={(date) => setFormData({ ...formData, tanggal_lahir: date })}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                    captionLayout="dropdown-buttons"
+                    fromYear={1950}
+                    toYear={new Date().getFullYear()}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="space-y-2">
               <Label htmlFor="jabatan">Jabatan</Label>
