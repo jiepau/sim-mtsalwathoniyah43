@@ -74,8 +74,26 @@ export function Sidebar() {
   const location = useLocation();
   const { signOut, hasRole, roles, loading } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<string[]>(['Keuangan']);
   const [mobileOpen, setMobileOpen] = useState(false);
+  
+  // Auto-expand menu based on current route
+  const getInitialExpandedItems = () => {
+    const path = location.pathname;
+    const expanded: string[] = [];
+    
+    // Check Keuangan routes
+    if (['/jenis-tagihan', '/pembayaran', '/pemasukan', '/pengeluaran', '/tunggakan'].includes(path)) {
+      expanded.push('Keuangan');
+    }
+    // Check Kurikulum routes
+    if (['/atp', '/kktp'].includes(path)) {
+      expanded.push('Kurikulum');
+    }
+    
+    return expanded;
+  };
+  
+  const [expandedItems, setExpandedItems] = useState<string[]>(getInitialExpandedItems);
 
   // Debug: log role state
   console.log('Sidebar roles:', roles, 'loading:', loading);
