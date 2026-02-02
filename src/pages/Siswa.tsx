@@ -541,8 +541,8 @@ export default function SiswaPage() {
       />
 
       {/* Search & Filter */}
-      <div className="mb-4 flex flex-wrap gap-2 items-center">
-        <div className="relative max-w-sm">
+      <div className="mb-4 flex flex-wrap gap-3 items-center">
+        <div className="relative w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Cari NIS atau nama..."
@@ -551,25 +551,64 @@ export default function SiswaPage() {
             className="pl-10"
           />
         </div>
-        {filterKelasName && (
-          <Badge variant="secondary" className="gap-1 py-1.5">
-            Kelas: {filterKelasName}
-            <button onClick={clearKelasFilter} className="ml-1 hover:text-destructive">
-              <X className="h-3 w-3" />
-            </button>
-          </Badge>
-        )}
-        {filterTADisplay && (
-          <Badge variant="secondary" className="gap-1 py-1.5">
-            TA: {filterTADisplay}
-            <button onClick={clearTAFilter} className="ml-1 hover:text-destructive">
-              <X className="h-3 w-3" />
-            </button>
-          </Badge>
-        )}
-        {(filterKelasName || filterTADisplay) && (
+        
+        {/* Filter Kelas */}
+        <Select 
+          value={kelasFilter || 'all'} 
+          onValueChange={(v) => {
+            const newParams = new URLSearchParams(searchParams);
+            if (v === 'all') {
+              newParams.delete('kelas');
+            } else {
+              newParams.set('kelas', v);
+            }
+            setSearchParams(newParams);
+          }}
+        >
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Semua Kelas" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Semua Kelas</SelectItem>
+            {kelas.map(k => (
+              <SelectItem key={k.id} value={k.id}>{k.nama_kelas}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Filter Tahun Ajaran */}
+        <Select 
+          value={taFilter || 'all'} 
+          onValueChange={(v) => {
+            const newParams = new URLSearchParams(searchParams);
+            if (v === 'all') {
+              newParams.delete('ta');
+            } else {
+              newParams.set('ta', v);
+            }
+            setSearchParams(newParams);
+          }}
+        >
+          <SelectTrigger className="w-52">
+            <SelectValue placeholder="Semua Tahun Ajaran" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Semua Tahun Ajaran</SelectItem>
+            {tahunAjaran.map(ta => {
+              const semesterLabel = ta.semester === 'genap' ? 'Genap' : 'Ganjil';
+              return (
+                <SelectItem key={ta.id} value={ta.id}>
+                  {ta.nama_ta} - {semesterLabel}
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
+
+        {(kelasFilter || taFilter) && (
           <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-muted-foreground">
-            Hapus semua filter
+            <X className="h-4 w-4 mr-1" />
+            Reset Filter
           </Button>
         )}
       </div>
