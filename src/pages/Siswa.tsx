@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Users, Plus, Search, Upload, Pencil, Trash2, Phone, X, Eye } from 'lucide-react';
+import { Users, Plus, Search, Upload, Pencil, Trash2, Phone, X, Eye, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
@@ -77,6 +77,11 @@ export default function SiswaPage() {
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedSiswa, setSelectedSiswa] = useState<Siswa | null>(null);
   const [editingSiswa, setEditingSiswa] = useState<Siswa | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  
   const [formData, setFormData] = useState({
     nis: '',
     nama: '',
@@ -345,6 +350,18 @@ export default function SiswaPage() {
     return matchesSearch && matchesKelas;
   });
 
+  // Pagination calculations
+  const totalItems = filteredSiswa.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedSiswa = filteredSiswa.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, kelasFilter, pageSize]);
+
   const filterKelasName = kelasFilter ? kelas.find(k => k.id === kelasFilter)?.nama_kelas : null;
 
   const clearKelasFilter = () => {
@@ -479,13 +496,105 @@ export default function SiswaPage() {
         )}
       </div>
 
+      {/* Pagination Controls - Top */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Tampilkan</span>
+          <Select value={pageSize.toString()} onValueChange={(v) => setPageSize(Number(v))}>
+            <SelectTrigger className="w-20 h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="25">25</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+              <SelectItem value="100">100</SelectItem>
+            </SelectContent>
+          </Select>
+          <span className="text-sm text-muted-foreground">data</span>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          Menampilkan {totalItems > 0 ? startIndex + 1 : 0} - {endIndex} dari {totalItems} data
+        </div>
+      </div>
+
       {/* Table */}
       <DataTable 
-        data={filteredSiswa} 
+        data={paginatedSiswa} 
         columns={columns} 
         loading={loading}
         emptyMessage="Belum ada data siswa"
       />
+
+      {/* Pagination Controls - Bottom */}
+      {totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-center gap-1">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setCurrentPage(1)} 
+            disabled={currentPage === 1}
+            title="Halaman Pertama"
+          >
+            <ChevronsLeft className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
+            disabled={currentPage === 1}
+            title="Sebelumnya"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          
+          {/* Page numbers */}
+          <div className="flex items-center gap-1 mx-2">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum: number;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+              return (
+                <Button
+                  key={pageNum}
+                  variant={currentPage === pageNum ? "default" : "outline"}
+                  size="sm"
+                  className="w-9 h-9"
+                  onClick={() => setCurrentPage(pageNum)}
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
+          </div>
+
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} 
+            disabled={currentPage === totalPages}
+            title="Selanjutnya"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setCurrentPage(totalPages)} 
+            disabled={currentPage === totalPages}
+            title="Halaman Terakhir"
+          >
+            <ChevronsRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       {/* Dialog Form */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
