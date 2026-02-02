@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { PaymentHistoryDialog } from '@/components/pembayaran/PaymentHistoryDialog';
+import { PaymentFormDialog } from '@/components/pembayaran/PaymentFormDialog';
 import {
   Dialog,
   DialogContent,
@@ -62,6 +63,8 @@ export default function PembayaranPage() {
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedPembayaran, setSelectedPembayaran] = useState<Pembayaran | null>(null);
   const [selectedSiswa, setSelectedSiswa] = useState<{ id: string; nama: string; nis: string } | null>(null);
   const [formData, setFormData] = useState({
     siswa_id: '',
@@ -156,36 +159,43 @@ export default function PembayaranPage() {
     }
   };
 
-  const handleBayar = async (item: Pembayaran) => {
+  const handleOpenPaymentDialog = (item: Pembayaran) => {
+    setSelectedPembayaran(item);
+    setPaymentDialogOpen(true);
+  };
+
+  const handlePaymentSubmit = async (nominalBayar: number) => {
+    if (!selectedPembayaran) return;
+
+    const item = selectedPembayaran;
     const sisa = item.nominal - item.nominal_bayar;
-    const bayar = prompt(`Sisa tagihan: ${formatCurrency(sisa)}\nMasukkan jumlah bayar:`);
-    
-    if (!bayar) return;
-    const nominalBayar = parseFloat(bayar);
-    if (isNaN(nominalBayar) || nominalBayar <= 0) {
-      toast.error('Nominal tidak valid');
-      return;
+
+    // Server-side validation: ensure payment doesn't exceed remaining balance
+    if (nominalBayar > sisa) {
+      toast.error(`Nominal tidak boleh melebihi sisa tagihan (${formatCurrency(sisa)})`);
+      throw new Error('Invalid payment amount');
     }
 
     const totalBayar = item.nominal_bayar + nominalBayar;
     const status = totalBayar >= item.nominal ? 'lunas' : 'cicil';
 
-    try {
-      const { error } = await supabase
-        .from('pembayaran')
-        .update({
-          nominal_bayar: totalBayar,
-          tanggal_bayar: new Date().toISOString(),
-          status,
-        })
-        .eq('id', item.id);
+    const { error } = await supabase
+      .from('pembayaran')
+      .update({
+        nominal_bayar: totalBayar,
+        tanggal_bayar: new Date().toISOString(),
+        status,
+      })
+      .eq('id', item.id);
 
-      if (error) throw error;
-      toast.success('Pembayaran berhasil diupdate');
-      fetchData();
-    } catch (error: any) {
+    if (error) {
       toast.error(mapDatabaseError(error));
+      throw error;
     }
+
+    toast.success('Pembayaran berhasil diupdate');
+    setSelectedPembayaran(null);
+    fetchData();
   };
 
   const handleViewHistory = (item: Pembayaran) => {
@@ -277,7 +287,7 @@ export default function PembayaranPage() {
             <History className="h-4 w-4" />
           </Button>
           {item.status !== 'lunas' && (
-            <Button size="sm" variant="outline" onClick={() => handleBayar(item)}>
+            <Button size="sm" variant="outline" onClick={() => handleOpenPaymentDialog(item)}>
               Bayar
             </Button>
           )}
@@ -409,6 +419,13 @@ export default function PembayaranPage() {
         onOpenChange={setHistoryDialogOpen}
         siswaId={selectedSiswa?.id || null}
         siswaInfo={selectedSiswa || undefined}
+      />
+
+      <PaymentFormDialog
+        open={paymentDialogOpen}
+        onOpenChange={setPaymentDialogOpen}
+        sisaTagihan={selectedPembayaran ? selectedPembayaran.nominal - selectedPembayaran.nominal_bayar : 0}
+        onSubmit={handlePaymentSubmit}
       />
     </div>
   );
