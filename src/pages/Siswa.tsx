@@ -354,6 +354,32 @@ export default function SiswaPage() {
     }
   };
 
+  const handleDeleteAll = async () => {
+    const count = siswa.length;
+    if (count === 0) {
+      toast.info('Tidak ada data siswa untuk dihapus');
+      return;
+    }
+    
+    const confirmText = `HAPUS SEMUA`;
+    const userInput = prompt(`Anda akan menghapus ${count} data siswa.\n\nKetik "${confirmText}" untuk konfirmasi:`);
+    
+    if (userInput !== confirmText) {
+      toast.info('Penghapusan dibatalkan');
+      return;
+    }
+    
+    try {
+      // Delete all siswa records
+      const { error } = await supabase.from('siswa').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (error) throw error;
+      toast.success(`${count} data siswa berhasil dihapus`);
+      fetchData();
+    } catch (error: any) {
+      toast.error(mapDatabaseError(error));
+    }
+  };
+
   // Filter by search and kelas from URL
   const filteredSiswa = siswa.filter(s => {
     const matchesSearch = s.nama.toLowerCase().includes(search.toLowerCase()) ||
@@ -470,6 +496,15 @@ export default function SiswaPage() {
         icon={<Users className="h-6 w-6" />}
         actions={
           <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+              onClick={handleDeleteAll}
+              disabled={siswa.length === 0}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Hapus Semua
+            </Button>
             <ExportButton 
               data={filteredSiswa} 
               columns={exportColumns} 
