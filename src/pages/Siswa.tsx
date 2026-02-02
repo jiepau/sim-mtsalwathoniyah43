@@ -139,17 +139,29 @@ export default function SiswaPage() {
       return dateStr;
     }
 
-    // Try dd-MMM-yyyy or d-MMM-yyyy format (Indonesian)
-    const match = dateStr.match(/^(\d{1,2})-([a-zA-Z]+)-(\d{2,4})$/i);
-    if (match) {
-      const day = match[1].padStart(2, '0');
-      const monthName = match[2].toLowerCase();
-      let year = match[3];
+    // Try dd-MMM-yyyy or d-MMM-yyyy format (with hyphen)
+    const hyphenMatch = dateStr.match(/^(\d{1,2})-([a-zA-Z]+)-(\d{2,4})$/i);
+    if (hyphenMatch) {
+      const day = hyphenMatch[1].padStart(2, '0');
+      const monthName = hyphenMatch[2].toLowerCase();
+      let year = hyphenMatch[3];
       
-      // Handle 2-digit year
       if (year.length === 2) {
         year = parseInt(year) > 50 ? '19' + year : '20' + year;
       }
+      
+      const month = monthMap[monthName];
+      if (month) {
+        return `${year}-${month}-${day}`;
+      }
+    }
+
+    // Try "dd MMMM yyyy" or "d MMMM yyyy" format (with space - common Excel format)
+    const spaceMatch = dateStr.match(/^(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})$/i);
+    if (spaceMatch) {
+      const day = spaceMatch[1].padStart(2, '0');
+      const monthName = spaceMatch[2].toLowerCase();
+      const year = spaceMatch[3];
       
       const month = monthMap[monthName];
       if (month) {
