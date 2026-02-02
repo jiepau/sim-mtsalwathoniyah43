@@ -66,6 +66,7 @@ interface TahunAjaran {
 export default function SiswaPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const kelasFilter = searchParams.get('kelas');
+  const taFilter = searchParams.get('ta');
   
   const [siswa, setSiswa] = useState<Siswa[]>([]);
   const [kelas, setKelas] = useState<Kelas[]>([]);
@@ -380,12 +381,13 @@ export default function SiswaPage() {
     }
   };
 
-  // Filter by search and kelas from URL
+  // Filter by search, kelas, and TA from URL
   const filteredSiswa = siswa.filter(s => {
     const matchesSearch = s.nama.toLowerCase().includes(search.toLowerCase()) ||
       s.nis.toLowerCase().includes(search.toLowerCase());
     const matchesKelas = !kelasFilter || s.kelas_id === kelasFilter;
-    return matchesSearch && matchesKelas;
+    const matchesTA = !taFilter || s.ta_id === taFilter;
+    return matchesSearch && matchesKelas && matchesTA;
   });
 
   // Pagination calculations
@@ -398,11 +400,27 @@ export default function SiswaPage() {
   // Reset to page 1 when search or filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, kelasFilter, pageSize]);
+  }, [search, kelasFilter, taFilter, pageSize]);
 
   const filterKelasName = kelasFilter ? kelas.find(k => k.id === kelasFilter)?.nama_kelas : null;
+  const filterTAName = taFilter ? tahunAjaran.find(ta => ta.id === taFilter) : null;
+  const filterTADisplay = filterTAName 
+    ? `${filterTAName.nama_ta} ${filterTAName.semester === 'genap' ? 'Genap' : 'Ganjil'}`
+    : null;
 
   const clearKelasFilter = () => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('kelas');
+    setSearchParams(newParams);
+  };
+
+  const clearTAFilter = () => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('ta');
+    setSearchParams(newParams);
+  };
+
+  const clearAllFilters = () => {
     setSearchParams({});
   };
 
@@ -535,11 +553,24 @@ export default function SiswaPage() {
         </div>
         {filterKelasName && (
           <Badge variant="secondary" className="gap-1 py-1.5">
-            Filter: {filterKelasName}
+            Kelas: {filterKelasName}
             <button onClick={clearKelasFilter} className="ml-1 hover:text-destructive">
               <X className="h-3 w-3" />
             </button>
           </Badge>
+        )}
+        {filterTADisplay && (
+          <Badge variant="secondary" className="gap-1 py-1.5">
+            TA: {filterTADisplay}
+            <button onClick={clearTAFilter} className="ml-1 hover:text-destructive">
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
+        )}
+        {(filterKelasName || filterTADisplay) && (
+          <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-muted-foreground">
+            Hapus semua filter
+          </Button>
         )}
       </div>
 
