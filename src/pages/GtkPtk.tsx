@@ -485,9 +485,7 @@ export default function GtkPtkPage() {
                     onSelect={(date) => setFormData({ ...formData, tanggal_lahir: date })}
                     initialFocus
                     className="p-3 pointer-events-auto"
-                    captionLayout="dropdown-buttons"
-                    fromYear={1950}
-                    toYear={new Date().getFullYear()}
+                    defaultMonth={formData.tanggal_lahir || new Date(1990, 0)}
                   />
                 </PopoverContent>
               </Popover>
