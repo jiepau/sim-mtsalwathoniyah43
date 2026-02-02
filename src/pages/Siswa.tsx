@@ -124,7 +124,7 @@ export default function SiswaPage() {
       'feb': '02', 'februari': '02',
       'mar': '03', 'maret': '03',
       'apr': '04', 'april': '04',
-      'mei': '05', 'mei' : '05'
+      'mei': '05', 'may': '05',
       'jun': '06', 'juni': '06',
       'jul': '07', 'juli': '07',
       'agu': '08', 'agustus': '08',
