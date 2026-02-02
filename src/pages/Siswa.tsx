@@ -669,9 +669,7 @@ export default function SiswaPage() {
                     onSelect={(date) => setFormData({ ...formData, tanggal_lahir: date })}
                     initialFocus
                     className="p-3 pointer-events-auto"
-                    captionLayout="dropdown-buttons"
-                    fromYear={1990}
-                    toYear={new Date().getFullYear()}
+                    defaultMonth={formData.tanggal_lahir || new Date(2010, 0)}
                   />
                 </PopoverContent>
               </Popover>
