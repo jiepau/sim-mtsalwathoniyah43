@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { UpdateChecker } from "@/components/UpdateChecker";
 
 // Auth pages
 import Login from "@/pages/auth/Login";
@@ -44,6 +45,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
+        <UpdateChecker />
         <Toaster />
         <Sonner />
         <BrowserRouter>
