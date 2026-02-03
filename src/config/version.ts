@@ -32,7 +32,7 @@ export const CHANGELOG: ChangelogEntry[] = [
 ];
 
 // GitHub repository for checking updates (optional - can be configured later)
-export const GITHUB_REPO = ""; // e.g., "username/repo-name"
+export const GITHUB_REPO = "jiepau/sim-mtsalwathoniyah43"; // e.g., "username/repo-name"
 export const GITHUB_API_URL = GITHUB_REPO 
   ? `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`
   : "";
