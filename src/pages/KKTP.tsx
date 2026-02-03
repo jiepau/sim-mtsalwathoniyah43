@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Target, Plus, Search, Pencil, Trash2, ArrowLeft } from 'lucide-react';
+import { Target, Plus, Search, Pencil, Trash2, ArrowLeft, FileDown } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -26,14 +26,29 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { exportKKTPToWord } from '@/lib/atp-kktp-export';
 
 interface ATP {
   id: string;
   mapel: string;
   fase: string;
+  kelas: number | null;
+  semester: string | null;
+  elemen: string | null;
+  capaian_pembelajaran: string;
   tujuan_pembelajaran: string[];
+  alokasi_waktu: string | null;
+  nilai_karakter?: string[];
+  keterangan: string | null;
   guru?: { nama: string } | null;
   tahun_ajaran?: { nama_ta: string } | null;
+}
+
+interface MadrasahSettings {
+  nama_madrasah: string;
+  alamat: string | null;
+  kepala_madrasah: string | null;
+  nip_kepala: string | null;
 }
 
 interface KKTP {
@@ -76,10 +91,12 @@ export default function KKTPPage() {
   const [data, setData] = useState<KKTP[]>([]);
   const [atpList, setAtpList] = useState<ATP[]>([]);
   const [selectedAtp, setSelectedAtp] = useState<ATP | null>(null);
+  const [madrasah, setMadrasah] = useState<MadrasahSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<KKTP | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
   
   const [formData, setFormData] = useState({
     atp_id: '',
@@ -92,6 +109,7 @@ export default function KKTPPage() {
 
   useEffect(() => {
     fetchAtpList();
+    fetchMadrasah();
   }, []);
 
   useEffect(() => {
@@ -117,16 +135,31 @@ export default function KKTPPage() {
       const { data, error } = await supabase
         .from('atp')
         .select(`
-          id, mapel, fase, tujuan_pembelajaran,
+          id, mapel, fase, kelas, semester, elemen, capaian_pembelajaran, 
+          tujuan_pembelajaran, alokasi_waktu, nilai_karakter, keterangan,
           guru:gtk_ptk(nama),
           tahun_ajaran(nama_ta)
         `)
         .order('mapel');
       if (error) throw error;
-      setAtpList(data || []);
+      setAtpList((data || []) as ATP[]);
     } catch (error) {
       console.error('Error fetching ATP list:', error);
       toast.error('Gagal memuat daftar ATP');
+    }
+  };
+
+  const fetchMadrasah = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('madrasah_settings')
+        .select('nama_madrasah, alamat, kepala_madrasah, nip_kepala')
+        .limit(1)
+        .single();
+      if (error && error.code !== 'PGRST116') throw error;
+      setMadrasah(data);
+    } catch (error) {
+      console.error('Error fetching madrasah settings:', error);
     }
   };
 
@@ -146,6 +179,28 @@ export default function KKTPPage() {
       toast.error('Gagal memuat data KKTP');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportKKTP = async () => {
+    if (!selectedAtp || !madrasah) {
+      toast.error('Pilih ATP dan pastikan pengaturan madrasah sudah dikonfigurasi');
+      return;
+    }
+    
+    setIsExporting(true);
+    try {
+      await exportKKTPToWord(
+        { ...selectedAtp, nilai_karakter: selectedAtp.nilai_karakter || [] },
+        data,
+        madrasah
+      );
+      toast.success('Dokumen KKTP berhasil diunduh');
+    } catch (error: any) {
+      console.error('Export error:', error);
+      toast.error('Gagal mengekspor dokumen');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -320,10 +375,22 @@ export default function KKTPPage() {
         description="Kriteria untuk mengukur ketercapaian tujuan pembelajaran"
         icon={<Target className="h-6 w-6" />}
         actions={
-          <Button variant="outline" onClick={() => navigate('/atp')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Kembali ke ATP
-          </Button>
+          <div className="flex items-center gap-2">
+            {selectedAtp && data.length > 0 && (
+              <Button 
+                variant="outline" 
+                onClick={handleExportKKTP}
+                disabled={isExporting}
+              >
+                <FileDown className="h-4 w-4 mr-2" />
+                {isExporting ? 'Mengunduh...' : 'Export Word'}
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => navigate('/atp')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Kembali ke ATP
+            </Button>
+          </div>
         }
       />
 

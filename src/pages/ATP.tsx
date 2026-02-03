@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, Plus, Search, Pencil, Trash2, ChevronDown, ChevronRight, Target, Sparkles } from 'lucide-react';
+import { BookOpen, Plus, Search, Pencil, Trash2, ChevronDown, ChevronRight, Target, Sparkles, FileDown, Heart } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
 import { useNavigate } from 'react-router-dom';
+import { exportATPToWord } from '@/lib/atp-kktp-export';
 
 interface GtkPtk {
   id: string;
@@ -55,11 +56,40 @@ interface ATP {
   capaian_pembelajaran: string;
   tujuan_pembelajaran: string[];
   alokasi_waktu: string | null;
+  nilai_karakter: string[];
   keterangan: string | null;
   created_at: string;
   guru?: GtkPtk;
   tahun_ajaran?: TahunAjaran;
 }
+
+interface MadrasahSettings {
+  nama_madrasah: string;
+  alamat: string | null;
+  kepala_madrasah: string | null;
+  nip_kepala: string | null;
+}
+
+interface KKTP {
+  id: string;
+  tujuan_pembelajaran: string;
+  kriteria_ketercapaian: string[];
+  teknik_penilaian: string | null;
+  bentuk_instrumen: string | null;
+  keterangan: string | null;
+}
+
+// Kurikulum Berbasis Cinta - Nilai Karakter
+const NILAI_KARAKTER_OPTIONS = [
+  { value: 'kasih_sayang', label: 'Kasih Sayang' },
+  { value: 'empati', label: 'Empati' },
+  { value: 'ketulusan', label: 'Ketulusan' },
+  { value: 'kesabaran', label: 'Kesabaran' },
+  { value: 'toleransi', label: 'Toleransi' },
+  { value: 'tanggung_jawab', label: 'Tanggung Jawab' },
+  { value: 'kejujuran', label: 'Kejujuran' },
+  { value: 'kerjasama', label: 'Kerjasama' },
+];
 
 interface CPTemplate {
   id: string;
@@ -97,11 +127,13 @@ export default function ATPPage() {
   const [gurus, setGurus] = useState<GtkPtk[]>([]);
   const [tahunAjarans, setTahunAjarans] = useState<TahunAjaran[]>([]);
   const [cpTemplates, setCpTemplates] = useState<CPTemplate[]>([]);
+  const [madrasah, setMadrasah] = useState<MadrasahSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ATP | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [isExporting, setIsExporting] = useState<string | null>(null);
   
   type FaseType = 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
   
@@ -116,6 +148,7 @@ export default function ATPPage() {
     capaian_pembelajaran: string;
     tujuan_pembelajaran: string[];
     alokasi_waktu: string;
+    nilai_karakter: string[];
     keterangan: string;
   }>({
     guru_id: '',
@@ -128,6 +161,7 @@ export default function ATPPage() {
     capaian_pembelajaran: '',
     tujuan_pembelajaran: [''],
     alokasi_waktu: '',
+    nilai_karakter: [],
     keterangan: '',
   });
 
@@ -136,6 +170,7 @@ export default function ATPPage() {
     fetchGurus();
     fetchTahunAjaran();
     fetchCpTemplates();
+    fetchMadrasah();
   }, []);
 
   const fetchData = async () => {
@@ -199,6 +234,20 @@ export default function ATPPage() {
     }
   };
 
+  const fetchMadrasah = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('madrasah_settings')
+        .select('nama_madrasah, alamat, kepala_madrasah, nip_kepala')
+        .limit(1)
+        .single();
+      if (error && error.code !== 'PGRST116') throw error;
+      setMadrasah(data);
+    } catch (error) {
+      console.error('Error fetching madrasah settings:', error);
+    }
+  };
+
   // Get available templates for current mapel selection
   const getAvailableMapels = () => {
     const templateMapels = [...new Set(cpTemplates.map(t => t.mapel))];
@@ -243,6 +292,7 @@ export default function ATPPage() {
         capaian_pembelajaran: item.capaian_pembelajaran,
         tujuan_pembelajaran: item.tujuan_pembelajaran.length > 0 ? item.tujuan_pembelajaran : [''],
         alokasi_waktu: item.alokasi_waktu || '',
+        nilai_karakter: item.nilai_karakter || [],
         keterangan: item.keterangan || '',
       });
     } else {
@@ -259,6 +309,7 @@ export default function ATPPage() {
         capaian_pembelajaran: '',
         tujuan_pembelajaran: [''],
         alokasi_waktu: '',
+        nilai_karakter: [],
         keterangan: '',
       });
     }
@@ -288,6 +339,7 @@ export default function ATPPage() {
         capaian_pembelajaran: formData.capaian_pembelajaran,
         tujuan_pembelajaran: filteredTP,
         alokasi_waktu: formData.alokasi_waktu || null,
+        nilai_karakter: formData.nilai_karakter,
         keterangan: formData.keterangan || null,
       };
 
@@ -308,6 +360,38 @@ export default function ATPPage() {
       fetchData();
     } catch (error: any) {
       toast.error(mapDatabaseError(error));
+    }
+  };
+
+  // Export ATP to Word
+  const handleExportATP = async (item: ATP) => {
+    if (!madrasah) {
+      toast.error('Pengaturan madrasah belum dikonfigurasi');
+      return;
+    }
+    
+    setIsExporting(item.id);
+    try {
+      // Fetch KKTP for this ATP
+      const { data: kktpData, error } = await supabase
+        .from('kktp')
+        .select('*')
+        .eq('atp_id', item.id)
+        .order('created_at');
+      
+      if (error) throw error;
+      
+      await exportATPToWord(
+        { ...item, nilai_karakter: item.nilai_karakter || [] },
+        kktpData || [],
+        madrasah
+      );
+      toast.success('Dokumen ATP berhasil diunduh');
+    } catch (error: any) {
+      console.error('Export error:', error);
+      toast.error('Gagal mengekspor dokumen');
+    } finally {
+      setIsExporting(null);
     }
   };
 
@@ -451,6 +535,15 @@ export default function ATPPage() {
           >
             <Target className="h-4 w-4" />
           </Button>
+          <Button 
+            size="sm" 
+            variant="ghost"
+            onClick={() => handleExportATP(item)}
+            disabled={isExporting === item.id}
+            title="Export Word"
+          >
+            <FileDown className="h-4 w-4" />
+          </Button>
           <Button size="sm" variant="ghost" onClick={() => handleOpenDialog(item)}>
             <Pencil className="h-4 w-4" />
           </Button>
@@ -459,7 +552,7 @@ export default function ATPPage() {
           </Button>
         </div>
       ),
-      className: 'w-36'
+      className: 'w-44'
     },
   ];
 
@@ -747,6 +840,45 @@ export default function ATPPage() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Nilai Karakter - Kurikulum Berbasis Cinta */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Heart className="h-4 w-4 text-destructive" />
+                <Label>Nilai Karakter (Kurikulum Berbasis Cinta)</Label>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {NILAI_KARAKTER_OPTIONS.map(option => (
+                  <label 
+                    key={option.value}
+                    className="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.nilai_karakter.includes(option.value)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormData(prev => ({
+                            ...prev,
+                            nilai_karakter: [...prev.nilai_karakter, option.value]
+                          }));
+                        } else {
+                          setFormData(prev => ({
+                            ...prev,
+                            nilai_karakter: prev.nilai_karakter.filter(v => v !== option.value)
+                          }));
+                        }
+                      }}
+                      className="rounded"
+                    />
+                    <span className="text-sm">{option.label}</span>
+                  </label>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Pilih nilai-nilai karakter yang ingin dikembangkan dalam pembelajaran ini
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
