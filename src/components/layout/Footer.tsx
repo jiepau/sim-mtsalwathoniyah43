@@ -1,6 +1,6 @@
 import { Building2, Heart } from "lucide-react";
+import { APP_VERSION } from "@/config/version";
 
-const APP_VERSION = "1.0.0";
 const APP_YEAR = "2026";
 
 export function Footer() {
