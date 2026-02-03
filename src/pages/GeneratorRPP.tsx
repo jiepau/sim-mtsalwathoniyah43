@@ -28,19 +28,94 @@ const JENJANG_OPTIONS = [
   { value: 'SMA', label: 'SMA (Sekolah Menengah Atas)', fase: 'E' },
 ];
 
-// Nilai karakter Kurikulum Berbasis Cinta
-const NILAI_KARAKTER_KBC = [
-  { value: 'cinta_allah', label: 'Cinta Allah Swt. dan Rasul-Nya' },
-  { value: 'cinta_diri', label: 'Cinta diri sendiri' },
-  { value: 'cinta_sesama', label: 'Cinta sesama manusia' },
-  { value: 'cinta_lingkungan', label: 'Cinta lingkungan' },
-  { value: 'cinta_tanah_air', label: 'Cinta tanah air' },
-  { value: 'kasih_sayang', label: 'Kasih sayang' },
-  { value: 'empati', label: 'Empati' },
-  { value: 'ketulusan', label: 'Ketulusan' },
-  { value: 'syukur', label: 'Syukur' },
-  { value: 'kejujuran', label: 'Kejujuran' },
-];
+// Nilai karakter Kurikulum Berbasis Cinta dengan materi insersi
+const NILAI_KARAKTER_KBC: Record<string, { label: string; materiInsersi: string[] }> = {
+  cinta_allah: {
+    label: 'Cinta Allah Swt. dan Rasul-Nya',
+    materiInsersi: [
+      'Mengagumi kebesaran Allah Swt. melalui ciptaan-Nya yang dipelajari.',
+      'Meneladani akhlak Rasulullah SAW dalam kehidupan sehari-hari.',
+      'Mengaitkan materi pembelajaran dengan ayat Al-Qur\'an atau hadis yang relevan.',
+    ]
+  },
+  cinta_diri: {
+    label: 'Cinta diri sendiri',
+    materiInsersi: [
+      'Menghargai diri sendiri sebagai makhluk ciptaan Allah yang mulia.',
+      'Menjaga kesehatan jasmani dan rohani sebagai bentuk syukur.',
+      'Mengembangkan potensi diri untuk kebaikan.',
+    ]
+  },
+  cinta_sesama: {
+    label: 'Cinta sesama manusia',
+    materiInsersi: [
+      'Menghormati perbedaan dan keberagaman dalam masyarakat.',
+      'Membangun sikap toleransi dan saling menghargai antar sesama.',
+      'Mempraktikkan ukhuwah Islamiyah dalam interaksi sosial.',
+    ]
+  },
+  cinta_lingkungan: {
+    label: 'Cinta lingkungan',
+    materiInsersi: [
+      'Menjaga kelestarian lingkungan sebagai amanah dari Allah Swt.',
+      'Larangan merusak lingkungan (QS. Ar-Rum: 41).',
+      'Menerapkan perilaku ramah lingkungan dalam kehidupan sehari-hari.',
+    ]
+  },
+  cinta_tanah_air: {
+    label: 'Cinta tanah air',
+    materiInsersi: [
+      'Menghargai jasa para pahlawan dan pejuang kemerdekaan.',
+      'Menjaga persatuan dan kesatuan bangsa.',
+      'Berkontribusi positif untuk kemajuan bangsa dan negara.',
+    ]
+  },
+  kasih_sayang: {
+    label: 'Kasih sayang',
+    materiInsersi: [
+      'Meneladani sifat ar-Rahman dan ar-Rahim Allah Swt.',
+      'Menunjukkan kasih sayang kepada orang tua, guru, dan teman.',
+      'Menyayangi makhluk hidup lain sebagai sesama ciptaan Allah.',
+    ]
+  },
+  empati: {
+    label: 'Empati',
+    materiInsersi: [
+      'Memahami perasaan dan kondisi orang lain.',
+      'Membantu sesama yang membutuhkan pertolongan.',
+      'Tidak meremehkan atau menghina orang lain.',
+    ]
+  },
+  ketulusan: {
+    label: 'Ketulusan',
+    materiInsersi: [
+      'Melakukan segala sesuatu dengan ikhlas karena Allah Swt.',
+      'Menghindari sikap riya\' dan pamer dalam beramal.',
+      'Mengutamakan niat yang tulus dalam setiap pembelajaran.',
+    ]
+  },
+  syukur: {
+    label: 'Syukur',
+    materiInsersi: [
+      'Mensyukuri nikmat Allah Swt. melalui perilaku sehari-hari.',
+      'Menggunakan nikmat yang diberikan untuk kebaikan.',
+      'Bersyukur atas ilmu pengetahuan yang diperoleh.',
+    ]
+  },
+  kejujuran: {
+    label: 'Kejujuran',
+    materiInsersi: [
+      'Menanamkan sikap jujur dalam perkataan dan perbuatan.',
+      'Menghindari perilaku curang dan berbohong.',
+      'Meneladani kejujuran Rasulullah SAW (Al-Amin).',
+    ]
+  },
+};
+
+const NILAI_KARAKTER_OPTIONS = Object.entries(NILAI_KARAKTER_KBC).map(([value, data]) => ({
+  value,
+  label: data.label,
+}));
 
 const MAPEL_OPTIONS = [
   "Al-Qur'an Hadis",
@@ -97,6 +172,19 @@ const GeneratorRPP = () => {
     setSelectedAtpId('');
   }, [formData.mapel, formData.jenjang]);
 
+  // Generate materi insersi from selected nilai karakter
+  const generateMateriInsersi = (nilaiKarakter: string[]): string => {
+    const materiList: string[] = [];
+    nilaiKarakter.forEach(nilai => {
+      const data = NILAI_KARAKTER_KBC[nilai];
+      if (data?.materiInsersi) {
+        // Take first 1-2 materi insersi from each nilai karakter
+        materiList.push(...data.materiInsersi.slice(0, 2));
+      }
+    });
+    return materiList.map(m => `- ${m}`).join('\n');
+  };
+
   // Auto-fill from selected ATP
   const handleAtpSelect = (atpId: string) => {
     setSelectedAtpId(atpId);
@@ -104,6 +192,7 @@ const GeneratorRPP = () => {
     if (atp) {
       // Map nilai_karakter from ATP to tema_kbc
       const nilaiKarakterFromAtp = atp.nilai_karakter || [];
+      const autoMateriInsersi = generateMateriInsersi(nilaiKarakterFromAtp);
       
       setFormData(prev => ({
         ...prev,
@@ -113,21 +202,26 @@ const GeneratorRPP = () => {
         tujuan_pembelajaran: atp.tujuan_pembelajaran?.join('\n') || '',
         alokasi_waktu: atp.alokasi_waktu || prev.alokasi_waktu,
         tema_kbc: nilaiKarakterFromAtp,
+        materi_insersi: autoMateriInsersi,
       }));
       toast({
         title: "Data ATP dimuat",
-        description: "CP, TP, dan Nilai Karakter dari ATP telah diisi otomatis.",
+        description: "CP, TP, Nilai Karakter, dan Materi Insersi dari ATP telah diisi otomatis.",
       });
     }
   };
-
-  // Handle tema KBC checkbox changes
+  // Handle tema KBC checkbox changes with auto-generate materi insersi
   const handleTemaKbcChange = (value: string, checked: boolean) => {
+    const newTemaKbc = checked 
+      ? [...formData.tema_kbc, value]
+      : formData.tema_kbc.filter(v => v !== value);
+    
+    const newMateriInsersi = generateMateriInsersi(newTemaKbc);
+    
     setFormData(prev => ({
       ...prev,
-      tema_kbc: checked 
-        ? [...prev.tema_kbc, value]
-        : prev.tema_kbc.filter(v => v !== value)
+      tema_kbc: newTemaKbc,
+      materi_insersi: newMateriInsersi,
     }));
   };
 
@@ -169,7 +263,7 @@ const GeneratorRPP = () => {
             tujuan_pembelajaran: formData.tujuan_pembelajaran,
             // Kurikulum Berbasis Cinta fields
             tema_kbc: formData.tema_kbc.map(v => 
-              NILAI_KARAKTER_KBC.find(k => k.value === v)?.label || v
+              NILAI_KARAKTER_KBC[v]?.label || v
             ).join('; '),
             materi_insersi: formData.materi_insersi,
           }),
@@ -499,7 +593,7 @@ const GeneratorRPP = () => {
               <div className="space-y-2">
                 <Label className="text-sm">Tema Kurikulum Berbasis Cinta</Label>
                 <div className="grid grid-cols-2 gap-2">
-                  {NILAI_KARAKTER_KBC.map(option => (
+                  {NILAI_KARAKTER_OPTIONS.map(option => (
                     <label key={option.value} className="flex items-center gap-2 text-sm cursor-pointer">
                       <input
                         type="checkbox"
