@@ -1,7 +1,7 @@
 // Centralized version configuration
 // Update this file when releasing new versions
 
-export const APP_VERSION = "1.0.0";
+export const APP_VERSION = "0.9.0"; // Sementara untuk testing badge
 export const APP_BUILD_DATE = "2026-02-03";
 
 export interface ChangelogEntry {
