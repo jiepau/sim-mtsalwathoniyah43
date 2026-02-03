@@ -31,10 +31,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // Memoized role fetcher with abort capability
-  const fetchRoles = useCallback(async (userId: string, retryCount = 0): Promise<void> => {
+  // silent = true means don't show loading spinner (for background refresh)
+  const fetchRoles = useCallback(async (userId: string, retryCount = 0, silent = false): Promise<void> => {
     // Increment fetch ID to invalidate any previous in-flight requests
     const thisFetchId = ++currentFetchId.current;
-    console.log('fetchRoles started - fetchId:', thisFetchId, 'userId:', userId, 'retry:', retryCount);
+    console.log('fetchRoles started - fetchId:', thisFetchId, 'userId:', userId, 'retry:', retryCount, 'silent:', silent);
     
     // Cancel any previous fetch
     if (abortControllerRef.current) {
@@ -42,7 +43,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     abortControllerRef.current = new AbortController();
     
-    setRolesLoading(true);
+    // Only show loading if not silent mode
+    if (!silent) {
+      setRolesLoading(true);
+    }
     
     try {
       // Create a timeout promise
@@ -60,7 +64,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (thisFetchId === currentFetchId.current) {
         console.log('fetchRoles success - fetchId:', thisFetchId, 'roles:', userRoles);
         setRoles(userRoles);
-        setRolesLoading(false);
+        if (!silent) {
+          setRolesLoading(false);
+        }
       } else {
         console.log('fetchRoles stale - ignoring result for fetchId:', thisFetchId);
       }
@@ -81,12 +87,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // Check again after delay if we're still current
         if (thisFetchId === currentFetchId.current) {
-          return fetchRoles(userId, retryCount + 1);
+          return fetchRoles(userId, retryCount + 1, silent);
         }
       } else {
         console.error('fetchRoles all retries failed');
         setRoles([]);
-        setRolesLoading(false);
+        if (!silent) {
+          setRolesLoading(false);
+        }
       }
     }
   }, []);
@@ -140,10 +148,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(newSession?.user ?? null);
         
         if (newSession?.user) {
+          // Check if this is a TOKEN_REFRESHED or tab visibility change
+          // In these cases, refresh roles silently (no loading spinner)
+          const isSilentRefresh = event === 'TOKEN_REFRESHED' || 
+            (event === 'SIGNED_IN' && roles.length > 0);
+          
           // Small delay to let state settle
           setTimeout(() => {
             if (mounted && !isSigningIn.current) {
-              fetchRoles(newSession.user.id);
+              fetchRoles(newSession.user.id, 0, isSilentRefresh);
             }
           }, 100);
         } else {
