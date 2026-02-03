@@ -30,6 +30,8 @@ const ATP = lazy(() => import("@/pages/ATP"));
 const KKTP = lazy(() => import("@/pages/KKTP"));
 const CPTemplates = lazy(() => import("@/pages/CPTemplates"));
 const GeneratorRPP = lazy(() => import("@/pages/GeneratorRPP"));
+const Prota = lazy(() => import("@/pages/Prota"));
+const Promes = lazy(() => import("@/pages/Promes"));
 const PengaturanMadrasah = lazy(() => import("@/pages/PengaturanMadrasah"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
@@ -79,6 +81,8 @@ const App = () => (
                 <Route path="/kktp" element={<KKTP />} />
                 <Route path="/cp-templates" element={<CPTemplates />} />
                 <Route path="/generator-rpp" element={<GeneratorRPP />} />
+                <Route path="/prota" element={<Prota />} />
+                <Route path="/promes" element={<Promes />} />
                 <Route path="/pengaturan-madrasah" element={<PengaturanMadrasah />} />
                 <Route path="/user-management" element={<UserManagement />} />
               </Route>
