@@ -68,6 +68,7 @@ export type Database = {
           kelas: number | null
           keterangan: string | null
           mapel: string
+          nilai_karakter: string[] | null
           semester: string | null
           ta_id: string | null
           tujuan_pembelajaran: string[] | null
@@ -84,6 +85,7 @@ export type Database = {
           kelas?: number | null
           keterangan?: string | null
           mapel: string
+          nilai_karakter?: string[] | null
           semester?: string | null
           ta_id?: string | null
           tujuan_pembelajaran?: string[] | null
@@ -100,6 +102,7 @@ export type Database = {
           kelas?: number | null
           keterangan?: string | null
           mapel?: string
+          nilai_karakter?: string[] | null
           semester?: string | null
           ta_id?: string | null
           tujuan_pembelajaran?: string[] | null
