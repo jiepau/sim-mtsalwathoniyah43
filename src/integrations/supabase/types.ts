@@ -161,6 +161,50 @@ export type Database = {
         }
         Relationships: []
       }
+      disposisi: {
+        Row: {
+          catatan: string | null
+          created_at: string
+          dari: string
+          id: string
+          instruksi: string | null
+          kepada: string
+          status: string | null
+          surat_masuk_id: string
+          tanggal_disposisi: string
+        }
+        Insert: {
+          catatan?: string | null
+          created_at?: string
+          dari: string
+          id?: string
+          instruksi?: string | null
+          kepada: string
+          status?: string | null
+          surat_masuk_id: string
+          tanggal_disposisi?: string
+        }
+        Update: {
+          catatan?: string | null
+          created_at?: string
+          dari?: string
+          id?: string
+          instruksi?: string | null
+          kepada?: string
+          status?: string | null
+          surat_masuk_id?: string
+          tanggal_disposisi?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disposisi_surat_masuk_id_fkey"
+            columns: ["surat_masuk_id"]
+            isOneToOne: false
+            referencedRelation: "surat_masuk"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gtk_ptk: {
         Row: {
           alamat: string | null
@@ -761,6 +805,102 @@ export type Database = {
           },
         ]
       }
+      surat_counter: {
+        Row: {
+          counter: number
+          id: string
+          jenis: string
+          tahun: number
+        }
+        Insert: {
+          counter?: number
+          id?: string
+          jenis: string
+          tahun: number
+        }
+        Update: {
+          counter?: number
+          id?: string
+          jenis?: string
+          tahun?: number
+        }
+        Relationships: []
+      }
+      surat_keluar: {
+        Row: {
+          created_at: string
+          id: string
+          keterangan: string | null
+          klasifikasi: string | null
+          nomor_surat: string
+          perihal: string
+          tanggal_surat: string
+          tujuan: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          keterangan?: string | null
+          klasifikasi?: string | null
+          nomor_surat: string
+          perihal: string
+          tanggal_surat?: string
+          tujuan: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          keterangan?: string | null
+          klasifikasi?: string | null
+          nomor_surat?: string
+          perihal?: string
+          tanggal_surat?: string
+          tujuan?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      surat_masuk: {
+        Row: {
+          created_at: string
+          id: string
+          keterangan: string | null
+          klasifikasi: string | null
+          nomor_surat: string
+          pengirim: string
+          perihal: string
+          tanggal_surat: string
+          tanggal_terima: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          keterangan?: string | null
+          klasifikasi?: string | null
+          nomor_surat: string
+          pengirim: string
+          perihal: string
+          tanggal_surat: string
+          tanggal_terima?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          keterangan?: string | null
+          klasifikasi?: string | null
+          nomor_surat?: string
+          pengirim?: string
+          perihal?: string
+          tanggal_surat?: string
+          tanggal_terima?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tahun_ajaran: {
         Row: {
           created_at: string
@@ -811,6 +951,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_nomor_surat: { Args: { p_jenis: string }; Returns: string }
       has_any_role: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {

@@ -27,6 +27,9 @@ import {
   FileText,
   Settings,
   Sparkles,
+  Mail,
+  MailOpen,
+  Send,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -49,6 +52,15 @@ const allMenuItems: MenuItem[] = [
   { title: 'Kelas', icon: School, path: '/kelas', roles: ['admin', 'operator'] },
   { title: 'Tahun Ajaran', icon: Calendar, path: '/tahun-ajaran', roles: ['admin', 'operator'] },
   { title: 'GTK/PTK', icon: UserCog, path: '/gtk-ptk', roles: ['admin', 'operator'] },
+  { 
+    title: 'Surat Menyurat', 
+    icon: Mail,
+    children: [
+      { title: 'Surat Masuk', icon: MailOpen, path: '/surat-masuk' },
+      { title: 'Surat Keluar', icon: Send, path: '/surat-keluar' },
+    ],
+    roles: ['admin', 'operator']
+  },
   { 
     title: 'Kurikulum', 
     icon: BookOpen,
@@ -99,6 +111,10 @@ export function Sidebar() {
     // Check Kurikulum routes
     if (['/prota', '/promes', '/generator-rpp', '/atp', '/kktp', '/cp-templates'].includes(path)) {
       expanded.push('Kurikulum');
+    }
+    // Check Surat Menyurat routes
+    if (['/surat-masuk', '/surat-keluar'].includes(path)) {
+      expanded.push('Surat Menyurat');
     }
     
     return expanded;
