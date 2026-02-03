@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Plus, Search, Pencil, Trash2, Eye, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, Plus, Search, Pencil, Trash2, Eye, ChevronDown, Database } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -30,9 +30,23 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
-import type { Database } from '@/integrations/supabase/types';
+import type { Database as DbTypes } from '@/integrations/supabase/types';
 
-type FasePembelajaran = Database['public']['Enums']['fase_pembelajaran'];
+type FasePembelajaran = DbTypes['public']['Enums']['fase_pembelajaran'];
+
+interface ATP {
+  id: string;
+  mapel: string;
+  fase: FasePembelajaran;
+  kelas: number | null;
+  tujuan_pembelajaran: string[] | null;
+  capaian_pembelajaran: string;
+  alokasi_waktu: string | null;
+  ta_id: string | null;
+  guru_id: string | null;
+  guru?: { nama: string } | null;
+  tahun_ajaran?: { nama_ta: string } | null;
+}
 
 interface Prota {
   id: string;
@@ -65,6 +79,7 @@ const BULAN_ORDER = [7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6]; // Tahun ajaran mul
 
 export default function ProtaPage() {
   const [data, setData] = useState<Prota[]>([]);
+  const [atpList, setAtpList] = useState<ATP[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -74,6 +89,7 @@ export default function ProtaPage() {
   const [protaDetails, setProtaDetails] = useState<ProtaDetail[]>([]);
   const [guruList, setGuruList] = useState<{ id: string; nama: string }[]>([]);
   const [taList, setTaList] = useState<{ id: string; nama_ta: string }[]>([]);
+  const [selectedAtpId, setSelectedAtpId] = useState<string>('');
   
   const [formData, setFormData] = useState({
     mapel: '',
@@ -92,6 +108,7 @@ export default function ProtaPage() {
     fetchData();
     fetchGuru();
     fetchTahunAjaran();
+    fetchAtpList();
   }, []);
 
   const fetchData = async () => {
@@ -126,6 +143,18 @@ export default function ProtaPage() {
     setTaList(data || []);
   };
 
+  const fetchAtpList = async () => {
+    const { data } = await supabase
+      .from('atp')
+      .select(`
+        id, mapel, fase, kelas, tujuan_pembelajaran, capaian_pembelajaran, alokasi_waktu, ta_id, guru_id,
+        guru:gtk_ptk(nama),
+        tahun_ajaran(nama_ta)
+      `)
+      .order('mapel');
+    setAtpList(data || []);
+  };
+
   const fetchProtaDetails = async (protaId: string) => {
     const { data, error } = await supabase
       .from('prota_detail')
@@ -140,7 +169,46 @@ export default function ProtaPage() {
     return data || [];
   };
 
+  const handleSelectAtp = (atpId: string) => {
+    setSelectedAtpId(atpId);
+    const atp = atpList.find(a => a.id === atpId);
+    if (atp) {
+      setFormData(prev => ({
+        ...prev,
+        mapel: atp.mapel,
+        fase: atp.fase,
+        kelas: atp.kelas?.toString() || '',
+        ta_id: atp.ta_id || '',
+        guru_id: atp.guru_id || '',
+        kompetensi_inti: atp.capaian_pembelajaran || '',
+        alokasi_waktu_total: atp.alokasi_waktu || '',
+      }));
+
+      // Auto-fill detail form with TP from ATP
+      if (atp.tujuan_pembelajaran && atp.tujuan_pembelajaran.length > 0) {
+        const newDetailForm: Record<number, { materi: string; alokasi_waktu: string; keterangan: string }> = {};
+        const tpPerBulan = Math.ceil(atp.tujuan_pembelajaran.length / 12);
+        
+        BULAN_ORDER.forEach((bulan, idx) => {
+          const startIdx = idx * tpPerBulan;
+          const endIdx = Math.min(startIdx + tpPerBulan, atp.tujuan_pembelajaran!.length);
+          const materiForBulan = atp.tujuan_pembelajaran!.slice(startIdx, endIdx).join('\n');
+          
+          newDetailForm[bulan] = {
+            materi: materiForBulan,
+            alokasi_waktu: '',
+            keterangan: '',
+          };
+        });
+        setDetailForm(newDetailForm);
+      }
+
+      toast.success(`Data dari ATP "${atp.mapel}" berhasil diambil`);
+    }
+  };
+
   const handleOpenDialog = (item?: Prota) => {
+    setSelectedAtpId('');
     if (item) {
       setEditingItem(item);
       setFormData({
@@ -166,6 +234,12 @@ export default function ProtaPage() {
         keterangan: '',
       });
     }
+    // Reset detail form
+    const emptyDetailForm: Record<number, { materi: string; alokasi_waktu: string; keterangan: string }> = {};
+    BULAN_ORDER.forEach(bulan => {
+      emptyDetailForm[bulan] = { materi: '', alokasi_waktu: '', keterangan: '' };
+    });
+    setDetailForm(emptyDetailForm);
     setDialogOpen(true);
   };
 
@@ -203,16 +277,40 @@ export default function ProtaPage() {
         keterangan: formData.keterangan || null,
       };
 
+      let protaId: string;
+
       if (editingItem) {
         const { error } = await supabase
           .from('prota')
           .update(payload)
           .eq('id', editingItem.id);
         if (error) throw error;
+        protaId = editingItem.id;
         toast.success('Prota berhasil diupdate');
       } else {
-        const { error } = await supabase.from('prota').insert(payload);
+        const { data: insertedData, error } = await supabase
+          .from('prota')
+          .insert(payload)
+          .select('id')
+          .single();
         if (error) throw error;
+        protaId = insertedData.id;
+
+        // If we have detail form data (from ATP), save it too
+        const detailsToInsert = BULAN_ORDER
+          .filter(bulan => detailForm[bulan]?.materi?.trim())
+          .map(bulan => ({
+            prota_id: protaId,
+            bulan,
+            materi: detailForm[bulan].materi,
+            alokasi_waktu: detailForm[bulan].alokasi_waktu || null,
+            keterangan: detailForm[bulan].keterangan || null,
+          }));
+
+        if (detailsToInsert.length > 0) {
+          await supabase.from('prota_detail').insert(detailsToInsert);
+        }
+
         toast.success('Prota berhasil ditambahkan');
       }
 
@@ -346,12 +444,42 @@ export default function ProtaPage() {
 
       {/* Form Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingItem ? 'Edit Prota' : 'Tambah Prota Baru'}
             </DialogTitle>
           </DialogHeader>
+
+          {/* ATP Integration Section */}
+          {!editingItem && atpList.length > 0 && (
+            <Card className="border-primary/30 bg-primary/5">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Database className="h-4 w-4" />
+                  Ambil Data dari ATP
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Select value={selectedAtpId} onValueChange={handleSelectAtp}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih ATP untuk auto-fill data..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {atpList.map(atp => (
+                      <SelectItem key={atp.id} value={atp.id}>
+                        {atp.mapel} - Fase {atp.fase} {atp.kelas ? `Kelas ${atp.kelas}` : ''} ({atp.guru?.nama || 'Tanpa guru'})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Data mapel, fase, kelas, CP, dan TP akan otomatis terisi dari ATP yang dipilih
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -445,7 +573,7 @@ export default function ProtaPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="kompetensi_inti">Kompetensi Inti</Label>
+              <Label htmlFor="kompetensi_inti">Kompetensi Inti / Capaian Pembelajaran</Label>
               <Textarea
                 id="kompetensi_inti"
                 value={formData.kompetensi_inti}
@@ -463,6 +591,23 @@ export default function ProtaPage() {
                 rows={2}
               />
             </div>
+
+            {/* Preview detail from ATP */}
+            {!editingItem && selectedAtpId && (
+              <div className="space-y-2">
+                <Label>Preview Materi per Bulan (dari TP ATP)</Label>
+                <div className="max-h-40 overflow-y-auto border rounded-lg p-2 bg-muted/30">
+                  {BULAN_ORDER.map((bulan, idx) => (
+                    detailForm[bulan]?.materi && (
+                      <div key={bulan} className="text-xs py-1 border-b last:border-0">
+                        <span className="font-medium">{BULAN_NAMES[idx]}:</span>{' '}
+                        <span className="text-muted-foreground">{detailForm[bulan].materi.substring(0, 100)}...</span>
+                      </div>
+                    )
+                  ))}
+                </div>
+              </div>
+            )}
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
@@ -511,7 +656,7 @@ export default function ProtaPage() {
                   <Card className="mt-1 border-l-4 border-l-primary">
                     <CardContent className="pt-4 space-y-3">
                       <div className="space-y-2">
-                        <Label>Materi Pokok</Label>
+                        <Label>Materi Pokok / Tujuan Pembelajaran</Label>
                         <Textarea
                           value={detailForm[bulan]?.materi || ''}
                           onChange={(e) => setDetailForm(prev => ({
@@ -519,7 +664,7 @@ export default function ProtaPage() {
                             [bulan]: { ...prev[bulan], materi: e.target.value }
                           }))}
                           placeholder="Masukkan materi pembelajaran..."
-                          rows={2}
+                          rows={3}
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">

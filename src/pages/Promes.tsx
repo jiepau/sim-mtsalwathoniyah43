@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CalendarDays, Plus, Search, Pencil, Trash2, Eye } from 'lucide-react';
+import { CalendarDays, Plus, Search, Pencil, Trash2, Eye, Database } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -25,9 +25,24 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
-import type { Database } from '@/integrations/supabase/types';
+import type { Database as DbTypes } from '@/integrations/supabase/types';
 
-type FasePembelajaran = Database['public']['Enums']['fase_pembelajaran'];
+type FasePembelajaran = DbTypes['public']['Enums']['fase_pembelajaran'];
+
+interface ATP {
+  id: string;
+  mapel: string;
+  fase: FasePembelajaran;
+  kelas: number | null;
+  semester: string | null;
+  tujuan_pembelajaran: string[] | null;
+  capaian_pembelajaran: string;
+  alokasi_waktu: string | null;
+  ta_id: string | null;
+  guru_id: string | null;
+  guru?: { nama: string } | null;
+  tahun_ajaran?: { nama_ta: string } | null;
+}
 
 interface Promes {
   id: string;
@@ -74,6 +89,7 @@ const BULAN_GENAP = [
 
 export default function PromesPage() {
   const [data, setData] = useState<Promes[]>([]);
+  const [atpList, setAtpList] = useState<ATP[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -83,6 +99,7 @@ export default function PromesPage() {
   const [promesDetails, setPromesDetails] = useState<PromesDetail[]>([]);
   const [guruList, setGuruList] = useState<{ id: string; nama: string }[]>([]);
   const [taList, setTaList] = useState<{ id: string; nama_ta: string }[]>([]);
+  const [selectedAtpId, setSelectedAtpId] = useState<string>('');
   
   const [formData, setFormData] = useState({
     mapel: '',
@@ -107,6 +124,7 @@ export default function PromesPage() {
     fetchData();
     fetchGuru();
     fetchTahunAjaran();
+    fetchAtpList();
   }, []);
 
   const fetchData = async () => {
@@ -141,6 +159,18 @@ export default function PromesPage() {
     setTaList(data || []);
   };
 
+  const fetchAtpList = async () => {
+    const { data } = await supabase
+      .from('atp')
+      .select(`
+        id, mapel, fase, kelas, semester, tujuan_pembelajaran, capaian_pembelajaran, alokasi_waktu, ta_id, guru_id,
+        guru:gtk_ptk(nama),
+        tahun_ajaran(nama_ta)
+      `)
+      .order('mapel');
+    setAtpList(data || []);
+  };
+
   const fetchPromesDetails = async (promesId: string) => {
     const { data, error } = await supabase
       .from('promes_detail')
@@ -156,7 +186,72 @@ export default function PromesPage() {
     return data || [];
   };
 
+  // Filter ATP based on selected semester
+  const filteredAtpList = atpList.filter(atp => {
+    if (!formData.semester) return true;
+    return atp.semester === formData.semester || !atp.semester;
+  });
+
+  const handleSelectAtp = (atpId: string) => {
+    setSelectedAtpId(atpId);
+    const atp = atpList.find(a => a.id === atpId);
+    if (atp) {
+      setFormData(prev => ({
+        ...prev,
+        mapel: atp.mapel,
+        fase: atp.fase,
+        kelas: atp.kelas?.toString() || '',
+        semester: atp.semester || prev.semester,
+        ta_id: atp.ta_id || '',
+        guru_id: atp.guru_id || '',
+      }));
+
+      // Auto-fill detail form with TP from ATP
+      if (atp.tujuan_pembelajaran && atp.tujuan_pembelajaran.length > 0) {
+        const bulanList = (atp.semester || formData.semester) === 'ganjil' ? BULAN_GANJIL : BULAN_GENAP;
+        const totalSlots = bulanList.length * 4; // 4 minggu efektif per bulan
+        const tpPerSlot = Math.ceil(atp.tujuan_pembelajaran.length / totalSlots);
+        
+        const newDetailForm: Record<DetailFormKey, any> = {};
+        let tpIndex = 0;
+
+        bulanList.forEach(b => {
+          for (let minggu = 1; minggu <= 5; minggu++) {
+            const key = `${b.bulan}-${minggu}` as DetailFormKey;
+            
+            if (minggu <= 4 && tpIndex < atp.tujuan_pembelajaran!.length) {
+              const startIdx = tpIndex;
+              const endIdx = Math.min(tpIndex + tpPerSlot, atp.tujuan_pembelajaran!.length);
+              const tpForSlot = atp.tujuan_pembelajaran!.slice(startIdx, endIdx);
+              
+              newDetailForm[key] = {
+                tema: atp.mapel,
+                sub_tema: '',
+                tujuan_pembelajaran: tpForSlot.join('\n'),
+                alokasi_waktu: atp.alokasi_waktu || '',
+                keterangan: '',
+              };
+              tpIndex = endIdx;
+            } else {
+              newDetailForm[key] = {
+                tema: '',
+                sub_tema: '',
+                tujuan_pembelajaran: '',
+                alokasi_waktu: '',
+                keterangan: '',
+              };
+            }
+          }
+        });
+        setDetailForm(newDetailForm);
+      }
+
+      toast.success(`Data dari ATP "${atp.mapel}" berhasil diambil`);
+    }
+  };
+
   const handleOpenDialog = (item?: Promes) => {
+    setSelectedAtpId('');
     if (item) {
       setEditingItem(item);
       setFormData({
@@ -180,6 +275,15 @@ export default function PromesPage() {
         keterangan: '',
       });
     }
+    // Reset detail form
+    const emptyDetailForm: Record<DetailFormKey, any> = {};
+    [...BULAN_GANJIL, ...BULAN_GENAP].forEach(b => {
+      for (let minggu = 1; minggu <= 5; minggu++) {
+        const key = `${b.bulan}-${minggu}` as DetailFormKey;
+        emptyDetailForm[key] = { tema: '', sub_tema: '', tujuan_pembelajaran: '', alokasi_waktu: '', keterangan: '' };
+      }
+    });
+    setDetailForm(emptyDetailForm);
     setDialogOpen(true);
   };
 
@@ -223,16 +327,53 @@ export default function PromesPage() {
         keterangan: formData.keterangan || null,
       };
 
+      let promesId: string;
+
       if (editingItem) {
         const { error } = await supabase
           .from('promes')
           .update(payload)
           .eq('id', editingItem.id);
         if (error) throw error;
+        promesId = editingItem.id;
         toast.success('Promes berhasil diupdate');
       } else {
-        const { error } = await supabase.from('promes').insert(payload);
+        const { data: insertedData, error } = await supabase
+          .from('promes')
+          .insert(payload)
+          .select('id')
+          .single();
         if (error) throw error;
+        promesId = insertedData.id;
+
+        // If we have detail form data (from ATP), save it too
+        const bulanList = formData.semester === 'ganjil' ? BULAN_GANJIL : BULAN_GENAP;
+        const detailsToInsert: any[] = [];
+
+        bulanList.forEach(b => {
+          for (let minggu = 1; minggu <= 5; minggu++) {
+            const key = `${b.bulan}-${minggu}` as DetailFormKey;
+            const detail = detailForm[key];
+            
+            if (detail?.tema?.trim() || detail?.tujuan_pembelajaran?.trim()) {
+              detailsToInsert.push({
+                promes_id: promesId,
+                bulan: b.bulan,
+                minggu,
+                tema: detail.tema || null,
+                sub_tema: detail.sub_tema || null,
+                tujuan_pembelajaran: detail.tujuan_pembelajaran || null,
+                alokasi_waktu: detail.alokasi_waktu || null,
+                keterangan: detail.keterangan || null,
+              });
+            }
+          }
+        });
+
+        if (detailsToInsert.length > 0) {
+          await supabase.from('promes_detail').insert(detailsToInsert);
+        }
+
         toast.success('Promes berhasil ditambahkan');
       }
 
@@ -259,13 +400,13 @@ export default function PromesPage() {
           const key = `${b.bulan}-${minggu}` as DetailFormKey;
           const detail = detailForm[key];
           
-          // Only insert if at least tema is filled
-          if (detail?.tema?.trim()) {
+          // Only insert if at least tema or TP is filled
+          if (detail?.tema?.trim() || detail?.tujuan_pembelajaran?.trim()) {
             detailsToInsert.push({
               promes_id: selectedPromes.id,
               bulan: b.bulan,
               minggu,
-              tema: detail.tema,
+              tema: detail.tema || null,
               sub_tema: detail.sub_tema || null,
               tujuan_pembelajaran: detail.tujuan_pembelajaran || null,
               alokasi_waktu: detail.alokasi_waktu || null,
@@ -386,12 +527,44 @@ export default function PromesPage() {
 
       {/* Form Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingItem ? 'Edit Promes' : 'Tambah Promes Baru'}
             </DialogTitle>
           </DialogHeader>
+
+          {/* ATP Integration Section */}
+          {!editingItem && atpList.length > 0 && (
+            <Card className="border-primary/30 bg-primary/5">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Database className="h-4 w-4" />
+                  Ambil Data dari ATP
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Select value={selectedAtpId} onValueChange={handleSelectAtp}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih ATP untuk auto-fill data..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredAtpList.map(atp => (
+                      <SelectItem key={atp.id} value={atp.id}>
+                        {atp.mapel} - Fase {atp.fase} {atp.kelas ? `Kelas ${atp.kelas}` : ''} 
+                        {atp.semester ? ` (${atp.semester === 'ganjil' ? 'Ganjil' : 'Genap'})` : ''} 
+                        ({atp.guru?.nama || 'Tanpa guru'})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Data mapel, fase, kelas, semester, dan TP akan otomatis terisi dari ATP yang dipilih
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -500,6 +673,37 @@ export default function PromesPage() {
               />
             </div>
 
+            {/* Preview detail from ATP */}
+            {!editingItem && selectedAtpId && (
+              <div className="space-y-2">
+                <Label>Preview TP per Minggu (dari ATP)</Label>
+                <div className="max-h-40 overflow-y-auto border rounded-lg p-2 bg-muted/30 text-xs">
+                  {(formData.semester === 'ganjil' ? BULAN_GANJIL : BULAN_GENAP).map(b => {
+                    const hasContent = [1, 2, 3, 4].some(m => {
+                      const key = `${b.bulan}-${m}` as DetailFormKey;
+                      return detailForm[key]?.tujuan_pembelajaran;
+                    });
+                    if (!hasContent) return null;
+                    return (
+                      <div key={b.bulan} className="mb-2">
+                        <div className="font-medium text-foreground">{b.nama}</div>
+                        {[1, 2, 3, 4].map(minggu => {
+                          const key = `${b.bulan}-${minggu}` as DetailFormKey;
+                          const tp = detailForm[key]?.tujuan_pembelajaran;
+                          if (!tp) return null;
+                          return (
+                            <div key={minggu} className="pl-2 text-muted-foreground">
+                              Minggu {minggu}: {tp.substring(0, 80)}...
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                 Batal
@@ -549,14 +753,14 @@ export default function PromesPage() {
                               placeholder="Tema/Materi"
                               className="text-xs h-8"
                             />
-                            <Input
+                            <Textarea
                               value={detailForm[key]?.tujuan_pembelajaran || ''}
                               onChange={(e) => setDetailForm(prev => ({
                                 ...prev,
                                 [key]: { ...prev[key], tujuan_pembelajaran: e.target.value }
                               }))}
                               placeholder="Tujuan Pembelajaran"
-                              className="text-xs h-8"
+                              className="text-xs min-h-[60px]"
                             />
                             <Input
                               value={detailForm[key]?.alokasi_waktu || ''}
