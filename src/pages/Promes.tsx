@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CalendarDays, Plus, Search, Pencil, Trash2, Eye, Database } from 'lucide-react';
+import { CalendarDays, Plus, Search, Pencil, Trash2, Eye, Database, Download, Sparkles, Loader2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
+import { exportPromesToDocx } from '@/lib/prota-promes-export';
 import type { Database as DbTypes } from '@/integrations/supabase/types';
 
 type FasePembelajaran = DbTypes['public']['Enums']['fase_pembelajaran'];
@@ -100,6 +101,8 @@ export default function PromesPage() {
   const [guruList, setGuruList] = useState<{ id: string; nama: string }[]>([]);
   const [taList, setTaList] = useState<{ id: string; nama_ta: string }[]>([]);
   const [selectedAtpId, setSelectedAtpId] = useState<string>('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   
   const [formData, setFormData] = useState({
     mapel: '',
@@ -428,6 +431,99 @@ export default function PromesPage() {
     }
   };
 
+  const handleExportPromes = async () => {
+    if (!selectedPromes) return;
+    
+    setIsExporting(true);
+    try {
+      const details = await fetchPromesDetails(selectedPromes.id);
+      await exportPromesToDocx({
+        mapel: selectedPromes.mapel,
+        fase: selectedPromes.fase,
+        kelas: selectedPromes.kelas,
+        semester: selectedPromes.semester,
+        guru: selectedPromes.guru?.nama || null,
+        tahun_ajaran: selectedPromes.tahun_ajaran?.nama_ta || null,
+        keterangan: selectedPromes.keterangan,
+        details: details.map(d => ({
+          bulan: d.bulan,
+          minggu: d.minggu,
+          tema: d.tema,
+          sub_tema: d.sub_tema,
+          tujuan_pembelajaran: d.tujuan_pembelajaran,
+          alokasi_waktu: d.alokasi_waktu,
+        })),
+      });
+      toast.success('Promes berhasil diexport ke Word');
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Gagal mengexport Promes');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleGenerateWithAI = async () => {
+    if (!formData.mapel) {
+      toast.error('Pilih mata pelajaran terlebih dahulu');
+      return;
+    }
+    
+    setIsGenerating(true);
+    try {
+      const selectedAtp = atpList.find(a => a.id === selectedAtpId);
+      const ta = taList.find(t => t.id === formData.ta_id);
+      
+      const { data: result, error } = await supabase.functions.invoke('generate-prota-promes', {
+        body: {
+          type: 'promes',
+          mapel: formData.mapel,
+          fase: formData.fase,
+          kelas: formData.kelas,
+          semester: formData.semester,
+          tahun_ajaran: ta?.nama_ta,
+          capaian_pembelajaran: selectedAtp?.capaian_pembelajaran,
+          tujuan_pembelajaran: selectedAtp?.tujuan_pembelajaran?.join('\n'),
+        },
+      });
+
+      if (error) throw error;
+      
+      if (result?.data) {
+        const aiData = result.data;
+        
+        // Update form with AI generated data
+        setFormData(prev => ({
+          ...prev,
+          keterangan: aiData.keterangan || prev.keterangan,
+        }));
+        
+        // Update detail form
+        if (aiData.details) {
+          const newDetailForm: Record<DetailFormKey, any> = {};
+          aiData.details.forEach((d: any) => {
+            const key = `${d.bulan}-${d.minggu}` as DetailFormKey;
+            newDetailForm[key] = {
+              tema: d.tema || '',
+              sub_tema: d.sub_tema || '',
+              tujuan_pembelajaran: d.tujuan_pembelajaran || '',
+              alokasi_waktu: d.alokasi_waktu || '',
+              keterangan: '',
+            };
+          });
+          setDetailForm(prev => ({ ...prev, ...newDetailForm }));
+        }
+        
+        toast.success('Promes berhasil di-generate dengan AI!');
+      }
+    } catch (error: any) {
+      console.error('AI generate error:', error);
+      toast.error(error.message || 'Gagal generate dengan AI');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm('Yakin ingin menghapus Promes ini?')) return;
     
@@ -563,6 +659,20 @@ export default function PromesPage() {
                 </p>
               </CardContent>
             </Card>
+          )}
+
+          {/* AI Generate Button */}
+          {!editingItem && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-primary/30 text-primary hover:bg-primary/10"
+              onClick={handleGenerateWithAI}
+              disabled={isGenerating || !formData.mapel}
+            >
+              {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
+              {isGenerating ? 'Generating dengan AI...' : 'Generate Otomatis dengan AI'}
+            </Button>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -781,7 +891,17 @@ export default function PromesPage() {
             </table>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-wrap gap-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleExportPromes}
+              disabled={isExporting}
+            >
+              {isExporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+              Export Word
+            </Button>
+            <div className="flex-1" />
             <Button type="button" variant="outline" onClick={() => setDetailDialogOpen(false)}>
               Tutup
             </Button>

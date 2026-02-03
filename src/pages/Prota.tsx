@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Plus, Search, Pencil, Trash2, Eye, ChevronDown, Database } from 'lucide-react';
+import { Calendar, Plus, Search, Pencil, Trash2, Eye, ChevronDown, Database, Download, Sparkles, Loader2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
+import { exportProtaToDocx } from '@/lib/prota-promes-export';
 import type { Database as DbTypes } from '@/integrations/supabase/types';
 
 type FasePembelajaran = DbTypes['public']['Enums']['fase_pembelajaran'];
@@ -90,6 +91,8 @@ export default function ProtaPage() {
   const [guruList, setGuruList] = useState<{ id: string; nama: string }[]>([]);
   const [taList, setTaList] = useState<{ id: string; nama_ta: string }[]>([]);
   const [selectedAtpId, setSelectedAtpId] = useState<string>('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   
   const [formData, setFormData] = useState({
     mapel: '',
@@ -351,6 +354,94 @@ export default function ProtaPage() {
     }
   };
 
+  const handleExportProta = async () => {
+    if (!selectedProta) return;
+    
+    setIsExporting(true);
+    try {
+      const details = await fetchProtaDetails(selectedProta.id);
+      await exportProtaToDocx({
+        mapel: selectedProta.mapel,
+        fase: selectedProta.fase,
+        kelas: selectedProta.kelas,
+        kompetensi_inti: selectedProta.kompetensi_inti,
+        alokasi_waktu_total: selectedProta.alokasi_waktu_total,
+        guru: selectedProta.guru?.nama || null,
+        tahun_ajaran: selectedProta.tahun_ajaran?.nama_ta || null,
+        details: details.map(d => ({
+          bulan: d.bulan,
+          materi: d.materi,
+          alokasi_waktu: d.alokasi_waktu,
+          keterangan: d.keterangan,
+        })),
+      });
+      toast.success('Prota berhasil diexport ke Word');
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Gagal mengexport Prota');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleGenerateWithAI = async () => {
+    if (!formData.mapel) {
+      toast.error('Pilih mata pelajaran terlebih dahulu');
+      return;
+    }
+    
+    setIsGenerating(true);
+    try {
+      const selectedAtp = atpList.find(a => a.id === selectedAtpId);
+      const ta = taList.find(t => t.id === formData.ta_id);
+      
+      const { data: result, error } = await supabase.functions.invoke('generate-prota-promes', {
+        body: {
+          type: 'prota',
+          mapel: formData.mapel,
+          fase: formData.fase,
+          kelas: formData.kelas,
+          tahun_ajaran: ta?.nama_ta,
+          capaian_pembelajaran: selectedAtp?.capaian_pembelajaran || formData.kompetensi_inti,
+          tujuan_pembelajaran: selectedAtp?.tujuan_pembelajaran?.join('\n'),
+        },
+      });
+
+      if (error) throw error;
+      
+      if (result?.data) {
+        const aiData = result.data;
+        
+        // Update form with AI generated data
+        setFormData(prev => ({
+          ...prev,
+          kompetensi_inti: aiData.kompetensi_inti || prev.kompetensi_inti,
+          alokasi_waktu_total: aiData.alokasi_waktu_total || prev.alokasi_waktu_total,
+        }));
+        
+        // Update detail form
+        if (aiData.details) {
+          const newDetailForm: Record<number, { materi: string; alokasi_waktu: string; keterangan: string }> = {};
+          aiData.details.forEach((d: any) => {
+            newDetailForm[d.bulan] = {
+              materi: d.materi || '',
+              alokasi_waktu: d.alokasi_waktu || '',
+              keterangan: d.keterangan || '',
+            };
+          });
+          setDetailForm(newDetailForm);
+        }
+        
+        toast.success('Prota berhasil di-generate dengan AI!');
+      }
+    } catch (error: any) {
+      console.error('AI generate error:', error);
+      toast.error(error.message || 'Gagal generate dengan AI');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm('Yakin ingin menghapus Prota ini?')) return;
     
@@ -478,6 +569,20 @@ export default function ProtaPage() {
                 </p>
               </CardContent>
             </Card>
+          )}
+
+          {/* AI Generate Button */}
+          {!editingItem && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-primary/30 text-primary hover:bg-primary/10"
+              onClick={handleGenerateWithAI}
+              disabled={isGenerating || !formData.mapel}
+            >
+              {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
+              {isGenerating ? 'Generating dengan AI...' : 'Generate Otomatis dengan AI'}
+            </Button>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -698,7 +803,17 @@ export default function ProtaPage() {
             ))}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-wrap gap-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleExportProta}
+              disabled={isExporting}
+            >
+              {isExporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+              Export Word
+            </Button>
+            <div className="flex-1" />
             <Button type="button" variant="outline" onClick={() => setDetailDialogOpen(false)}>
               Tutup
             </Button>
