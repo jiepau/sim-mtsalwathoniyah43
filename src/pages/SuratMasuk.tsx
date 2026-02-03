@@ -12,9 +12,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Pencil, Trash2, FileText, Send } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, FileText, Send, Paperclip } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
+import { FileUpload } from '@/components/surat/FileUpload';
 
 interface SuratMasuk {
   id: string;
@@ -25,6 +26,7 @@ interface SuratMasuk {
   perihal: string;
   klasifikasi: string;
   keterangan: string | null;
+  file_path: string | null;
   created_at: string;
 }
 
@@ -36,6 +38,7 @@ interface FormData {
   perihal: string;
   klasifikasi: string;
   keterangan: string;
+  file_path: string | null;
 }
 
 const initialFormData: FormData = {
@@ -46,6 +49,7 @@ const initialFormData: FormData = {
   perihal: '',
   klasifikasi: 'biasa',
   keterangan: '',
+  file_path: null,
 };
 
 export default function SuratMasuk() {
@@ -178,8 +182,14 @@ export default function SuratMasuk() {
       perihal: surat.perihal,
       klasifikasi: surat.klasifikasi || 'biasa',
       keterangan: surat.keterangan || '',
+      file_path: surat.file_path,
     });
     setDialogOpen(true);
+  };
+
+  const getPublicUrl = (path: string) => {
+    const { data } = supabase.storage.from('surat-lampiran').getPublicUrl(path);
+    return data.publicUrl;
   };
 
   const handleDisposisi = (surat: SuratMasuk) => {
