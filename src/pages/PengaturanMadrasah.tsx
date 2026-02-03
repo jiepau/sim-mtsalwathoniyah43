@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
+import { VersionChecker } from '@/components/settings/VersionChecker';
 
 interface MadrasahSettings {
   id: string;
@@ -291,6 +292,11 @@ export default function PengaturanMadrasahPage() {
           </Button>
         </div>
       </form>
+
+      {/* Version Checker */}
+      <div className="mt-6">
+        <VersionChecker />
+      </div>
     </div>
   );
 }
