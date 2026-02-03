@@ -30,6 +30,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { AppRole } from '@/lib/supabase-helpers';
+import { useUpdateChecker } from '@/hooks/useUpdateChecker';
 
 interface MenuItem {
   title: string;
@@ -77,6 +78,7 @@ const allMenuItems: MenuItem[] = [
 export function Sidebar() {
   const location = useLocation();
   const { signOut, hasRole, roles, loading } = useAuth();
+  const { hasUpdate } = useUpdateChecker();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   
@@ -182,7 +184,7 @@ export function Sidebar() {
             to={item.path || '#'}
             onClick={() => setMobileOpen(false)}
             className={cn(
-              'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
+              'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 relative',
               'text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent',
               active && 'bg-sidebar-accent text-sidebar-foreground font-medium',
               level > 0 && 'pl-12 py-2'
@@ -190,6 +192,13 @@ export function Sidebar() {
           >
             <item.icon className={cn('flex-shrink-0', level > 0 ? 'h-4 w-4' : 'h-5 w-5')} />
             {!collapsed && <span className="text-sm">{item.title}</span>}
+            {/* Update badge for Pengaturan Madrasah */}
+            {item.path === '/pengaturan-madrasah' && hasUpdate && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-destructive"></span>
+              </span>
+            )}
           </Link>
         )}
         

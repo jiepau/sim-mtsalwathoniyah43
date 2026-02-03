@@ -13,73 +13,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { APP_VERSION, APP_BUILD_DATE, CHANGELOG, GITHUB_API_URL } from '@/config/version';
-
-interface UpdateInfo {
-  hasUpdate: boolean;
-  latestVersion?: string;
-  releaseUrl?: string;
-  error?: string;
-}
+import { APP_VERSION, APP_BUILD_DATE, CHANGELOG } from '@/config/version';
+import { useUpdateChecker } from '@/hooks/useUpdateChecker';
 
 export function VersionChecker() {
-  const [checking, setChecking] = useState(false);
-  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
+  const { updateInfo, checking, checkForUpdates } = useUpdateChecker();
   const [changelogOpen, setChangelogOpen] = useState(false);
-
-  const checkForUpdates = async () => {
-    if (!GITHUB_API_URL) {
-      setUpdateInfo({
-        hasUpdate: false,
-        error: "Repository belum dikonfigurasi. Hubungi administrator.",
-      });
-      return;
-    }
-
-    setChecking(true);
-    setUpdateInfo(null);
-
-    try {
-      const response = await fetch(GITHUB_API_URL);
-      
-      if (!response.ok) {
-        throw new Error('Gagal mengambil informasi update');
-      }
-
-      const data = await response.json();
-      const latestVersion = data.tag_name?.replace('v', '') || data.name;
-      
-      // Simple version comparison
-      const hasUpdate = compareVersions(latestVersion, APP_VERSION) > 0;
-
-      setUpdateInfo({
-        hasUpdate,
-        latestVersion,
-        releaseUrl: data.html_url,
-      });
-    } catch (error) {
-      setUpdateInfo({
-        hasUpdate: false,
-        error: "Tidak dapat memeriksa update. Periksa koneksi internet.",
-      });
-    } finally {
-      setChecking(false);
-    }
-  };
-
-  // Compare two semantic versions
-  const compareVersions = (v1: string, v2: string): number => {
-    const parts1 = v1.split('.').map(Number);
-    const parts2 = v2.split('.').map(Number);
-    
-    for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
-      const p1 = parts1[i] || 0;
-      const p2 = parts2[i] || 0;
-      if (p1 > p2) return 1;
-      if (p1 < p2) return -1;
-    }
-    return 0;
-  };
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('id-ID', {
@@ -88,6 +27,9 @@ export function VersionChecker() {
       year: 'numeric',
     });
   };
+
+  // Determine if we should show update status (only after checking)
+  const showUpdateStatus = updateInfo.checkedAt !== null;
 
   return (
     <Card>
@@ -127,7 +69,7 @@ export function VersionChecker() {
         </div>
 
         {/* Update Status */}
-        {updateInfo && (
+        {showUpdateStatus && (
           <div className={`p-4 rounded-lg border ${
             updateInfo.error 
               ? 'bg-destructive/10 border-destructive/20' 
