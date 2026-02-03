@@ -53,10 +53,24 @@ export function useUpdateChecker() {
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updateInfo));
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new CustomEvent('update-info-changed', { detail: updateInfo }));
     } catch (e) {
       console.error('Failed to save update info:', e);
     }
   }, [updateInfo]);
+
+  // Listen for changes from other components
+  useEffect(() => {
+    const handleStorageChange = (e: CustomEvent<UpdateInfo>) => {
+      setUpdateInfo(e.detail);
+    };
+
+    window.addEventListener('update-info-changed' as any, handleStorageChange);
+    return () => {
+      window.removeEventListener('update-info-changed' as any, handleStorageChange);
+    };
+  }, []);
 
   const checkForUpdates = useCallback(async () => {
     if (!GITHUB_API_URL) {
