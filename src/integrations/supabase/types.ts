@@ -490,6 +490,202 @@ export type Database = {
         }
         Relationships: []
       }
+      promes: {
+        Row: {
+          created_at: string
+          fase: Database["public"]["Enums"]["fase_pembelajaran"]
+          guru_id: string | null
+          id: string
+          kelas: number | null
+          keterangan: string | null
+          mapel: string
+          semester: string
+          ta_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fase?: Database["public"]["Enums"]["fase_pembelajaran"]
+          guru_id?: string | null
+          id?: string
+          kelas?: number | null
+          keterangan?: string | null
+          mapel: string
+          semester?: string
+          ta_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fase?: Database["public"]["Enums"]["fase_pembelajaran"]
+          guru_id?: string | null
+          id?: string
+          kelas?: number | null
+          keterangan?: string | null
+          mapel?: string
+          semester?: string
+          ta_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promes_guru_id_fkey"
+            columns: ["guru_id"]
+            isOneToOne: false
+            referencedRelation: "gtk_ptk"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promes_ta_id_fkey"
+            columns: ["ta_id"]
+            isOneToOne: false
+            referencedRelation: "tahun_ajaran"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promes_detail: {
+        Row: {
+          alokasi_waktu: string | null
+          bulan: number
+          created_at: string
+          id: string
+          keterangan: string | null
+          minggu: number
+          promes_id: string
+          sub_tema: string | null
+          tema: string | null
+          tujuan_pembelajaran: string | null
+        }
+        Insert: {
+          alokasi_waktu?: string | null
+          bulan: number
+          created_at?: string
+          id?: string
+          keterangan?: string | null
+          minggu: number
+          promes_id: string
+          sub_tema?: string | null
+          tema?: string | null
+          tujuan_pembelajaran?: string | null
+        }
+        Update: {
+          alokasi_waktu?: string | null
+          bulan?: number
+          created_at?: string
+          id?: string
+          keterangan?: string | null
+          minggu?: number
+          promes_id?: string
+          sub_tema?: string | null
+          tema?: string | null
+          tujuan_pembelajaran?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promes_detail_promes_id_fkey"
+            columns: ["promes_id"]
+            isOneToOne: false
+            referencedRelation: "promes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prota: {
+        Row: {
+          alokasi_waktu_total: string | null
+          created_at: string
+          fase: Database["public"]["Enums"]["fase_pembelajaran"]
+          guru_id: string | null
+          id: string
+          kelas: number | null
+          keterangan: string | null
+          kompetensi_inti: string | null
+          mapel: string
+          ta_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          alokasi_waktu_total?: string | null
+          created_at?: string
+          fase?: Database["public"]["Enums"]["fase_pembelajaran"]
+          guru_id?: string | null
+          id?: string
+          kelas?: number | null
+          keterangan?: string | null
+          kompetensi_inti?: string | null
+          mapel: string
+          ta_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          alokasi_waktu_total?: string | null
+          created_at?: string
+          fase?: Database["public"]["Enums"]["fase_pembelajaran"]
+          guru_id?: string | null
+          id?: string
+          kelas?: number | null
+          keterangan?: string | null
+          kompetensi_inti?: string | null
+          mapel?: string
+          ta_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prota_guru_id_fkey"
+            columns: ["guru_id"]
+            isOneToOne: false
+            referencedRelation: "gtk_ptk"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prota_ta_id_fkey"
+            columns: ["ta_id"]
+            isOneToOne: false
+            referencedRelation: "tahun_ajaran"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prota_detail: {
+        Row: {
+          alokasi_waktu: string | null
+          bulan: number
+          created_at: string
+          id: string
+          keterangan: string | null
+          materi: string | null
+          prota_id: string
+        }
+        Insert: {
+          alokasi_waktu?: string | null
+          bulan: number
+          created_at?: string
+          id?: string
+          keterangan?: string | null
+          materi?: string | null
+          prota_id: string
+        }
+        Update: {
+          alokasi_waktu?: string | null
+          bulan?: number
+          created_at?: string
+          id?: string
+          keterangan?: string | null
+          materi?: string | null
+          prota_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prota_detail_prota_id_fkey"
+            columns: ["prota_id"]
+            isOneToOne: false
+            referencedRelation: "prota"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       siswa: {
         Row: {
           alamat: string | null

@@ -5,6 +5,7 @@ import {
   Users, 
   School, 
   Calendar, 
+  CalendarDays,
   UserCog,
   Wallet,
   Receipt,
@@ -52,9 +53,11 @@ const allMenuItems: MenuItem[] = [
     title: 'Kurikulum', 
     icon: BookOpen,
     children: [
-      { title: 'Generator RPP', icon: Sparkles, path: '/generator-rpp' },
+      { title: 'Prota', icon: Calendar, path: '/prota' },
+      { title: 'Promes', icon: CalendarDays, path: '/promes' },
       { title: 'ATP', icon: BookOpen, path: '/atp' },
       { title: 'KKTP', icon: Target, path: '/kktp' },
+      { title: 'Generator RPP', icon: Sparkles, path: '/generator-rpp' },
       { title: 'Template CP', icon: FileText, path: '/cp-templates' },
     ],
     roles: ['admin', 'operator']
@@ -94,7 +97,7 @@ export function Sidebar() {
       expanded.push('Keuangan');
     }
     // Check Kurikulum routes
-    if (['/generator-rpp', '/atp', '/kktp', '/cp-templates'].includes(path)) {
+    if (['/prota', '/promes', '/generator-rpp', '/atp', '/kktp', '/cp-templates'].includes(path)) {
       expanded.push('Kurikulum');
     }
     
