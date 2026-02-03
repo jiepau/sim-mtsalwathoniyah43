@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.generate-prota-promes]
 verify_jwt = false
+
+[functions.generate-rpp]
+verify_jwt = false
