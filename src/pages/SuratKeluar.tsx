@@ -12,9 +12,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Pencil, Trash2, FileOutput, Wand2 } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, FileOutput, Wand2, Printer, Paperclip } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
+import { FileUpload } from '@/components/surat/FileUpload';
+import { exportSuratKeluar } from '@/lib/surat-export';
 
 interface SuratKeluar {
   id: string;
@@ -24,6 +26,7 @@ interface SuratKeluar {
   perihal: string;
   klasifikasi: string;
   keterangan: string | null;
+  file_path: string | null;
   created_at: string;
 }
 
@@ -34,6 +37,7 @@ interface FormData {
   perihal: string;
   klasifikasi: string;
   keterangan: string;
+  file_path: string | null;
 }
 
 const initialFormData: FormData = {
@@ -43,6 +47,7 @@ const initialFormData: FormData = {
   perihal: '',
   klasifikasi: 'biasa',
   keterangan: '',
+  file_path: null,
 };
 
 export default function SuratKeluar() {
@@ -53,6 +58,7 @@ export default function SuratKeluar() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   // Fetch surat keluar
   const { data: suratList, isLoading } = useQuery({
@@ -163,8 +169,42 @@ export default function SuratKeluar() {
       perihal: surat.perihal,
       klasifikasi: surat.klasifikasi || 'biasa',
       keterangan: surat.keterangan || '',
+      file_path: surat.file_path,
     });
     setDialogOpen(true);
+  };
+
+  const getPublicUrl = (path: string) => {
+    const { data } = supabase.storage.from('surat-lampiran').getPublicUrl(path);
+    return data.publicUrl;
+  };
+
+  const handlePrint = async (surat: SuratKeluar) => {
+    setIsPrinting(true);
+    try {
+      // Fetch madrasah settings
+      const { data: madrasah, error } = await supabase
+        .from('madrasah_settings')
+        .select('*')
+        .limit(1)
+        .single();
+      
+      if (error) throw error;
+
+      await exportSuratKeluar(surat, madrasah);
+      toast({
+        title: 'Berhasil',
+        description: 'Surat berhasil di-export ke Word',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Gagal export surat',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsPrinting(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -247,7 +287,21 @@ export default function SuratKeluar() {
                   ) : (
                     filteredSurat?.map((surat) => (
                       <TableRow key={surat.id}>
-                        <TableCell className="font-medium">{surat.nomor_surat}</TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            {surat.nomor_surat}
+                            {surat.file_path && (
+                              <a
+                                href={getPublicUrl(surat.file_path)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:text-primary/80"
+                              >
+                                <Paperclip className="h-4 w-4" />
+                              </a>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell>
                           {format(new Date(surat.tanggal_surat), 'dd MMM yyyy', { locale: localeId })}
                         </TableCell>
@@ -256,6 +310,15 @@ export default function SuratKeluar() {
                         <TableCell>{getKlasifikasiBadge(surat.klasifikasi)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handlePrint(surat)}
+                              disabled={isPrinting}
+                              title="Cetak/Export Word"
+                            >
+                              <Printer className="h-4 w-4" />
+                            </Button>
                             <Button
                               variant="outline"
                               size="sm"
@@ -368,6 +431,15 @@ export default function SuratKeluar() {
                 id="keterangan"
                 value={formData.keterangan}
                 onChange={(e) => setFormData({ ...formData, keterangan: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Lampiran</Label>
+              <FileUpload
+                currentFilePath={formData.file_path}
+                onFileUploaded={(path) => setFormData({ ...formData, file_path: path })}
+                folder="keluar"
               />
             </div>
 
