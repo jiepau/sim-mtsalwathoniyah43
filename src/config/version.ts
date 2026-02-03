@@ -1,7 +1,7 @@
 // Centralized version configuration
 // Update this file when releasing new versions
 
-export const APP_VERSION = "1.0.0"; // Sementara untuk testing badge
+export const APP_VERSION = "1.1.0";
 export const APP_BUILD_DATE = "2026-02-03";
 
 export interface ChangelogEntry {
@@ -11,6 +11,17 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "1.1.0",
+    date: "2026-02-03",
+    changes: [
+      "Integrasi Kurikulum Berbasis Cinta (KBC) di ATP dan KKTP",
+      "Mapping otomatis Nilai Karakter ke Materi Insersi di Generator RPP",
+      "Penambahan field NISN di data siswa (ditampilkan di tabel)",
+      "Penambahan field Nama Ayah Kandung dan Ibu Kandung di data siswa",
+      "Tampilan detail siswa menampilkan data orang tua lengkap",
+    ],
+  },
   {
     version: "1.0.0",
     date: "2026-02-03",
