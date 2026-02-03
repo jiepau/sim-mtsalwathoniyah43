@@ -28,6 +28,20 @@ const JENJANG_OPTIONS = [
   { value: 'SMA', label: 'SMA (Sekolah Menengah Atas)', fase: 'E' },
 ];
 
+// Nilai karakter Kurikulum Berbasis Cinta
+const NILAI_KARAKTER_KBC = [
+  { value: 'cinta_allah', label: 'Cinta Allah Swt. dan Rasul-Nya' },
+  { value: 'cinta_diri', label: 'Cinta diri sendiri' },
+  { value: 'cinta_sesama', label: 'Cinta sesama manusia' },
+  { value: 'cinta_lingkungan', label: 'Cinta lingkungan' },
+  { value: 'cinta_tanah_air', label: 'Cinta tanah air' },
+  { value: 'kasih_sayang', label: 'Kasih sayang' },
+  { value: 'empati', label: 'Empati' },
+  { value: 'ketulusan', label: 'Ketulusan' },
+  { value: 'syukur', label: 'Syukur' },
+  { value: 'kejujuran', label: 'Kejujuran' },
+];
+
 const MAPEL_OPTIONS = [
   "Al-Qur'an Hadis",
   'Akidah Akhlak',
@@ -66,6 +80,8 @@ const GeneratorRPP = () => {
     alokasi_waktu: '',
     tujuan_pembelajaran: '',
     capaian_pembelajaran: '',
+    tema_kbc: [] as string[],
+    materi_insersi: '',
   });
 
   // Update filtered ATP when jenjang or mapel changes
@@ -86,6 +102,9 @@ const GeneratorRPP = () => {
     setSelectedAtpId(atpId);
     const atp = atpList.find(a => a.id === atpId);
     if (atp) {
+      // Map nilai_karakter from ATP to tema_kbc
+      const nilaiKarakterFromAtp = atp.nilai_karakter || [];
+      
       setFormData(prev => ({
         ...prev,
         semester: atp.semester || prev.semester,
@@ -93,12 +112,23 @@ const GeneratorRPP = () => {
         capaian_pembelajaran: atp.capaian_pembelajaran || '',
         tujuan_pembelajaran: atp.tujuan_pembelajaran?.join('\n') || '',
         alokasi_waktu: atp.alokasi_waktu || prev.alokasi_waktu,
+        tema_kbc: nilaiKarakterFromAtp,
       }));
       toast({
         title: "Data ATP dimuat",
-        description: "CP dan TP dari ATP telah diisi otomatis.",
+        description: "CP, TP, dan Nilai Karakter dari ATP telah diisi otomatis.",
       });
     }
+  };
+
+  // Handle tema KBC checkbox changes
+  const handleTemaKbcChange = (value: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      tema_kbc: checked 
+        ? [...prev.tema_kbc, value]
+        : prev.tema_kbc.filter(v => v !== value)
+    }));
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -129,10 +159,19 @@ const GeneratorRPP = () => {
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({
-            ...formData,
-            // Include ATP data if available
+            jenjang: formData.jenjang,
+            kelas: formData.kelas,
+            semester: formData.semester,
+            mapel: formData.mapel,
+            topik: formData.topik,
+            alokasi_waktu: formData.alokasi_waktu,
             capaian_pembelajaran: formData.capaian_pembelajaran,
             tujuan_pembelajaran: formData.tujuan_pembelajaran,
+            // Kurikulum Berbasis Cinta fields
+            tema_kbc: formData.tema_kbc.map(v => 
+              NILAI_KARAKTER_KBC.find(k => k.value === v)?.label || v
+            ).join('; '),
+            materi_insersi: formData.materi_insersi,
           }),
         }
       );
@@ -271,6 +310,8 @@ const GeneratorRPP = () => {
       alokasi_waktu: '',
       tujuan_pembelajaran: '',
       capaian_pembelajaran: '',
+      tema_kbc: [],
+      materi_insersi: '',
     });
     setResult('');
     setSelectedAtpId('');
@@ -446,6 +487,48 @@ const GeneratorRPP = () => {
               <p className="text-xs text-muted-foreground">
                 Dapat diisi otomatis dari ATP yang dipilih
               </p>
+            </div>
+
+            {/* Kurikulum Berbasis Cinta Section */}
+            <div className="space-y-3 p-4 rounded-lg border-2 border-primary/30 bg-primary/5">
+              <Label className="flex items-center gap-2 text-primary font-semibold">
+                <Sparkles className="h-4 w-4" />
+                Kurikulum Berbasis Cinta
+              </Label>
+              
+              <div className="space-y-2">
+                <Label className="text-sm">Tema Kurikulum Berbasis Cinta</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {NILAI_KARAKTER_KBC.map(option => (
+                    <label key={option.value} className="flex items-center gap-2 text-sm cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.tema_kbc.includes(option.value)}
+                        onChange={(e) => handleTemaKbcChange(option.value, e.target.checked)}
+                        className="rounded border-muted-foreground/30"
+                      />
+                      <span>{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Pilih tema nilai karakter yang akan diintegrasikan. Dapat diisi otomatis dari ATP.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="materi_insersi">Materi Insersi</Label>
+                <Textarea
+                  id="materi_insersi"
+                  placeholder="Contoh:&#10;- Mensyukuri nikmat Allah Swt. melalui rasa syukur dalam perilaku sehari-hari.&#10;- Larangan merusak lingkungan (QS. Ar-Rum: 41)."
+                  value={formData.materi_insersi}
+                  onChange={(e) => handleInputChange('materi_insersi', e.target.value)}
+                  rows={4}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Tuliskan poin-poin materi insersi yang mengintegrasikan nilai karakter ke dalam pembelajaran.
+                </p>
+              </div>
             </div>
 
             <div className="flex gap-2 pt-4">

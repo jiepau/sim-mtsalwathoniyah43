@@ -19,7 +19,9 @@ serve(async (req) => {
       topik, 
       alokasi_waktu, 
       tujuan_pembelajaran,
-      capaian_pembelajaran 
+      capaian_pembelajaran,
+      tema_kbc,
+      materi_insersi
     } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -27,29 +29,42 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `Anda adalah asisten guru profesional yang ahli dalam membuat Rencana Pelaksanaan Pembelajaran (RPP) dan Modul Ajar sesuai Kurikulum Merdeka untuk madrasah/sekolah di Indonesia.
+    const systemPrompt = `Anda adalah asisten guru profesional yang ahli dalam membuat Rencana Pelaksanaan Pembelajaran (RPP) dan Modul Ajar sesuai Kurikulum Merdeka untuk madrasah/sekolah di Indonesia dengan pendekatan Kurikulum Berbasis Cinta (KBC).
 
 Format output harus dalam Markdown yang rapi dan terstruktur dengan bagian-bagian berikut:
-1. INFORMASI UMUM (Satuan Pendidikan, Kelas, Semester, Mapel, Topik, Alokasi Waktu)
-2. KOMPETENSI AWAL
-3. PROFIL PELAJAR PANCASILA
-4. SARANA DAN PRASARANA
-5. TARGET PESERTA DIDIK
-6. MODEL PEMBELAJARAN
-7. TUJUAN PEMBELAJARAN
-8. PEMAHAMAN BERMAKNA
-9. PERTANYAAN PEMANTIK
-10. KEGIATAN PEMBELAJARAN
-    - Pendahuluan
-    - Kegiatan Inti
-    - Penutup
-11. ASESMEN
-    - Asesmen Diagnostik
-    - Asesmen Formatif
-    - Asesmen Sumatif
-12. PENGAYAAN DAN REMEDIAL
-13. REFLEKSI GURU DAN PESERTA DIDIK
-14. LAMPIRAN (jika diperlukan)
+
+# Rencana Pelaksanaan Pembelajaran (RPP)
+
+**Informasi Umum:**
+- Mata Pelajaran: [mapel]
+- Fase/Kelompok Usia: [fase dan kelas]
+- Materi Pokok: [topik]
+- Tema Kurikulum Berbasis Cinta: [tema KBC yang diberikan]
+- Materi Insersi: [poin-poin materi insersi yang mengintegrasikan nilai karakter]
+- Alokasi Waktu: [alokasi waktu]
+
+**A. Tujuan Pembelajaran dan Indikator Ketercapaian Tujuan Pembelajaran**
+- Tujuan Pembelajaran (integrasikan dengan nilai Kurikulum Berbasis Cinta)
+- Indikator Ketercapaian Tujuan Pembelajaran (IKTP) - harus mencakup aspek kognitif, afektif, dan nilai karakter
+
+**B. Kegiatan Pembelajaran**
+Model pembelajaran (PjBL/Discovery Learning/dll):
+1. Pendahuluan (buka dengan nilai spiritual dan karakter)
+2. Kegiatan Inti (integrasikan materi insersi dalam setiap aktivitas)
+   - Orientasi/Stimulasi
+   - Eksplorasi/Diskusi (kaitkan dengan nilai karakter)
+   - Elaborasi/Proyek
+3. Penutup (refleksi nilai karakter yang dipelajari)
+
+**C. Asesmen**
+- Asesmen Formatif (termasuk penilaian sikap/karakter)
+- Asesmen Sumatif
+
+**D. Refleksi**
+- Refleksi Guru
+- Refleksi Peserta Didik (fokus pada internalisasi nilai karakter)
+
+PENTING: Integrasikan Tema Kurikulum Berbasis Cinta dan Materi Insersi ke dalam SELURUH kegiatan pembelajaran. Nilai karakter harus terasa natural dan terintegrasi, bukan terpisah.
 
 Gunakan bahasa Indonesia yang baik dan benar. Berikan konten yang detail, praktis, dan siap pakai oleh guru.`;
 
@@ -70,7 +85,17 @@ Gunakan bahasa Indonesia yang baik dan benar. Berikan konten yang detail, prakti
       userPrompt += `\n- Tujuan Pembelajaran Spesifik: ${tujuan_pembelajaran}`;
     }
 
-    userPrompt += `\n\nBuatkan RPP lengkap dengan semua komponen sesuai Kurikulum Merdeka.`;
+    // Kurikulum Berbasis Cinta integration
+    if (tema_kbc) {
+      userPrompt += `\n\n## Kurikulum Berbasis Cinta
+- Tema Kurikulum Berbasis Cinta: ${tema_kbc}`;
+    }
+    
+    if (materi_insersi) {
+      userPrompt += `\n- Materi Insersi:\n${materi_insersi}`;
+    }
+
+    userPrompt += `\n\nBuatkan RPP lengkap dengan pendekatan Kurikulum Berbasis Cinta. Integrasikan nilai-nilai karakter ke dalam setiap kegiatan pembelajaran secara natural dan bermakna.`;
 
     console.log("Generating RPP for:", { jenjang, kelas, semester, mapel, topik });
 
