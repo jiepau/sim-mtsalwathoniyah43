@@ -49,28 +49,36 @@ export function useUpdateChecker() {
   
   const [checking, setChecking] = useState(false);
 
-  // Save to localStorage whenever updateInfo changes
+  // Save to localStorage and sync across components
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updateInfo));
-      // Dispatch custom event to notify other components
-      window.dispatchEvent(new CustomEvent('update-info-changed', { detail: updateInfo }));
     } catch (e) {
       console.error('Failed to save update info:', e);
     }
   }, [updateInfo]);
 
-  // Listen for changes from other components
+  // Re-read from localStorage periodically to sync with other component instances
   useEffect(() => {
-    const handleStorageChange = (e: CustomEvent<UpdateInfo>) => {
-      setUpdateInfo(e.detail);
+    const syncFromStorage = () => {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          // Only update if hasUpdate changed to avoid unnecessary re-renders
+          if (parsed.hasUpdate !== updateInfo.hasUpdate) {
+            setUpdateInfo(parsed);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to sync update info:', e);
+      }
     };
 
-    window.addEventListener('update-info-changed' as any, handleStorageChange);
-    return () => {
-      window.removeEventListener('update-info-changed' as any, handleStorageChange);
-    };
-  }, []);
+    // Sync every second to catch updates from other components
+    const interval = setInterval(syncFromStorage, 1000);
+    return () => clearInterval(interval);
+  }, [updateInfo.hasUpdate]);
 
   const checkForUpdates = useCallback(async () => {
     if (!GITHUB_API_URL) {
