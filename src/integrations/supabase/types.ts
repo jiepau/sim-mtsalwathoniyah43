@@ -697,7 +697,10 @@ export type Database = {
           jenis_kelamin: string | null
           kelas_id: string | null
           nama: string
+          nama_ayah_kandung: string | null
+          nama_ibu_kandung: string | null
           nis: string
+          nisn: string | null
           status: string | null
           ta_id: string | null
           tanggal_lahir: string | null
@@ -712,7 +715,10 @@ export type Database = {
           jenis_kelamin?: string | null
           kelas_id?: string | null
           nama: string
+          nama_ayah_kandung?: string | null
+          nama_ibu_kandung?: string | null
           nis: string
+          nisn?: string | null
           status?: string | null
           ta_id?: string | null
           tanggal_lahir?: string | null
@@ -727,7 +733,10 @@ export type Database = {
           jenis_kelamin?: string | null
           kelas_id?: string | null
           nama?: string
+          nama_ayah_kandung?: string | null
+          nama_ibu_kandung?: string | null
           nis?: string
+          nisn?: string | null
           status?: string | null
           ta_id?: string | null
           tanggal_lahir?: string | null

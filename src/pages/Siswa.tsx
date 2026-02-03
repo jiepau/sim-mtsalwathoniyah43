@@ -40,6 +40,7 @@ import { mapDatabaseError } from '@/lib/error-mapper';
 interface Siswa {
   id: string;
   nis: string;
+  nisn: string | null;
   nama: string;
   kelas_id: string | null;
   ta_id: string | null;
@@ -48,6 +49,8 @@ interface Siswa {
   tempat_lahir: string | null;
   tanggal_lahir: string | null;
   jenis_kelamin: string | null;
+  nama_ibu_kandung: string | null;
+  nama_ayah_kandung: string | null;
   kelas?: { nama_kelas: string };
   tahun_ajaran?: { nama_ta: string; semester?: string };
 }
@@ -85,6 +88,7 @@ export default function SiswaPage() {
   
   const [formData, setFormData] = useState({
     nis: '',
+    nisn: '',
     nama: '',
     kelas_id: '',
     ta_id: '',
@@ -93,6 +97,8 @@ export default function SiswaPage() {
     tempat_lahir: '',
     tanggal_lahir: undefined as Date | undefined,
     jenis_kelamin: '',
+    nama_ibu_kandung: '',
+    nama_ayah_kandung: '',
   });
 
   // Import configuration
@@ -287,6 +293,7 @@ export default function SiswaPage() {
       setEditingSiswa(siswaData);
       setFormData({
         nis: siswaData.nis,
+        nisn: siswaData.nisn || '',
         nama: siswaData.nama,
         kelas_id: siswaData.kelas_id || '',
         ta_id: siswaData.ta_id || '',
@@ -295,12 +302,15 @@ export default function SiswaPage() {
         tempat_lahir: siswaData.tempat_lahir || '',
         tanggal_lahir: siswaData.tanggal_lahir ? new Date(siswaData.tanggal_lahir) : undefined,
         jenis_kelamin: siswaData.jenis_kelamin || '',
+        nama_ibu_kandung: siswaData.nama_ibu_kandung || '',
+        nama_ayah_kandung: siswaData.nama_ayah_kandung || '',
       });
     } else {
       setEditingSiswa(null);
       setFormData({ 
-        nis: '', nama: '', kelas_id: '', ta_id: '', wa_ortu: '', alamat: '',
-        tempat_lahir: '', tanggal_lahir: undefined, jenis_kelamin: ''
+        nis: '', nisn: '', nama: '', kelas_id: '', ta_id: '', wa_ortu: '', alamat: '',
+        tempat_lahir: '', tanggal_lahir: undefined, jenis_kelamin: '',
+        nama_ibu_kandung: '', nama_ayah_kandung: ''
       });
     }
     setDialogOpen(true);
@@ -312,6 +322,7 @@ export default function SiswaPage() {
     try {
       const payload = {
         nis: formData.nis,
+        nisn: formData.nisn || null,
         nama: formData.nama,
         kelas_id: formData.kelas_id || null,
         ta_id: formData.ta_id || null,
@@ -320,6 +331,8 @@ export default function SiswaPage() {
         tempat_lahir: formData.tempat_lahir || null,
         tanggal_lahir: formData.tanggal_lahir ? format(formData.tanggal_lahir, 'yyyy-MM-dd') : null,
         jenis_kelamin: formData.jenis_kelamin || null,
+        nama_ibu_kandung: formData.nama_ibu_kandung || null,
+        nama_ayah_kandung: formData.nama_ayah_kandung || null,
       };
 
       if (editingSiswa) {
@@ -426,9 +439,14 @@ export default function SiswaPage() {
 
   const columns = [
     { 
-      header: 'NIS', 
-      cell: (item: Siswa) => <span className="font-mono font-medium">{item.nis}</span>,
-      className: 'w-24'
+      header: 'NIS / NISN', 
+      cell: (item: Siswa) => (
+        <div className="flex flex-col">
+          <span className="font-mono font-medium">{item.nis}</span>
+          {item.nisn && <span className="font-mono text-xs text-muted-foreground">{item.nisn}</span>}
+        </div>
+      ),
+      className: 'w-32'
     },
     { header: 'Nama Siswa', accessorKey: 'nama' as keyof Siswa },
     { 
@@ -722,15 +740,27 @@ export default function SiswaPage() {
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="nis">NIS</Label>
-              <Input
-                id="nis"
-                value={formData.nis}
-                onChange={(e) => setFormData({ ...formData, nis: e.target.value })}
-                required
-                maxLength={20}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="nis">NIS</Label>
+                <Input
+                  id="nis"
+                  value={formData.nis}
+                  onChange={(e) => setFormData({ ...formData, nis: e.target.value })}
+                  required
+                  maxLength={20}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="nisn">NISN</Label>
+                <Input
+                  id="nisn"
+                  value={formData.nisn}
+                  onChange={(e) => setFormData({ ...formData, nisn: e.target.value })}
+                  maxLength={10}
+                  placeholder="10 digit"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="nama">Nama Lengkap</Label>
@@ -839,6 +869,26 @@ export default function SiswaPage() {
                 value={formData.alamat}
                 onChange={(e) => setFormData({ ...formData, alamat: e.target.value })}
               />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="nama_ayah_kandung">Nama Ayah Kandung</Label>
+                <Input
+                  id="nama_ayah_kandung"
+                  value={formData.nama_ayah_kandung}
+                  onChange={(e) => setFormData({ ...formData, nama_ayah_kandung: e.target.value })}
+                  placeholder="Nama ayah"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="nama_ibu_kandung">Nama Ibu Kandung</Label>
+                <Input
+                  id="nama_ibu_kandung"
+                  value={formData.nama_ibu_kandung}
+                  onChange={(e) => setFormData({ ...formData, nama_ibu_kandung: e.target.value })}
+                  placeholder="Nama ibu"
+                />
+              </div>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>

@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { User, Calendar, MapPin, Phone, School, GraduationCap } from 'lucide-react';
+import { User, Calendar, MapPin, Phone, School, GraduationCap, Users } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 interface Siswa {
   id: string;
   nis: string;
+  nisn?: string | null;
   nama: string;
   kelas_id: string | null;
   ta_id: string | null;
@@ -20,6 +21,8 @@ interface Siswa {
   tempat_lahir: string | null;
   tanggal_lahir: string | null;
   jenis_kelamin: string | null;
+  nama_ibu_kandung?: string | null;
+  nama_ayah_kandung?: string | null;
   kelas?: { nama_kelas: string };
   tahun_ajaran?: { nama_ta: string; semester?: string };
 }
@@ -65,7 +68,12 @@ export function SiswaDetailDialog({ open, onOpenChange, siswa }: SiswaDetailDial
               <User className="h-8 w-8 text-primary" />
             </div>
             <h3 className="text-xl font-semibold">{siswa.nama}</h3>
-            <p className="text-muted-foreground font-mono">{siswa.nis}</p>
+            <div className="flex flex-col items-center gap-1">
+              <p className="text-muted-foreground font-mono">{siswa.nis}</p>
+              {siswa.nisn && (
+                <p className="text-xs text-muted-foreground font-mono">NISN: {siswa.nisn}</p>
+              )}
+            </div>
             {siswa.jenis_kelamin && (
               <Badge variant={siswa.jenis_kelamin === 'Laki-laki' ? 'default' : 'secondary'} className="mt-2">
                 {siswa.jenis_kelamin}
@@ -125,6 +133,26 @@ export function SiswaDetailDialog({ open, onOpenChange, siswa }: SiswaDetailDial
               <div>
                 <p className="text-sm text-muted-foreground">Alamat</p>
                 <p className="font-medium">{siswa.alamat || '-'}</p>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Data Orang Tua */}
+            <div className="flex items-start gap-3">
+              <Users className="h-4 w-4 text-muted-foreground mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground mb-2">Data Orang Tua</p>
+                <div className="grid gap-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Ayah Kandung</span>
+                    <span className="font-medium">{siswa.nama_ayah_kandung || '-'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Ibu Kandung</span>
+                    <span className="font-medium">{siswa.nama_ibu_kandung || '-'}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
