@@ -25,6 +25,7 @@ import {
   Target,
   FileText,
   Settings,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -51,6 +52,7 @@ const allMenuItems: MenuItem[] = [
     title: 'Kurikulum', 
     icon: BookOpen,
     children: [
+      { title: 'Generator RPP', icon: Sparkles, path: '/generator-rpp' },
       { title: 'ATP', icon: BookOpen, path: '/atp' },
       { title: 'KKTP', icon: Target, path: '/kktp' },
       { title: 'Template CP', icon: FileText, path: '/cp-templates' },
@@ -92,7 +94,7 @@ export function Sidebar() {
       expanded.push('Keuangan');
     }
     // Check Kurikulum routes
-    if (['/atp', '/kktp', '/cp-templates'].includes(path)) {
+    if (['/generator-rpp', '/atp', '/kktp', '/cp-templates'].includes(path)) {
       expanded.push('Kurikulum');
     }
     
