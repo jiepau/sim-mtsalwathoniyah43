@@ -2,3 +2,6 @@ project_id = "lnskrkkyeavoshufhwkm"
 
 [functions.admin-password-reset]
 verify_jwt = false
+
+[functions.generate-prota-promes]
+verify_jwt = false
