@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,22 +6,30 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sparkles, Loader2, Copy, Download, RefreshCw } from 'lucide-react';
+import { Sparkles, Loader2, Copy, Download, RefreshCw, FileText, Database } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAtpData } from '@/hooks/useAtpData';
+import { exportToDocx } from '@/lib/docx-export';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const JENJANG_OPTIONS = [
-  { value: 'MI', label: 'MI (Madrasah Ibtidaiyah)' },
-  { value: 'MTs', label: 'MTs (Madrasah Tsanawiyah)' },
-  { value: 'MA', label: 'MA (Madrasah Aliyah)' },
-  { value: 'SD', label: 'SD (Sekolah Dasar)' },
-  { value: 'SMP', label: 'SMP (Sekolah Menengah Pertama)' },
-  { value: 'SMA', label: 'SMA (Sekolah Menengah Atas)' },
+  { value: 'MI', label: 'MI (Madrasah Ibtidaiyah)', fase: 'B' },
+  { value: 'MTs', label: 'MTs (Madrasah Tsanawiyah)', fase: 'D' },
+  { value: 'MA', label: 'MA (Madrasah Aliyah)', fase: 'E' },
+  { value: 'SD', label: 'SD (Sekolah Dasar)', fase: 'B' },
+  { value: 'SMP', label: 'SMP (Sekolah Menengah Pertama)', fase: 'D' },
+  { value: 'SMA', label: 'SMA (Sekolah Menengah Atas)', fase: 'E' },
 ];
 
 const MAPEL_OPTIONS = [
-  'Al-Qur\'an Hadis',
+  "Al-Qur'an Hadis",
   'Akidah Akhlak',
   'Fiqih',
   'Sejarah Kebudayaan Islam',
@@ -41,8 +49,13 @@ const MAPEL_OPTIONS = [
 const GeneratorRPP = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [result, setResult] = useState('');
   const resultRef = useRef<HTMLDivElement>(null);
+  
+  const { atpList, mapelOptions: atpMapelOptions, getAtpByMapelAndFase, isLoading: isLoadingAtp } = useAtpData();
+  const [selectedAtpId, setSelectedAtpId] = useState<string>('');
+  const [filteredAtp, setFilteredAtp] = useState<typeof atpList>([]);
   
   const [formData, setFormData] = useState({
     jenjang: '',
@@ -52,7 +65,41 @@ const GeneratorRPP = () => {
     topik: '',
     alokasi_waktu: '',
     tujuan_pembelajaran: '',
+    capaian_pembelajaran: '',
   });
+
+  // Update filtered ATP when jenjang or mapel changes
+  useEffect(() => {
+    if (formData.mapel && formData.jenjang) {
+      const jenjangOption = JENJANG_OPTIONS.find(j => j.value === formData.jenjang);
+      const fase = jenjangOption?.fase;
+      const filtered = getAtpByMapelAndFase(formData.mapel, fase);
+      setFilteredAtp(filtered);
+    } else {
+      setFilteredAtp([]);
+    }
+    setSelectedAtpId('');
+  }, [formData.mapel, formData.jenjang]);
+
+  // Auto-fill from selected ATP
+  const handleAtpSelect = (atpId: string) => {
+    setSelectedAtpId(atpId);
+    const atp = atpList.find(a => a.id === atpId);
+    if (atp) {
+      setFormData(prev => ({
+        ...prev,
+        semester: atp.semester || prev.semester,
+        kelas: atp.kelas?.toString() || prev.kelas,
+        capaian_pembelajaran: atp.capaian_pembelajaran || '',
+        tujuan_pembelajaran: atp.tujuan_pembelajaran?.join('\n') || '',
+        alokasi_waktu: atp.alokasi_waktu || prev.alokasi_waktu,
+      }));
+      toast({
+        title: "Data ATP dimuat",
+        description: "CP dan TP dari ATP telah diisi otomatis.",
+      });
+    }
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -81,7 +128,12 @@ const GeneratorRPP = () => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            ...formData,
+            // Include ATP data if available
+            capaian_pembelajaran: formData.capaian_pembelajaran,
+            tujuan_pembelajaran: formData.tujuan_pembelajaran,
+          }),
         }
       );
 
@@ -163,7 +215,7 @@ const GeneratorRPP = () => {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownloadMarkdown = () => {
     const blob = new Blob([result], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -176,8 +228,37 @@ const GeneratorRPP = () => {
     
     toast({
       title: "Download dimulai",
-      description: "File RPP sedang diunduh.",
+      description: "File RPP (Markdown) sedang diunduh.",
     });
+  };
+
+  const handleDownloadWord = async () => {
+    setIsExporting(true);
+    try {
+      await exportToDocx({
+        jenjang: formData.jenjang,
+        kelas: formData.kelas,
+        semester: formData.semester,
+        mapel: formData.mapel,
+        topik: formData.topik,
+        alokasi_waktu: formData.alokasi_waktu,
+        content: result,
+      });
+      
+      toast({
+        title: "Download dimulai",
+        description: "File RPP (Word) sedang diunduh.",
+      });
+    } catch (error) {
+      console.error('Error exporting to Word:', error);
+      toast({
+        title: "Gagal export",
+        description: "Terjadi kesalahan saat membuat file Word.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleReset = () => {
@@ -189,9 +270,15 @@ const GeneratorRPP = () => {
       topik: '',
       alokasi_waktu: '',
       tujuan_pembelajaran: '',
+      capaian_pembelajaran: '',
     });
     setResult('');
+    setSelectedAtpId('');
+    setFilteredAtp([]);
   };
+
+  // Combine MAPEL_OPTIONS with ATP mapel options
+  const allMapelOptions = [...new Set([...MAPEL_OPTIONS, ...atpMapelOptions])].sort();
 
   return (
     <div className="space-y-6">
@@ -209,7 +296,7 @@ const GeneratorRPP = () => {
               Input Data RPP
             </CardTitle>
             <CardDescription>
-              Isi informasi pembelajaran untuk menghasilkan RPP
+              Isi informasi pembelajaran untuk menghasilkan RPP. Anda dapat mengambil data dari ATP yang sudah ada.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -282,7 +369,7 @@ const GeneratorRPP = () => {
                   <SelectValue placeholder="Pilih Mata Pelajaran" />
                 </SelectTrigger>
                 <SelectContent>
-                  {MAPEL_OPTIONS.map((mapel) => (
+                  {allMapelOptions.map((mapel) => (
                     <SelectItem key={mapel} value={mapel}>
                       {mapel}
                     </SelectItem>
@@ -290,6 +377,34 @@ const GeneratorRPP = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* ATP Integration */}
+            {filteredAtp.length > 0 && (
+              <div className="space-y-2 p-3 rounded-lg border border-primary/20 bg-primary/5">
+                <Label className="flex items-center gap-2 text-primary">
+                  <Database className="h-4 w-4" />
+                  Ambil Data dari ATP
+                </Label>
+                <Select
+                  value={selectedAtpId}
+                  onValueChange={handleAtpSelect}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih ATP untuk mengisi CP & TP otomatis" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredAtp.map((atp) => (
+                      <SelectItem key={atp.id} value={atp.id}>
+                        {atp.mapel} - {atp.elemen || 'Umum'} (Kelas {atp.kelas})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {isLoadingAtp ? 'Memuat data ATP...' : `${filteredAtp.length} ATP tersedia untuk ${formData.mapel}`}
+                </p>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="topik">Topik/Materi Utama *</Label>
@@ -299,6 +414,22 @@ const GeneratorRPP = () => {
                 value={formData.topik}
                 onChange={(e) => handleInputChange('topik', e.target.value)}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="capaian_pembelajaran">
+                Capaian Pembelajaran (Opsional)
+              </Label>
+              <Textarea
+                id="capaian_pembelajaran"
+                placeholder="Capaian pembelajaran dari kurikulum..."
+                value={formData.capaian_pembelajaran}
+                onChange={(e) => handleInputChange('capaian_pembelajaran', e.target.value)}
+                rows={2}
+              />
+              <p className="text-xs text-muted-foreground">
+                Dapat diisi otomatis dari ATP yang dipilih
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -312,6 +443,9 @@ const GeneratorRPP = () => {
                 onChange={(e) => handleInputChange('tujuan_pembelajaran', e.target.value)}
                 rows={3}
               />
+              <p className="text-xs text-muted-foreground">
+                Dapat diisi otomatis dari ATP yang dipilih
+              </p>
             </div>
 
             <div className="flex gap-2 pt-4">
@@ -355,10 +489,28 @@ const GeneratorRPP = () => {
                     <Copy className="h-4 w-4 mr-1" />
                     Salin
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleDownload}>
-                    <Download className="h-4 w-4 mr-1" />
-                    Unduh
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" disabled={isExporting}>
+                        {isExporting ? (
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                        ) : (
+                          <Download className="h-4 w-4 mr-1" />
+                        )}
+                        Unduh
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={handleDownloadWord}>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Word (.docx) - Siap Edit & Print
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleDownloadMarkdown}>
+                        <Download className="h-4 w-4 mr-2" />
+                        Markdown (.md)
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               )}
             </div>

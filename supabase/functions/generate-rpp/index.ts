@@ -18,7 +18,8 @@ serve(async (req) => {
       mapel, 
       topik, 
       alokasi_waktu, 
-      tujuan_pembelajaran 
+      tujuan_pembelajaran,
+      capaian_pembelajaran 
     } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -52,16 +53,24 @@ Format output harus dalam Markdown yang rapi dan terstruktur dengan bagian-bagia
 
 Gunakan bahasa Indonesia yang baik dan benar. Berikan konten yang detail, praktis, dan siap pakai oleh guru.`;
 
-    const userPrompt = `Buatkan RPP/Modul Ajar dengan detail berikut:
+    // Build user prompt with ATP data if available
+    let userPrompt = `Buatkan RPP/Modul Ajar dengan detail berikut:
 - Jenjang: ${jenjang}
 - Kelas: ${kelas}
 - Semester: ${semester}
 - Mata Pelajaran: ${mapel}
 - Topik/Materi Utama: ${topik}
-- Alokasi Waktu: ${alokasi_waktu}
-${tujuan_pembelajaran ? `- Tujuan Pembelajaran Spesifik: ${tujuan_pembelajaran}` : ''}
+- Alokasi Waktu: ${alokasi_waktu}`;
 
-Buatkan RPP lengkap dengan semua komponen sesuai Kurikulum Merdeka.`;
+    if (capaian_pembelajaran) {
+      userPrompt += `\n- Capaian Pembelajaran: ${capaian_pembelajaran}`;
+    }
+    
+    if (tujuan_pembelajaran) {
+      userPrompt += `\n- Tujuan Pembelajaran Spesifik: ${tujuan_pembelajaran}`;
+    }
+
+    userPrompt += `\n\nBuatkan RPP lengkap dengan semua komponen sesuai Kurikulum Merdeka.`;
 
     console.log("Generating RPP for:", { jenjang, kelas, semester, mapel, topik });
 
