@@ -287,7 +287,21 @@ export default function SuratMasuk() {
                   ) : (
                     filteredSurat?.map((surat) => (
                       <TableRow key={surat.id}>
-                        <TableCell className="font-medium">{surat.nomor_surat}</TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            {surat.nomor_surat}
+                            {surat.file_path && (
+                              <a
+                                href={getPublicUrl(surat.file_path)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:text-primary/80"
+                              >
+                                <Paperclip className="h-4 w-4" />
+                              </a>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell>
                           {format(new Date(surat.tanggal_surat), 'dd MMM yyyy', { locale: localeId })}
                         </TableCell>
@@ -416,6 +430,15 @@ export default function SuratMasuk() {
                 id="keterangan"
                 value={formData.keterangan}
                 onChange={(e) => setFormData({ ...formData, keterangan: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Lampiran</Label>
+              <FileUpload
+                currentFilePath={formData.file_path}
+                onFileUploaded={(path) => setFormData({ ...formData, file_path: path })}
+                folder="masuk"
               />
             </div>
 

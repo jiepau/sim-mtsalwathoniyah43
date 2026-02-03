@@ -829,6 +829,7 @@ export type Database = {
       surat_keluar: {
         Row: {
           created_at: string
+          file_path: string | null
           id: string
           keterangan: string | null
           klasifikasi: string | null
@@ -840,6 +841,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          file_path?: string | null
           id?: string
           keterangan?: string | null
           klasifikasi?: string | null
@@ -851,6 +853,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          file_path?: string | null
           id?: string
           keterangan?: string | null
           klasifikasi?: string | null
@@ -865,6 +868,7 @@ export type Database = {
       surat_masuk: {
         Row: {
           created_at: string
+          file_path: string | null
           id: string
           keterangan: string | null
           klasifikasi: string | null
@@ -877,6 +881,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          file_path?: string | null
           id?: string
           keterangan?: string | null
           klasifikasi?: string | null
@@ -889,6 +894,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          file_path?: string | null
           id?: string
           keterangan?: string | null
           klasifikasi?: string | null
