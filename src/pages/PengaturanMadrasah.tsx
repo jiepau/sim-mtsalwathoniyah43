@@ -178,7 +178,7 @@ export default function PengaturanMadrasahPage() {
                 <Input
                   id="nsm"
                   value={formData.nsm}
-                  onChange={(e) => setFormData({ ...formData, npsn: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, nsm: e.target.value })}
                   placeholder="1212xxxxxxx"
                 />
               </div>
