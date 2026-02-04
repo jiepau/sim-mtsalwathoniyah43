@@ -8,7 +8,7 @@ const corsHeaders = {
 };
 
 // Valid roles enum
-const validRoles = ["admin", "bendahara", "operator"] as const;
+const validRoles = ["admin", "bendahara", "operator", "guru"] as const;
 type AppRole = typeof validRoles[number];
 
 // Validation schemas
