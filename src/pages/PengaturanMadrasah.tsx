@@ -176,7 +176,7 @@ export default function PengaturanMadrasahPage() {
               <div className="space-y-2">
                 <Label htmlFor="nsm">NSM</Label>
                 <Input
-                  id="npsn"
+                  id="nsm"
                   value={formData.nsm}
                   onChange={(e) => setFormData({ ...formData, npsn: e.target.value })}
                   placeholder="1212xxxxxxx"
