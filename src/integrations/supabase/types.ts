@@ -223,6 +223,7 @@ export type Database = {
           tanggal_lahir: string | null
           tempat_lahir: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           alamat?: string | null
@@ -241,6 +242,7 @@ export type Database = {
           tanggal_lahir?: string | null
           tempat_lahir?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           alamat?: string | null
@@ -259,6 +261,7 @@ export type Database = {
           tanggal_lahir?: string | null
           tempat_lahir?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -364,6 +367,7 @@ export type Database = {
       }
       madrasah_settings: {
         Row: {
+          akreditasi: string | null
           alamat: string | null
           created_at: string
           email: string | null
@@ -373,14 +377,17 @@ export type Database = {
           kode_pos: string | null
           nama_madrasah: string
           nip_kepala: string | null
+          no_sk_pendirian: string | null
           no_telp: string | null
           npsn: string | null
           nsm: string | null
           provinsi: string | null
+          tanggal_sk_pendirian: string | null
           updated_at: string
           website: string | null
         }
         Insert: {
+          akreditasi?: string | null
           alamat?: string | null
           created_at?: string
           email?: string | null
@@ -390,14 +397,17 @@ export type Database = {
           kode_pos?: string | null
           nama_madrasah?: string
           nip_kepala?: string | null
+          no_sk_pendirian?: string | null
           no_telp?: string | null
           npsn?: string | null
           nsm?: string | null
           provinsi?: string | null
+          tanggal_sk_pendirian?: string | null
           updated_at?: string
           website?: string | null
         }
         Update: {
+          akreditasi?: string | null
           alamat?: string | null
           created_at?: string
           email?: string | null
@@ -407,10 +417,12 @@ export type Database = {
           kode_pos?: string | null
           nama_madrasah?: string
           nip_kepala?: string | null
+          no_sk_pendirian?: string | null
           no_telp?: string | null
           npsn?: string | null
           nsm?: string | null
           provinsi?: string | null
+          tanggal_sk_pendirian?: string | null
           updated_at?: string
           website?: string | null
         }
@@ -971,7 +983,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "bendahara" | "operator"
+      app_role: "admin" | "bendahara" | "operator" | "guru"
       fase_pembelajaran: "A" | "B" | "C" | "D" | "E" | "F"
     }
     CompositeTypes: {
@@ -1100,7 +1112,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "bendahara", "operator"],
+      app_role: ["admin", "bendahara", "operator", "guru"],
       fase_pembelajaran: ["A", "B", "C", "D", "E", "F"],
     },
   },
