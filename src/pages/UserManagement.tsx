@@ -33,12 +33,14 @@ const ROLE_LABELS: Record<AppRole, string> = {
   admin: 'Admin',
   bendahara: 'Bendahara',
   operator: 'Operator',
+  guru: 'Guru',
 };
 
 const ROLE_COLORS: Record<AppRole, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   admin: 'destructive',
   bendahara: 'default',
   operator: 'secondary',
+  guru: 'outline',
 };
 
 export default function UserManagement() {
