@@ -30,6 +30,8 @@ import {
   Mail,
   MailOpen,
   Send,
+  BookMarked,
+  User,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -48,6 +50,7 @@ interface MenuItem {
 // All menu items with role restrictions
 const allMenuItems: MenuItem[] = [
   { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' }, // All roles
+  { title: 'Profil Saya', icon: User, path: '/profil-guru', roles: ['guru'] }, // Guru only
   { title: 'Siswa', icon: Users, path: '/siswa', roles: ['admin', 'operator', 'bendahara'] }, // All roles can view (bendahara = read-only handled in page)
   { title: 'Kelas', icon: School, path: '/kelas', roles: ['admin', 'operator'] },
   { title: 'Tahun Ajaran', icon: Calendar, path: '/tahun-ajaran', roles: ['admin', 'operator'] },
@@ -72,7 +75,7 @@ const allMenuItems: MenuItem[] = [
       { title: 'Generator RPP', icon: Sparkles, path: '/generator-rpp' },
       { title: 'Template CP', icon: FileText, path: '/cp-templates' },
     ],
-    roles: ['admin', 'operator']
+    roles: ['admin', 'operator', 'guru'] // Guru can access kurikulum
   },
   { 
     title: 'Keuangan', 
@@ -86,6 +89,7 @@ const allMenuItems: MenuItem[] = [
     ],
     roles: ['admin', 'bendahara']
   },
+  { title: 'Buku Induk', icon: BookMarked, path: '/buku-induk', roles: ['admin', 'bendahara'] },
   { title: 'Naik Kelas', icon: ArrowUpCircle, path: '/naik-kelas', roles: ['admin', 'operator'] },
   { title: 'Alumni', icon: GraduationCap, path: '/alumni', roles: ['admin', 'operator'] },
   { title: 'Pengaturan Madrasah', icon: Settings, path: '/pengaturan-madrasah', roles: ['admin'] },
@@ -130,6 +134,7 @@ export function Sidebar() {
     if (roles.includes('admin')) return 'Admin';
     if (roles.includes('bendahara')) return 'Bendahara';
     if (roles.includes('operator')) return 'Operator';
+    if (roles.includes('guru')) return 'Guru';
     return null;
   };
   

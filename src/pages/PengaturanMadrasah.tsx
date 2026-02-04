@@ -25,6 +25,9 @@ interface MadrasahSettings {
   website: string | null;
   kepala_madrasah: string | null;
   nip_kepala: string | null;
+  akreditasi: string | null;
+  no_sk_pendirian: string | null;
+  tanggal_sk_pendirian: string | null;
 }
 
 export default function PengaturanMadrasahPage() {
@@ -44,6 +47,9 @@ export default function PengaturanMadrasahPage() {
     website: "",
     kepala_madrasah: "",
     nip_kepala: "",
+    akreditasi: "",
+    no_sk_pendirian: "",
+    tanggal_sk_pendirian: "",
   });
 
   useEffect(() => {
@@ -71,6 +77,9 @@ export default function PengaturanMadrasahPage() {
           website: data.website || "",
           kepala_madrasah: data.kepala_madrasah || "",
           nip_kepala: data.nip_kepala || "",
+          akreditasi: data.akreditasi || "",
+          no_sk_pendirian: data.no_sk_pendirian || "",
+          tanggal_sk_pendirian: data.tanggal_sk_pendirian || "",
         });
       }
     } catch (error) {
@@ -99,6 +108,9 @@ export default function PengaturanMadrasahPage() {
         website: formData.website || null,
         kepala_madrasah: formData.kepala_madrasah || null,
         nip_kepala: formData.nip_kepala || null,
+        akreditasi: formData.akreditasi || null,
+        no_sk_pendirian: formData.no_sk_pendirian || null,
+        tanggal_sk_pendirian: formData.tanggal_sk_pendirian || null,
       };
 
       if (settings) {
@@ -180,6 +192,36 @@ export default function PengaturanMadrasahPage() {
                   value={formData.nsm}
                   onChange={(e) => setFormData({ ...formData, nsm: e.target.value })}
                   placeholder="1212xxxxxxx"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="akreditasi">Akreditasi</Label>
+                <Input
+                  id="akreditasi"
+                  value={formData.akreditasi}
+                  onChange={(e) => setFormData({ ...formData, akreditasi: e.target.value })}
+                  placeholder="A / B / C"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="no_sk_pendirian">Nomor SK Pendirian</Label>
+                <Input
+                  id="no_sk_pendirian"
+                  value={formData.no_sk_pendirian}
+                  onChange={(e) => setFormData({ ...formData, no_sk_pendirian: e.target.value })}
+                  placeholder="SK/xxx/xxxx"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tanggal_sk_pendirian">Tanggal SK Pendirian</Label>
+                <Input
+                  id="tanggal_sk_pendirian"
+                  type="date"
+                  value={formData.tanggal_sk_pendirian}
+                  onChange={(e) => setFormData({ ...formData, tanggal_sk_pendirian: e.target.value })}
                 />
               </div>
             </div>

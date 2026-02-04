@@ -35,6 +35,8 @@ const Promes = lazy(() => import("@/pages/Promes"));
 const PengaturanMadrasah = lazy(() => import("@/pages/PengaturanMadrasah"));
 const SuratMasuk = lazy(() => import("@/pages/SuratMasuk"));
 const SuratKeluar = lazy(() => import("@/pages/SuratKeluar"));
+const BukuInduk = lazy(() => import("@/pages/BukuInduk"));
+const ProfilGuru = lazy(() => import("@/pages/ProfilGuru"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -89,6 +91,8 @@ const App = () => (
                 <Route path="/user-management" element={<UserManagement />} />
                 <Route path="/surat-masuk" element={<SuratMasuk />} />
                 <Route path="/surat-keluar" element={<SuratKeluar />} />
+                <Route path="/buku-induk" element={<BukuInduk />} />
+                <Route path="/profil-guru" element={<ProfilGuru />} />
               </Route>
               
               {/* Redirects */}
