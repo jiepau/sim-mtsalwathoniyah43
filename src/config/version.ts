@@ -1,8 +1,8 @@
 // Centralized version configuration
 // Update this file when releasing new versions
 
-export const APP_VERSION = "1.1.0";
-export const APP_BUILD_DATE = "2026-02-03";
+export const APP_VERSION = "1.1.1";
+export const APP_BUILD_DATE = "2026-02-04";
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,18 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "1.1.1",
+    date: "2026-02-04",
+    changes: [
+      "Penambahan role Guru dengan akses Kurikulum dan Profil Saya",
+      "Halaman Profil Saya untuk guru melihat/edit data GTK pribadi",
+      "Halaman Buku Induk untuk Admin dan Bendahara",
+      "Penambahan field Akreditasi, No. SK Pendirian, dan Tanggal SK di Pengaturan Madrasah",
+      "Kolom user_id di GTK untuk menghubungkan dengan akun autentikasi",
+      "RLS policies baru untuk role Guru (akses kurikulum dan data keuangan read-only)",
+    ],
+  },
   {
     version: "1.1.0",
     date: "2026-02-03",
