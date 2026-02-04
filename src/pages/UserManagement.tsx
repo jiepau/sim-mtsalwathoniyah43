@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Shield, Plus, Pencil, Trash2, UserPlus, Eye, EyeOff } from "lucide-react";
+import { Shield, Plus, Pencil, Trash2, UserPlus, Eye, EyeOff, Link2 } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,13 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,6 +34,14 @@ interface UserWithRoles {
   full_name: string;
   created_at: string;
   roles: AppRole[];
+  gtk_id?: string | null;
+}
+
+interface GtkData {
+  id: string;
+  nama: string;
+  nip: string | null;
+  user_id: string | null;
 }
 
 const ROLE_LABELS: Record<AppRole, string> = {
@@ -47,6 +62,7 @@ export default function UserManagement() {
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [loading, setLoading] = useState(true);
+  const [gtkList, setGtkList] = useState<GtkData[]>([]);
 
   // Edit user dialog
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -57,6 +73,7 @@ export default function UserManagement() {
     email: "",
     password: "",
     roles: [] as AppRole[],
+    gtk_id: "" as string,
   });
 
   // Create user dialog
@@ -68,11 +85,27 @@ export default function UserManagement() {
     password: "",
     full_name: "",
     roles: [] as AppRole[],
+    gtk_id: "" as string,
   });
 
   useEffect(() => {
     fetchUsers();
+    fetchGtkList();
   }, []);
+
+  const fetchGtkList = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("gtk_ptk")
+        .select("id, nama, nip, user_id")
+        .order("nama");
+
+      if (error) throw error;
+      setGtkList(data || []);
+    } catch (error) {
+      console.error("Error fetching GTK list:", error);
+    }
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -85,17 +118,24 @@ export default function UserManagement() {
       if (profilesError) throw profilesError;
 
       const { data: allRoles, error: rolesError } = await supabase.from("user_roles").select("*");
-
       if (rolesError) throw rolesError;
+
+      // Fetch GTK data to get user_id mappings
+      const { data: gtkData, error: gtkError } = await supabase
+        .from("gtk_ptk")
+        .select("id, user_id");
+      if (gtkError) throw gtkError;
 
       const usersWithRoles: UserWithRoles[] = (profiles || []).map((profile) => {
         const userRoles = allRoles?.filter((r) => r.user_id === profile.user_id) || [];
+        const linkedGtk = gtkData?.find((g) => g.user_id === profile.user_id);
         return {
           id: profile.user_id,
           email: "",
           full_name: profile.full_name,
           created_at: profile.created_at,
           roles: userRoles.map((r) => r.role as AppRole),
+          gtk_id: linkedGtk?.id || null,
         };
       });
 
@@ -116,6 +156,7 @@ export default function UserManagement() {
       email: userData.email,
       password: "",
       roles: userData.roles,
+      gtk_id: userData.gtk_id || "",
     });
     setEditDialogOpen(true);
   };
@@ -161,9 +202,42 @@ export default function UserManagement() {
       if (response.error) throw new Error(response.error.message);
       if (response.data?.error) throw new Error(response.data.error);
 
+      // Update GTK linkage if role includes guru
+      if (editData.roles.includes("guru")) {
+        // First, unlink any previously linked GTK for this user
+        if (editingUser.gtk_id && editingUser.gtk_id !== editData.gtk_id) {
+          await supabase
+            .from("gtk_ptk")
+            .update({ user_id: null })
+            .eq("id", editingUser.gtk_id);
+        }
+        
+        // Link new GTK if selected
+        if (editData.gtk_id) {
+          const { error: gtkError } = await supabase
+            .from("gtk_ptk")
+            .update({ user_id: editingUser.id })
+            .eq("id", editData.gtk_id);
+          
+          if (gtkError) {
+            console.error("Error linking GTK:", gtkError);
+            toast.error("User diupdate, tapi gagal menghubungkan ke data GTK");
+          }
+        }
+      } else {
+        // If role no longer includes guru, unlink GTK
+        if (editingUser.gtk_id) {
+          await supabase
+            .from("gtk_ptk")
+            .update({ user_id: null })
+            .eq("id", editingUser.gtk_id);
+        }
+      }
+
       toast.success("User berhasil diupdate");
       setEditDialogOpen(false);
       fetchUsers();
+      fetchGtkList();
     } catch (error: any) {
       console.error("Error updating user:", error);
       toast.error(mapDatabaseError(error));
@@ -229,10 +303,6 @@ export default function UserManagement() {
 
     setCreateLoading(true);
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
       const response = await supabase.functions.invoke("manage-user", {
         body: {
           action: "create",
@@ -251,9 +321,23 @@ export default function UserManagement() {
         throw new Error(response.data.error);
       }
 
+      // Link GTK if role includes guru and gtk_id is selected
+      if (newUserData.roles.includes("guru") && newUserData.gtk_id && response.data?.user?.id) {
+        const { error: gtkError } = await supabase
+          .from("gtk_ptk")
+          .update({ user_id: response.data.user.id })
+          .eq("id", newUserData.gtk_id);
+        
+        if (gtkError) {
+          console.error("Error linking GTK:", gtkError);
+          toast.error("User dibuat, tapi gagal menghubungkan ke data GTK");
+        }
+      }
+
       toast.success(`User ${newUserData.full_name} berhasil dibuat`);
       setCreateDialogOpen(false);
-      setNewUserData({ email: "", password: "", full_name: "", roles: [] });
+      setNewUserData({ email: "", password: "", full_name: "", roles: [], gtk_id: "" });
+      fetchGtkList();
       fetchUsers();
     } catch (error: any) {
       console.error("Error creating user:", error);
@@ -410,7 +494,7 @@ export default function UserManagement() {
               <Label>
                 Role <span className="text-destructive">*</span>
               </Label>
-              {(["admin", "bendahara", "operator"] as AppRole[]).map((role) => (
+              {(["admin", "bendahara", "operator", "guru"] as AppRole[]).map((role) => (
                 <div key={role} className="flex items-center space-x-3 p-3 border rounded-lg">
                   <Checkbox
                     id={`edit-role-${role}`}
@@ -426,11 +510,43 @@ export default function UserManagement() {
                       {role === "admin" && "Akses penuh ke semua fitur sistem"}
                       {role === "bendahara" && "Akses Dashboard, Siswa (read-only), Keuangan"}
                       {role === "operator" && "Akses data master (Siswa, Kelas, GTK/PTK, dll)"}
+                      {role === "guru" && "Akses Dashboard, Profil Saya, Kurikulum"}
                     </p>
                   </div>
                 </div>
               ))}
             </div>
+
+            {/* GTK Link dropdown - only show if guru role is selected */}
+            {editData.roles.includes("guru") && (
+              <div className="space-y-2 p-3 border rounded-lg bg-muted/30">
+                <Label htmlFor="edit_gtk_id" className="flex items-center gap-2">
+                  <Link2 className="h-4 w-4" />
+                  Hubungkan ke Data GTK
+                </Label>
+                <Select
+                  value={editData.gtk_id}
+                  onValueChange={(value) => setEditData({ ...editData, gtk_id: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih data GTK..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">-- Tidak dihubungkan --</SelectItem>
+                    {gtkList
+                      .filter((gtk) => !gtk.user_id || gtk.id === editData.gtk_id)
+                      .map((gtk) => (
+                        <SelectItem key={gtk.id} value={gtk.id}>
+                          {gtk.nama} {gtk.nip && `(${gtk.nip})`}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Menghubungkan akun dengan data GTK agar guru dapat melihat profil di halaman "Profil Saya"
+                </p>
+              </div>
+            )}
           </div>
 
           <DialogFooter>
@@ -515,10 +631,47 @@ export default function UserManagement() {
                     <Label htmlFor={`new-${role}`} className="font-medium cursor-pointer">
                       {ROLE_LABELS[role]}
                     </Label>
+                    <p className="text-xs text-muted-foreground">
+                      {role === "admin" && "Akses penuh ke semua fitur sistem"}
+                      {role === "bendahara" && "Akses Dashboard, Siswa (read-only), Keuangan"}
+                      {role === "operator" && "Akses data master (Siswa, Kelas, GTK/PTK, dll)"}
+                      {role === "guru" && "Akses Dashboard, Profil Saya, Kurikulum"}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
+
+            {/* GTK Link dropdown - only show if guru role is selected */}
+            {newUserData.roles.includes("guru") && (
+              <div className="space-y-2 p-3 border rounded-lg bg-muted/30">
+                <Label htmlFor="new_gtk_id" className="flex items-center gap-2">
+                  <Link2 className="h-4 w-4" />
+                  Hubungkan ke Data GTK
+                </Label>
+                <Select
+                  value={newUserData.gtk_id}
+                  onValueChange={(value) => setNewUserData({ ...newUserData, gtk_id: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih data GTK..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">-- Tidak dihubungkan --</SelectItem>
+                    {gtkList
+                      .filter((gtk) => !gtk.user_id)
+                      .map((gtk) => (
+                        <SelectItem key={gtk.id} value={gtk.id}>
+                          {gtk.nama} {gtk.nip && `(${gtk.nip})`}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Menghubungkan akun dengan data GTK agar guru dapat melihat profil di halaman "Profil Saya"
+                </p>
+              </div>
+            )}
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
