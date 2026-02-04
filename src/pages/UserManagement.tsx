@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Shield, Plus, Pencil, Trash2, UserPlus, Eye, EyeOff } from 'lucide-react';
-import { PageHeader } from '@/components/layout/PageHeader';
-import { DataTable } from '@/components/ui/data-table';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { useEffect, useState } from "react";
+import { Shield, Plus, Pencil, Trash2, UserPlus, Eye, EyeOff } from "lucide-react";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { DataTable } from "@/components/ui/data-table";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -11,15 +11,15 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
-import { formatDateTime, AppRole } from '@/lib/supabase-helpers';
-import { mapDatabaseError } from '@/lib/error-mapper';
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { formatDateTime, AppRole } from "@/lib/supabase-helpers";
+import { mapDatabaseError } from "@/lib/error-mapper";
 
 interface UserWithRoles {
   id: string;
@@ -30,32 +30,32 @@ interface UserWithRoles {
 }
 
 const ROLE_LABELS: Record<AppRole, string> = {
-  admin: 'Admin',
-  bendahara: 'Bendahara',
-  operator: 'Operator',
-  guru: 'Guru',
+  admin: "Admin",
+  bendahara: "Bendahara",
+  operator: "Operator",
+  guru: "Guru",
 };
 
-const ROLE_COLORS: Record<AppRole, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-  admin: 'destructive',
-  bendahara: 'default',
-  operator: 'secondary',
-  guru: 'outline',
+const ROLE_COLORS: Record<AppRole, "default" | "secondary" | "destructive" | "outline"> = {
+  admin: "destructive",
+  bendahara: "default",
+  operator: "secondary",
+  guru: "outline",
 };
 
 export default function UserManagement() {
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Edit user dialog
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserWithRoles | null>(null);
   const [editLoading, setEditLoading] = useState(false);
   const [editData, setEditData] = useState({
-    full_name: '',
-    email: '',
-    password: '',
+    full_name: "",
+    email: "",
+    password: "",
     roles: [] as AppRole[],
   });
 
@@ -64,9 +64,9 @@ export default function UserManagement() {
   const [createLoading, setCreateLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [newUserData, setNewUserData] = useState({
-    email: '',
-    password: '',
-    full_name: '',
+    email: "",
+    password: "",
+    full_name: "",
     roles: [] as AppRole[],
   });
 
@@ -78,33 +78,31 @@ export default function UserManagement() {
     setLoading(true);
     try {
       const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("profiles")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (profilesError) throw profilesError;
 
-      const { data: allRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('*');
+      const { data: allRoles, error: rolesError } = await supabase.from("user_roles").select("*");
 
       if (rolesError) throw rolesError;
 
-      const usersWithRoles: UserWithRoles[] = (profiles || []).map(profile => {
-        const userRoles = allRoles?.filter(r => r.user_id === profile.user_id) || [];
+      const usersWithRoles: UserWithRoles[] = (profiles || []).map((profile) => {
+        const userRoles = allRoles?.filter((r) => r.user_id === profile.user_id) || [];
         return {
           id: profile.user_id,
-          email: '',
+          email: "",
           full_name: profile.full_name,
           created_at: profile.created_at,
-          roles: userRoles.map(r => r.role as AppRole),
+          roles: userRoles.map((r) => r.role as AppRole),
         };
       });
 
       setUsers(usersWithRoles);
     } catch (error) {
-      console.error('Error fetching users:', error);
-      toast.error('Gagal memuat data user');
+      console.error("Error fetching users:", error);
+      toast.error("Gagal memuat data user");
     } finally {
       setLoading(false);
     }
@@ -116,18 +114,16 @@ export default function UserManagement() {
     setEditData({
       full_name: userData.full_name,
       email: userData.email,
-      password: '',
+      password: "",
       roles: userData.roles,
     });
     setEditDialogOpen(true);
   };
 
   const handleEditRoleToggle = (role: AppRole) => {
-    setEditData(prev => ({
+    setEditData((prev) => ({
       ...prev,
-      roles: prev.roles.includes(role)
-        ? prev.roles.filter(r => r !== role)
-        : [...prev.roles, role]
+      roles: prev.roles.includes(role) ? prev.roles.filter((r) => r !== role) : [...prev.roles, role],
     }));
   };
 
@@ -135,25 +131,25 @@ export default function UserManagement() {
     if (!editingUser) return;
 
     if (!editData.full_name.trim()) {
-      toast.error('Nama tidak boleh kosong');
+      toast.error("Nama tidak boleh kosong");
       return;
     }
 
     if (editData.password && editData.password.length < 6) {
-      toast.error('Password minimal 6 karakter');
+      toast.error("Password minimal 6 karakter");
       return;
     }
 
     if (editData.roles.length === 0) {
-      toast.error('Pilih minimal 1 role');
+      toast.error("Pilih minimal 1 role");
       return;
     }
 
     setEditLoading(true);
     try {
-      const response = await supabase.functions.invoke('manage-user', {
+      const response = await supabase.functions.invoke("manage-user", {
         body: {
-          action: 'update',
+          action: "update",
           user_id: editingUser.id,
           full_name: editData.full_name,
           email: editData.email || undefined,
@@ -165,11 +161,11 @@ export default function UserManagement() {
       if (response.error) throw new Error(response.error.message);
       if (response.data?.error) throw new Error(response.data.error);
 
-      toast.success('User berhasil diupdate');
+      toast.success("User berhasil diupdate");
       setEditDialogOpen(false);
       fetchUsers();
     } catch (error: any) {
-      console.error('Error updating user:', error);
+      console.error("Error updating user:", error);
       toast.error(mapDatabaseError(error));
     } finally {
       setEditLoading(false);
@@ -178,18 +174,18 @@ export default function UserManagement() {
 
   const handleDeleteUser = async (userId: string) => {
     if (userId === currentUser?.id) {
-      toast.error('Tidak bisa menghapus akun sendiri');
+      toast.error("Tidak bisa menghapus akun sendiri");
       return;
     }
 
-    if (!confirm('Yakin ingin menghapus user ini? Akun akan dihapus permanen.')) {
+    if (!confirm("Yakin ingin menghapus user ini? Akun akan dihapus permanen.")) {
       return;
     }
 
     try {
-      const response = await supabase.functions.invoke('manage-user', {
+      const response = await supabase.functions.invoke("manage-user", {
         body: {
-          action: 'delete',
+          action: "delete",
           user_id: userId,
         },
       });
@@ -197,49 +193,49 @@ export default function UserManagement() {
       if (response.error) throw new Error(response.error.message);
       if (response.data?.error) throw new Error(response.data.error);
 
-      toast.success('User berhasil dihapus');
+      toast.success("User berhasil dihapus");
       fetchUsers();
     } catch (error: any) {
-      console.error('Error deleting user:', error);
+      console.error("Error deleting user:", error);
       toast.error(mapDatabaseError(error));
     }
   };
 
   // Create user handlers
   const handleNewUserRoleToggle = (role: AppRole) => {
-    setNewUserData(prev => ({
+    setNewUserData((prev) => ({
       ...prev,
-      roles: prev.roles.includes(role)
-        ? prev.roles.filter(r => r !== role)
-        : [...prev.roles, role]
+      roles: prev.roles.includes(role) ? prev.roles.filter((r) => r !== role) : [...prev.roles, role],
     }));
   };
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!newUserData.email || !newUserData.password || !newUserData.full_name) {
-      toast.error('Semua field harus diisi');
+      toast.error("Semua field harus diisi");
       return;
     }
 
     if (newUserData.password.length < 6) {
-      toast.error('Password minimal 6 karakter');
+      toast.error("Password minimal 6 karakter");
       return;
     }
 
     if (newUserData.roles.length === 0) {
-      toast.error('Pilih minimal 1 role');
+      toast.error("Pilih minimal 1 role");
       return;
     }
 
     setCreateLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      const response = await supabase.functions.invoke('manage-user', {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const response = await supabase.functions.invoke("manage-user", {
         body: {
-          action: 'create',
+          action: "create",
           email: newUserData.email,
           password: newUserData.password,
           full_name: newUserData.full_name,
@@ -257,10 +253,10 @@ export default function UserManagement() {
 
       toast.success(`User ${newUserData.full_name} berhasil dibuat`);
       setCreateDialogOpen(false);
-      setNewUserData({ email: '', password: '', full_name: '', roles: [] });
+      setNewUserData({ email: "", password: "", full_name: "", roles: [] });
       fetchUsers();
     } catch (error: any) {
-      console.error('Error creating user:', error);
+      console.error("Error creating user:", error);
       toast.error(mapDatabaseError(error));
     } finally {
       setCreateLoading(false);
@@ -269,7 +265,7 @@ export default function UserManagement() {
 
   const columns = [
     {
-      header: 'Nama',
+      header: "Nama",
       cell: (item: UserWithRoles) => (
         <div>
           <p className="font-medium">{item.full_name}</p>
@@ -278,11 +274,11 @@ export default function UserManagement() {
       ),
     },
     {
-      header: 'Role',
+      header: "Role",
       cell: (item: UserWithRoles) => (
         <div className="flex flex-wrap gap-1">
           {item.roles.length > 0 ? (
-            item.roles.map(role => (
+            item.roles.map((role) => (
               <Badge key={role} variant={ROLE_COLORS[role]}>
                 {ROLE_LABELS[role]}
               </Badge>
@@ -294,15 +290,13 @@ export default function UserManagement() {
       ),
     },
     {
-      header: 'Terdaftar',
+      header: "Terdaftar",
       cell: (item: UserWithRoles) => (
-        <span className="text-sm text-muted-foreground">
-          {formatDateTime(item.created_at)}
-        </span>
+        <span className="text-sm text-muted-foreground">{formatDateTime(item.created_at)}</span>
       ),
     },
     {
-      header: 'Aksi',
+      header: "Aksi",
       cell: (item: UserWithRoles) => (
         <div className="flex items-center gap-1">
           <Button size="sm" variant="ghost" onClick={() => handleOpenEditDialog(item)}>
@@ -319,7 +313,7 @@ export default function UserManagement() {
           </Button>
         </div>
       ),
-      className: 'w-24',
+      className: "w-24",
     },
   ];
 
@@ -340,27 +334,30 @@ export default function UserManagement() {
       <div className="mb-4 p-4 bg-muted/50 rounded-lg border">
         <h3 className="font-medium mb-2">Panduan Role:</h3>
         <ul className="text-sm text-muted-foreground space-y-1">
-          <li><Badge variant="destructive">Admin</Badge> - Akses penuh ke semua fitur</li>
-          <li><Badge variant="default">Bendahara</Badge> - Akses ke Dashboard, Siswa (read-only), dan semua modul Keuangan</li>
-          <li><Badge variant="secondary">Operator</Badge> - Akses ke Dashboard, Siswa, Kelas, Tahun Ajaran, GTK/PTK, Naik Kelas, Alumni</li>
+          <li>
+            <Badge variant="destructive">Admin</Badge> - Akses penuh ke semua fitur
+          </li>
+          <li>
+            <Badge variant="default">Bendahara</Badge> - Akses ke Dashboard, Siswa (read-only), dan semua modul Keuangan
+          </li>
+          <li>
+            <Badge variant="secondary">Operator</Badge> - Akses ke Dashboard, Siswa, Kelas, Tahun Ajaran, GTK/PTK, Naik
+            Kelas, Alumni
+          </li>
+          <li>
+            <Badge variant="secondary">Guru</Badge> - Akses ke Dashboard,Profil saya, Kurikulum
+          </li>
         </ul>
       </div>
 
-      <DataTable
-        data={users}
-        columns={columns}
-        loading={loading}
-        emptyMessage="Belum ada user terdaftar"
-      />
+      <DataTable data={users} columns={columns} loading={loading} emptyMessage="Belum ada user terdaftar" />
 
       {/* Edit User Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription>
-              Ubah data user {editingUser?.full_name}
-            </DialogDescription>
+            <DialogDescription>Ubah data user {editingUser?.full_name}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -390,7 +387,7 @@ export default function UserManagement() {
               <div className="relative">
                 <Input
                   id="edit_password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={editData.password}
                   onChange={(e) => setEditData({ ...editData, password: e.target.value })}
                   placeholder="Kosongkan jika tidak diubah"
@@ -410,23 +407,25 @@ export default function UserManagement() {
             </div>
 
             <div className="space-y-3">
-              <Label>Role <span className="text-destructive">*</span></Label>
-              {(['admin', 'bendahara', 'operator'] as AppRole[]).map(role => (
+              <Label>
+                Role <span className="text-destructive">*</span>
+              </Label>
+              {(["admin", "bendahara", "operator"] as AppRole[]).map((role) => (
                 <div key={role} className="flex items-center space-x-3 p-3 border rounded-lg">
                   <Checkbox
                     id={`edit-role-${role}`}
                     checked={editData.roles.includes(role)}
                     onCheckedChange={() => handleEditRoleToggle(role)}
-                    disabled={editingUser?.id === currentUser?.id && role === 'admin'}
+                    disabled={editingUser?.id === currentUser?.id && role === "admin"}
                   />
                   <div className="flex-1">
                     <Label htmlFor={`edit-role-${role}`} className="font-medium cursor-pointer">
                       {ROLE_LABELS[role]}
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      {role === 'admin' && 'Akses penuh ke semua fitur sistem'}
-                      {role === 'bendahara' && 'Akses Dashboard, Siswa (read-only), Keuangan'}
-                      {role === 'operator' && 'Akses data master (Siswa, Kelas, GTK/PTK, dll)'}
+                      {role === "admin" && "Akses penuh ke semua fitur sistem"}
+                      {role === "bendahara" && "Akses Dashboard, Siswa (read-only), Keuangan"}
+                      {role === "operator" && "Akses data master (Siswa, Kelas, GTK/PTK, dll)"}
                     </p>
                   </div>
                 </div>
@@ -439,7 +438,7 @@ export default function UserManagement() {
               Batal
             </Button>
             <Button onClick={handleSaveEdit} disabled={editLoading}>
-              {editLoading ? 'Menyimpan...' : 'Simpan'}
+              {editLoading ? "Menyimpan..." : "Simpan"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -450,9 +449,7 @@ export default function UserManagement() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Tambah User Baru</DialogTitle>
-            <DialogDescription>
-              Buat akun user baru dan tentukan role-nya
-            </DialogDescription>
+            <DialogDescription>Buat akun user baru dan tentukan role-nya</DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleCreateUser} className="space-y-4">
@@ -484,7 +481,7 @@ export default function UserManagement() {
               <div className="relative">
                 <Input
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={newUserData.password}
                   onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
                   placeholder="Minimal 6 karakter"
@@ -504,8 +501,10 @@ export default function UserManagement() {
             </div>
 
             <div className="space-y-3">
-              <Label>Role <span className="text-destructive">*</span></Label>
-              {(['admin', 'bendahara', 'operator'] as AppRole[]).map(role => (
+              <Label>
+                Role <span className="text-destructive">*</span>
+              </Label>
+              {(["admin", "bendahara", "operator"] as AppRole[]).map((role) => (
                 <div key={role} className="flex items-center space-x-3 p-3 border rounded-lg">
                   <Checkbox
                     id={`new-${role}`}
@@ -526,7 +525,7 @@ export default function UserManagement() {
                 Batal
               </Button>
               <Button type="submit" disabled={createLoading}>
-                {createLoading ? 'Membuat...' : 'Buat User'}
+                {createLoading ? "Membuat..." : "Buat User"}
               </Button>
             </DialogFooter>
           </form>
