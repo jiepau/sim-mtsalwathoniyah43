@@ -375,6 +375,7 @@ export type Database = {
           nip_kepala: string | null
           no_telp: string | null
           npsn: string | null
+          nsm: string | null
           provinsi: string | null
           updated_at: string
           website: string | null
@@ -391,6 +392,7 @@ export type Database = {
           nip_kepala?: string | null
           no_telp?: string | null
           npsn?: string | null
+          nsm?: string | null
           provinsi?: string | null
           updated_at?: string
           website?: string | null
@@ -407,6 +409,7 @@ export type Database = {
           nip_kepala?: string | null
           no_telp?: string | null
           npsn?: string | null
+          nsm?: string | null
           provinsi?: string | null
           updated_at?: string
           website?: string | null
