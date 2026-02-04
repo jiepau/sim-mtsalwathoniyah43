@@ -1,20 +1,21 @@
-import { useEffect, useState } from 'react';
-import { Settings, Save, Building2 } from 'lucide-react';
-import { PageHeader } from '@/components/layout/PageHeader';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { mapDatabaseError } from '@/lib/error-mapper';
-import { VersionChecker } from '@/components/settings/VersionChecker';
+import { useEffect, useState } from "react";
+import { Settings, Save, Building2 } from "lucide-react";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { mapDatabaseError } from "@/lib/error-mapper";
+import { VersionChecker } from "@/components/settings/VersionChecker";
 
 interface MadrasahSettings {
   id: string;
   nama_madrasah: string;
   npsn: string | null;
+  nsm: string | null;
   alamat: string | null;
   kabupaten_kota: string | null;
   provinsi: string | null;
@@ -31,17 +32,18 @@ export default function PengaturanMadrasahPage() {
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<MadrasahSettings | null>(null);
   const [formData, setFormData] = useState({
-    nama_madrasah: '',
-    npsn: '',
-    alamat: '',
-    kabupaten_kota: '',
-    provinsi: '',
-    kode_pos: '',
-    no_telp: '',
-    email: '',
-    website: '',
-    kepala_madrasah: '',
-    nip_kepala: '',
+    nama_madrasah: "",
+    npsn: "",
+    nsm: "",
+    alamat: "",
+    kabupaten_kota: "",
+    provinsi: "",
+    kode_pos: "",
+    no_telp: "",
+    email: "",
+    website: "",
+    kepala_madrasah: "",
+    nip_kepala: "",
   });
 
   useEffect(() => {
@@ -50,33 +52,30 @@ export default function PengaturanMadrasahPage() {
 
   const fetchSettings = async () => {
     try {
-      const { data, error } = await supabase
-        .from('madrasah_settings')
-        .select('*')
-        .limit(1)
-        .single();
+      const { data, error } = await supabase.from("madrasah_settings").select("*").limit(1).single();
 
-      if (error && error.code !== 'PGRST116') throw error;
-      
+      if (error && error.code !== "PGRST116") throw error;
+
       if (data) {
         setSettings(data);
         setFormData({
-          nama_madrasah: data.nama_madrasah || '',
-          npsn: data.npsn || '',
-          alamat: data.alamat || '',
-          kabupaten_kota: data.kabupaten_kota || '',
-          provinsi: data.provinsi || '',
-          kode_pos: data.kode_pos || '',
-          no_telp: data.no_telp || '',
-          email: data.email || '',
-          website: data.website || '',
-          kepala_madrasah: data.kepala_madrasah || '',
-          nip_kepala: data.nip_kepala || '',
+          nama_madrasah: data.nama_madrasah || "",
+          npsn: data.npsn || "",
+          nsm: data.nsm || "",
+          alamat: data.alamat || "",
+          kabupaten_kota: data.kabupaten_kota || "",
+          provinsi: data.provinsi || "",
+          kode_pos: data.kode_pos || "",
+          no_telp: data.no_telp || "",
+          email: data.email || "",
+          website: data.website || "",
+          kepala_madrasah: data.kepala_madrasah || "",
+          nip_kepala: data.nip_kepala || "",
         });
       }
     } catch (error) {
-      console.error('Error fetching settings:', error);
-      toast.error('Gagal memuat pengaturan');
+      console.error("Error fetching settings:", error);
+      toast.error("Gagal memuat pengaturan");
     } finally {
       setLoading(false);
     }
@@ -90,6 +89,7 @@ export default function PengaturanMadrasahPage() {
       const payload = {
         nama_madrasah: formData.nama_madrasah,
         npsn: formData.npsn || null,
+        nsm: formData.nsm || null,
         alamat: formData.alamat || null,
         kabupaten_kota: formData.kabupaten_kota || null,
         provinsi: formData.provinsi || null,
@@ -102,19 +102,14 @@ export default function PengaturanMadrasahPage() {
       };
 
       if (settings) {
-        const { error } = await supabase
-          .from('madrasah_settings')
-          .update(payload)
-          .eq('id', settings.id);
+        const { error } = await supabase.from("madrasah_settings").update(payload).eq("id", settings.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from('madrasah_settings')
-          .insert(payload);
+        const { error } = await supabase.from("madrasah_settings").insert(payload);
         if (error) throw error;
       }
 
-      toast.success('Pengaturan berhasil disimpan');
+      toast.success("Pengaturan berhasil disimpan");
       fetchSettings();
     } catch (error: any) {
       toast.error(mapDatabaseError(error));
@@ -176,6 +171,15 @@ export default function PengaturanMadrasahPage() {
                   value={formData.npsn}
                   onChange={(e) => setFormData({ ...formData, npsn: e.target.value })}
                   placeholder="20xxxxxxxx"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="nsm">NSM</Label>
+                <Input
+                  id="npsn"
+                  value={formData.nsm}
+                  onChange={(e) => setFormData({ ...formData, npsn: e.target.value })}
+                  placeholder="1212xxxxxxx"
                 />
               </div>
             </div>
@@ -257,9 +261,7 @@ export default function PengaturanMadrasahPage() {
         <Card>
           <CardHeader>
             <CardTitle>Kepala Madrasah</CardTitle>
-            <CardDescription>
-              Data ini akan ditampilkan pada bagian pengesahan dokumen
-            </CardDescription>
+            <CardDescription>Data ini akan ditampilkan pada bagian pengesahan dokumen</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -288,7 +290,7 @@ export default function PengaturanMadrasahPage() {
         <div className="flex justify-end">
           <Button type="submit" disabled={saving}>
             <Save className="h-4 w-4 mr-2" />
-            {saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
+            {saving ? "Menyimpan..." : "Simpan Pengaturan"}
           </Button>
         </div>
       </form>
