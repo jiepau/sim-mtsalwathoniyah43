@@ -504,7 +504,7 @@ export default function UserManagement() {
               <Label>
                 Role <span className="text-destructive">*</span>
               </Label>
-              {(["admin", "bendahara", "operator"] as AppRole[]).map((role) => (
+              {(["admin", "bendahara", "operator", "guru"] as AppRole[]).map((role) => (
                 <div key={role} className="flex items-center space-x-3 p-3 border rounded-lg">
                   <Checkbox
                     id={`new-${role}`}
