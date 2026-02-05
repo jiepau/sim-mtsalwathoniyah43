@@ -525,14 +525,14 @@ export default function UserManagement() {
                   Hubungkan ke Data GTK
                 </Label>
                 <Select
-                  value={editData.gtk_id}
-                  onValueChange={(value) => setEditData({ ...editData, gtk_id: value })}
+                  value={editData.gtk_id || "none"}
+                  onValueChange={(value) => setEditData({ ...editData, gtk_id: value === "none" ? "" : value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Pilih data GTK..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">-- Tidak dihubungkan --</SelectItem>
+                    <SelectItem value="none">-- Tidak dihubungkan --</SelectItem>
                     {gtkList
                       .filter((gtk) => !gtk.user_id || gtk.id === editData.gtk_id)
                       .map((gtk) => (
@@ -650,14 +650,14 @@ export default function UserManagement() {
                   Hubungkan ke Data GTK
                 </Label>
                 <Select
-                  value={newUserData.gtk_id}
-                  onValueChange={(value) => setNewUserData({ ...newUserData, gtk_id: value })}
+                  value={newUserData.gtk_id || "none"}
+                  onValueChange={(value) => setNewUserData({ ...newUserData, gtk_id: value === "none" ? "" : value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Pilih data GTK..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">-- Tidak dihubungkan --</SelectItem>
+                    <SelectItem value="none">-- Tidak dihubungkan --</SelectItem>
                     {gtkList
                       .filter((gtk) => !gtk.user_id)
                       .map((gtk) => (
