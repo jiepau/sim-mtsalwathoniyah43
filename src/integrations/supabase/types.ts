@@ -428,6 +428,115 @@ export type Database = {
         }
         Relationships: []
       }
+      modul_ajar: {
+        Row: {
+          alokasi_waktu: string
+          atp_id: string | null
+          capaian_pembelajaran: string | null
+          created_at: string
+          created_by: string | null
+          diferensiasi_konten: string | null
+          diferensiasi_produk: string | null
+          diferensiasi_proses: string | null
+          guru_id: string | null
+          hasil_rpp: string
+          id: string
+          jenis_asesmen: string[] | null
+          jenjang: string
+          kelas: number
+          mapel: string
+          materi_insersi: string | null
+          model_pembelajaran: string
+          nilai_karakter: string[] | null
+          profil_pelajar: string[] | null
+          semester: string
+          status: string
+          ta_id: string | null
+          teknik_asesmen: string[] | null
+          topik: string
+          tujuan_pembelajaran: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          alokasi_waktu: string
+          atp_id?: string | null
+          capaian_pembelajaran?: string | null
+          created_at?: string
+          created_by?: string | null
+          diferensiasi_konten?: string | null
+          diferensiasi_produk?: string | null
+          diferensiasi_proses?: string | null
+          guru_id?: string | null
+          hasil_rpp: string
+          id?: string
+          jenis_asesmen?: string[] | null
+          jenjang: string
+          kelas: number
+          mapel: string
+          materi_insersi?: string | null
+          model_pembelajaran?: string
+          nilai_karakter?: string[] | null
+          profil_pelajar?: string[] | null
+          semester: string
+          status?: string
+          ta_id?: string | null
+          teknik_asesmen?: string[] | null
+          topik: string
+          tujuan_pembelajaran?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          alokasi_waktu?: string
+          atp_id?: string | null
+          capaian_pembelajaran?: string | null
+          created_at?: string
+          created_by?: string | null
+          diferensiasi_konten?: string | null
+          diferensiasi_produk?: string | null
+          diferensiasi_proses?: string | null
+          guru_id?: string | null
+          hasil_rpp?: string
+          id?: string
+          jenis_asesmen?: string[] | null
+          jenjang?: string
+          kelas?: number
+          mapel?: string
+          materi_insersi?: string | null
+          model_pembelajaran?: string
+          nilai_karakter?: string[] | null
+          profil_pelajar?: string[] | null
+          semester?: string
+          status?: string
+          ta_id?: string | null
+          teknik_asesmen?: string[] | null
+          topik?: string
+          tujuan_pembelajaran?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modul_ajar_atp_id_fkey"
+            columns: ["atp_id"]
+            isOneToOne: false
+            referencedRelation: "atp"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "modul_ajar_guru_id_fkey"
+            columns: ["guru_id"]
+            isOneToOne: false
+            referencedRelation: "gtk_ptk"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "modul_ajar_ta_id_fkey"
+            columns: ["ta_id"]
+            isOneToOne: false
+            referencedRelation: "tahun_ajaran"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pembayaran: {
         Row: {
           bulan: number | null
