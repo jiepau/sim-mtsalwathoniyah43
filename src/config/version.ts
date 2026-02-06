@@ -1,8 +1,8 @@
 // Centralized version configuration
 // Update this file when releasing new versions
 
-export const APP_VERSION = "1.1.1";
-export const APP_BUILD_DATE = "2026-02-04";
+export const APP_VERSION = "1.2.0";
+export const APP_BUILD_DATE = "2026-02-06";
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,19 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "1.2.0",
+    date: "2026-02-06",
+    changes: [
+      "Generator Modul Ajar dengan pendekatan Deep Learning (5 model pembelajaran)",
+      "Integrasi Profil Pelajar Pancasila (P5) dalam perencanaan pembelajaran",
+      "Asesmen berbasis HOTS (Higher Order Thinking Skills) dengan rubrik",
+      "Integrasi otomatis data KKTP (Kriteria Ketercapaian TP) dari ATP",
+      "Diferensiasi Pembelajaran (konten, proses, produk)",
+      "Fitur simpan Modul Ajar ke database untuk review dan edit",
+      "UI collapsible untuk form generator yang lebih terorganisir",
+    ],
+  },
   {
     version: "1.1.1",
     date: "2026-02-04",

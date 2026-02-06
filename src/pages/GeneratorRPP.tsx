@@ -6,9 +6,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sparkles, Loader2, Copy, Download, RefreshCw, FileText, Database } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
+import { 
+  Sparkles, Loader2, Copy, Download, RefreshCw, FileText, Database, 
+  BookOpen, Target, Brain, Users, Heart, Save, History, ChevronDown
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAtpData } from '@/hooks/useAtpData';
+import { useKktpData } from '@/hooks/useKktpData';
+import { useModulAjar } from '@/hooks/useModulAjar';
 import { exportToDocx } from '@/lib/docx-export';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -18,122 +27,69 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import {
+  MODEL_PEMBELAJARAN,
+  PROFIL_PELAJAR_PANCASILA,
+  NILAI_KARAKTER_KBC,
+  TEKNIK_ASESMEN,
+  JENIS_ASESMEN,
+  JENJANG_OPTIONS,
+  MAPEL_OPTIONS,
+  generateMateriInsersi
+} from '@/lib/rpp-constants';
 
-const JENJANG_OPTIONS = [
-  { value: 'MI', label: 'MI (Madrasah Ibtidaiyah)', fase: 'B' },
-  { value: 'MTs', label: 'MTs (Madrasah Tsanawiyah)', fase: 'D' },
-  { value: 'MA', label: 'MA (Madrasah Aliyah)', fase: 'E' },
-  { value: 'SD', label: 'SD (Sekolah Dasar)', fase: 'B' },
-  { value: 'SMP', label: 'SMP (Sekolah Menengah Pertama)', fase: 'D' },
-  { value: 'SMA', label: 'SMA (Sekolah Menengah Atas)', fase: 'E' },
-];
+interface FormData {
+  jenjang: string;
+  kelas: string;
+  semester: string;
+  mapel: string;
+  topik: string;
+  alokasi_waktu: string;
+  capaian_pembelajaran: string;
+  tujuan_pembelajaran: string;
+  // Deep Learning
+  model_pembelajaran: string;
+  // Profil Pelajar Pancasila
+  profil_pelajar: string[];
+  // KBC
+  tema_kbc: string[];
+  materi_insersi: string;
+  // KKTP
+  kriteria_ketercapaian: string;
+  // Asesmen HOTS
+  teknik_asesmen: string[];
+  jenis_asesmen: string[];
+  // Diferensiasi
+  diferensiasi_konten: string;
+  diferensiasi_proses: string;
+  diferensiasi_produk: string;
+}
 
-// Nilai karakter Kurikulum Berbasis Cinta dengan materi insersi
-const NILAI_KARAKTER_KBC: Record<string, { label: string; materiInsersi: string[] }> = {
-  cinta_allah: {
-    label: 'Cinta Allah Swt. dan Rasul-Nya',
-    materiInsersi: [
-      'Mengagumi kebesaran Allah Swt. melalui ciptaan-Nya yang dipelajari.',
-      'Meneladani akhlak Rasulullah SAW dalam kehidupan sehari-hari.',
-      'Mengaitkan materi pembelajaran dengan ayat Al-Qur\'an atau hadis yang relevan.',
-    ]
-  },
-  cinta_diri: {
-    label: 'Cinta diri sendiri',
-    materiInsersi: [
-      'Menghargai diri sendiri sebagai makhluk ciptaan Allah yang mulia.',
-      'Menjaga kesehatan jasmani dan rohani sebagai bentuk syukur.',
-      'Mengembangkan potensi diri untuk kebaikan.',
-    ]
-  },
-  cinta_sesama: {
-    label: 'Cinta sesama manusia',
-    materiInsersi: [
-      'Menghormati perbedaan dan keberagaman dalam masyarakat.',
-      'Membangun sikap toleransi dan saling menghargai antar sesama.',
-      'Mempraktikkan ukhuwah Islamiyah dalam interaksi sosial.',
-    ]
-  },
-  cinta_lingkungan: {
-    label: 'Cinta lingkungan',
-    materiInsersi: [
-      'Menjaga kelestarian lingkungan sebagai amanah dari Allah Swt.',
-      'Larangan merusak lingkungan (QS. Ar-Rum: 41).',
-      'Menerapkan perilaku ramah lingkungan dalam kehidupan sehari-hari.',
-    ]
-  },
-  cinta_tanah_air: {
-    label: 'Cinta tanah air',
-    materiInsersi: [
-      'Menghargai jasa para pahlawan dan pejuang kemerdekaan.',
-      'Menjaga persatuan dan kesatuan bangsa.',
-      'Berkontribusi positif untuk kemajuan bangsa dan negara.',
-    ]
-  },
-  kasih_sayang: {
-    label: 'Kasih sayang',
-    materiInsersi: [
-      'Meneladani sifat ar-Rahman dan ar-Rahim Allah Swt.',
-      'Menunjukkan kasih sayang kepada orang tua, guru, dan teman.',
-      'Menyayangi makhluk hidup lain sebagai sesama ciptaan Allah.',
-    ]
-  },
-  empati: {
-    label: 'Empati',
-    materiInsersi: [
-      'Memahami perasaan dan kondisi orang lain.',
-      'Membantu sesama yang membutuhkan pertolongan.',
-      'Tidak meremehkan atau menghina orang lain.',
-    ]
-  },
-  ketulusan: {
-    label: 'Ketulusan',
-    materiInsersi: [
-      'Melakukan segala sesuatu dengan ikhlas karena Allah Swt.',
-      'Menghindari sikap riya\' dan pamer dalam beramal.',
-      'Mengutamakan niat yang tulus dalam setiap pembelajaran.',
-    ]
-  },
-  syukur: {
-    label: 'Syukur',
-    materiInsersi: [
-      'Mensyukuri nikmat Allah Swt. melalui perilaku sehari-hari.',
-      'Menggunakan nikmat yang diberikan untuk kebaikan.',
-      'Bersyukur atas ilmu pengetahuan yang diperoleh.',
-    ]
-  },
-  kejujuran: {
-    label: 'Kejujuran',
-    materiInsersi: [
-      'Menanamkan sikap jujur dalam perkataan dan perbuatan.',
-      'Menghindari perilaku curang dan berbohong.',
-      'Meneladani kejujuran Rasulullah SAW (Al-Amin).',
-    ]
-  },
+const initialFormData: FormData = {
+  jenjang: '',
+  kelas: '',
+  semester: '',
+  mapel: '',
+  topik: '',
+  alokasi_waktu: '',
+  capaian_pembelajaran: '',
+  tujuan_pembelajaran: '',
+  model_pembelajaran: 'discovery_learning',
+  profil_pelajar: [],
+  tema_kbc: [],
+  materi_insersi: '',
+  kriteria_ketercapaian: '',
+  teknik_asesmen: [],
+  jenis_asesmen: [],
+  diferensiasi_konten: '',
+  diferensiasi_proses: '',
+  diferensiasi_produk: '',
 };
-
-const NILAI_KARAKTER_OPTIONS = Object.entries(NILAI_KARAKTER_KBC).map(([value, data]) => ({
-  value,
-  label: data.label,
-}));
-
-const MAPEL_OPTIONS = [
-  "Al-Qur'an Hadis",
-  'Akidah Akhlak',
-  'Fiqih',
-  'Sejarah Kebudayaan Islam',
-  'Bahasa Arab',
-  'Bahasa Indonesia',
-  'Bahasa Inggris',
-  'Matematika',
-  'IPA',
-  'IPS',
-  'PKN',
-  'Seni Budaya',
-  'PJOK',
-  'Prakarya',
-  'Informatika',
-];
 
 const GeneratorRPP = () => {
   const { toast } = useToast();
@@ -141,22 +97,24 @@ const GeneratorRPP = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [result, setResult] = useState('');
   const resultRef = useRef<HTMLDivElement>(null);
+  const [formData, setFormData] = useState<FormData>(initialFormData);
   
+  // ATP & KKTP integration
   const { atpList, mapelOptions: atpMapelOptions, getAtpByMapelAndFase, isLoading: isLoadingAtp } = useAtpData();
+  const { getKktpByAtpId, formatKriteriaForPrompt, isLoading: isLoadingKktp } = useKktpData();
+  const { saveModulAjar, isSaving } = useModulAjar();
+  
   const [selectedAtpId, setSelectedAtpId] = useState<string>('');
   const [filteredAtp, setFilteredAtp] = useState<typeof atpList>([]);
   
-  const [formData, setFormData] = useState({
-    jenjang: '',
-    kelas: '',
-    semester: '',
-    mapel: '',
-    topik: '',
-    alokasi_waktu: '',
-    tujuan_pembelajaran: '',
-    capaian_pembelajaran: '',
-    tema_kbc: [] as string[],
-    materi_insersi: '',
+  // Collapsible states
+  const [openSections, setOpenSections] = useState({
+    identitas: true,
+    kurikulum: false,
+    deepLearning: false,
+    kbc: false,
+    asesmen: false,
+    diferensiasi: false,
   });
 
   // Update filtered ATP when jenjang or mapel changes
@@ -172,27 +130,17 @@ const GeneratorRPP = () => {
     setSelectedAtpId('');
   }, [formData.mapel, formData.jenjang]);
 
-  // Generate materi insersi from selected nilai karakter
-  const generateMateriInsersi = (nilaiKarakter: string[]): string => {
-    const materiList: string[] = [];
-    nilaiKarakter.forEach(nilai => {
-      const data = NILAI_KARAKTER_KBC[nilai];
-      if (data?.materiInsersi) {
-        // Take first 1-2 materi insersi from each nilai karakter
-        materiList.push(...data.materiInsersi.slice(0, 2));
-      }
-    });
-    return materiList.map(m => `- ${m}`).join('\n');
-  };
-
-  // Auto-fill from selected ATP
+  // Auto-fill from selected ATP including KKTP
   const handleAtpSelect = (atpId: string) => {
     setSelectedAtpId(atpId);
     const atp = atpList.find(a => a.id === atpId);
     if (atp) {
-      // Map nilai_karakter from ATP to tema_kbc
       const nilaiKarakterFromAtp = atp.nilai_karakter || [];
       const autoMateriInsersi = generateMateriInsersi(nilaiKarakterFromAtp);
+      
+      // Get KKTP data for this ATP
+      const kktpItems = getKktpByAtpId(atpId);
+      const kriteriaFormatted = formatKriteriaForPrompt(kktpItems);
       
       setFormData(prev => ({
         ...prev,
@@ -203,38 +151,40 @@ const GeneratorRPP = () => {
         alokasi_waktu: atp.alokasi_waktu || prev.alokasi_waktu,
         tema_kbc: nilaiKarakterFromAtp,
         materi_insersi: autoMateriInsersi,
+        kriteria_ketercapaian: kriteriaFormatted,
       }));
+      
       toast({
-        title: "Data ATP dimuat",
-        description: "CP, TP, Nilai Karakter, dan Materi Insersi dari ATP telah diisi otomatis.",
+        title: "Data ATP & KKTP dimuat",
+        description: `CP, TP, Nilai Karakter, dan ${kktpItems.length} Kriteria Ketercapaian telah diisi otomatis.`,
       });
     }
   };
-  // Handle tema KBC checkbox changes with auto-generate materi insersi
-  const handleTemaKbcChange = (value: string, checked: boolean) => {
-    const newTemaKbc = checked 
-      ? [...formData.tema_kbc, value]
-      : formData.tema_kbc.filter(v => v !== value);
-    
-    const newMateriInsersi = generateMateriInsersi(newTemaKbc);
-    
-    setFormData(prev => ({
-      ...prev,
-      tema_kbc: newTemaKbc,
-      materi_insersi: newMateriInsersi,
-    }));
-  };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof FormData, value: string | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleCheckboxChange = (field: keyof FormData, value: string, checked: boolean) => {
+    const currentValues = formData[field] as string[];
+    const newValues = checked 
+      ? [...currentValues, value]
+      : currentValues.filter(v => v !== value);
+    
+    handleInputChange(field, newValues);
+    
+    // Auto-generate materi insersi when KBC changes
+    if (field === 'tema_kbc') {
+      const newMateriInsersi = generateMateriInsersi(newValues);
+      setFormData(prev => ({ ...prev, materi_insersi: newMateriInsersi }));
+    }
+  };
+
   const handleGenerate = async () => {
-    // Validation
     if (!formData.jenjang || !formData.kelas || !formData.semester || !formData.mapel || !formData.topik || !formData.alokasi_waktu) {
       toast({
         title: "Form tidak lengkap",
-        description: "Mohon lengkapi semua field yang wajib diisi.",
+        description: "Mohon lengkapi semua field yang wajib diisi (Jenjang, Kelas, Semester, Mapel, Topik, Alokasi Waktu).",
         variant: "destructive",
       });
       return;
@@ -244,6 +194,8 @@ const GeneratorRPP = () => {
     setResult('');
 
     try {
+      const modelData = MODEL_PEMBELAJARAN[formData.model_pembelajaran as keyof typeof MODEL_PEMBELAJARAN];
+      
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-rpp`,
         {
@@ -261,11 +213,30 @@ const GeneratorRPP = () => {
             alokasi_waktu: formData.alokasi_waktu,
             capaian_pembelajaran: formData.capaian_pembelajaran,
             tujuan_pembelajaran: formData.tujuan_pembelajaran,
-            // Kurikulum Berbasis Cinta fields
-            tema_kbc: formData.tema_kbc.map(v => 
-              NILAI_KARAKTER_KBC[v]?.label || v
-            ).join('; '),
+            // Deep Learning
+            model_pembelajaran: formData.model_pembelajaran,
+            // Profil Pelajar Pancasila
+            profil_pelajar: formData.profil_pelajar
+              .map(v => PROFIL_PELAJAR_PANCASILA[v as keyof typeof PROFIL_PELAJAR_PANCASILA]?.label || v)
+              .join('; '),
+            // KBC
+            tema_kbc: formData.tema_kbc
+              .map(v => NILAI_KARAKTER_KBC[v]?.label || v)
+              .join('; '),
             materi_insersi: formData.materi_insersi,
+            // KKTP
+            kriteria_ketercapaian: formData.kriteria_ketercapaian,
+            // Asesmen HOTS
+            teknik_asesmen: formData.teknik_asesmen
+              .map(v => TEKNIK_ASESMEN[v as keyof typeof TEKNIK_ASESMEN]?.label || v)
+              .join('; '),
+            jenis_asesmen: formData.jenis_asesmen
+              .map(v => JENIS_ASESMEN[v as keyof typeof JENIS_ASESMEN] || v)
+              .join('; '),
+            // Diferensiasi
+            diferensiasi_konten: formData.diferensiasi_konten,
+            diferensiasi_proses: formData.diferensiasi_proses,
+            diferensiasi_produk: formData.diferensiasi_produk,
           }),
         }
       );
@@ -275,9 +246,7 @@ const GeneratorRPP = () => {
         throw new Error(errorData.error || 'Gagal menghasilkan RPP');
       }
 
-      if (!response.body) {
-        throw new Error('No response body');
-      }
+      if (!response.body) throw new Error('No response body');
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -317,8 +286,8 @@ const GeneratorRPP = () => {
       }
 
       toast({
-        title: "RPP Berhasil Dibuat!",
-        description: "RPP/Modul Ajar telah selesai digenerate.",
+        title: "Modul Ajar Berhasil Dibuat!",
+        description: "RPP/Modul Ajar telah selesai digenerate dengan pendekatan Deep Learning & KBC.",
       });
     } catch (error) {
       console.error('Error generating RPP:', error);
@@ -332,19 +301,41 @@ const GeneratorRPP = () => {
     }
   };
 
+  const handleSaveToDatabase = async () => {
+    if (!result) {
+      toast({ title: "Tidak ada hasil", description: "Generate RPP terlebih dahulu.", variant: "destructive" });
+      return;
+    }
+
+    await saveModulAjar({
+      jenjang: formData.jenjang,
+      kelas: parseInt(formData.kelas) || 7,
+      semester: formData.semester,
+      mapel: formData.mapel,
+      topik: formData.topik,
+      alokasi_waktu: formData.alokasi_waktu,
+      capaian_pembelajaran: formData.capaian_pembelajaran,
+      tujuan_pembelajaran: formData.tujuan_pembelajaran.split('\n').filter(Boolean),
+      model_pembelajaran: formData.model_pembelajaran,
+      profil_pelajar: formData.profil_pelajar,
+      nilai_karakter: formData.tema_kbc,
+      materi_insersi: formData.materi_insersi,
+      teknik_asesmen: formData.teknik_asesmen,
+      jenis_asesmen: formData.jenis_asesmen,
+      diferensiasi_konten: formData.diferensiasi_konten,
+      diferensiasi_proses: formData.diferensiasi_proses,
+      diferensiasi_produk: formData.diferensiasi_produk,
+      hasil_rpp: result,
+      atp_id: selectedAtpId || undefined,
+    });
+  };
+
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(result);
-      toast({
-        title: "Berhasil disalin!",
-        description: "RPP telah disalin ke clipboard.",
-      });
+      toast({ title: "Berhasil disalin!", description: "RPP telah disalin ke clipboard." });
     } catch {
-      toast({
-        title: "Gagal menyalin",
-        description: "Tidak dapat menyalin ke clipboard.",
-        variant: "destructive",
-      });
+      toast({ title: "Gagal menyalin", description: "Tidak dapat menyalin ke clipboard.", variant: "destructive" });
     }
   };
 
@@ -353,16 +344,12 @@ const GeneratorRPP = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `RPP_${formData.mapel}_${formData.topik.replace(/\s+/g, '_')}.md`;
+    a.download = `ModulAjar_${formData.mapel}_${formData.topik.replace(/\s+/g, '_')}.md`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Download dimulai",
-      description: "File RPP (Markdown) sedang diunduh.",
-    });
+    toast({ title: "Download dimulai", description: "File Modul Ajar (Markdown) sedang diunduh." });
   };
 
   const handleDownloadWord = async () => {
@@ -377,314 +364,371 @@ const GeneratorRPP = () => {
         alokasi_waktu: formData.alokasi_waktu,
         content: result,
       });
-      
-      toast({
-        title: "Download dimulai",
-        description: "File RPP (Word) sedang diunduh.",
-      });
+      toast({ title: "Download dimulai", description: "File Modul Ajar (Word) sedang diunduh." });
     } catch (error) {
       console.error('Error exporting to Word:', error);
-      toast({
-        title: "Gagal export",
-        description: "Terjadi kesalahan saat membuat file Word.",
-        variant: "destructive",
-      });
+      toast({ title: "Gagal export", description: "Terjadi kesalahan saat membuat file Word.", variant: "destructive" });
     } finally {
       setIsExporting(false);
     }
   };
 
   const handleReset = () => {
-    setFormData({
-      jenjang: '',
-      kelas: '',
-      semester: '',
-      mapel: '',
-      topik: '',
-      alokasi_waktu: '',
-      tujuan_pembelajaran: '',
-      capaian_pembelajaran: '',
-      tema_kbc: [],
-      materi_insersi: '',
-    });
+    setFormData(initialFormData);
     setResult('');
     setSelectedAtpId('');
     setFilteredAtp([]);
   };
 
-  // Combine MAPEL_OPTIONS with ATP mapel options
   const allMapelOptions = [...new Set([...MAPEL_OPTIONS, ...atpMapelOptions])].sort();
+  const selectedModel = MODEL_PEMBELAJARAN[formData.model_pembelajaran as keyof typeof MODEL_PEMBELAJARAN];
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Generator RPP/Modul Ajar"
-        description="Buat RPP dan Modul Ajar secara otomatis dengan bantuan AI sesuai Kurikulum Merdeka"
+        title="Generator Modul Ajar"
+        description="Buat RPP dan Modul Ajar dengan pendekatan Deep Learning, HOTS, dan Kurikulum Berbasis Cinta"
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Form Input */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              Input Data RPP
-            </CardTitle>
-            <CardDescription>
-              Isi informasi pembelajaran untuk menghasilkan RPP. Anda dapat mengambil data dari ATP yang sudah ada.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="jenjang">Jenjang *</Label>
-                <Select
-                  value={formData.jenjang}
-                  onValueChange={(value) => handleInputChange('jenjang', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih Jenjang" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {JENJANG_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+        <div className="space-y-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Sparkles className="h-5 w-5 text-primary" />
+                Input Modul Ajar
+              </CardTitle>
+              <CardDescription>
+                Lengkapi data untuk menghasilkan Modul Ajar berbasis AI
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Section: Identitas */}
+              <Collapsible open={openSections.identitas} onOpenChange={(open) => setOpenSections(prev => ({ ...prev, identitas: open }))}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-between p-0 h-auto hover:bg-transparent">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                      <BookOpen className="h-4 w-4" />
+                      Identitas Pembelajaran
+                    </div>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${openSections.identitas ? 'rotate-180' : ''}`} />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-3 space-y-3">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Jenjang *</Label>
+                      <Select value={formData.jenjang} onValueChange={(v) => handleInputChange('jenjang', v)}>
+                        <SelectTrigger className="h-9"><SelectValue placeholder="Pilih Jenjang" /></SelectTrigger>
+                        <SelectContent>
+                          {JENJANG_OPTIONS.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Kelas *</Label>
+                      <Input className="h-9" placeholder="VII, VIII, IX" value={formData.kelas} onChange={(e) => handleInputChange('kelas', e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Semester *</Label>
+                      <Select value={formData.semester} onValueChange={(v) => handleInputChange('semester', v)}>
+                        <SelectTrigger className="h-9"><SelectValue placeholder="Pilih Semester" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Ganjil">Ganjil</SelectItem>
+                          <SelectItem value="Genap">Genap</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Alokasi Waktu *</Label>
+                      <Input className="h-9" placeholder="2 x 40 menit" value={formData.alokasi_waktu} onChange={(e) => handleInputChange('alokasi_waktu', e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Mata Pelajaran *</Label>
+                    <Select value={formData.mapel} onValueChange={(v) => handleInputChange('mapel', v)}>
+                      <SelectTrigger className="h-9"><SelectValue placeholder="Pilih Mapel" /></SelectTrigger>
+                      <SelectContent>
+                        {allMapelOptions.map((m) => (<SelectItem key={m} value={m}>{m}</SelectItem>))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Topik/Materi Utama *</Label>
+                    <Input className="h-9" placeholder="Contoh: Shalat Berjamaah" value={formData.topik} onChange={(e) => handleInputChange('topik', e.target.value)} />
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              <Separator />
+
+              {/* Section: Data Kurikulum (ATP Integration) */}
+              <Collapsible open={openSections.kurikulum} onOpenChange={(open) => setOpenSections(prev => ({ ...prev, kurikulum: open }))}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-between p-0 h-auto hover:bg-transparent">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                      <Database className="h-4 w-4" />
+                      Data Kurikulum (ATP & KKTP)
+                      {selectedAtpId && <Badge variant="secondary" className="ml-2">ATP Terhubung</Badge>}
+                    </div>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${openSections.kurikulum ? 'rotate-180' : ''}`} />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-3 space-y-3">
+                  {filteredAtp.length > 0 && (
+                    <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 space-y-2">
+                      <Label className="text-xs flex items-center gap-1">
+                        <Database className="h-3 w-3" />
+                        Ambil Data dari ATP (Otomatis isi CP, TP, KKTP)
+                      </Label>
+                      <Select value={selectedAtpId} onValueChange={handleAtpSelect}>
+                        <SelectTrigger className="h-9"><SelectValue placeholder="Pilih ATP..." /></SelectTrigger>
+                        <SelectContent>
+                          {filteredAtp.map((atp) => (
+                            <SelectItem key={atp.id} value={atp.id}>
+                              {atp.mapel} - {atp.elemen || 'Umum'} (Kelas {atp.kelas})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        {isLoadingAtp || isLoadingKktp ? 'Memuat data...' : `${filteredAtp.length} ATP tersedia`}
+                      </p>
+                    </div>
+                  )}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Capaian Pembelajaran</Label>
+                    <Textarea rows={2} placeholder="Diisi dari ATP atau manual..." value={formData.capaian_pembelajaran} onChange={(e) => handleInputChange('capaian_pembelajaran', e.target.value)} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Tujuan Pembelajaran</Label>
+                    <Textarea rows={3} placeholder="Satu TP per baris..." value={formData.tujuan_pembelajaran} onChange={(e) => handleInputChange('tujuan_pembelajaran', e.target.value)} />
+                  </div>
+                  {formData.kriteria_ketercapaian && (
+                    <div className="space-y-1.5">
+                      <Label className="text-xs flex items-center gap-1">
+                        <Target className="h-3 w-3" />
+                        Kriteria Ketercapaian (KKTP)
+                      </Label>
+                      <Textarea rows={4} className="text-xs font-mono" value={formData.kriteria_ketercapaian} onChange={(e) => handleInputChange('kriteria_ketercapaian', e.target.value)} />
+                    </div>
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
+
+              <Separator />
+
+              {/* Section: Model Pembelajaran Deep Learning */}
+              <Collapsible open={openSections.deepLearning} onOpenChange={(open) => setOpenSections(prev => ({ ...prev, deepLearning: open }))}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-between p-0 h-auto hover:bg-transparent">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                      <Brain className="h-4 w-4" />
+                      Model Pembelajaran (Deep Learning)
+                    </div>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${openSections.deepLearning ? 'rotate-180' : ''}`} />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-3 space-y-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Pilih Model Pembelajaran</Label>
+                    <Select value={formData.model_pembelajaran} onValueChange={(v) => handleInputChange('model_pembelajaran', v)}>
+                      <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(MODEL_PEMBELAJARAN).map(([key, model]) => (
+                          <SelectItem key={key} value={key}>{model.nama}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {selectedModel && (
+                    <div className="p-3 rounded-lg bg-muted/50 space-y-2">
+                      <p className="text-xs text-muted-foreground">{selectedModel.deskripsi}</p>
+                      <div className="text-xs">
+                        <p className="font-medium mb-1">Sintaks:</p>
+                        <ol className="list-decimal list-inside space-y-0.5 text-muted-foreground">
+                          {selectedModel.sintaks.map((s, i) => (<li key={i}>{s}</li>))}
+                        </ol>
+                      </div>
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    <Label className="text-xs">Profil Pelajar Pancasila (P5)</Label>
+                    <div className="grid grid-cols-1 gap-2">
+                      {Object.entries(PROFIL_PELAJAR_PANCASILA).map(([key, data]) => (
+                        <label key={key} className="flex items-start gap-2 text-xs cursor-pointer">
+                          <Checkbox 
+                            checked={formData.profil_pelajar.includes(key)} 
+                            onCheckedChange={(checked) => handleCheckboxChange('profil_pelajar', key, !!checked)} 
+                          />
+                          <span>{data.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              <Separator />
+
+              {/* Section: Kurikulum Berbasis Cinta */}
+              <Collapsible open={openSections.kbc} onOpenChange={(open) => setOpenSections(prev => ({ ...prev, kbc: open }))}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-between p-0 h-auto hover:bg-transparent">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                      <Heart className="h-4 w-4" />
+                      Kurikulum Berbasis Cinta (KBC)
+                      {formData.tema_kbc.length > 0 && <Badge variant="secondary">{formData.tema_kbc.length} nilai</Badge>}
+                    </div>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${openSections.kbc ? 'rotate-180' : ''}`} />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-3 space-y-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Tema Nilai Karakter</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {Object.entries(NILAI_KARAKTER_KBC).map(([key, data]) => (
+                        <label key={key} className="flex items-center gap-2 text-xs cursor-pointer">
+                          <Checkbox 
+                            checked={formData.tema_kbc.includes(key)} 
+                            onCheckedChange={(checked) => handleCheckboxChange('tema_kbc', key, !!checked)} 
+                          />
+                          <span>{data.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Materi Insersi</Label>
+                    <Textarea rows={4} placeholder="Poin-poin integrasi nilai karakter..." value={formData.materi_insersi} onChange={(e) => handleInputChange('materi_insersi', e.target.value)} />
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              <Separator />
+
+              {/* Section: Asesmen HOTS */}
+              <Collapsible open={openSections.asesmen} onOpenChange={(open) => setOpenSections(prev => ({ ...prev, asesmen: open }))}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-between p-0 h-auto hover:bg-transparent">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                      <Target className="h-4 w-4" />
+                      Asesmen HOTS
+                    </div>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${openSections.asesmen ? 'rotate-180' : ''}`} />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-3 space-y-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Teknik Asesmen</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {Object.entries(TEKNIK_ASESMEN).map(([key, data]) => (
+                        <label key={key} className="flex items-start gap-2 text-xs cursor-pointer">
+                          <Checkbox 
+                            checked={formData.teknik_asesmen.includes(key)} 
+                            onCheckedChange={(checked) => handleCheckboxChange('teknik_asesmen', key, !!checked)} 
+                          />
+                          <div>
+                            <span className="font-medium">{data.label}</span>
+                            <p className="text-muted-foreground">{data.deskripsi}</p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Jenis Asesmen</Label>
+                    <div className="space-y-2">
+                      {Object.entries(JENIS_ASESMEN).map(([key, label]) => (
+                        <label key={key} className="flex items-center gap-2 text-xs cursor-pointer">
+                          <Checkbox 
+                            checked={formData.jenis_asesmen.includes(key)} 
+                            onCheckedChange={(checked) => handleCheckboxChange('jenis_asesmen', key, !!checked)} 
+                          />
+                          <span>{label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              <Separator />
+
+              {/* Section: Diferensiasi */}
+              <Collapsible open={openSections.diferensiasi} onOpenChange={(open) => setOpenSections(prev => ({ ...prev, diferensiasi: open }))}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-between p-0 h-auto hover:bg-transparent">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                      <Users className="h-4 w-4" />
+                      Diferensiasi Pembelajaran
+                    </div>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${openSections.diferensiasi ? 'rotate-180' : ''}`} />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-3 space-y-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Diferensiasi Konten</Label>
+                    <Textarea rows={2} placeholder="Penyesuaian materi berdasarkan kesiapan belajar..." value={formData.diferensiasi_konten} onChange={(e) => handleInputChange('diferensiasi_konten', e.target.value)} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Diferensiasi Proses</Label>
+                    <Textarea rows={2} placeholder="Penyesuaian aktivitas (visual, auditori, kinestetik)..." value={formData.diferensiasi_proses} onChange={(e) => handleInputChange('diferensiasi_proses', e.target.value)} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Diferensiasi Produk</Label>
+                    <Textarea rows={2} placeholder="Variasi hasil belajar yang bisa dipilih siswa..." value={formData.diferensiasi_produk} onChange={(e) => handleInputChange('diferensiasi_produk', e.target.value)} />
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              <div className="flex gap-2 pt-4">
+                <Button onClick={handleGenerate} disabled={isLoading} className="flex-1">
+                  {isLoading ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Generating...</>
+                  ) : (
+                    <><Sparkles className="mr-2 h-4 w-4" />Generate Modul Ajar</>
+                  )}
+                </Button>
+                <Button variant="outline" onClick={handleReset}><RefreshCw className="h-4 w-4" /></Button>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="kelas">Kelas *</Label>
-                <Input
-                  id="kelas"
-                  placeholder="Contoh: VII, VIII, IX"
-                  value={formData.kelas}
-                  onChange={(e) => handleInputChange('kelas', e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="semester">Semester *</Label>
-                <Select
-                  value={formData.semester}
-                  onValueChange={(value) => handleInputChange('semester', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih Semester" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Ganjil">Ganjil</SelectItem>
-                    <SelectItem value="Genap">Genap</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="alokasi_waktu">Alokasi Waktu *</Label>
-                <Input
-                  id="alokasi_waktu"
-                  placeholder="Contoh: 2 x 40 menit"
-                  value={formData.alokasi_waktu}
-                  onChange={(e) => handleInputChange('alokasi_waktu', e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="mapel">Mata Pelajaran *</Label>
-              <Select
-                value={formData.mapel}
-                onValueChange={(value) => handleInputChange('mapel', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih Mata Pelajaran" />
-                </SelectTrigger>
-                <SelectContent>
-                  {allMapelOptions.map((mapel) => (
-                    <SelectItem key={mapel} value={mapel}>
-                      {mapel}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* ATP Integration */}
-            {filteredAtp.length > 0 && (
-              <div className="space-y-2 p-3 rounded-lg border border-primary/20 bg-primary/5">
-                <Label className="flex items-center gap-2 text-primary">
-                  <Database className="h-4 w-4" />
-                  Ambil Data dari ATP
-                </Label>
-                <Select
-                  value={selectedAtpId}
-                  onValueChange={handleAtpSelect}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih ATP untuk mengisi CP & TP otomatis" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredAtp.map((atp) => (
-                      <SelectItem key={atp.id} value={atp.id}>
-                        {atp.mapel} - {atp.elemen || 'Umum'} (Kelas {atp.kelas})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  {isLoadingAtp ? 'Memuat data ATP...' : `${filteredAtp.length} ATP tersedia untuk ${formData.mapel}`}
-                </p>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="topik">Topik/Materi Utama *</Label>
-              <Input
-                id="topik"
-                placeholder="Contoh: Mengenal Tumbuhan"
-                value={formData.topik}
-                onChange={(e) => handleInputChange('topik', e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="capaian_pembelajaran">
-                Capaian Pembelajaran (Opsional)
-              </Label>
-              <Textarea
-                id="capaian_pembelajaran"
-                placeholder="Capaian pembelajaran dari kurikulum..."
-                value={formData.capaian_pembelajaran}
-                onChange={(e) => handleInputChange('capaian_pembelajaran', e.target.value)}
-                rows={2}
-              />
-              <p className="text-xs text-muted-foreground">
-                Dapat diisi otomatis dari ATP yang dipilih
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="tujuan_pembelajaran">
-                Tujuan Pembelajaran Spesifik (Opsional)
-              </Label>
-              <Textarea
-                id="tujuan_pembelajaran"
-                placeholder="Tuliskan tujuan pembelajaran spesifik yang ingin dicapai..."
-                value={formData.tujuan_pembelajaran}
-                onChange={(e) => handleInputChange('tujuan_pembelajaran', e.target.value)}
-                rows={3}
-              />
-              <p className="text-xs text-muted-foreground">
-                Dapat diisi otomatis dari ATP yang dipilih
-              </p>
-            </div>
-
-            {/* Kurikulum Berbasis Cinta Section */}
-            <div className="space-y-3 p-4 rounded-lg border-2 border-primary/30 bg-primary/5">
-              <Label className="flex items-center gap-2 text-primary font-semibold">
-                <Sparkles className="h-4 w-4" />
-                Kurikulum Berbasis Cinta
-              </Label>
-              
-              <div className="space-y-2">
-                <Label className="text-sm">Tema Kurikulum Berbasis Cinta</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {NILAI_KARAKTER_OPTIONS.map(option => (
-                    <label key={option.value} className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.tema_kbc.includes(option.value)}
-                        onChange={(e) => handleTemaKbcChange(option.value, e.target.checked)}
-                        className="rounded border-muted-foreground/30"
-                      />
-                      <span>{option.label}</span>
-                    </label>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Pilih tema nilai karakter yang akan diintegrasikan. Dapat diisi otomatis dari ATP.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="materi_insersi">Materi Insersi</Label>
-                <Textarea
-                  id="materi_insersi"
-                  placeholder="Contoh:&#10;- Mensyukuri nikmat Allah Swt. melalui rasa syukur dalam perilaku sehari-hari.&#10;- Larangan merusak lingkungan (QS. Ar-Rum: 41)."
-                  value={formData.materi_insersi}
-                  onChange={(e) => handleInputChange('materi_insersi', e.target.value)}
-                  rows={4}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Tuliskan poin-poin materi insersi yang mengintegrasikan nilai karakter ke dalam pembelajaran.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-2 pt-4">
-              <Button
-                onClick={handleGenerate}
-                disabled={isLoading}
-                className="flex-1"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sedang Generate...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Generate RPP
-                  </>
-                )}
-              </Button>
-              <Button variant="outline" onClick={handleReset}>
-                <RefreshCw className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Result Output */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Hasil RPP</CardTitle>
-                <CardDescription>
-                  RPP/Modul Ajar yang dihasilkan AI
-                </CardDescription>
+                <CardTitle className="text-lg">Hasil Modul Ajar</CardTitle>
+                <CardDescription>RPP/Modul Ajar yang dihasilkan AI</CardDescription>
               </div>
               {result && (
                 <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={handleSaveToDatabase} disabled={isSaving}>
+                    {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  </Button>
                   <Button variant="outline" size="sm" onClick={handleCopy}>
-                    <Copy className="h-4 w-4 mr-1" />
-                    Salin
+                    <Copy className="h-4 w-4" />
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" size="sm" disabled={isExporting}>
-                        {isExporting ? (
-                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                        ) : (
-                          <Download className="h-4 w-4 mr-1" />
-                        )}
-                        Unduh
+                        {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={handleDownloadWord}>
-                        <FileText className="h-4 w-4 mr-2" />
-                        Word (.docx) - Siap Edit & Print
+                        <FileText className="h-4 w-4 mr-2" />Word (.docx)
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleDownloadMarkdown}>
-                        <Download className="h-4 w-4 mr-2" />
-                        Markdown (.md)
+                        <Download className="h-4 w-4 mr-2" />Markdown (.md)
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -693,29 +737,24 @@ const GeneratorRPP = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div 
-              ref={resultRef}
-              className="min-h-[500px] max-h-[600px] overflow-y-auto rounded-lg border bg-muted/30 p-4"
-            >
+            <div ref={resultRef} className="min-h-[600px] max-h-[700px] overflow-y-auto rounded-lg border bg-muted/30 p-4">
               {isLoading && !result && (
                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                   <Loader2 className="h-8 w-8 animate-spin mb-2" />
-                  <p>Sedang menghasilkan RPP...</p>
-                  <p className="text-sm">Mohon tunggu beberapa saat</p>
+                  <p>Sedang menghasilkan Modul Ajar...</p>
+                  <p className="text-sm">Dengan model {selectedModel?.nama}</p>
                 </div>
               )}
               {!result && !isLoading && (
                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                   <Sparkles className="h-12 w-12 mb-4 opacity-50" />
-                  <p>Hasil RPP akan muncul di sini</p>
-                  <p className="text-sm">Isi form di sebelah kiri dan klik "Generate RPP"</p>
+                  <p>Hasil Modul Ajar akan muncul di sini</p>
+                  <p className="text-sm">Isi form di sebelah kiri dan klik "Generate Modul Ajar"</p>
                 </div>
               )}
               {result && (
                 <div className="prose prose-sm max-w-none dark:prose-invert">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {result}
-                  </ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{result}</ReactMarkdown>
                 </div>
               )}
             </div>
