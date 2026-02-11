@@ -1,0 +1,19 @@
+name: Deploy to Hostinger
+on: [push]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with: { node-version: 20 }
+    - run: npm ci
+    - run: npm run build
+    - name: Deploy
+      uses: burnett01/action-ftp-deploy-action@master  # Atau cari "Deploy to Hostinger" di Marketplace
+      with:
+        host: ${{ secrets.HOSTINGER_HOST }}
+        user: ${{ secrets.HOSTINGER_USER }}
+        password: ${{ secrets.HOSTINGER_PASS }}
+        server_dir: /public_html
+        local_dir: ./dist
