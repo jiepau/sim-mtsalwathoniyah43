@@ -1,4 +1,5 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState, useCallback } from "react";
+import { SplashScreen } from "@/components/SplashScreen";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -48,64 +49,63 @@ const PageLoader = () => (
   </div>
 );
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <UpdateChecker />
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              {/* Public routes */}
-              <Route path="/login" element={<Login />} />
-              
-              {/* Protected routes */}
-              <Route
-                element={
-                  <ProtectedRoute>
-                    <MainLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/siswa" element={<Siswa />} />
-                <Route path="/kelas" element={<Kelas />} />
-                <Route path="/tahun-ajaran" element={<TahunAjaran />} />
-                <Route path="/gtk-ptk" element={<GtkPtk />} />
-                <Route path="/jenis-tagihan" element={<JenisTagihan />} />
-                <Route path="/pembayaran" element={<Pembayaran />} />
-                <Route path="/pemasukan" element={<Pemasukan />} />
-                <Route path="/pengeluaran" element={<Pengeluaran />} />
-                <Route path="/tunggakan" element={<Tunggakan />} />
-                <Route path="/naik-kelas" element={<NaikKelas />} />
-                <Route path="/alumni" element={<Alumni />} />
-                <Route path="/atp" element={<ATP />} />
-                <Route path="/kktp" element={<KKTP />} />
-                <Route path="/cp-templates" element={<CPTemplates />} />
-                <Route path="/generator-rpp" element={<GeneratorRPP />} />
-                <Route path="/prota" element={<Prota />} />
-                <Route path="/promes" element={<Promes />} />
-                <Route path="/pengaturan-madrasah" element={<PengaturanMadrasah />} />
-                <Route path="/user-management" element={<UserManagement />} />
-                <Route path="/surat-masuk" element={<SuratMasuk />} />
-                <Route path="/surat-keluar" element={<SuratKeluar />} />
-                <Route path="/buku-induk" element={<BukuInduk />} />
-                <Route path="/profil-guru" element={<ProfilGuru />} />
-              </Route>
-              
-              {/* Redirects */}
-              <Route path="/" element={<Navigate to="/login" replace />} />
-              
-              {/* 404 */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  const [showSplash, setShowSplash] = useState(true);
+  const handleSplashFinish = useCallback(() => setShowSplash(false), []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
+          <UpdateChecker />
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route
+                  element={
+                    <ProtectedRoute>
+                      <MainLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/siswa" element={<Siswa />} />
+                  <Route path="/kelas" element={<Kelas />} />
+                  <Route path="/tahun-ajaran" element={<TahunAjaran />} />
+                  <Route path="/gtk-ptk" element={<GtkPtk />} />
+                  <Route path="/jenis-tagihan" element={<JenisTagihan />} />
+                  <Route path="/pembayaran" element={<Pembayaran />} />
+                  <Route path="/pemasukan" element={<Pemasukan />} />
+                  <Route path="/pengeluaran" element={<Pengeluaran />} />
+                  <Route path="/tunggakan" element={<Tunggakan />} />
+                  <Route path="/naik-kelas" element={<NaikKelas />} />
+                  <Route path="/alumni" element={<Alumni />} />
+                  <Route path="/atp" element={<ATP />} />
+                  <Route path="/kktp" element={<KKTP />} />
+                  <Route path="/cp-templates" element={<CPTemplates />} />
+                  <Route path="/generator-rpp" element={<GeneratorRPP />} />
+                  <Route path="/prota" element={<Prota />} />
+                  <Route path="/promes" element={<Promes />} />
+                  <Route path="/pengaturan-madrasah" element={<PengaturanMadrasah />} />
+                  <Route path="/user-management" element={<UserManagement />} />
+                  <Route path="/surat-masuk" element={<SuratMasuk />} />
+                  <Route path="/surat-keluar" element={<SuratKeluar />} />
+                  <Route path="/buku-induk" element={<BukuInduk />} />
+                  <Route path="/profil-guru" element={<ProfilGuru />} />
+                </Route>
+                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
