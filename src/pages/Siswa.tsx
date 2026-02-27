@@ -631,6 +631,46 @@ export default function SiswaPage() {
         )}
       </div>
 
+      {/* Gender Statistics */}
+      <div className="mb-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-card rounded-lg border p-3 flex items-center gap-3">
+          <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Users className="h-4 w-4 text-primary" />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Total Siswa</p>
+            <p className="text-lg font-bold text-foreground">{filteredSiswa.length}</p>
+          </div>
+        </div>
+        <div className="bg-card rounded-lg border p-3 flex items-center gap-3">
+          <div className="h-9 w-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
+            <span className="text-sm font-bold text-blue-600">L</span>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Laki-laki</p>
+            <p className="text-lg font-bold text-foreground">{filteredSiswa.filter(s => s.jenis_kelamin === 'Laki-laki').length}</p>
+          </div>
+        </div>
+        <div className="bg-card rounded-lg border p-3 flex items-center gap-3">
+          <div className="h-9 w-9 rounded-lg bg-pink-500/10 flex items-center justify-center">
+            <span className="text-sm font-bold text-pink-600">P</span>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Perempuan</p>
+            <p className="text-lg font-bold text-foreground">{filteredSiswa.filter(s => s.jenis_kelamin === 'Perempuan').length}</p>
+          </div>
+        </div>
+        <div className="bg-card rounded-lg border p-3 flex items-center gap-3">
+          <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center">
+            <span className="text-sm font-bold text-muted-foreground">?</span>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Belum Diisi</p>
+            <p className="text-lg font-bold text-foreground">{filteredSiswa.filter(s => !s.jenis_kelamin).length}</p>
+          </div>
+        </div>
+      </div>
+
       {/* Pagination Controls - Top */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">
