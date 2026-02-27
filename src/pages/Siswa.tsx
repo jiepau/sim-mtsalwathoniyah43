@@ -102,15 +102,16 @@ export default function SiswaPage() {
   });
 
   // Import configuration
-  const importHeaders = ['NIS', 'Nama', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Kelas', 'Tahun Ajaran', 'WA Ortu', 'Alamat'];
+  const importHeaders = ['NIS', 'NISN', 'Nama', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Kelas', 'Tahun Ajaran', 'WA Ortu', 'Alamat', 'Nama Ayah', 'Nama Ibu'];
   const importSampleData = [
-    ['001', 'Ahmad Fauzi', 'Laki-laki', 'Jakarta', '2010-05-15', '7A', '2024/2025', '081234567890', 'Jl. Merdeka No. 1'],
-    ['002', 'Siti Aminah', 'Perempuan', 'Bandung', '2010-08-20', '7B', '2024/2025', '081234567891', 'Jl. Sudirman No. 2'],
+    ['001', '0012345678', 'Ahmad Fauzi', 'Laki-laki', 'Jakarta', '2010-05-15', '7A', '2024/2025', '081234567890', 'Jl. Merdeka No. 1', 'Budi', 'Siti'],
+    ['002', '0012345679', 'Siti Aminah', 'Perempuan', 'Bandung', '2010-08-20', '7B', '2024/2025', '081234567891', 'Jl. Sudirman No. 2', 'Ahmad', 'Fatimah'],
   ];
 
   // Export columns configuration
   const exportColumns = [
     { header: 'NIS', accessor: (s: Siswa) => s.nis },
+    { header: 'NISN', accessor: (s: Siswa) => s.nisn },
     { header: 'Nama', accessor: (s: Siswa) => s.nama },
     { header: 'Jenis Kelamin', accessor: (s: Siswa) => s.jenis_kelamin },
     { header: 'Tempat Lahir', accessor: (s: Siswa) => s.tempat_lahir },
@@ -119,6 +120,8 @@ export default function SiswaPage() {
     { header: 'Tahun Ajaran', accessor: (s: Siswa) => s.tahun_ajaran?.nama_ta },
     { header: 'WA Ortu', accessor: (s: Siswa) => s.wa_ortu },
     { header: 'Alamat', accessor: (s: Siswa) => s.alamat },
+    { header: 'Nama Ayah', accessor: (s: Siswa) => s.nama_ayah_kandung },
+    { header: 'Nama Ibu', accessor: (s: Siswa) => s.nama_ibu_kandung },
   ];
 
   // Helper to parse Indonesian date format
@@ -205,6 +208,7 @@ export default function SiswaPage() {
     for (const row of data) {
       try {
         const nis = row['NIS']?.trim();
+        const nisn = row['NISN']?.trim();
         const nama = row['Nama']?.trim();
         const kelasNama = row['Kelas']?.trim();
         const taNama = row['Tahun Ajaran']?.trim();
@@ -213,6 +217,8 @@ export default function SiswaPage() {
         const tempatLahir = row['Tempat Lahir']?.trim();
         const tanggalLahirRaw = row['Tanggal Lahir']?.trim();
         const jenisKelaminRaw = row['Jenis Kelamin']?.trim();
+        const namaAyah = row['Nama Ayah']?.trim();
+        const namaIbu = row['Nama Ibu']?.trim();
 
         if (!nis || !nama) {
           throw new Error('NIS dan Nama harus diisi');
@@ -240,6 +246,7 @@ export default function SiswaPage() {
 
         const { error } = await supabase.from('siswa').insert({
           nis,
+          nisn: nisn || null,
           nama,
           kelas_id: kelasId,
           ta_id: taId,
@@ -248,6 +255,8 @@ export default function SiswaPage() {
           tempat_lahir: tempatLahir || null,
           tanggal_lahir: tanggalLahir,
           jenis_kelamin: jenisKelamin,
+          nama_ayah_kandung: namaAyah || null,
+          nama_ibu_kandung: namaIbu || null,
         });
 
         if (error) throw error;
