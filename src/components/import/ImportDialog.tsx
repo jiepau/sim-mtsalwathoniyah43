@@ -252,14 +252,11 @@ export function ImportDialog({
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    <p>{result.failed} data gagal diimport:</p>
-                    <ul className="list-disc list-inside mt-1 text-xs max-h-24 overflow-auto">
-                      {result.errors.slice(0, 5).map((err, i) => (
+                    <p className="font-medium">{result.failed} data gagal diimport:</p>
+                    <ul className="list-disc list-inside mt-2 text-xs max-h-48 overflow-auto space-y-1">
+                      {result.errors.map((err, i) => (
                         <li key={i}>{err}</li>
                       ))}
-                      {result.errors.length > 5 && (
-                        <li>...dan {result.errors.length - 5} error lainnya</li>
-                      )}
                     </ul>
                   </AlertDescription>
                 </Alert>

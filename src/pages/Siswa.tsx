@@ -205,7 +205,9 @@ export default function SiswaPage() {
     let failed = 0;
     const errors: string[] = [];
 
-    for (const row of data) {
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      const rowNum = i + 2; // +2 karena baris 1 = header, index mulai dari 0
       try {
         const nis = row['NIS']?.trim();
         const nisn = row['NISN']?.trim();
@@ -221,7 +223,18 @@ export default function SiswaPage() {
         const namaIbu = row['Nama Ibu']?.trim();
 
         if (!nis || !nama) {
-          throw new Error('NIS dan Nama harus diisi');
+          throw new Error('NIS dan Nama wajib diisi');
+        }
+
+        // Cek duplikat NIS di database
+        const { data: existing } = await supabase
+          .from('siswa')
+          .select('id')
+          .eq('nis', nis)
+          .maybeSingle();
+        
+        if (existing) {
+          throw new Error(`NIS "${nis}" sudah terdaftar di database`);
         }
 
         // Parse date from Indonesian format
@@ -234,14 +247,22 @@ export default function SiswaPage() {
         let kelasId: string | null = null;
         if (kelasNama) {
           const foundKelas = kelas.find(k => k.nama_kelas.trim().toLowerCase() === kelasNama.toLowerCase());
-          if (foundKelas) kelasId = foundKelas.id;
+          if (foundKelas) {
+            kelasId = foundKelas.id;
+          } else {
+            throw new Error(`Kelas "${kelasNama}" tidak ditemukan. Kelas yang tersedia: ${kelas.map(k => k.nama_kelas).join(', ')}`);
+          }
         }
 
         // Find ta_id by name
         let taId: string | null = null;
         if (taNama) {
           const foundTa = tahunAjaran.find(ta => ta.nama_ta.toLowerCase() === taNama.toLowerCase());
-          if (foundTa) taId = foundTa.id;
+          if (foundTa) {
+            taId = foundTa.id;
+          } else {
+            throw new Error(`Tahun Ajaran "${taNama}" tidak ditemukan. TA yang tersedia: ${tahunAjaran.map(t => t.nama_ta).join(', ')}`);
+          }
         }
 
         const { error } = await supabase.from('siswa').insert({
@@ -259,11 +280,16 @@ export default function SiswaPage() {
           nama_ibu_kandung: namaIbu || null,
         });
 
-        if (error) throw error;
+        if (error) {
+          if (error.code === '23505') throw new Error(`Data duplikat - NIS "${nis}" sudah ada`);
+          if (error.code === '23503') throw new Error('Referensi kelas/tahun ajaran tidak valid');
+          throw new Error(error.message);
+        }
         success++;
       } catch (error: any) {
         failed++;
-        errors.push(`Baris ${row['NIS'] || '?'}: ${error.message}`);
+        const namaInfo = row['Nama']?.trim() ? ` (${row['Nama'].trim()})` : '';
+        errors.push(`Baris ${rowNum}${namaInfo}: ${error.message}`);
       }
     }
 
