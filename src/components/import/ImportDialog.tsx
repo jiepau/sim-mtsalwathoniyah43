@@ -77,8 +77,45 @@ export function ImportDialog({
     URL.revokeObjectURL(url);
   };
 
+  const parseCSVLine = (line: string, delimiter: string): string[] => {
+    const values: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (inQuotes) {
+        if (char === '"' && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else if (char === '"') {
+          inQuotes = false;
+        } else {
+          current += char;
+        }
+      } else {
+        if (char === '"') {
+          inQuotes = true;
+        } else if (char === delimiter) {
+          values.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+    }
+    values.push(current.trim());
+    return values;
+  };
+
   const parseCSV = (text: string): Record<string, string>[] => {
-    const lines = text.split(/\r?\n/).filter(line => line.trim());
+    let lines = text.split(/\r?\n/).filter(line => line.trim());
+    
+    // Skip sep=, directive line (Excel adds this)
+    if (lines.length > 0 && /^sep=./i.test(lines[0].trim())) {
+      lines = lines.slice(1);
+    }
+    
     if (lines.length < 2) {
       throw new Error('File harus memiliki minimal 1 baris data selain header');
     }
@@ -92,18 +129,31 @@ export function ImportDialog({
       delimiter = ';';
     }
     
-    const headers = lines[0].split(delimiter).map(h => h.trim().replace(/^["']|["']$/g, ''));
+    const headers = parseCSVLine(lines[0], delimiter).map(h => h.replace(/^["']|["']$/g, ''));
     const data: Record<string, string>[] = [];
+    const skippedRows: number[] = [];
 
     for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(delimiter).map(v => v.trim().replace(/^["']|["']$/g, ''));
-      if (values.length !== headers.length) continue;
+      const values = parseCSVLine(lines[i], delimiter);
+      
+      if (values.length !== headers.length) {
+        skippedRows.push(i + 1);
+        continue;
+      }
       
       const row: Record<string, string> = {};
       headers.forEach((header, index) => {
         row[header] = values[index] || '';
       });
       data.push(row);
+    }
+
+    if (skippedRows.length > 0 && data.length === 0) {
+      throw new Error(`Semua baris data tidak valid. Jumlah kolom tidak sesuai header (${headers.length} kolom). Baris bermasalah: ${skippedRows.join(', ')}`);
+    }
+    
+    if (skippedRows.length > 0) {
+      throw new Error(`${skippedRows.length} baris dilewati karena jumlah kolom tidak sesuai header (${headers.length} kolom). Baris: ${skippedRows.join(', ')}. ${data.length} baris valid ditemukan.`);
     }
 
     return data;
