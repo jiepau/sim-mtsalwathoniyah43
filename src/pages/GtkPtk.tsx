@@ -464,31 +464,14 @@ export default function GtkPtkPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Tanggal Lahir</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formData.tanggal_lahir && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.tanggal_lahir ? format(formData.tanggal_lahir, "dd/MM/yyyy") : "Pilih tanggal"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={formData.tanggal_lahir}
-                    onSelect={(date) => setFormData({ ...formData, tanggal_lahir: date })}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                    defaultMonth={formData.tanggal_lahir || new Date(1990, 0)}
-                  />
-                </PopoverContent>
-              </Popover>
+              <Label htmlFor="tanggal_lahir_input">Tanggal Lahir</Label>
+              <Input
+                id="tanggal_lahir_input"
+                type="date"
+                value={formData.tanggal_lahir ? format(formData.tanggal_lahir, 'yyyy-MM-dd') : ''}
+                onChange={(e) => setFormData({ ...formData, tanggal_lahir: e.target.value ? new Date(e.target.value + 'T00:00:00') : undefined })}
+                max={format(new Date(), 'yyyy-MM-dd')}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="jabatan">Jabatan</Label>
