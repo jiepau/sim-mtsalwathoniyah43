@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CreditCard, Search, Check, Clock, History } from 'lucide-react';
+import { CreditCard, Search, Check, Clock, History, Pencil } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -64,8 +64,16 @@ export default function PembayaranPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedPembayaran, setSelectedPembayaran] = useState<Pembayaran | null>(null);
   const [selectedSiswa, setSelectedSiswa] = useState<{ id: string; nama: string; nis: string } | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    nominal: '',
+    nominal_bayar: '',
+    bulan: '',
+    tahun: '',
+    keterangan: '',
+  });
   const [formData, setFormData] = useState({
     siswa_id: '',
     jenis_tagihan_id: '',
@@ -209,6 +217,62 @@ export default function PembayaranPage() {
     }
   };
 
+  const handleOpenEditDialog = (item: Pembayaran) => {
+    setSelectedPembayaran(item);
+    setEditFormData({
+      nominal: String(item.nominal),
+      nominal_bayar: String(item.nominal_bayar),
+      bulan: item.bulan ? String(item.bulan) : '',
+      tahun: item.tahun ? String(item.tahun) : '',
+      keterangan: item.keterangan || '',
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedPembayaran) return;
+
+    const nominal = parseFloat(editFormData.nominal) || 0;
+    const nominalBayar = parseFloat(editFormData.nominal_bayar) || 0;
+
+    if (nominal <= 0) {
+      toast.error('Nominal tagihan harus lebih dari 0');
+      return;
+    }
+    if (nominalBayar < 0) {
+      toast.error('Nominal bayar tidak boleh negatif');
+      return;
+    }
+    if (nominalBayar > nominal) {
+      toast.error('Nominal bayar tidak boleh melebihi nominal tagihan');
+      return;
+    }
+
+    const status = nominalBayar >= nominal ? 'lunas' : nominalBayar > 0 ? 'cicil' : 'belum_lunas';
+
+    try {
+      const { error } = await supabase
+        .from('pembayaran')
+        .update({
+          nominal,
+          nominal_bayar: nominalBayar,
+          bulan: parseInt(editFormData.bulan) || null,
+          tahun: parseInt(editFormData.tahun) || null,
+          keterangan: editFormData.keterangan || null,
+          status,
+        })
+        .eq('id', selectedPembayaran.id);
+
+      if (error) throw error;
+      toast.success('Data pembayaran berhasil diperbarui');
+      setEditDialogOpen(false);
+      fetchData();
+    } catch (error: any) {
+      toast.error(mapDatabaseError(error));
+    }
+  };
+
   const filteredData = pembayaran.filter(p => 
     p.siswa?.nama.toLowerCase().includes(search.toLowerCase()) ||
     p.siswa?.nis.toLowerCase().includes(search.toLowerCase())
@@ -285,6 +349,14 @@ export default function PembayaranPage() {
             title="Lihat Riwayat"
           >
             <History className="h-4 w-4" />
+          </Button>
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            onClick={() => handleOpenEditDialog(item)}
+            title="Edit Pembayaran"
+          >
+            <Pencil className="h-4 w-4" />
           </Button>
           {item.status !== 'lunas' && (
             <Button size="sm" variant="outline" onClick={() => handleOpenPaymentDialog(item)}>
@@ -427,6 +499,80 @@ export default function PembayaranPage() {
         sisaTagihan={selectedPembayaran ? selectedPembayaran.nominal - selectedPembayaran.nominal_bayar : 0}
         onSubmit={handlePaymentSubmit}
       />
+
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Pembayaran</DialogTitle>
+          </DialogHeader>
+          {selectedPembayaran && (
+            <div className="mb-2 p-3 bg-muted rounded-md text-sm">
+              <p className="font-medium">{selectedPembayaran.siswa?.nama}</p>
+              <p className="text-muted-foreground">{selectedPembayaran.jenis_tagihan?.nama_tagihan}</p>
+            </div>
+          )}
+          <form onSubmit={handleEditSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit_nominal">Nominal Tagihan (Rp)</Label>
+              <Input
+                id="edit_nominal"
+                type="number"
+                value={editFormData.nominal}
+                onChange={(e) => setEditFormData({ ...editFormData, nominal: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit_nominal_bayar">Nominal Dibayar (Rp)</Label>
+              <Input
+                id="edit_nominal_bayar"
+                type="number"
+                value={editFormData.nominal_bayar}
+                onChange={(e) => setEditFormData({ ...editFormData, nominal_bayar: e.target.value })}
+                required
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit_bulan">Bulan</Label>
+                <Select value={editFormData.bulan} onValueChange={(v) => setEditFormData({ ...editFormData, bulan: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih Bulan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bulanOptions.map(b => (
+                      <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit_tahun">Tahun</Label>
+                <Input
+                  id="edit_tahun"
+                  type="number"
+                  value={editFormData.tahun}
+                  onChange={(e) => setEditFormData({ ...editFormData, tahun: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit_keterangan">Keterangan (Opsional)</Label>
+              <Input
+                id="edit_keterangan"
+                value={editFormData.keterangan}
+                onChange={(e) => setEditFormData({ ...editFormData, keterangan: e.target.value })}
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
+                Batal
+              </Button>
+              <Button type="submit">Simpan Perubahan</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
