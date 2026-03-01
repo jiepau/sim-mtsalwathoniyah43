@@ -316,6 +316,7 @@ export type Database = {
           nip: string | null
           no_hp: string | null
           nuptk: string | null
+          pendidikan: string | null
           tanggal_lahir: string | null
           tempat_lahir: string | null
           updated_at: string
@@ -335,6 +336,7 @@ export type Database = {
           nip?: string | null
           no_hp?: string | null
           nuptk?: string | null
+          pendidikan?: string | null
           tanggal_lahir?: string | null
           tempat_lahir?: string | null
           updated_at?: string
@@ -354,6 +356,7 @@ export type Database = {
           nip?: string | null
           no_hp?: string | null
           nuptk?: string | null
+          pendidikan?: string | null
           tanggal_lahir?: string | null
           tempat_lahir?: string | null
           updated_at?: string

@@ -47,6 +47,7 @@ interface GtkPtk {
   nuptk: string | null;
   nik: string | null;
   lulusan: string | null;
+  pendidikan: string | null;
   email: string | null;
   mapel: string | null;
   tempat_lahir: string | null;
@@ -73,6 +74,7 @@ export default function GtkPtkPage() {
     nuptk: '',
     nik: '',
     lulusan: '',
+    pendidikan: '',
     email: '',
     mapel: '',
     tempat_lahir: '',
@@ -114,10 +116,10 @@ export default function GtkPtkPage() {
   };
 
   // Import configuration
-  const importHeaders = ['NUPTK/PegID', 'NIP', 'NIK', 'Nama', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Jabatan', 'Lulusan', 'Mapel', 'No HP', 'Email', 'Alamat'];
+  const importHeaders = ['NUPTK/PegID', 'NIP', 'NIK', 'Nama', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Jabatan', 'Lulusan', 'Pendidikan', 'Mapel', 'No HP', 'Email', 'Alamat'];
   const importSampleData = [
-    ['1234567890123456', '198501012010011001', '3201010101010001', 'Ahmad Hidayat, S.Pd', 'Laki-laki', 'Jakarta', '1985-01-01', 'Guru', 'S1 Pendidikan', 'Matematika, IPA', '081234567890', 'ahmad@email.com', 'Jl. Merdeka No. 1'],
-    ['1234567890123457', '', '3201010101010002', 'Siti Rahayu, S.Pd', 'Perempuan', 'Bandung', '1988-05-15', 'Guru', 'S1 Bahasa', 'Bahasa Indonesia', '081234567891', 'siti@email.com', 'Jl. Sudirman No. 2'],
+    ['1234567890123456', '198501012010011001', '3201010101010001', 'Ahmad Hidayat, S.Pd', 'Laki-laki', 'Jakarta', '1985-01-01', 'Guru', 'S1', 'Pendidikan Matematika - UNJ', 'Matematika, IPA', '081234567890', 'ahmad@email.com', 'Jl. Merdeka No. 1'],
+    ['1234567890123457', '', '3201010101010002', 'Siti Rahayu, S.Pd', 'Perempuan', 'Bandung', '1988-05-15', 'Guru', 'S1', 'Pendidikan Bahasa Indonesia - UPI', 'Bahasa Indonesia', '081234567891', 'siti@email.com', 'Jl. Sudirman No. 2'],
   ];
 
   // Export columns configuration
@@ -131,6 +133,7 @@ export default function GtkPtkPage() {
     { header: 'Tanggal Lahir', accessor: (g: GtkPtk) => g.tanggal_lahir },
     { header: 'Jabatan', accessor: (g: GtkPtk) => g.jabatan },
     { header: 'Lulusan', accessor: (g: GtkPtk) => g.lulusan },
+    { header: 'Pendidikan', accessor: (g: GtkPtk) => g.pendidikan },
     { header: 'Mapel', accessor: (g: GtkPtk) => g.mapel },
     { header: 'No HP', accessor: (g: GtkPtk) => g.no_hp },
     { header: 'Email', accessor: (g: GtkPtk) => g.email },
@@ -156,6 +159,7 @@ export default function GtkPtkPage() {
           nik: row['NIK']?.trim() || null,
           jabatan: row['Jabatan']?.trim() || null,
           lulusan: row['Lulusan']?.trim() || null,
+          pendidikan: row['Pendidikan']?.trim() || null,
           mapel: row['Mapel']?.trim() || null,
           no_hp: row['No HP']?.trim() || null,
           email: row['Email']?.trim() || null,
@@ -212,6 +216,7 @@ export default function GtkPtkPage() {
         nuptk: gtk.nuptk || '',
         nik: gtk.nik || '',
         lulusan: gtk.lulusan || '',
+        pendidikan: gtk.pendidikan || '',
         email: gtk.email || '',
         mapel: gtk.mapel || '',
         tempat_lahir: gtk.tempat_lahir || '',
@@ -222,7 +227,7 @@ export default function GtkPtkPage() {
       setEditingGtk(null);
       setFormData({ 
         nip: '', nama: '', jabatan_utama: '', jabatan_tambahan: [], no_hp: '', alamat: '', 
-        nuptk: '', nik: '', lulusan: '', email: '', mapel: '',
+        nuptk: '', nik: '', lulusan: '', pendidikan: '', email: '', mapel: '',
         tempat_lahir: '', tanggal_lahir: undefined, jenis_kelamin: ''
       });
     }
@@ -242,6 +247,7 @@ export default function GtkPtkPage() {
         nuptk: formData.nuptk || null,
         nik: formData.nik || null,
         lulusan: formData.lulusan || null,
+        pendidikan: formData.pendidikan || null,
         email: formData.email || null,
         mapel: formData.mapel || null,
         tempat_lahir: formData.tempat_lahir || null,
@@ -348,7 +354,10 @@ export default function GtkPtkPage() {
     },
     { 
       header: 'Lulusan', 
-      cell: (item: GtkPtk) => item.lulusan || '-'
+      cell: (item: GtkPtk) => {
+        if (!item.lulusan) return '-';
+        return item.pendidikan ? `${item.lulusan} - ${item.pendidikan}` : item.lulusan;
+      }
     },
     { 
       header: 'Mapel Diampu', 
@@ -570,12 +579,22 @@ export default function GtkPtkPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lulusan">Lulusan</Label>
-                <Input
-                  id="lulusan"
-                  value={formData.lulusan}
-                  onChange={(e) => setFormData({ ...formData, lulusan: e.target.value })}
-                  placeholder="Contoh: S1 Pendidikan"
-                />
+                <Select value={formData.lulusan || 'none'} onValueChange={(v) => setFormData({ ...formData, lulusan: v === 'none' ? '' : v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih jenjang" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">-- Pilih --</SelectItem>
+                    <SelectItem value="SMA/MA">SMA/MA</SelectItem>
+                    <SelectItem value="D1">D1</SelectItem>
+                    <SelectItem value="D2">D2</SelectItem>
+                    <SelectItem value="D3">D3</SelectItem>
+                    <SelectItem value="D4">D4</SelectItem>
+                    <SelectItem value="S1">S1</SelectItem>
+                    <SelectItem value="S2">S2</SelectItem>
+                    <SelectItem value="S3">S3</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="space-y-2">
@@ -677,6 +696,15 @@ export default function GtkPtkPage() {
                   placeholder="email@domain.com"
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pendidikan">Pendidikan (jurusan/universitas)</Label>
+              <Input
+                id="pendidikan"
+                value={formData.pendidikan}
+                onChange={(e) => setFormData({ ...formData, pendidikan: e.target.value })}
+                placeholder="Contoh: Pendidikan Matematika - UNJ"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="mapel">Mapel yang Diampu</Label>

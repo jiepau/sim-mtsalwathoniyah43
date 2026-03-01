@@ -28,6 +28,7 @@ interface GtkProfile {
   jabatan: string | null;
   mapel: string | null;
   lulusan: string | null;
+  pendidikan: string | null;
   user_id: string | null;
   created_at: string;
   updated_at: string;
@@ -52,6 +53,7 @@ export default function ProfilGuru() {
     jabatan: "",
     mapel: "",
     lulusan: "",
+    pendidikan: "",
   });
 
   useEffect(() => {
@@ -87,6 +89,7 @@ export default function ProfilGuru() {
           jabatan: data.jabatan || "",
           mapel: data.mapel || "",
           lulusan: data.lulusan || "",
+          pendidikan: data.pendidikan || "",
         });
       }
     } catch (error) {
@@ -119,6 +122,7 @@ export default function ProfilGuru() {
           jabatan: formData.jabatan || null,
           mapel: formData.mapel || null,
           lulusan: formData.lulusan || null,
+          pendidikan: formData.pendidikan || null,
         })
         .eq("id", profile.id);
 
@@ -349,14 +353,38 @@ export default function ProfilGuru() {
                 />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="lulusan">Lulusan / Pendidikan Terakhir</Label>
-              <Input
-                id="lulusan"
-                value={formData.lulusan}
-                onChange={(e) => setFormData({ ...formData, lulusan: e.target.value })}
-                placeholder="S1 Pendidikan Matematika - UNJ"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="lulusan">Lulusan (Jenjang)</Label>
+                <Select
+                  value={formData.lulusan || 'none'}
+                  onValueChange={(val) => setFormData({ ...formData, lulusan: val === 'none' ? '' : val })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih jenjang" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">-- Pilih --</SelectItem>
+                    <SelectItem value="SMA/MA">SMA/MA</SelectItem>
+                    <SelectItem value="D1">D1</SelectItem>
+                    <SelectItem value="D2">D2</SelectItem>
+                    <SelectItem value="D3">D3</SelectItem>
+                    <SelectItem value="D4">D4</SelectItem>
+                    <SelectItem value="S1">S1</SelectItem>
+                    <SelectItem value="S2">S2</SelectItem>
+                    <SelectItem value="S3">S3</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="pendidikan">Pendidikan (jurusan/universitas)</Label>
+                <Input
+                  id="pendidikan"
+                  value={formData.pendidikan}
+                  onChange={(e) => setFormData({ ...formData, pendidikan: e.target.value })}
+                  placeholder="Pendidikan Matematika - UNJ"
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

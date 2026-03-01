@@ -1,0 +1,1 @@
+ALTER TABLE public.gtk_ptk ADD COLUMN pendidikan text;

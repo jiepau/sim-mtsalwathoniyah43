@@ -19,6 +19,7 @@ interface GtkPtk {
   nuptk: string | null;
   nik: string | null;
   lulusan: string | null;
+  pendidikan: string | null;
   email: string | null;
   mapel: string | null;
   tempat_lahir: string | null;
@@ -98,7 +99,10 @@ export function GtkDetailDialog({ open, onOpenChange, gtk }: GtkDetailDialogProp
               <GraduationCap className="h-4 w-4 text-muted-foreground mt-0.5" />
               <div>
                 <p className="text-sm text-muted-foreground">Pendidikan Terakhir</p>
-                <p className="font-medium">{gtk.lulusan || '-'}</p>
+                <p className="font-medium">
+                  {gtk.lulusan || '-'}
+                  {gtk.pendidikan && ` - ${gtk.pendidikan}`}
+                </p>
               </div>
             </div>
 
