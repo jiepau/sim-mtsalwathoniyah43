@@ -419,17 +419,16 @@ export default function UserManagement() {
         <h3 className="font-medium mb-2">Panduan Role:</h3>
         <ul className="text-sm text-muted-foreground space-y-1">
           <li>
-            <Badge variant="destructive">Admin</Badge> - Akses penuh ke semua fitur
+            <Badge variant="destructive">Admin</Badge> - Akses penuh ke semua fitur sistem
           </li>
           <li>
-            <Badge variant="default">Bendahara</Badge> - Akses ke Dashboard, Siswa (read-only), dan semua modul Keuangan
+            <Badge variant="default">Bendahara</Badge> - Dashboard (info siswa & GTK L/P, keuangan), Siswa (read-only), Buku Induk, dan semua modul Keuangan
           </li>
           <li>
-            <Badge variant="secondary">Operator</Badge> - Akses ke Dashboard, Siswa, Kelas, Tahun Ajaran, GTK/PTK, Naik
-            Kelas, Alumni
+            <Badge variant="secondary">Operator</Badge> - Dashboard, Siswa, Kelas, Tahun Ajaran, GTK/PTK, Absensi (Siswa & GTK), Rekap Bulanan, Kalender Akademik, Surat Menyurat, Naik Kelas, Alumni
           </li>
           <li>
-            <Badge variant="secondary">Guru</Badge> - Akses ke Dashboard,Profil saya, Kurikulum
+            <Badge variant="secondary">Guru</Badge> - Dashboard (info siswa L/P), Profil Saya, Absensi GTK (self-attendance), Rekap Bulanan, Kalender Akademik, dan semua modul Kurikulum
           </li>
         </ul>
       </div>
