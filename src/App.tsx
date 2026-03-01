@@ -54,6 +54,12 @@ const queryClient = new QueryClient({
   },
 });
 
+// Preserve URL hash during root redirect (needed for OAuth callback tokens)
+const RootRedirect = () => {
+  const hash = window.location.hash;
+  return <Navigate to={`/login${hash}`} replace />;
+};
+
 // Loading fallback for lazy components
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[200px]">
@@ -114,7 +120,7 @@ const App = () => {
                   <Route path="/rekap-absensi" element={<RekapAbsensi />} />
                   <Route path="/notifikasi-wa" element={<NotifikasiWA />} />
                 </Route>
-                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="/" element={<RootRedirect />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
