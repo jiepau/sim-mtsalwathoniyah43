@@ -1,8 +1,8 @@
 // Centralized version configuration
 // Update this file when releasing new versions
 
-export const APP_VERSION = "1.2.0";
-export const APP_BUILD_DATE = "2026-02-06";
+export const APP_VERSION = "1.3.0";
+export const APP_BUILD_DATE = "2026-03-01";
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,17 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "1.3.0",
+    date: "2026-03-01",
+    changes: [
+      "Perbaikan refresh otomatis saat pindah tab browser (React Query & Auth)",
+      "Statistik GTK/PTK: jenis kelamin, jabatan, dan pendidikan",
+      "Dropdown jabatan GTK: Jabatan Utama (Kepala Madrasah/Guru/Tendik) + Jabatan Tambahan multi-select (Wakil Kurikulum, Wakil Kesiswaan, Mengajar)",
+      "Input tanggal lahir GTK/PTK dan Siswa menggunakan native date picker",
+      "Fitur edit data pembayaran untuk koreksi nominal",
+    ],
+  },
   {
     version: "1.2.0",
     date: "2026-02-06",
