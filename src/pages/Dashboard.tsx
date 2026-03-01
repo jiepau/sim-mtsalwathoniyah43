@@ -296,6 +296,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Pie Chart - Keuangan */}
+        {(isAdmin || isBendahara) && (
         <Card className="shadow-card">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">Ringkasan Keuangan</CardTitle>
@@ -336,6 +337,7 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
+        )}
       </div>
     </div>
   );
