@@ -247,11 +247,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     console.log('signOut: Starting...');
-    // Clear roles immediately
+    // Set loading first to prevent flash of "pending approval" screen
+    setAuthLoading(true);
+    // Clear roles
     setRoles([]);
     rolesRef.current = [];
     currentFetchId.current++; // Invalidate any in-flight fetches
     await supabase.auth.signOut();
+    setAuthLoading(false);
     console.log('signOut: Complete');
   };
 
