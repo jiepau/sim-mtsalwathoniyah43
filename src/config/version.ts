@@ -1,8 +1,8 @@
 // Centralized version configuration
 // Update this file when releasing new versions
 
-export const APP_VERSION = "1.4.0";
-export const APP_BUILD_DATE = "2026-03-15";
+export const APP_VERSION = "1.5.0";
+export const APP_BUILD_DATE = "2026-03-01";
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,18 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "1.5.0",
+    date: "2026-03-01",
+    changes: [
+      "Modul E-Learning lengkap untuk Guru (kelola materi, tugas, penilaian) dan Siswa (akses materi, kerjakan tugas, lihat nilai)",
+      "Forum Diskusi realtime dengan Supabase Realtime untuk interaksi kelas",
+      "Dashboard Siswa dengan statistik materi, tugas, dan nilai",
+      "Role Siswa baru dengan akses khusus E-Learning",
+      "Fitur auto-generate akun siswa massal dari data siswa yang sudah ada (NIS sebagai username)",
+      "Storage bucket E-Learning untuk upload materi dan tugas",
+    ],
+  },
   {
     version: "1.4.0",
     date: "2026-03-15",

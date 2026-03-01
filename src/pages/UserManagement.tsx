@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Shield, Plus, Pencil, Trash2, UserPlus, Eye, EyeOff, Link2, Download, CheckCircle } from "lucide-react";
+import { Shield, Plus, Pencil, Trash2, UserPlus, Eye, EyeOff, Link2, Download, CheckCircle, Users } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
@@ -90,6 +90,11 @@ export default function UserManagement() {
     roles: [] as AppRole[],
     gtk_id: "" as string,
   });
+
+  // Generate student accounts
+  const [generateLoading, setGenerateLoading] = useState(false);
+  const [generateResults, setGenerateResults] = useState<any>(null);
+  const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -371,6 +376,31 @@ export default function UserManagement() {
     toast.success("Data user berhasil di-export");
   };
 
+  const handleGenerateStudentAccounts = async () => {
+    if (!confirm("Generate akun untuk semua siswa aktif yang belum memiliki akun?\n\nFormat: NIS@siswa.mts / SiswaNIS")) return;
+    
+    setGenerateLoading(true);
+    try {
+      const response = await supabase.functions.invoke("generate-student-accounts");
+      if (response.error) throw new Error(response.error.message);
+      if (response.data?.error) throw new Error(response.data.error);
+      
+      setGenerateResults(response.data);
+      setGenerateDialogOpen(true);
+      
+      if (response.data.created > 0) {
+        toast.success(`${response.data.created} akun siswa berhasil dibuat`);
+        fetchUsers();
+      } else {
+        toast.info(response.data.message || "Tidak ada akun baru yang dibuat");
+      }
+    } catch (error: any) {
+      console.error("Error generating student accounts:", error);
+      toast.error(mapDatabaseError(error));
+    } finally {
+      setGenerateLoading(false);
+    }
+  };
   const columns = [
     {
       header: "Nama",
@@ -445,10 +475,14 @@ export default function UserManagement() {
         description={`Total ${users.length} user terdaftar`}
         icon={<Shield className="h-6 w-6" />}
         actions={
-          <div className="flex gap-2">
+           <div className="flex gap-2">
             <Button variant="outline" onClick={handleExportCSV}>
               <Download className="h-4 w-4 mr-2" />
               Export CSV
+            </Button>
+            <Button variant="outline" onClick={handleGenerateStudentAccounts} disabled={generateLoading}>
+              <Users className="h-4 w-4 mr-2" />
+              {generateLoading ? "Generating..." : "Generate Akun Siswa"}
             </Button>
             <Button onClick={() => setCreateDialogOpen(true)}>
               <UserPlus className="h-4 w-4 mr-2" />
@@ -743,6 +777,39 @@ export default function UserManagement() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Generate Student Accounts Results Dialog */}
+      <Dialog open={generateDialogOpen} onOpenChange={setGenerateDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Hasil Generate Akun Siswa</DialogTitle>
+            <DialogDescription>
+              {generateResults && `${generateResults.created} dari ${generateResults.total} akun berhasil dibuat`}
+            </DialogDescription>
+          </DialogHeader>
+
+          {generateResults?.results && (
+            <div className="space-y-2">
+              {generateResults.results.map((r: any, i: number) => (
+                <div key={i} className={`p-3 rounded-lg border text-sm ${r.success ? 'bg-muted/30' : 'bg-destructive/10 border-destructive/30'}`}>
+                  <div className="font-medium">{r.nama} ({r.nis})</div>
+                  {r.success ? (
+                    <div className="text-muted-foreground font-mono text-xs mt-1">
+                      Email: {r.email} | Password: {r.password}
+                    </div>
+                  ) : (
+                    <div className="text-destructive text-xs mt-1">❌ {r.error}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setGenerateDialogOpen(false)}>Tutup</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
