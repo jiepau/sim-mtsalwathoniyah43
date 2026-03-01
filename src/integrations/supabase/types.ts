@@ -331,6 +331,280 @@ export type Database = {
           },
         ]
       }
+      elearning_forum_replies: {
+        Row: {
+          author_id: string
+          author_name: string
+          author_role: string
+          created_at: string
+          id: string
+          konten: string
+          topic_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          author_name: string
+          author_role: string
+          created_at?: string
+          id?: string
+          konten: string
+          topic_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          author_name?: string
+          author_role?: string
+          created_at?: string
+          id?: string
+          konten?: string
+          topic_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elearning_forum_replies_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "elearning_forum_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      elearning_forum_topics: {
+        Row: {
+          author_id: string
+          author_name: string
+          author_role: string
+          created_at: string
+          id: string
+          is_pinned: boolean | null
+          judul: string
+          kelas_id: string | null
+          konten: string
+          mapel: string | null
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          author_name: string
+          author_role: string
+          created_at?: string
+          id?: string
+          is_pinned?: boolean | null
+          judul: string
+          kelas_id?: string | null
+          konten: string
+          mapel?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          author_name?: string
+          author_role?: string
+          created_at?: string
+          id?: string
+          is_pinned?: boolean | null
+          judul?: string
+          kelas_id?: string | null
+          konten?: string
+          mapel?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elearning_forum_topics_kelas_id_fkey"
+            columns: ["kelas_id"]
+            isOneToOne: false
+            referencedRelation: "kelas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      elearning_materi: {
+        Row: {
+          created_at: string
+          deskripsi: string | null
+          file_path: string | null
+          guru_id: string | null
+          id: string
+          is_published: boolean | null
+          jenis: string
+          judul: string
+          kelas_id: string | null
+          konten: string | null
+          mapel: string
+          updated_at: string
+          urutan: number | null
+        }
+        Insert: {
+          created_at?: string
+          deskripsi?: string | null
+          file_path?: string | null
+          guru_id?: string | null
+          id?: string
+          is_published?: boolean | null
+          jenis?: string
+          judul: string
+          kelas_id?: string | null
+          konten?: string | null
+          mapel: string
+          updated_at?: string
+          urutan?: number | null
+        }
+        Update: {
+          created_at?: string
+          deskripsi?: string | null
+          file_path?: string | null
+          guru_id?: string | null
+          id?: string
+          is_published?: boolean | null
+          jenis?: string
+          judul?: string
+          kelas_id?: string | null
+          konten?: string | null
+          mapel?: string
+          updated_at?: string
+          urutan?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elearning_materi_guru_id_fkey"
+            columns: ["guru_id"]
+            isOneToOne: false
+            referencedRelation: "gtk_ptk"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "elearning_materi_kelas_id_fkey"
+            columns: ["kelas_id"]
+            isOneToOne: false
+            referencedRelation: "kelas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      elearning_submissions: {
+        Row: {
+          catatan_guru: string | null
+          file_path: string | null
+          graded_at: string | null
+          id: string
+          jawaban: string | null
+          nilai: number | null
+          siswa_id: string
+          status: string
+          submitted_at: string
+          tugas_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          catatan_guru?: string | null
+          file_path?: string | null
+          graded_at?: string | null
+          id?: string
+          jawaban?: string | null
+          nilai?: number | null
+          siswa_id: string
+          status?: string
+          submitted_at?: string
+          tugas_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          catatan_guru?: string | null
+          file_path?: string | null
+          graded_at?: string | null
+          id?: string
+          jawaban?: string | null
+          nilai?: number | null
+          siswa_id?: string
+          status?: string
+          submitted_at?: string
+          tugas_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elearning_submissions_siswa_id_fkey"
+            columns: ["siswa_id"]
+            isOneToOne: false
+            referencedRelation: "siswa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "elearning_submissions_tugas_id_fkey"
+            columns: ["tugas_id"]
+            isOneToOne: false
+            referencedRelation: "elearning_tugas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      elearning_tugas: {
+        Row: {
+          created_at: string
+          deadline: string | null
+          deskripsi: string | null
+          file_path: string | null
+          guru_id: string | null
+          id: string
+          is_published: boolean | null
+          judul: string
+          kelas_id: string | null
+          mapel: string
+          nilai_max: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deadline?: string | null
+          deskripsi?: string | null
+          file_path?: string | null
+          guru_id?: string | null
+          id?: string
+          is_published?: boolean | null
+          judul: string
+          kelas_id?: string | null
+          mapel: string
+          nilai_max?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deadline?: string | null
+          deskripsi?: string | null
+          file_path?: string | null
+          guru_id?: string | null
+          id?: string
+          is_published?: boolean | null
+          judul?: string
+          kelas_id?: string | null
+          mapel?: string
+          nilai_max?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elearning_tugas_guru_id_fkey"
+            columns: ["guru_id"]
+            isOneToOne: false
+            referencedRelation: "gtk_ptk"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "elearning_tugas_kelas_id_fkey"
+            columns: ["kelas_id"]
+            isOneToOne: false
+            referencedRelation: "kelas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gtk_ptk: {
         Row: {
           alamat: string | null
@@ -1063,6 +1337,7 @@ export type Database = {
           tanggal_lahir: string | null
           tempat_lahir: string | null
           updated_at: string
+          user_id: string | null
           wa_ortu: string | null
         }
         Insert: {
@@ -1081,6 +1356,7 @@ export type Database = {
           tanggal_lahir?: string | null
           tempat_lahir?: string | null
           updated_at?: string
+          user_id?: string | null
           wa_ortu?: string | null
         }
         Update: {
@@ -1099,6 +1375,7 @@ export type Database = {
           tanggal_lahir?: string | null
           tempat_lahir?: string | null
           updated_at?: string
+          user_id?: string | null
           wa_ortu?: string | null
         }
         Relationships: [
