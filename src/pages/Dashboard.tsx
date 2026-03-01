@@ -85,7 +85,6 @@ export default function Dashboard() {
         },
         async (payload) => {
           const newRecord = payload.new as any;
-          // Fetch the GTK name for the notification
           const { data: gtkData } = await supabase
             .from('gtk_ptk')
             .select('nama')
@@ -103,6 +102,35 @@ export default function Dashboard() {
           toast.info(`${nama} mengisi absensi: ${statusLabel}`, {
             description: `Tanggal: ${newRecord.tanggal}`,
           });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'profiles',
+        },
+        async (payload) => {
+          const newProfile = payload.new as any;
+          // Check if the new user has any roles
+          const { data: roles } = await supabase
+            .from('user_roles')
+            .select('id')
+            .eq('user_id', newProfile.user_id)
+            .limit(1);
+          
+          // If no roles, it's a new registration waiting for approval
+          if (!roles || roles.length === 0) {
+            toast.warning(`User baru mendaftar: ${newProfile.full_name}`, {
+              description: 'Menunggu approval di Manajemen User',
+              action: {
+                label: 'Lihat',
+                onClick: () => window.location.href = '/user-management',
+              },
+              duration: 10000,
+            });
+          }
         }
       )
       .subscribe();
