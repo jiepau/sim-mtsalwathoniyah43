@@ -808,6 +808,31 @@ export default function UserManagement() {
           )}
 
           <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              if (!generateResults?.results) return;
+              const successResults = generateResults.results.filter((r: any) => r.success);
+              if (successResults.length === 0) {
+                toast.info("Tidak ada akun yang berhasil dibuat untuk di-export");
+                return;
+              }
+              const headers = ["Nama", "NIS", "Email", "Password"];
+              const rows = successResults.map((r: any) => [r.nama, r.nis, r.email, r.password]);
+              const csvContent = [
+                headers.join(","),
+                ...rows.map((row: string[]) => row.map((cell: string) => `"${(cell || "").replace(/"/g, '""')}"`).join(",")),
+              ].join("\n");
+              const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement("a");
+              link.href = url;
+              link.download = `akun-siswa-${new Date().toISOString().slice(0, 10)}.csv`;
+              link.click();
+              URL.revokeObjectURL(url);
+              toast.success("Data akun siswa berhasil di-export ke CSV");
+            }}>
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV Akun Siswa
+            </Button>
             <Button variant="outline" onClick={() => setGenerateDialogOpen(false)}>Tutup</Button>
           </DialogFooter>
         </DialogContent>

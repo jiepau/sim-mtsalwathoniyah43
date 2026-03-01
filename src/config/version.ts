@@ -2,7 +2,7 @@
 // Update this file when releasing new versions
 
 export const APP_VERSION = "1.5.0";
-export const APP_BUILD_DATE = "2026-03-01";
+export const APP_BUILD_DATE = "2026-04-04";
 
 export interface ChangelogEntry {
   version: string;
@@ -13,7 +13,7 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: "1.5.0",
-    date: "2026-03-01",
+    date: "2026-04-04",
     changes: [
       "Modul E-Learning lengkap untuk Guru (kelola materi, tugas, penilaian) dan Siswa (akses materi, kerjakan tugas, lihat nilai)",
       "Forum Diskusi realtime dengan Supabase Realtime untuk interaksi kelas",
