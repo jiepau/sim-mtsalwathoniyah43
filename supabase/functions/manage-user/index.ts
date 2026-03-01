@@ -203,10 +203,14 @@ serve(async (req) => {
       }
 
       // Update profile
-      if (full_name) {
+      const profileUpdate: Record<string, string> = { updated_at: new Date().toISOString() };
+      if (full_name) profileUpdate.full_name = full_name;
+      if (password && password.length > 0) profileUpdate.initial_password = password;
+      
+      if (Object.keys(profileUpdate).length > 1) {
         await supabaseAdmin
           .from("profiles")
-          .update({ full_name, updated_at: new Date().toISOString() })
+          .update(profileUpdate)
           .eq("user_id", user_id);
       }
 
