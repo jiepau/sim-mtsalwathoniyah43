@@ -50,6 +50,7 @@ const ROLE_LABELS: Record<AppRole, string> = {
   bendahara: "Bendahara",
   operator: "Operator",
   guru: "Guru",
+  siswa: "Siswa",
 };
 
 const ROLE_COLORS: Record<AppRole, "default" | "secondary" | "destructive" | "outline"> = {
@@ -57,6 +58,7 @@ const ROLE_COLORS: Record<AppRole, "default" | "secondary" | "destructive" | "ou
   bendahara: "default",
   operator: "secondary",
   guru: "outline",
+  siswa: "outline",
 };
 
 export default function UserManagement() {
@@ -466,10 +468,13 @@ export default function UserManagement() {
             <Badge variant="default">Bendahara</Badge> - Dashboard (info siswa & GTK L/P, keuangan), Siswa (read-only), Buku Induk, dan semua modul Keuangan
           </li>
           <li>
-            <Badge variant="secondary">Operator</Badge> - Dashboard, Siswa, Kelas, Tahun Ajaran, GTK/PTK, Absensi (Siswa & GTK), Rekap Bulanan, Kalender Akademik, Surat Menyurat, Naik Kelas, Alumni
+            <Badge variant="secondary">Operator</Badge> - Dashboard, Siswa, Kelas, Tahun Ajaran, GTK/PTK, Absensi, Surat Menyurat, E-Learning (kelola), Naik Kelas, Alumni
           </li>
           <li>
-            <Badge variant="secondary">Guru</Badge> - Dashboard (info siswa L/P), Profil Saya, Absensi GTK (self-attendance), Rekap Bulanan, Kalender Akademik, dan semua modul Kurikulum
+            <Badge variant="secondary">Guru</Badge> - Dashboard, Profil Saya, Absensi GTK (self-attendance), Kurikulum, E-Learning (kelola materi & tugas, forum)
+          </li>
+          <li>
+            <Badge variant="outline">Siswa</Badge> - Dashboard Siswa, E-Learning (lihat materi, kerjakan tugas, nilai, forum diskusi), Kalender Akademik
           </li>
         </ul>
         <p className="text-xs text-muted-foreground mt-2 border-t pt-2">

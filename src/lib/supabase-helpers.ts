@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export type AppRole = 'admin' | 'bendahara' | 'operator' | 'guru';
+export type AppRole = 'admin' | 'bendahara' | 'operator' | 'guru' | 'siswa';
 
 export async function getCurrentUser() {
   const { data: { user } } = await supabase.auth.getUser();
