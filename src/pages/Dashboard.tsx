@@ -22,6 +22,8 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface DashboardStats {
   totalSiswa: number;
+  siswaLaki: number;
+  siswaPerempuan: number;
   totalKelas: number;
   totalGtk: number;
   totalTunggakan: number;
@@ -38,6 +40,8 @@ export default function Dashboard() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [stats, setStats] = useState<DashboardStats>({
     totalSiswa: 0,
+    siswaLaki: 0,
+    siswaPerempuan: 0,
     totalKelas: 0,
     totalGtk: 0,
     totalTunggakan: 0,
@@ -69,7 +73,10 @@ export default function Dashboard() {
   const fetchStats = async () => {
     try {
       // Fetch siswa - visible to all
-      const siswaRes = await supabase.from('siswa').select('id, kelas_id', { count: 'exact' });
+      const siswaRes = await supabase.from('siswa').select('id, kelas_id, jenis_kelamin', { count: 'exact' });
+      const siswaData = siswaRes.data || [];
+      const siswaLaki = siswaData.filter((s: any) => s.jenis_kelamin === 'L' || s.jenis_kelamin === 'Laki-laki').length;
+      const siswaPerempuan = siswaData.filter((s: any) => s.jenis_kelamin === 'P' || s.jenis_kelamin === 'Perempuan').length;
       
       // Fetch kelas - visible to admin and operator
       const kelasRes = (isAdmin || isOperator) 
@@ -124,6 +131,8 @@ export default function Dashboard() {
 
       setStats({
         totalSiswa: siswaRes.count || 0,
+        siswaLaki,
+        siswaPerempuan,
         totalKelas: kelasRes.count || 0,
         totalGtk: gtkRes.count || 0,
         totalTunggakan: tunggakan,
@@ -166,6 +175,18 @@ export default function Dashboard() {
           value={stats.totalSiswa}
           icon={<Users className="h-5 w-5 sm:h-6 sm:w-6" />}
           variant="default"
+        />
+        <StatsCard
+          title="Siswa Laki-laki"
+          value={stats.siswaLaki}
+          icon={<Users className="h-5 w-5 sm:h-6 sm:w-6" />}
+          variant="info"
+        />
+        <StatsCard
+          title="Siswa Perempuan"
+          value={stats.siswaPerempuan}
+          icon={<Users className="h-5 w-5 sm:h-6 sm:w-6" />}
+          variant="warning"
         />
         {(isAdmin || isOperator) && (
           <StatsCard
