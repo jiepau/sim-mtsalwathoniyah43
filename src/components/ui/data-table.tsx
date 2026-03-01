@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import {
   Table,
   TableBody,
@@ -7,7 +7,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Column<T> {
   header: string;
@@ -22,6 +31,8 @@ interface DataTableProps<T> {
   loading?: boolean;
   emptyMessage?: string;
   onRowClick?: (item: T) => void;
+  paginated?: boolean;
+  defaultPageSize?: number;
 }
 
 export function DataTable<T extends { id: string }>({
@@ -30,7 +41,15 @@ export function DataTable<T extends { id: string }>({
   loading,
   emptyMessage = 'Tidak ada data',
   onRowClick,
+  paginated = false,
+  defaultPageSize = 10,
 }: DataTableProps<T>) {
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(defaultPageSize);
+
+  const totalPages = Math.ceil(data.length / pageSize);
+  const paginatedData = paginated ? data.slice(page * pageSize, (page + 1) * pageSize) : data;
+
   if (loading) {
     return (
       <div className="bg-card rounded-xl border border-border/50 overflow-hidden">
@@ -68,7 +87,7 @@ export function DataTable<T extends { id: string }>({
               </TableCell>
             </TableRow>
           ) : (
-            data.map((item) => (
+            paginatedData.map((item) => (
               <TableRow
                 key={item.id}
                 onClick={() => onRowClick?.(item)}
@@ -92,6 +111,56 @@ export function DataTable<T extends { id: string }>({
           )}
         </TableBody>
       </Table>
+
+      {paginated && data.length > 0 && (
+        <div className="flex items-center justify-between px-4 py-3 border-t border-border/50">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>Tampilkan</span>
+            <Select
+              value={String(pageSize)}
+              onValueChange={(val) => {
+                setPageSize(Number(val));
+                setPage(0);
+              }}
+            >
+              <SelectTrigger className="h-8 w-[70px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[10, 25, 50, 100].map((size) => (
+                  <SelectItem key={size} value={String(size)}>
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <span>dari {data.length} data</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              Halaman {page + 1} dari {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

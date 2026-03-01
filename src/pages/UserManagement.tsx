@@ -376,6 +376,32 @@ export default function UserManagement() {
     toast.success("Data user berhasil di-export");
   };
 
+  const handleExportStudentAccounts = () => {
+    const siswaUsers = users.filter((u) => u.roles.includes("siswa"));
+    if (siswaUsers.length === 0) {
+      toast.info("Belum ada akun siswa yang terdaftar");
+      return;
+    }
+    const headers = ["Nama", "Email/Username", "Password Awal"];
+    const rows = siswaUsers.map((u) => [
+      u.full_name,
+      u.initial_password ? `${u.initial_password.replace("Siswa", "")}@siswa.mts` : "-",
+      u.initial_password || "-",
+    ]);
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${(cell || "").replace(/"/g, '""')}"`).join(",")),
+    ].join("\n");
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `akun-siswa-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success("Data akun siswa berhasil di-export");
+  };
+
   const handleGenerateStudentAccounts = async () => {
     if (!confirm("Generate akun untuk semua siswa aktif yang belum memiliki akun?\n\nFormat: NIS@siswa.mts / SiswaNIS")) return;
     
@@ -475,10 +501,14 @@ export default function UserManagement() {
         description={`Total ${users.length} user terdaftar`}
         icon={<Shield className="h-6 w-6" />}
         actions={
-           <div className="flex gap-2">
+           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={handleExportCSV}>
               <Download className="h-4 w-4 mr-2" />
               Export CSV
+            </Button>
+            <Button variant="outline" onClick={handleExportStudentAccounts}>
+              <Download className="h-4 w-4 mr-2" />
+              Export Akun Siswa
             </Button>
             <Button variant="outline" onClick={handleGenerateStudentAccounts} disabled={generateLoading}>
               <Users className="h-4 w-4 mr-2" />
@@ -516,7 +546,7 @@ export default function UserManagement() {
         </p>
       </div>
 
-      <DataTable data={users} columns={columns} loading={loading} emptyMessage="Belum ada user terdaftar" />
+      <DataTable data={users} columns={columns} loading={loading} emptyMessage="Belum ada user terdaftar" paginated defaultPageSize={10} />
 
       {/* Edit User Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
