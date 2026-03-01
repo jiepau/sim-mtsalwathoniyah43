@@ -79,7 +79,7 @@ export function GtkDetailDialog({ open, onOpenChange, gtk }: GtkDetailDialogProp
               <CreditCard className="h-4 w-4 text-muted-foreground mt-0.5" />
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Identitas</p>
-                {gtk.nuptk && <p className="font-medium">NUPTK: {gtk.nuptk}</p>}
+                {gtk.nuptk && <p className="font-medium">NUPTK/PegID: {gtk.nuptk}</p>}
                 {gtk.nip && <p className="font-medium">NIP: {gtk.nip}</p>}
                 {gtk.nik && <p className="font-medium">NIK: {gtk.nik}</p>}
                 {!gtk.nuptk && !gtk.nip && !gtk.nik && <p className="font-medium">-</p>}

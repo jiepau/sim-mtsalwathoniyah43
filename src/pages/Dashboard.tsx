@@ -267,7 +267,8 @@ export default function Dashboard() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Bar Chart - Siswa per Kelas */}
+        {/* Bar Chart - Siswa per Kelas - Only for Admin and Operator */}
+        {(isAdmin || isOperator) && (
         <Card className="shadow-card">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">Siswa per Kelas</CardTitle>
@@ -296,6 +297,7 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
+        )}
 
         {/* Pie Chart - Keuangan */}
         <Card className="shadow-card">

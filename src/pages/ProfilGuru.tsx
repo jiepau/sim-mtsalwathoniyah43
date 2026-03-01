@@ -229,7 +229,7 @@ export default function ProfilGuru() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="nuptk">NUPTK</Label>
+                <Label htmlFor="nuptk">NUPTK/PegID</Label>
                 <Input
                   id="nuptk"
                   value={formData.nuptk}
