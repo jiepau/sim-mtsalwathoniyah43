@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ExportButton } from '@/components/export/ExportButton';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { ClipboardList, Save, Calendar, CheckCircle, XCircle, AlertCircle, Clock, Briefcase, PalmtreeIcon } from 'lucide-react';
@@ -157,6 +158,20 @@ const AbsensiGtk = () => {
 
   const hasData = Object.keys(existingIds).length > 0;
 
+  // Export data
+  const exportData = useMemo(() => {
+    return gtkList.map((g, idx) => ({
+      no: idx + 1,
+      nama: g.nama,
+      nip: g.nip || '-',
+      jabatan: g.jabatan || '-',
+      status: STATUS_CONFIG[absensiData[g.id]?.status || 'hadir'].label,
+      keterangan: absensiData[g.id]?.keterangan || '',
+    }));
+  }, [gtkList, absensiData]);
+
+  const exportFilename = `Absensi_GTK_${selectedDate}`;
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
@@ -206,10 +221,25 @@ const AbsensiGtk = () => {
                 Daftar Hadir GTK — {format(new Date(selectedDate), 'EEEE, d MMMM yyyy', { locale: idLocale })}
                 {hasData && <Badge variant="outline" className="ml-2 text-xs">Sudah diisi</Badge>}
               </CardTitle>
-              <Button onClick={handleSave} disabled={saving}>
-                <Save className="h-4 w-4 mr-2" />
-                {saving ? 'Menyimpan...' : 'Simpan Absensi'}
-              </Button>
+              <div className="flex items-center gap-2">
+                <ExportButton
+                  data={exportData}
+                  columns={[
+                    { header: 'No', accessor: (d) => d.no },
+                    { header: 'Nama', accessor: (d) => d.nama },
+                    { header: 'NIP', accessor: (d) => d.nip },
+                    { header: 'Jabatan', accessor: (d) => d.jabatan },
+                    { header: 'Status', accessor: (d) => d.status },
+                    { header: 'Keterangan', accessor: (d) => d.keterangan },
+                  ]}
+                  filename={exportFilename}
+                  disabled={gtkList.length === 0}
+                />
+                <Button onClick={handleSave} disabled={saving}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {saving ? 'Menyimpan...' : 'Simpan Absensi'}
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>

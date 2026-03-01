@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ExportButton } from '@/components/export/ExportButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
@@ -205,6 +206,20 @@ const AbsensiSiswa = () => {
 
   const hasData = Object.keys(existingIds).length > 0;
 
+  // Export data
+  const exportData = useMemo(() => {
+    return siswaList.map((s, idx) => ({
+      no: idx + 1,
+      nis: s.nis,
+      nama: s.nama,
+      jk: s.jenis_kelamin === 'Laki-laki' ? 'L' : 'P',
+      status: STATUS_CONFIG[absensiData[s.id]?.status || 'hadir'].label,
+      keterangan: absensiData[s.id]?.keterangan || '',
+    }));
+  }, [siswaList, absensiData]);
+
+  const selectedKelasName = kelasList.find(k => k.id === selectedKelas)?.nama_kelas || '';
+  const exportFilename = `Absensi_Siswa_${selectedKelasName}_${selectedDate}`;
   return (
     <div className="space-y-6">
       <PageHeader
@@ -275,10 +290,25 @@ const AbsensiSiswa = () => {
                   Daftar Hadir — {format(new Date(selectedDate), 'EEEE, d MMMM yyyy', { locale: idLocale })}
                   {hasData && <Badge variant="outline" className="ml-2 text-xs">Sudah diisi</Badge>}
                 </CardTitle>
-                <Button onClick={handleSave} disabled={saving}>
-                  <Save className="h-4 w-4 mr-2" />
-                  {saving ? 'Menyimpan...' : 'Simpan Absensi'}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <ExportButton
+                    data={exportData}
+                    columns={[
+                      { header: 'No', accessor: (d) => d.no },
+                      { header: 'NIS', accessor: (d) => d.nis },
+                      { header: 'Nama Siswa', accessor: (d) => d.nama },
+                      { header: 'L/P', accessor: (d) => d.jk },
+                      { header: 'Status', accessor: (d) => d.status },
+                      { header: 'Keterangan', accessor: (d) => d.keterangan },
+                    ]}
+                    filename={exportFilename}
+                    disabled={siswaList.length === 0}
+                  />
+                  <Button onClick={handleSave} disabled={saving}>
+                    <Save className="h-4 w-4 mr-2" />
+                    {saving ? 'Menyimpan...' : 'Simpan Absensi'}
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
