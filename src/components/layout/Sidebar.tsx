@@ -135,7 +135,7 @@ export function Sidebar() {
       expanded.push('Surat Menyurat');
     }
     // Check Absensi routes
-    if (['/absensi-siswa', '/absensi-gtk'].includes(path)) {
+    if (['/absensi-siswa', '/absensi-gtk', '/rekap-absensi', '/kalender-akademik'].includes(path)) {
       expanded.push('Absensi');
     }
     

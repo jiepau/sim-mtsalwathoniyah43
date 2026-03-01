@@ -39,7 +39,10 @@ const STATUS_CONFIG: Record<StatusAbsensiGtk, { label: string; color: string }> 
 
 const AbsensiGtk = () => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, isAdmin, hasRole } = useAuth();
+  const isOperator = hasRole('operator');
+  const isGuru = hasRole('guru');
+  const canManageAll = isAdmin || isOperator;
   const { isHoliday } = useHariLibur();
   const [gtkList, setGtkList] = useState<GtkPtk[]>([]);
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -48,13 +51,20 @@ const AbsensiGtk = () => {
   const [saving, setSaving] = useState(false);
   const [existingIds, setExistingIds] = useState<Record<string, string>>({});
 
-  // Fetch GTK list
+  // Fetch GTK list - Guru only sees themselves
   useEffect(() => {
     const fetchGtk = async () => {
-      const { data } = await supabase
+      let query = supabase
         .from('gtk_ptk')
         .select('id, nama, jabatan, nip')
         .order('nama');
+      
+      // Guru only sees their own GTK record
+      if (isGuru && !canManageAll) {
+        query = query.eq('user_id', user?.id);
+      }
+
+      const { data } = await query;
       if (data) {
         setGtkList(data);
         const defaults: Record<string, AbsensiEntry> = {};
@@ -66,7 +76,7 @@ const AbsensiGtk = () => {
       setLoading(false);
     };
     fetchGtk();
-  }, []);
+  }, [user, isGuru, canManageAll]);
 
   // Fetch existing absensi for selected date
   useEffect(() => {
@@ -192,8 +202,8 @@ const AbsensiGtk = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Absensi GTK/PTK"
-        description="Rekap presensi harian guru dan tenaga kependidikan"
+        title={isGuru && !canManageAll ? "Absensi Saya" : "Absensi GTK/PTK"}
+        description={isGuru && !canManageAll ? "Isi presensi harian Anda" : "Rekap presensi harian guru dan tenaga kependidikan"}
         icon={<ClipboardList className="h-6 w-6" />}
       />
 
