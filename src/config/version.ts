@@ -1,8 +1,8 @@
 // Centralized version configuration
 // Update this file when releasing new versions
 
-export const APP_VERSION = "1.3.0";
-export const APP_BUILD_DATE = "2026-03-01";
+export const APP_VERSION = "1.3.1";
+export const APP_BUILD_DATE = "2026-03-08";
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,17 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "1.3.1",
+    date: "2026-03-08",
+    changes: [
+      "Dropdown lulusan GTK/PTK (SMA/MA, D1-D4, S1-S3)",
+      "Field pendidikan manual untuk detail jurusan & universitas",
+      "Password awal user dapat dilihat & di-export oleh Admin",
+      "Approval otomatis untuk user Google Sign-In oleh Admin",
+      "Export daftar user ke CSV",
+    ],
+  },
   {
     version: "1.3.0",
     date: "2026-03-01",
