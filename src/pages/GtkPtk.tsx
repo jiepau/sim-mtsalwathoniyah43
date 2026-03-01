@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
-import { UserCog, Plus, Search, Upload, Pencil, Trash2, Phone, Mail, CalendarIcon, Eye } from 'lucide-react';
+import { useEffect, useState, useMemo } from 'react';
+import { UserCog, Plus, Search, Upload, Pencil, Trash2, Phone, Mail, CalendarIcon, Eye, Users, GraduationCap, Briefcase } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -250,6 +251,41 @@ export default function GtkPtkPage() {
     (g.nuptk && g.nuptk.toLowerCase().includes(search.toLowerCase()))
   );
 
+  // Statistics
+  const stats = useMemo(() => {
+    const laki = gtkPtk.filter(g => g.jenis_kelamin === 'Laki-laki').length;
+    const perempuan = gtkPtk.filter(g => g.jenis_kelamin === 'Perempuan').length;
+
+    // Lulusan breakdown
+    const lulusanMap: Record<string, number> = {};
+    gtkPtk.forEach(g => {
+      const val = g.lulusan?.trim();
+      if (val) {
+        // Normalize: extract S1, S2, S3, D3, SMA etc.
+        const key = val.toUpperCase().startsWith('S1') ? 'S1' 
+          : val.toUpperCase().startsWith('S2') ? 'S2'
+          : val.toUpperCase().startsWith('S3') ? 'S3'
+          : val.toUpperCase().startsWith('D3') ? 'D3'
+          : val.toUpperCase().startsWith('D4') ? 'D4'
+          : val;
+        lulusanMap[key] = (lulusanMap[key] || 0) + 1;
+      }
+    });
+
+    // Jabatan breakdown - categorize as Guru or Tenaga Kependidikan
+    const guru = gtkPtk.filter(g => {
+      const j = g.jabatan?.toLowerCase() || '';
+      return j.includes('guru') || j.includes('pengajar') || j.includes('kepala sekolah') || j.includes('kepala madrasah');
+    }).length;
+    const tendik = gtkPtk.filter(g => {
+      const j = g.jabatan?.toLowerCase() || '';
+      return j && !j.includes('guru') && !j.includes('pengajar') && !j.includes('kepala sekolah') && !j.includes('kepala madrasah');
+    }).length;
+    const belumDiisi = gtkPtk.filter(g => !g.jabatan?.trim()).length;
+
+    return { laki, perempuan, lulusanMap, guru, tendik, belumDiisi };
+  }, [gtkPtk]);
+
   const columns = [
     { 
       header: 'NUPTK/NIP', 
@@ -374,6 +410,79 @@ export default function GtkPtkPage() {
             className="pl-10"
           />
         </div>
+      </div>
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+        {/* Jenis Kelamin */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">Jenis Kelamin</span>
+            </div>
+            <div className="flex gap-3">
+              <div>
+                <span className="text-2xl font-bold">{stats.laki}</span>
+                <span className="text-xs text-muted-foreground ml-1">Laki-laki</span>
+              </div>
+              <div className="border-l pl-3">
+                <span className="text-2xl font-bold">{stats.perempuan}</span>
+                <span className="text-xs text-muted-foreground ml-1">Perempuan</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Jabatan */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Briefcase className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">Jabatan</span>
+            </div>
+            <div className="flex gap-3 flex-wrap">
+              <div>
+                <span className="text-2xl font-bold">{stats.guru}</span>
+                <span className="text-xs text-muted-foreground ml-1">Guru</span>
+              </div>
+              <div className="border-l pl-3">
+                <span className="text-2xl font-bold">{stats.tendik}</span>
+                <span className="text-xs text-muted-foreground ml-1">Tendik</span>
+              </div>
+              {stats.belumDiisi > 0 && (
+                <div className="border-l pl-3">
+                  <span className="text-2xl font-bold text-muted-foreground">{stats.belumDiisi}</span>
+                  <span className="text-xs text-muted-foreground ml-1">Belum diisi</span>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Lulusan */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <GraduationCap className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">Pendidikan</span>
+            </div>
+            <div className="flex gap-3 flex-wrap">
+              {Object.entries(stats.lulusanMap)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([key, count]) => (
+                  <div key={key}>
+                    <span className="text-lg font-bold">{count}</span>
+                    <span className="text-xs text-muted-foreground ml-1">{key}</span>
+                  </div>
+                ))
+              }
+              {Object.keys(stats.lulusanMap).length === 0 && (
+                <span className="text-sm text-muted-foreground">Belum ada data</span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <DataTable 
