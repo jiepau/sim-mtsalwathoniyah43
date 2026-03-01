@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { UpdateChecker } from "@/components/UpdateChecker";
+import { WhatsNewDialog } from "@/components/WhatsNewDialog";
 
 // Auth pages
 import Login from "@/pages/auth/Login";
@@ -43,6 +44,7 @@ const AbsensiGtk = lazy(() => import("@/pages/AbsensiGtk"));
 const KalenderAkademik = lazy(() => import("@/pages/KalenderAkademik"));
 const RekapAbsensi = lazy(() => import("@/pages/RekapAbsensi"));
 const NotifikasiWA = lazy(() => import("@/pages/NotifikasiWA"));
+const Changelog = lazy(() => import("@/pages/Changelog"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -77,6 +79,7 @@ const App = () => {
         <TooltipProvider>
           {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
           <UpdateChecker />
+          <WhatsNewDialog />
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -119,6 +122,7 @@ const App = () => {
                   <Route path="/kalender-akademik" element={<KalenderAkademik />} />
                   <Route path="/rekap-absensi" element={<RekapAbsensi />} />
                   <Route path="/notifikasi-wa" element={<NotifikasiWA />} />
+                  <Route path="/changelog" element={<Changelog />} />
                 </Route>
                 <Route path="/" element={<RootRedirect />} />
                 <Route path="*" element={<NotFound />} />
