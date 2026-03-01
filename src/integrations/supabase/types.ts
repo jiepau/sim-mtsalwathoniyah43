@@ -361,6 +361,30 @@ export type Database = {
         }
         Relationships: []
       }
+      hari_libur: {
+        Row: {
+          created_at: string
+          id: string
+          keterangan: string | null
+          nama_libur: string
+          tanggal: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          keterangan?: string | null
+          nama_libur: string
+          tanggal: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          keterangan?: string | null
+          nama_libur?: string
+          tanggal?: string
+        }
+        Relationships: []
+      }
       jenis_tagihan: {
         Row: {
           created_at: string

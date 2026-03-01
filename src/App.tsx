@@ -40,6 +40,7 @@ const BukuInduk = lazy(() => import("@/pages/BukuInduk"));
 const ProfilGuru = lazy(() => import("@/pages/ProfilGuru"));
 const AbsensiSiswa = lazy(() => import("@/pages/AbsensiSiswa"));
 const AbsensiGtk = lazy(() => import("@/pages/AbsensiGtk"));
+const KalenderAkademik = lazy(() => import("@/pages/KalenderAkademik"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -107,6 +108,7 @@ const App = () => {
                   <Route path="/profil-guru" element={<ProfilGuru />} />
                   <Route path="/absensi-siswa" element={<AbsensiSiswa />} />
                   <Route path="/absensi-gtk" element={<AbsensiGtk />} />
+                  <Route path="/kalender-akademik" element={<KalenderAkademik />} />
                 </Route>
                 <Route path="/" element={<Navigate to="/login" replace />} />
                 <Route path="*" element={<NotFound />} />
