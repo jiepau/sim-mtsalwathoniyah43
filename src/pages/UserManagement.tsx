@@ -786,7 +786,9 @@ export default function UserManagement() {
           <DialogHeader>
             <DialogTitle>Hasil Generate Akun Siswa</DialogTitle>
             <DialogDescription>
-              {generateResults && `${generateResults.created} dari ${generateResults.total} akun berhasil dibuat`}
+              {generateResults && (generateResults.total 
+                ? `${generateResults.created} dari ${generateResults.total} akun berhasil dibuat`
+                : generateResults.message || "Semua siswa aktif sudah memiliki akun")}
             </DialogDescription>
           </DialogHeader>
 
