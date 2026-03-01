@@ -19,6 +19,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useSetupWizard } from '@/hooks/useSetupWizard';
 import { SetupWizardDialog } from '@/components/wizard/SetupWizardDialog';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 interface DashboardStats {
   totalSiswa: number;
@@ -68,6 +69,48 @@ export default function Dashboard() {
   useEffect(() => {
     fetchStats();
   }, []);
+
+  // Realtime notification for admin when guru fills attendance
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const channel = supabase
+      .channel('absensi-gtk-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'absensi_gtk',
+        },
+        async (payload) => {
+          const newRecord = payload.new as any;
+          // Fetch the GTK name for the notification
+          const { data: gtkData } = await supabase
+            .from('gtk_ptk')
+            .select('nama')
+            .eq('id', newRecord.gtk_id)
+            .single();
+          
+          const nama = gtkData?.nama || 'Seorang Guru';
+          const statusLabel = newRecord.status === 'hadir' ? 'Hadir' : 
+            newRecord.status === 'sakit' ? 'Sakit' :
+            newRecord.status === 'izin' ? 'Izin' :
+            newRecord.status === 'alfa' ? 'Alfa' :
+            newRecord.status === 'dinas_luar' ? 'Dinas Luar' :
+            newRecord.status === 'cuti' ? 'Cuti' : newRecord.status;
+
+          toast.info(`${nama} mengisi absensi: ${statusLabel}`, {
+            description: `Tanggal: ${newRecord.tanggal}`,
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isAdmin]);
 
   const handleWizardClose = () => {
     setWizardOpen(false);
