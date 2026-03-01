@@ -114,7 +114,7 @@ export default function GtkPtkPage() {
   };
 
   // Import configuration
-  const importHeaders = ['NUPTK', 'NIP', 'NIK', 'Nama', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Jabatan', 'Lulusan', 'Mapel', 'No HP', 'Email', 'Alamat'];
+  const importHeaders = ['NUPTK/PegID', 'NIP', 'NIK', 'Nama', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Jabatan', 'Lulusan', 'Mapel', 'No HP', 'Email', 'Alamat'];
   const importSampleData = [
     ['1234567890123456', '198501012010011001', '3201010101010001', 'Ahmad Hidayat, S.Pd', 'Laki-laki', 'Jakarta', '1985-01-01', 'Guru', 'S1 Pendidikan', 'Matematika, IPA', '081234567890', 'ahmad@email.com', 'Jl. Merdeka No. 1'],
     ['1234567890123457', '', '3201010101010002', 'Siti Rahayu, S.Pd', 'Perempuan', 'Bandung', '1988-05-15', 'Guru', 'S1 Bahasa', 'Bahasa Indonesia', '081234567891', 'siti@email.com', 'Jl. Sudirman No. 2'],
@@ -122,7 +122,7 @@ export default function GtkPtkPage() {
 
   // Export columns configuration
   const exportColumns = [
-    { header: 'NUPTK', accessor: (g: GtkPtk) => g.nuptk },
+    { header: 'NUPTK/PegID', accessor: (g: GtkPtk) => g.nuptk },
     { header: 'NIP', accessor: (g: GtkPtk) => g.nip },
     { header: 'NIK', accessor: (g: GtkPtk) => g.nik },
     { header: 'Nama', accessor: (g: GtkPtk) => g.nama },
@@ -151,7 +151,7 @@ export default function GtkPtkPage() {
 
         const { error } = await supabase.from('gtk_ptk').insert({
           nama,
-          nuptk: row['NUPTK']?.trim() || null,
+          nuptk: (row['NUPTK/PegID'] || row['NUPTK'])?.trim() || null,
           nip: row['NIP']?.trim() || null,
           nik: row['NIK']?.trim() || null,
           jabatan: row['Jabatan']?.trim() || null,
@@ -320,7 +320,7 @@ export default function GtkPtkPage() {
 
   const columns = [
     { 
-      header: 'NUPTK/NIP', 
+      header: 'NUPTK/PegID', 
       cell: (item: GtkPtk) => (
         <div className="space-y-0.5">
           {item.nuptk && <div className="font-mono text-sm">{item.nuptk}</div>}
@@ -436,7 +436,7 @@ export default function GtkPtkPage() {
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Cari NUPTK, NIP atau nama..."
+            placeholder="Cari NUPTK/PegID, NIP atau nama..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10"
