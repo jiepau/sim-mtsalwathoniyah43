@@ -165,10 +165,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(newSession?.user ?? null);
         
         if (newSession?.user) {
+          // Set rolesLoading immediately to prevent flash of "pending approval" screen
+          setRolesLoading(true);
           // Only fetch roles on actual sign-in (no roles yet)
           setTimeout(() => {
             if (mounted && !isSigningIn.current) {
               fetchRoles(newSession.user.id, 0, false);
+            } else {
+              setRolesLoading(false);
             }
           }, 100);
         } else {
