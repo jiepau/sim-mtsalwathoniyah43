@@ -657,6 +657,39 @@ export type Database = {
           },
         ]
       }
+      notifikasi_wa_settings: {
+        Row: {
+          created_at: string
+          hari_aktif: number[]
+          id: string
+          is_active: boolean
+          jam: string
+          jenis: string
+          template_pesan: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          hari_aktif?: number[]
+          id?: string
+          is_active?: boolean
+          jam?: string
+          jenis: string
+          template_pesan: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          hari_aktif?: number[]
+          id?: string
+          is_active?: boolean
+          jam?: string
+          jenis?: string
+          template_pesan?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pembayaran: {
         Row: {
           bulan: number | null
