@@ -38,6 +38,8 @@ const SuratMasuk = lazy(() => import("@/pages/SuratMasuk"));
 const SuratKeluar = lazy(() => import("@/pages/SuratKeluar"));
 const BukuInduk = lazy(() => import("@/pages/BukuInduk"));
 const ProfilGuru = lazy(() => import("@/pages/ProfilGuru"));
+const AbsensiSiswa = lazy(() => import("@/pages/AbsensiSiswa"));
+const AbsensiGtk = lazy(() => import("@/pages/AbsensiGtk"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -103,6 +105,8 @@ const App = () => {
                   <Route path="/surat-keluar" element={<SuratKeluar />} />
                   <Route path="/buku-induk" element={<BukuInduk />} />
                   <Route path="/profil-guru" element={<ProfilGuru />} />
+                  <Route path="/absensi-siswa" element={<AbsensiSiswa />} />
+                  <Route path="/absensi-gtk" element={<AbsensiGtk />} />
                 </Route>
                 <Route path="/" element={<Navigate to="/login" replace />} />
                 <Route path="*" element={<NotFound />} />

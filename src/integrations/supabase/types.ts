@@ -14,6 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
+      absensi_gtk: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          gtk_id: string
+          id: string
+          keterangan: string | null
+          status: string
+          tanggal: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          gtk_id: string
+          id?: string
+          keterangan?: string | null
+          status?: string
+          tanggal?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          gtk_id?: string
+          id?: string
+          keterangan?: string | null
+          status?: string
+          tanggal?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "absensi_gtk_gtk_id_fkey"
+            columns: ["gtk_id"]
+            isOneToOne: false
+            referencedRelation: "gtk_ptk"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      absensi_siswa: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          kelas_id: string
+          keterangan: string | null
+          siswa_id: string
+          status: string
+          ta_id: string
+          tanggal: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kelas_id: string
+          keterangan?: string | null
+          siswa_id: string
+          status?: string
+          ta_id: string
+          tanggal?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kelas_id?: string
+          keterangan?: string | null
+          siswa_id?: string
+          status?: string
+          ta_id?: string
+          tanggal?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "absensi_siswa_kelas_id_fkey"
+            columns: ["kelas_id"]
+            isOneToOne: false
+            referencedRelation: "kelas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "absensi_siswa_siswa_id_fkey"
+            columns: ["siswa_id"]
+            isOneToOne: false
+            referencedRelation: "siswa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "absensi_siswa_ta_id_fkey"
+            columns: ["ta_id"]
+            isOneToOne: false
+            referencedRelation: "tahun_ajaran"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alumni: {
         Row: {
           alamat: string | null
