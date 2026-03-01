@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExportButton } from '@/components/export/ExportButton';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { ClipboardList, Save, Calendar, CheckCircle, XCircle, AlertCircle, Clock, Briefcase, PalmtreeIcon } from 'lucide-react';
+import { useHariLibur } from '@/hooks/useHariLibur';
+import { ClipboardList, Save, Calendar, CheckCircle, XCircle, AlertCircle, Clock, Briefcase, PalmtreeIcon, CalendarOff } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 
@@ -39,6 +40,7 @@ const STATUS_CONFIG: Record<StatusAbsensiGtk, { label: string; color: string }> 
 const AbsensiGtk = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { isHoliday } = useHariLibur();
   const [gtkList, setGtkList] = useState<GtkPtk[]>([]);
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [absensiData, setAbsensiData] = useState<Record<string, AbsensiEntry>>({});
@@ -158,6 +160,9 @@ const AbsensiGtk = () => {
 
   const hasData = Object.keys(existingIds).length > 0;
 
+  // Holiday check
+  const holidayInfo = useMemo(() => isHoliday(selectedDate), [selectedDate, isHoliday]);
+
   // Export data
   const exportData = useMemo(() => {
     return gtkList.map((g, idx) => ({
@@ -165,10 +170,10 @@ const AbsensiGtk = () => {
       nama: g.nama,
       nip: g.nip || '-',
       jabatan: g.jabatan || '-',
-      status: STATUS_CONFIG[absensiData[g.id]?.status || 'hadir'].label,
-      keterangan: absensiData[g.id]?.keterangan || '',
+      status: holidayInfo.isLibur ? 'Libur' : STATUS_CONFIG[absensiData[g.id]?.status || 'hadir'].label,
+      keterangan: holidayInfo.isLibur ? holidayInfo.reason : (absensiData[g.id]?.keterangan || ''),
     }));
-  }, [gtkList, absensiData]);
+  }, [gtkList, absensiData, holidayInfo]);
 
   const exportFilename = `Absensi_GTK_${selectedDate}`;
 
@@ -194,26 +199,41 @@ const AbsensiGtk = () => {
         <Input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} />
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-        <Card className="border-border/50">
-          <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-foreground">{summary.total}</p>
-            <p className="text-xs text-muted-foreground">Total GTK</p>
+      {/* Holiday Banner */}
+      {holidayInfo.isLibur && (
+        <Card className="border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+          <CardContent className="p-4 flex items-center gap-3">
+            <CalendarOff className="h-5 w-5 text-amber-600 flex-shrink-0" />
+            <div>
+              <p className="font-semibold text-amber-800 dark:text-amber-300">Hari Libur — {holidayInfo.reason}</p>
+              <p className="text-sm text-amber-600 dark:text-amber-400">Input absensi tidak tersedia untuk tanggal ini.</p>
+            </div>
           </CardContent>
         </Card>
-        {(Object.entries(STATUS_CONFIG) as [StatusAbsensiGtk, typeof STATUS_CONFIG[StatusAbsensiGtk]][]).map(([key, cfg]) => (
-          <Card key={key} className="border-border/50">
+      )}
+
+      {/* Summary Cards */}
+      {!holidayInfo.isLibur && (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          <Card className="border-border/50">
             <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold text-foreground">{summary[key]}</p>
-              <p className="text-xs text-muted-foreground">{cfg.label}</p>
+              <p className="text-2xl font-bold text-foreground">{summary.total}</p>
+              <p className="text-xs text-muted-foreground">Total GTK</p>
             </CardContent>
           </Card>
-        ))}
-      </div>
+          {(Object.entries(STATUS_CONFIG) as [StatusAbsensiGtk, typeof STATUS_CONFIG[StatusAbsensiGtk]][]).map(([key, cfg]) => (
+            <Card key={key} className="border-border/50">
+              <CardContent className="p-4 text-center">
+                <p className="text-2xl font-bold text-foreground">{summary[key]}</p>
+                <p className="text-xs text-muted-foreground">{cfg.label}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Absensi Table */}
-      {gtkList.length > 0 ? (
+      {gtkList.length > 0 && !holidayInfo.isLibur ? (
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">

@@ -9,7 +9,8 @@ import { ExportButton } from '@/components/export/ExportButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { ClipboardCheck, Save, Calendar, Users, CheckCircle, XCircle, AlertCircle, Clock } from 'lucide-react';
+import { useHariLibur } from '@/hooks/useHariLibur';
+import { ClipboardCheck, Save, Calendar, Users, CheckCircle, XCircle, AlertCircle, Clock, CalendarOff } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 
@@ -50,6 +51,7 @@ const STATUS_CONFIG: Record<StatusAbsensi, { label: string; color: string; icon:
 const AbsensiSiswa = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { isHoliday } = useHariLibur();
   const [kelasList, setKelasList] = useState<Kelas[]>([]);
   const [tahunAjaranList, setTahunAjaranList] = useState<TahunAjaran[]>([]);
   const [siswaList, setSiswaList] = useState<Siswa[]>([]);
@@ -206,6 +208,9 @@ const AbsensiSiswa = () => {
 
   const hasData = Object.keys(existingIds).length > 0;
 
+  // Holiday check
+  const holidayInfo = useMemo(() => isHoliday(selectedDate), [selectedDate, isHoliday]);
+
   // Export data
   const exportData = useMemo(() => {
     return siswaList.map((s, idx) => ({
@@ -213,10 +218,10 @@ const AbsensiSiswa = () => {
       nis: s.nis,
       nama: s.nama,
       jk: s.jenis_kelamin === 'Laki-laki' ? 'L' : 'P',
-      status: STATUS_CONFIG[absensiData[s.id]?.status || 'hadir'].label,
-      keterangan: absensiData[s.id]?.keterangan || '',
+      status: holidayInfo.isLibur ? 'Libur' : STATUS_CONFIG[absensiData[s.id]?.status || 'hadir'].label,
+      keterangan: holidayInfo.isLibur ? holidayInfo.reason : (absensiData[s.id]?.keterangan || ''),
     }));
-  }, [siswaList, absensiData]);
+  }, [siswaList, absensiData, holidayInfo]);
 
   const selectedKelasName = kelasList.find(k => k.id === selectedKelas)?.nama_kelas || '';
   const exportFilename = `Absensi_Siswa_${selectedKelasName}_${selectedDate}`;
@@ -260,8 +265,21 @@ const AbsensiSiswa = () => {
         </div>
       </div>
 
+      {/* Holiday Banner */}
+      {holidayInfo.isLibur && (
+        <Card className="border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+          <CardContent className="p-4 flex items-center gap-3">
+            <CalendarOff className="h-5 w-5 text-amber-600 flex-shrink-0" />
+            <div>
+              <p className="font-semibold text-amber-800 dark:text-amber-300">Hari Libur — {holidayInfo.reason}</p>
+              <p className="text-sm text-amber-600 dark:text-amber-400">Input absensi tidak tersedia untuk tanggal ini.</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Summary Cards */}
-      {siswaList.length > 0 && (
+      {siswaList.length > 0 && !holidayInfo.isLibur && (
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <Card className="border-border/50">
             <CardContent className="p-4 text-center">
@@ -281,7 +299,7 @@ const AbsensiSiswa = () => {
       )}
 
       {/* Absensi Table */}
-      {selectedKelas && selectedTA ? (
+      {selectedKelas && selectedTA && !holidayInfo.isLibur ? (
         siswaList.length > 0 ? (
           <Card>
             <CardHeader className="pb-3">
