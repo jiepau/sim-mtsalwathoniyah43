@@ -35,6 +35,7 @@ import {
   ClipboardCheck,
   ClipboardList,
   BarChart3,
+  MessageSquare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -107,6 +108,7 @@ const allMenuItems: MenuItem[] = [
   { title: 'Naik Kelas', icon: ArrowUpCircle, path: '/naik-kelas', roles: ['admin', 'operator'] },
   { title: 'Alumni', icon: GraduationCap, path: '/alumni', roles: ['admin', 'operator'] },
   { title: 'Pengaturan Madrasah', icon: Settings, path: '/pengaturan-madrasah', roles: ['admin'] },
+  { title: 'Notifikasi WA', icon: MessageSquare, path: '/notifikasi-wa', roles: ['admin'] },
   { title: 'Manajemen User', icon: Shield, path: '/user-management', roles: ['admin'] },
 ];
 

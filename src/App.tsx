@@ -42,6 +42,7 @@ const AbsensiSiswa = lazy(() => import("@/pages/AbsensiSiswa"));
 const AbsensiGtk = lazy(() => import("@/pages/AbsensiGtk"));
 const KalenderAkademik = lazy(() => import("@/pages/KalenderAkademik"));
 const RekapAbsensi = lazy(() => import("@/pages/RekapAbsensi"));
+const NotifikasiWA = lazy(() => import("@/pages/NotifikasiWA"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -111,6 +112,7 @@ const App = () => {
                   <Route path="/absensi-gtk" element={<AbsensiGtk />} />
                   <Route path="/kalender-akademik" element={<KalenderAkademik />} />
                   <Route path="/rekap-absensi" element={<RekapAbsensi />} />
+                  <Route path="/notifikasi-wa" element={<NotifikasiWA />} />
                 </Route>
                 <Route path="/" element={<Navigate to="/login" replace />} />
                 <Route path="*" element={<NotFound />} />

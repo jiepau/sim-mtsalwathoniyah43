@@ -5,7 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Format phone number to international format (62xx)
 function formatPhoneNumber(phone: string): string {
   if (!phone) return '';
   let cleaned = phone.replace(/\D/g, '');
@@ -34,6 +33,53 @@ Deno.serve(async (req) => {
 
     const today = new Date().toISOString().split('T')[0];
 
+    // Determine reminder type based on current hour (WIB = UTC+7)
+    const now = new Date();
+    const wibHour = (now.getUTCHours() + 7) % 24;
+    const reminderType = wibHour < 12 ? 'absensi_pagi' : 'absensi_siang';
+
+    // Read body for override type (for test calls)
+    let bodyType: string | null = null;
+    try {
+      const body = await req.json();
+      bodyType = body?.type;
+    } catch { /* no body */ }
+
+    const settingsJenis = bodyType === 'test' ? reminderType : reminderType;
+
+    // Fetch settings from database
+    const { data: settingsData } = await supabase
+      .from('notifikasi_wa_settings')
+      .select('*')
+      .eq('jenis', settingsJenis)
+      .single();
+
+    // Check if setting is active (skip check for test calls)
+    if (bodyType !== 'test' && settingsData && !settingsData.is_active) {
+      return new Response(JSON.stringify({ message: 'Notifikasi nonaktif', sent: 0 }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Check hari aktif (skip for test) - WIB day: 0=Sunday, 1=Monday..6=Saturday
+    if (bodyType !== 'test' && settingsData) {
+      const wibDate = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+      const dayOfWeek = wibDate.getUTCDay(); // 0=Sunday
+      // Convert to our format: 1=Monday..6=Saturday, Sunday=7
+      const ourDay = dayOfWeek === 0 ? 7 : dayOfWeek;
+      if (!settingsData.hari_aktif.includes(ourDay)) {
+        return new Response(JSON.stringify({ message: 'Hari ini bukan hari aktif', sent: 0 }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    const templatePesan = settingsData?.template_pesan || (
+      reminderType === 'absensi_pagi'
+        ? "Assalamu'alaikum {nama},\n\nPengingat: Mohon segera mengisi absensi kehadiran hari ini.\n\nTerima kasih.\n\n- Admin MTs Al-Wathoniyah 43"
+        : "Assalamu'alaikum {nama},\n\nPengingat: Anda belum mengisi absensi kehadiran hari ini. Mohon segera diisi sebelum jam pulang.\n\nTerima kasih.\n\n- Admin MTs Al-Wathoniyah 43"
+    );
+
     // Get all GTK/PTK with phone numbers
     const { data: allGtk, error: gtkError } = await supabase
       .from('gtk_ptk')
@@ -43,7 +89,7 @@ Deno.serve(async (req) => {
     if (gtkError) throw gtkError;
 
     if (!allGtk || allGtk.length === 0) {
-      return new Response(JSON.stringify({ message: 'Tidak ada data GTK dengan nomor HP' }), {
+      return new Response(JSON.stringify({ message: 'Tidak ada data GTK dengan nomor HP', sent: 0 }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -56,11 +102,11 @@ Deno.serve(async (req) => {
 
     if (absError) throw absError;
 
-    const attendedIds = new Set((attendedGtk || []).map((a) => a.gtk_id));
+    const attendedIds = new Set((attendedGtk || []).map((a: any) => a.gtk_id));
 
     // Filter GTK who haven't filled attendance
     const pendingGtk = allGtk.filter(
-      (gtk) => !attendedIds.has(gtk.id) && gtk.no_hp
+      (gtk: any) => !attendedIds.has(gtk.id) && gtk.no_hp
     );
 
     if (pendingGtk.length === 0) {
@@ -69,20 +115,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Determine reminder type based on current hour (WIB = UTC+7)
-    const now = new Date();
-    const wibHour = (now.getUTCHours() + 7) % 24;
-    const reminderType = wibHour < 12 ? 'pagi' : 'siang';
-
     const results: { nama: string; phone: string; status: string }[] = [];
 
     for (const gtk of pendingGtk) {
       const phone = formatPhoneNumber(gtk.no_hp!);
       if (!phone) continue;
 
-      const message = reminderType === 'pagi'
-        ? `Assalamu'alaikum ${gtk.nama},\n\nPengingat: Mohon segera mengisi absensi kehadiran hari ini.\n\nTerima kasih.\n\n- Admin MTs Al-Wathoniyah 43`
-        : `Assalamu'alaikum ${gtk.nama},\n\nPengingat: Anda belum mengisi absensi kehadiran hari ini. Mohon segera diisi sebelum jam pulang.\n\nTerima kasih.\n\n- Admin MTs Al-Wathoniyah 43`;
+      const message = templatePesan.replace(/{nama}/g, gtk.nama);
 
       try {
         const formData = new FormData();
@@ -91,9 +130,7 @@ Deno.serve(async (req) => {
 
         const response = await fetch('https://api.fonnte.com/send', {
           method: 'POST',
-          headers: {
-            'Authorization': FONNTE_API_TOKEN,
-          },
+          headers: { 'Authorization': FONNTE_API_TOKEN },
           body: formData,
         });
 
@@ -113,12 +150,11 @@ Deno.serve(async (req) => {
     }
 
     const sent = results.filter((r) => r.status === 'sent').length;
-
-    console.log(`Absensi reminder (${reminderType}): ${sent}/${pendingGtk.length} sent`);
+    console.log(`Absensi reminder (${settingsJenis}): ${sent}/${pendingGtk.length} sent`);
 
     return new Response(
       JSON.stringify({
-        message: `Pengingat ${reminderType} terkirim`,
+        message: `Pengingat terkirim`,
         total_pending: pendingGtk.length,
         sent,
         results,
