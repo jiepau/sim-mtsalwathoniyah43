@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Shield, Plus, Pencil, Trash2, UserPlus, Eye, EyeOff, Link2 } from "lucide-react";
+import { Shield, Plus, Pencil, Trash2, UserPlus, Eye, EyeOff, Link2, Download, CheckCircle } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ interface UserWithRoles {
   created_at: string;
   roles: AppRole[];
   gtk_id?: string | null;
+  initial_password?: string | null;
 }
 
 interface GtkData {
@@ -120,7 +121,6 @@ export default function UserManagement() {
       const { data: allRoles, error: rolesError } = await supabase.from("user_roles").select("*");
       if (rolesError) throw rolesError;
 
-      // Fetch GTK data to get user_id mappings
       const { data: gtkData, error: gtkError } = await supabase
         .from("gtk_ptk")
         .select("id, user_id");
@@ -136,6 +136,7 @@ export default function UserManagement() {
           created_at: profile.created_at,
           roles: userRoles.map((r) => r.role as AppRole),
           gtk_id: linkedGtk?.id || null,
+          initial_password: (profile as any).initial_password || null,
         };
       });
 
@@ -203,7 +204,6 @@ export default function UserManagement() {
       if (response.data?.error) throw new Error(response.data.error);
 
       // Update GTK linkage
-      // First, unlink any previously linked GTK for this user
       if (editingUser.gtk_id && editingUser.gtk_id !== editData.gtk_id) {
         await supabase
           .from("gtk_ptk")
@@ -211,7 +211,6 @@ export default function UserManagement() {
           .eq("id", editingUser.gtk_id);
       }
       
-      // Link new GTK if selected
       if (editData.gtk_id) {
         const { error: gtkError } = await supabase
           .from("gtk_ptk")
@@ -263,6 +262,11 @@ export default function UserManagement() {
       console.error("Error deleting user:", error);
       toast.error(mapDatabaseError(error));
     }
+  };
+
+  // Approve pending user (assign role)
+  const handleApproveUser = (userData: UserWithRoles) => {
+    handleOpenEditDialog(userData);
   };
 
   // Create user handlers
@@ -337,6 +341,31 @@ export default function UserManagement() {
     }
   };
 
+  // Export users to CSV
+  const handleExportCSV = () => {
+    const headers = ["Nama", "Role", "Password Awal", "Terdaftar"];
+    const rows = users.map((u) => [
+      u.full_name,
+      u.roles.map((r) => ROLE_LABELS[r]).join(", ") || "Tanpa Role",
+      u.initial_password || "-",
+      formatDateTime(u.created_at),
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${(cell || "").replace(/"/g, '""')}"`).join(",")),
+    ].join("\n");
+
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `daftar-user-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success("Data user berhasil di-export");
+  };
+
   const columns = [
     {
       header: "Nama",
@@ -358,9 +387,17 @@ export default function UserManagement() {
               </Badge>
             ))
           ) : (
-            <Badge variant="outline">Tanpa Role</Badge>
+            <Badge variant="outline" className="text-orange-600 border-orange-300">Menunggu Approval</Badge>
           )}
         </div>
+      ),
+    },
+    {
+      header: "Password Awal",
+      cell: (item: UserWithRoles) => (
+        <span className="text-sm text-muted-foreground font-mono">
+          {item.initial_password || (item.roles.length === 0 ? "Google Sign-In" : "-")}
+        </span>
       ),
     },
     {
@@ -373,6 +410,11 @@ export default function UserManagement() {
       header: "Aksi",
       cell: (item: UserWithRoles) => (
         <div className="flex items-center gap-1">
+          {item.roles.length === 0 && (
+            <Button size="sm" variant="ghost" className="text-green-600" onClick={() => handleApproveUser(item)} title="Approve & assign role">
+              <CheckCircle className="h-4 w-4" />
+            </Button>
+          )}
           <Button size="sm" variant="ghost" onClick={() => handleOpenEditDialog(item)}>
             <Pencil className="h-4 w-4" />
           </Button>
@@ -387,7 +429,7 @@ export default function UserManagement() {
           </Button>
         </div>
       ),
-      className: "w-24",
+      className: "w-32",
     },
   ];
 
@@ -398,10 +440,16 @@ export default function UserManagement() {
         description={`Total ${users.length} user terdaftar`}
         icon={<Shield className="h-6 w-6" />}
         actions={
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <UserPlus className="h-4 w-4 mr-2" />
-            Tambah User
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleExportCSV}>
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
+            <Button onClick={() => setCreateDialogOpen(true)}>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Tambah User
+            </Button>
+          </div>
         }
       />
 
@@ -421,6 +469,9 @@ export default function UserManagement() {
             <Badge variant="secondary">Guru</Badge> - Dashboard (info siswa L/P), Profil Saya, Absensi GTK (self-attendance), Rekap Bulanan, Kalender Akademik, dan semua modul Kurikulum
           </li>
         </ul>
+        <p className="text-xs text-muted-foreground mt-2 border-t pt-2">
+          💡 Guru yang masuk via Google akan berstatus <Badge variant="outline" className="text-orange-600 border-orange-300 text-xs">Menunggu Approval</Badge> — Admin perlu assign role secara manual.
+        </p>
       </div>
 
       <DataTable data={users} columns={columns} loading={loading} emptyMessage="Belum ada user terdaftar" />
@@ -506,7 +557,6 @@ export default function UserManagement() {
               ))}
             </div>
 
-            {/* GTK Link dropdown - show for all roles */}
             {editData.roles.length > 0 && (
               <div className="space-y-2 p-3 border rounded-lg bg-muted/30">
                 <Label htmlFor="edit_gtk_id" className="flex items-center gap-2">
@@ -631,7 +681,6 @@ export default function UserManagement() {
               ))}
             </div>
 
-            {/* GTK Link dropdown - show for all roles */}
             {newUserData.roles.length > 0 && (
               <div className="space-y-2 p-3 border rounded-lg bg-muted/30">
                 <Label htmlFor="new_gtk_id" className="flex items-center gap-2">
