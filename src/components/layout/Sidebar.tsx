@@ -32,6 +32,8 @@ import {
   Send,
   BookMarked,
   User,
+  ClipboardCheck,
+  ClipboardList,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -55,6 +57,15 @@ const allMenuItems: MenuItem[] = [
   { title: 'Kelas', icon: School, path: '/kelas', roles: ['admin', 'operator'] },
   { title: 'Tahun Ajaran', icon: Calendar, path: '/tahun-ajaran', roles: ['admin', 'operator'] },
   { title: 'GTK/PTK', icon: UserCog, path: '/gtk-ptk', roles: ['admin', 'operator'] },
+  { 
+    title: 'Absensi', 
+    icon: ClipboardCheck,
+    children: [
+      { title: 'Absensi Siswa', icon: ClipboardCheck, path: '/absensi-siswa' },
+      { title: 'Absensi GTK', icon: ClipboardList, path: '/absensi-gtk' },
+    ],
+    roles: ['admin', 'operator', 'guru']
+  },
   { 
     title: 'Surat Menyurat', 
     icon: Mail,
@@ -119,6 +130,10 @@ export function Sidebar() {
     // Check Surat Menyurat routes
     if (['/surat-masuk', '/surat-keluar'].includes(path)) {
       expanded.push('Surat Menyurat');
+    }
+    // Check Absensi routes
+    if (['/absensi-siswa', '/absensi-gtk'].includes(path)) {
+      expanded.push('Absensi');
     }
     
     return expanded;
