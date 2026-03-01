@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -38,6 +38,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { AppRole } from '@/lib/supabase-helpers';
@@ -114,10 +115,36 @@ const allMenuItems: MenuItem[] = [
 
 export function Sidebar() {
   const location = useLocation();
-  const { signOut, hasRole, roles, loading } = useAuth();
+  const { signOut, hasRole, roles, loading, isAdmin } = useAuth();
   const { hasUpdate } = useUpdateChecker();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [pendingApprovalCount, setPendingApprovalCount] = useState(0);
+
+  // Fetch pending approval count for admin
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const fetchPendingCount = async () => {
+      const { data: profiles } = await supabase.from('profiles').select('user_id');
+      if (!profiles) return;
+      const { data: rolesData } = await supabase.from('user_roles').select('user_id');
+      const usersWithRoles = new Set(rolesData?.map(r => r.user_id) || []);
+      const pending = profiles.filter(p => !usersWithRoles.has(p.user_id)).length;
+      setPendingApprovalCount(pending);
+    };
+
+    fetchPendingCount();
+
+    // Listen for realtime changes
+    const channel = supabase
+      .channel('pending-approval-count')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchPendingCount())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'user_roles' }, () => fetchPendingCount())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [isAdmin]);
   
   // Auto-expand menu based on current route
   const getInitialExpandedItems = () => {
@@ -238,6 +265,17 @@ export function Sidebar() {
           >
             <item.icon className={cn('flex-shrink-0', level > 0 ? 'h-4 w-4' : 'h-5 w-5')} />
             {!collapsed && <span className="text-sm">{item.title}</span>}
+            {/* Pending approval badge for Manajemen User */}
+            {item.path === '/user-management' && pendingApprovalCount > 0 && !collapsed && (
+              <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                {pendingApprovalCount}
+              </span>
+            )}
+            {item.path === '/user-management' && pendingApprovalCount > 0 && collapsed && (
+              <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">
+                {pendingApprovalCount}
+              </span>
+            )}
             {/* Update badge for Pengaturan Madrasah */}
             {item.path === '/pengaturan-madrasah' && hasUpdate && (
               <span className="absolute right-3 top-1/2 -translate-y-1/2 flex h-2.5 w-2.5">
