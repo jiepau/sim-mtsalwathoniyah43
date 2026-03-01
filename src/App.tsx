@@ -45,6 +45,13 @@ const KalenderAkademik = lazy(() => import("@/pages/KalenderAkademik"));
 const RekapAbsensi = lazy(() => import("@/pages/RekapAbsensi"));
 const NotifikasiWA = lazy(() => import("@/pages/NotifikasiWA"));
 const Changelog = lazy(() => import("@/pages/Changelog"));
+const MateriGuru = lazy(() => import("@/pages/elearning/MateriGuru"));
+const TugasGuru = lazy(() => import("@/pages/elearning/TugasGuru"));
+const ForumDiskusi = lazy(() => import("@/pages/elearning/ForumDiskusi"));
+const DashboardSiswa = lazy(() => import("@/pages/elearning/DashboardSiswa"));
+const MateriSiswa = lazy(() => import("@/pages/elearning/MateriSiswa"));
+const TugasSiswa = lazy(() => import("@/pages/elearning/TugasSiswa"));
+const NilaiSiswa = lazy(() => import("@/pages/elearning/NilaiSiswa"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -123,6 +130,13 @@ const App = () => {
                   <Route path="/rekap-absensi" element={<RekapAbsensi />} />
                   <Route path="/notifikasi-wa" element={<NotifikasiWA />} />
                   <Route path="/changelog" element={<Changelog />} />
+                  <Route path="/e-learning/materi-guru" element={<MateriGuru />} />
+                  <Route path="/e-learning/tugas-guru" element={<TugasGuru />} />
+                  <Route path="/e-learning/forum" element={<ForumDiskusi />} />
+                  <Route path="/e-learning/dashboard" element={<DashboardSiswa />} />
+                  <Route path="/e-learning/materi-siswa" element={<MateriSiswa />} />
+                  <Route path="/e-learning/tugas-siswa" element={<TugasSiswa />} />
+                  <Route path="/e-learning/nilai" element={<NilaiSiswa />} />
                 </Route>
                 <Route path="/" element={<RootRedirect />} />
                 <Route path="*" element={<NotFound />} />

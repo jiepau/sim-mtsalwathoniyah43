@@ -55,9 +55,10 @@ interface MenuItem {
 
 // All menu items with role restrictions
 const allMenuItems: MenuItem[] = [
-  { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' }, // All roles
+  { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', roles: ['admin', 'operator', 'bendahara', 'guru'] },
+  { title: 'Dashboard Siswa', icon: GraduationCap, path: '/e-learning/dashboard', roles: ['siswa'] },
   { title: 'Profil Saya', icon: User, path: '/profil-guru', roles: ['guru', 'bendahara'] },
-  { title: 'Siswa', icon: Users, path: '/siswa', roles: ['admin', 'operator', 'bendahara'] }, // All roles can view (bendahara = read-only handled in page)
+  { title: 'Siswa', icon: Users, path: '/siswa', roles: ['admin', 'operator', 'bendahara'] },
   { title: 'Kelas', icon: School, path: '/kelas', roles: ['admin', 'operator'] },
   { title: 'Tahun Ajaran', icon: Calendar, path: '/tahun-ajaran', roles: ['admin', 'operator'] },
   { title: 'GTK/PTK', icon: UserCog, path: '/gtk-ptk', roles: ['admin', 'operator'] },
@@ -92,7 +93,20 @@ const allMenuItems: MenuItem[] = [
       { title: 'Generator RPP', icon: Sparkles, path: '/generator-rpp' },
       { title: 'Template CP', icon: FileText, path: '/cp-templates' },
     ],
-    roles: ['admin', 'operator', 'guru'] // Guru can access kurikulum
+    roles: ['admin', 'operator', 'guru']
+  },
+  { 
+    title: 'E-Learning',
+    icon: GraduationCap,
+    children: [
+      { title: 'Kelola Materi', icon: BookOpen, path: '/e-learning/materi-guru', roles: ['admin', 'operator', 'guru'] },
+      { title: 'Kelola Tugas', icon: ClipboardList, path: '/e-learning/tugas-guru', roles: ['admin', 'operator', 'guru'] },
+      { title: 'Materi', icon: BookOpen, path: '/e-learning/materi-siswa', roles: ['siswa'] },
+      { title: 'Tugas', icon: ClipboardList, path: '/e-learning/tugas-siswa', roles: ['siswa'] },
+      { title: 'Nilai Saya', icon: Target, path: '/e-learning/nilai', roles: ['siswa'] },
+      { title: 'Forum Diskusi', icon: MessageSquare, path: '/e-learning/forum' },
+    ],
+    roles: ['admin', 'operator', 'guru', 'siswa']
   },
   { 
     title: 'Keuangan', 
@@ -153,21 +167,20 @@ export function Sidebar() {
     const path = location.pathname;
     const expanded: string[] = [];
     
-    // Check Keuangan routes
     if (['/jenis-tagihan', '/pembayaran', '/pemasukan', '/pengeluaran', '/tunggakan'].includes(path)) {
       expanded.push('Keuangan');
     }
-    // Check Kurikulum routes
     if (['/prota', '/promes', '/generator-rpp', '/atp', '/kktp', '/cp-templates'].includes(path)) {
       expanded.push('Kurikulum');
     }
-    // Check Surat Menyurat routes
     if (['/surat-masuk', '/surat-keluar'].includes(path)) {
       expanded.push('Surat Menyurat');
     }
-    // Check Absensi routes
     if (['/absensi-siswa', '/absensi-gtk', '/rekap-absensi', '/kalender-akademik'].includes(path)) {
       expanded.push('Absensi');
+    }
+    if (path.startsWith('/e-learning/')) {
+      expanded.push('E-Learning');
     }
     
     return expanded;
@@ -184,6 +197,7 @@ export function Sidebar() {
     if (roles.includes('bendahara')) return 'Bendahara';
     if (roles.includes('operator')) return 'Operator';
     if (roles.includes('guru')) return 'Guru';
+    if (roles.includes('siswa')) return 'Siswa';
     return null;
   };
   
