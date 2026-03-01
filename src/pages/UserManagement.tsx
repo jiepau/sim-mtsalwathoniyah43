@@ -396,7 +396,7 @@ export default function UserManagement() {
       header: "Password Awal",
       cell: (item: UserWithRoles) => (
         <span className="text-sm text-muted-foreground font-mono">
-          {item.initial_password || (item.roles.length === 0 ? "Google Sign-In" : "-")}
+          {item.initial_password || "Google Sign-In"}
         </span>
       ),
     },
