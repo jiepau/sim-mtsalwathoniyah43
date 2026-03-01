@@ -213,15 +213,19 @@ const AbsensiSiswa = () => {
 
   // Export data
   const exportData = useMemo(() => {
+    const formattedDate = format(new Date(selectedDate), 'd MMMM yyyy', { locale: idLocale });
+    const dayName = format(new Date(selectedDate), 'EEEE', { locale: idLocale });
     return siswaList.map((s, idx) => ({
       no: idx + 1,
+      tanggal: formattedDate,
+      hari: dayName,
       nis: s.nis,
       nama: s.nama,
       jk: s.jenis_kelamin === 'Laki-laki' ? 'L' : 'P',
       status: holidayInfo.isLibur ? 'Libur' : STATUS_CONFIG[absensiData[s.id]?.status || 'hadir'].label,
       keterangan: holidayInfo.isLibur ? holidayInfo.reason : (absensiData[s.id]?.keterangan || ''),
     }));
-  }, [siswaList, absensiData, holidayInfo]);
+  }, [siswaList, absensiData, holidayInfo, selectedDate]);
 
   const selectedKelasName = kelasList.find(k => k.id === selectedKelas)?.nama_kelas || '';
   const exportFilename = `Absensi_Siswa_${selectedKelasName}_${selectedDate}`;
@@ -313,6 +317,8 @@ const AbsensiSiswa = () => {
                     data={exportData}
                     columns={[
                       { header: 'No', accessor: (d) => d.no },
+                      { header: 'Tanggal', accessor: (d) => d.tanggal },
+                      { header: 'Hari', accessor: (d) => d.hari },
                       { header: 'NIS', accessor: (d) => d.nis },
                       { header: 'Nama Siswa', accessor: (d) => d.nama },
                       { header: 'L/P', accessor: (d) => d.jk },
