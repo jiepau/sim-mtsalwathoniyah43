@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -66,7 +67,7 @@ export default function GtkPtkPage() {
     nip: '',
     nama: '',
     jabatan_utama: '',
-    jabatan_tambahan: '',
+    jabatan_tambahan: [] as string[],
     no_hp: '',
     alamat: '',
     nuptk: '',
@@ -79,33 +80,37 @@ export default function GtkPtkPage() {
     jenis_kelamin: '',
   });
 
-  // Helper: parse jabatan string into utama + tambahan
-  const parseJabatan = (jabatan: string | null) => {
-    if (!jabatan) return { utama: '', tambahan: '' };
-    const parts = jabatan.split(' - ').map(s => s.trim());
-    const validUtama = ['Guru', 'Tenaga Kependidikan'];
-    const validTambahan = ['Kepala Madrasah', 'Wakil Kurikulum', 'Wakil Kesiswaan'];
+  const JABATAN_UTAMA_OPTIONS = ['Kepala Madrasah', 'Guru', 'Tenaga Kependidikan'];
+  const JABATAN_TAMBAHAN_OPTIONS = ['Wakil Kurikulum', 'Wakil Kesiswaan', 'Mengajar'];
+
+  // Helper: parse jabatan string into utama + tambahan[]
+  const parseJabatan = (jabatan: string | null): { utama: string; tambahan: string[] } => {
+    if (!jabatan) return { utama: '', tambahan: [] };
+    const parts = jabatan.split(' / ').map(s => s.trim());
+    const utama = parts[0] || '';
+    const tambahan = parts.slice(1).filter(p => JABATAN_TAMBAHAN_OPTIONS.includes(p));
     
-    if (parts.length === 2 && validUtama.includes(parts[0]) && validTambahan.includes(parts[1])) {
-      return { utama: parts[0], tambahan: parts[1] };
+    if (JABATAN_UTAMA_OPTIONS.includes(utama)) {
+      return { utama, tambahan };
     }
-    if (validUtama.includes(jabatan)) return { utama: jabatan, tambahan: '' };
-    if (validTambahan.includes(jabatan)) return { utama: 'Guru', tambahan: jabatan };
-    // Legacy: try to guess
+    // Legacy format: "Guru - Wakil Kurikulum"
+    const dashParts = jabatan.split(' - ').map(s => s.trim());
+    if (dashParts.length >= 2 && JABATAN_UTAMA_OPTIONS.includes(dashParts[0])) {
+      return { utama: dashParts[0], tambahan: dashParts.slice(1).filter(p => JABATAN_TAMBAHAN_OPTIONS.includes(p)) };
+    }
+    // Legacy guessing
     const lower = jabatan.toLowerCase();
-    if (lower.includes('kepala madrasah')) return { utama: 'Guru', tambahan: 'Kepala Madrasah' };
-    if (lower.includes('wakil kurikulum')) return { utama: 'Guru', tambahan: 'Wakil Kurikulum' };
-    if (lower.includes('wakil kesiswaan')) return { utama: 'Guru', tambahan: 'Wakil Kesiswaan' };
-    if (lower.includes('guru')) return { utama: 'Guru', tambahan: '' };
-    if (lower.includes('tu') || lower.includes('tenaga')) return { utama: 'Tenaga Kependidikan', tambahan: '' };
-    return { utama: jabatan, tambahan: '' };
+    if (lower.includes('kepala madrasah')) return { utama: 'Kepala Madrasah', tambahan: [] };
+    if (lower.includes('guru')) return { utama: 'Guru', tambahan: [] };
+    if (lower.includes('tu') || lower.includes('tenaga')) return { utama: 'Tenaga Kependidikan', tambahan: [] };
+    return { utama: jabatan, tambahan: [] };
   };
 
-  // Helper: combine jabatan utama + tambahan
-  const combineJabatan = (utama: string, tambahan: string) => {
+  // Helper: combine jabatan utama + tambahan[]
+  const combineJabatan = (utama: string, tambahan: string[]) => {
     if (!utama) return null;
-    if (!tambahan) return utama;
-    return `${utama} - ${tambahan}`;
+    if (tambahan.length === 0) return utama;
+    return [utama, ...tambahan].join(' / ');
   };
 
   // Import configuration
@@ -216,7 +221,7 @@ export default function GtkPtkPage() {
     } else {
       setEditingGtk(null);
       setFormData({ 
-        nip: '', nama: '', jabatan_utama: '', jabatan_tambahan: '', no_hp: '', alamat: '', 
+        nip: '', nama: '', jabatan_utama: '', jabatan_tambahan: [], no_hp: '', alamat: '', 
         nuptk: '', nik: '', lulusan: '', email: '', mapel: '',
         tempat_lahir: '', tanggal_lahir: undefined, jenis_kelamin: ''
       });
@@ -305,17 +310,12 @@ export default function GtkPtkPage() {
     });
 
     // Jabatan breakdown - use parseJabatan for consistency
-    const guru = gtkPtk.filter(g => {
-      const parsed = parseJabatan(g.jabatan);
-      return parsed.utama === 'Guru';
-    }).length;
-    const tendik = gtkPtk.filter(g => {
-      const parsed = parseJabatan(g.jabatan);
-      return parsed.utama === 'Tenaga Kependidikan';
-    }).length;
+    const kepalaMadrasah = gtkPtk.filter(g => parseJabatan(g.jabatan).utama === 'Kepala Madrasah').length;
+    const guru = gtkPtk.filter(g => parseJabatan(g.jabatan).utama === 'Guru').length;
+    const tendik = gtkPtk.filter(g => parseJabatan(g.jabatan).utama === 'Tenaga Kependidikan').length;
     const belumDiisi = gtkPtk.filter(g => !g.jabatan?.trim()).length;
 
-    return { laki, perempuan, lulusanMap, guru, tendik, belumDiisi };
+    return { laki, perempuan, lulusanMap, kepalaMadrasah, guru, tendik, belumDiisi };
   }, [gtkPtk]);
 
   const columns = [
@@ -474,7 +474,13 @@ export default function GtkPtkPage() {
               <span className="text-sm font-medium text-muted-foreground">Jabatan</span>
             </div>
             <div className="flex gap-3 flex-wrap">
-              <div>
+              {stats.kepalaMadrasah > 0 && (
+                <div>
+                  <span className="text-2xl font-bold">{stats.kepalaMadrasah}</span>
+                  <span className="text-xs text-muted-foreground ml-1">Kamad</span>
+                </div>
+              )}
+              <div className={stats.kepalaMadrasah > 0 ? "border-l pl-3" : ""}>
                 <span className="text-2xl font-bold">{stats.guru}</span>
                 <span className="text-xs text-muted-foreground ml-1">Guru</span>
               </div>
@@ -623,24 +629,32 @@ export default function GtkPtkPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">-- Pilih --</SelectItem>
+                    <SelectItem value="Kepala Madrasah">Kepala Madrasah</SelectItem>
                     <SelectItem value="Guru">Guru</SelectItem>
                     <SelectItem value="Tenaga Kependidikan">Tenaga Kependidikan</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Jabatan Tambahan</Label>
-                <Select value={formData.jabatan_tambahan || 'none'} onValueChange={(v) => setFormData({ ...formData, jabatan_tambahan: v === 'none' ? '' : v })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Opsional" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">-- Tidak ada --</SelectItem>
-                    <SelectItem value="Kepala Madrasah">Kepala Madrasah</SelectItem>
-                    <SelectItem value="Wakil Kurikulum">Wakil Kurikulum</SelectItem>
-                    <SelectItem value="Wakil Kesiswaan">Wakil Kesiswaan</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label>Jabatan Tambahan <span className="text-xs text-muted-foreground">(opsional, boleh lebih dari satu)</span></Label>
+                <div className="flex flex-wrap gap-3 pt-1">
+                  {JABATAN_TAMBAHAN_OPTIONS.map(opt => (
+                    <label key={opt} className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={formData.jabatan_tambahan.includes(opt)}
+                        onCheckedChange={(checked) => {
+                          setFormData(prev => ({
+                            ...prev,
+                            jabatan_tambahan: checked
+                              ? [...prev.jabatan_tambahan, opt]
+                              : prev.jabatan_tambahan.filter(v => v !== opt)
+                          }));
+                        }}
+                      />
+                      <span className="text-sm">{opt}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
