@@ -143,20 +143,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         console.log('onAuthStateChange:', event, 'hasSession:', !!newSession);
         
+        // For TOKEN_REFRESHED, only update session silently - don't refetch roles
+        if (event === 'TOKEN_REFRESHED') {
+          setSession(newSession);
+          setUser(newSession?.user ?? null);
+          return;
+        }
+        
+        // For SIGNED_IN when we already have roles (tab visibility change), skip refetch
+        if (event === 'SIGNED_IN' && roles.length > 0 && newSession?.user) {
+          setSession(newSession);
+          setUser(newSession?.user ?? null);
+          return;
+        }
+        
         // Use functional updates to avoid stale closures
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
         if (newSession?.user) {
-          // Check if this is a TOKEN_REFRESHED or tab visibility change
-          // In these cases, refresh roles silently (no loading spinner)
-          const isSilentRefresh = event === 'TOKEN_REFRESHED' || 
-            (event === 'SIGNED_IN' && roles.length > 0);
-          
-          // Small delay to let state settle
+          // Only fetch roles on actual sign-in (no roles yet)
           setTimeout(() => {
             if (mounted && !isSigningIn.current) {
-              fetchRoles(newSession.user.id, 0, isSilentRefresh);
+              fetchRoles(newSession.user.id, 0, false);
             }
           }, 100);
         } else {
