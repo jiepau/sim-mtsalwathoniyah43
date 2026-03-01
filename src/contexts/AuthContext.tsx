@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useRef, useCallb
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { AppRole, getUserRoles } from '@/lib/supabase-helpers';
+import { logActivity } from '@/lib/activity-logger';
 
 interface AuthContextType {
   user: User | null;
@@ -173,7 +174,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Only fetch roles on actual sign-in (no roles yet)
           setTimeout(() => {
             if (mounted && !isSigningIn.current) {
-              fetchRoles(newSession.user.id, 0, false);
+              fetchRoles(newSession.user.id, 0, false).then(() => {
+                // Log activity for OAuth sign-in (Google etc)
+                if (event === 'SIGNED_IN') {
+                  logActivity('login', 'login kedalam aplikasi');
+                }
+              });
             } else {
               setRolesLoading(false);
             }
@@ -224,6 +230,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('signIn: Fetching roles...');
         await fetchRoles(data.user.id);
         console.log('signIn: Complete');
+        
+        // Log activity in background
+        logActivity('login', 'login kedalam aplikasi');
       }
       
       return { error };

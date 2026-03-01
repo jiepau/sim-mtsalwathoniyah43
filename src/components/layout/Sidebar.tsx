@@ -115,7 +115,7 @@ const allMenuItems: MenuItem[] = [
 
 export function Sidebar() {
   const location = useLocation();
-  const { signOut, hasRole, roles, loading, isAdmin } = useAuth();
+  const { signOut, hasRole, roles, loading, isAdmin, user } = useAuth();
   const { hasUpdate } = useUpdateChecker();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -327,7 +327,10 @@ export function Sidebar() {
         {!collapsed && roleDisplayName && (
           <div className="px-4 py-2 rounded-lg bg-sidebar-accent/50">
             <p className="text-xs text-sidebar-foreground/60">Login sebagai</p>
-            <p className="text-sm font-semibold text-sidebar-foreground">{roleDisplayName}</p>
+            <p className="text-sm font-semibold text-sidebar-foreground">
+              {user?.user_metadata?.full_name || user?.email || roleDisplayName}
+            </p>
+            <p className="text-xs text-sidebar-foreground/50">{roleDisplayName}</p>
           </div>
         )}
         <button
