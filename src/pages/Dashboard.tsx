@@ -26,6 +26,8 @@ interface DashboardStats {
   siswaPerempuan: number;
   totalKelas: number;
   totalGtk: number;
+  gtkLaki: number;
+  gtkPerempuan: number;
   totalTunggakan: number;
   totalPemasukan: number;
   totalPengeluaran: number;
@@ -44,6 +46,8 @@ export default function Dashboard() {
     siswaPerempuan: 0,
     totalKelas: 0,
     totalGtk: 0,
+    gtkLaki: 0,
+    gtkPerempuan: 0,
     totalTunggakan: 0,
     totalPemasukan: 0,
     totalPengeluaran: 0,
@@ -83,10 +87,13 @@ export default function Dashboard() {
         ? await supabase.from('kelas').select('id, nama_kelas', { count: 'exact' })
         : { data: [], count: 0 };
       
-      // Fetch GTK/PTK - only visible to admin and operator
-      const gtkRes = (isAdmin || isOperator)
-        ? await supabase.from('gtk_ptk').select('id', { count: 'exact' })
+      // Fetch GTK/PTK - visible to admin, operator, and bendahara
+      const gtkRes = (isAdmin || isOperator || isBendahara)
+        ? await supabase.from('gtk_ptk').select('id, jenis_kelamin', { count: 'exact' })
         : { data: [], count: 0 };
+      const gtkData = gtkRes.data || [];
+      const gtkLaki = gtkData.filter((g: any) => g.jenis_kelamin === 'L' || g.jenis_kelamin === 'Laki-laki').length;
+      const gtkPerempuan = gtkData.filter((g: any) => g.jenis_kelamin === 'P' || g.jenis_kelamin === 'Perempuan').length;
       
       // Fetch pembayaran & pengeluaran - only visible to admin and bendahara
       const pembayaranRes = (isAdmin || isBendahara)
@@ -135,6 +142,8 @@ export default function Dashboard() {
         siswaPerempuan,
         totalKelas: kelasRes.count || 0,
         totalGtk: gtkRes.count || 0,
+        gtkLaki,
+        gtkPerempuan,
         totalTunggakan: tunggakan,
         totalPemasukan: pemasukan,
         totalPengeluaran: pengeluaran,
@@ -213,6 +222,30 @@ export default function Dashboard() {
           />
         )}
       </div>
+
+      {/* GTK Stats - Only for Admin and Bendahara */}
+      {(isAdmin || isBendahara) && (
+        <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <StatsCard
+            title="Total GTK/PTK"
+            value={stats.totalGtk}
+            icon={<UserCog className="h-5 w-5 sm:h-6 sm:w-6" />}
+            variant="default"
+          />
+          <StatsCard
+            title="GTK Laki-laki"
+            value={stats.gtkLaki}
+            icon={<UserCog className="h-5 w-5 sm:h-6 sm:w-6" />}
+            variant="info"
+          />
+          <StatsCard
+            title="GTK Perempuan"
+            value={stats.gtkPerempuan}
+            icon={<UserCog className="h-5 w-5 sm:h-6 sm:w-6" />}
+            variant="warning"
+          />
+        </div>
+      )}
 
       {/* Financial Stats - Only for Admin and Bendahara */}
       {(isAdmin || isBendahara) && (
