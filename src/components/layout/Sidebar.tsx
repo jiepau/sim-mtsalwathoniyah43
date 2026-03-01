@@ -34,6 +34,7 @@ import {
   User,
   ClipboardCheck,
   ClipboardList,
+  BarChart3,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -63,6 +64,7 @@ const allMenuItems: MenuItem[] = [
     children: [
       { title: 'Absensi Siswa', icon: ClipboardCheck, path: '/absensi-siswa' },
       { title: 'Absensi GTK', icon: ClipboardList, path: '/absensi-gtk' },
+      { title: 'Rekap Bulanan', icon: BarChart3, path: '/rekap-absensi' },
       { title: 'Kalender Akademik', icon: CalendarDays, path: '/kalender-akademik' },
     ],
     roles: ['admin', 'operator', 'guru']
