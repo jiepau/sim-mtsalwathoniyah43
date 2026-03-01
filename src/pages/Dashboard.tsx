@@ -83,9 +83,7 @@ export default function Dashboard() {
       const siswaPerempuan = siswaData.filter((s: any) => s.jenis_kelamin === 'P' || s.jenis_kelamin === 'Perempuan').length;
       
       // Fetch kelas - visible to admin and operator
-      const kelasRes = (isAdmin || isOperator) 
-        ? await supabase.from('kelas').select('id, nama_kelas', { count: 'exact' })
-        : { data: [], count: 0 };
+      const kelasRes = await supabase.from('kelas').select('id, nama_kelas', { count: 'exact' });
       
       // Fetch GTK/PTK - visible to admin, operator, and bendahara
       const gtkRes = (isAdmin || isOperator || isBendahara)
@@ -268,7 +266,6 @@ export default function Dashboard() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Bar Chart - Siswa per Kelas - Only for Admin and Operator */}
-        {(isAdmin || isOperator) && (
         <Card className="shadow-card">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">Siswa per Kelas</CardTitle>
@@ -297,7 +294,6 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
-        )}
 
         {/* Pie Chart - Keuangan */}
         <Card className="shadow-card">
