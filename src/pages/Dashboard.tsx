@@ -20,6 +20,8 @@ import { useSetupWizard } from '@/hooks/useSetupWizard';
 import { SetupWizardDialog } from '@/components/wizard/SetupWizardDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { ActivityLog } from '@/components/dashboard/ActivityLog';
+import { logActivity } from '@/lib/activity-logger';
 
 interface DashboardStats {
   totalSiswa: number;
@@ -331,6 +333,13 @@ export default function Dashboard() {
             icon={<TrendingDown className="h-5 w-5 sm:h-6 sm:w-6" />}
             variant="warning"
           />
+        </div>
+      )}
+
+      {/* Activity Log - Admin only */}
+      {isAdmin && (
+        <div className="mb-6 sm:mb-8">
+          <ActivityLog />
         </div>
       )}
 

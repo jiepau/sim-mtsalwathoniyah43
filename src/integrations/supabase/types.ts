@@ -110,6 +110,36 @@ export type Database = {
           },
         ]
       }
+      activity_logs: {
+        Row: {
+          action: string
+          created_at: string
+          description: string
+          id: string
+          user_id: string
+          user_name: string
+          user_role: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          description: string
+          id?: string
+          user_id: string
+          user_name: string
+          user_role?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          description?: string
+          id?: string
+          user_id?: string
+          user_name?: string
+          user_role?: string | null
+        }
+        Relationships: []
+      }
       alumni: {
         Row: {
           alamat: string | null
