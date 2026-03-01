@@ -65,7 +65,8 @@ export default function GtkPtkPage() {
   const [formData, setFormData] = useState({
     nip: '',
     nama: '',
-    jabatan: '',
+    jabatan_utama: '',
+    jabatan_tambahan: '',
     no_hp: '',
     alamat: '',
     nuptk: '',
@@ -77,6 +78,35 @@ export default function GtkPtkPage() {
     tanggal_lahir: undefined as Date | undefined,
     jenis_kelamin: '',
   });
+
+  // Helper: parse jabatan string into utama + tambahan
+  const parseJabatan = (jabatan: string | null) => {
+    if (!jabatan) return { utama: '', tambahan: '' };
+    const parts = jabatan.split(' - ').map(s => s.trim());
+    const validUtama = ['Guru', 'Tenaga Kependidikan'];
+    const validTambahan = ['Kepala Madrasah', 'Wakil Kurikulum', 'Wakil Kesiswaan'];
+    
+    if (parts.length === 2 && validUtama.includes(parts[0]) && validTambahan.includes(parts[1])) {
+      return { utama: parts[0], tambahan: parts[1] };
+    }
+    if (validUtama.includes(jabatan)) return { utama: jabatan, tambahan: '' };
+    if (validTambahan.includes(jabatan)) return { utama: 'Guru', tambahan: jabatan };
+    // Legacy: try to guess
+    const lower = jabatan.toLowerCase();
+    if (lower.includes('kepala madrasah')) return { utama: 'Guru', tambahan: 'Kepala Madrasah' };
+    if (lower.includes('wakil kurikulum')) return { utama: 'Guru', tambahan: 'Wakil Kurikulum' };
+    if (lower.includes('wakil kesiswaan')) return { utama: 'Guru', tambahan: 'Wakil Kesiswaan' };
+    if (lower.includes('guru')) return { utama: 'Guru', tambahan: '' };
+    if (lower.includes('tu') || lower.includes('tenaga')) return { utama: 'Tenaga Kependidikan', tambahan: '' };
+    return { utama: jabatan, tambahan: '' };
+  };
+
+  // Helper: combine jabatan utama + tambahan
+  const combineJabatan = (utama: string, tambahan: string) => {
+    if (!utama) return null;
+    if (!tambahan) return utama;
+    return `${utama} - ${tambahan}`;
+  };
 
   // Import configuration
   const importHeaders = ['NUPTK', 'NIP', 'NIK', 'Nama', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Jabatan', 'Lulusan', 'Mapel', 'No HP', 'Email', 'Alamat'];
@@ -166,10 +196,12 @@ export default function GtkPtkPage() {
   const handleOpenDialog = (gtk?: GtkPtk) => {
     if (gtk) {
       setEditingGtk(gtk);
+      const parsed = parseJabatan(gtk.jabatan);
       setFormData({
         nip: gtk.nip || '',
         nama: gtk.nama,
-        jabatan: gtk.jabatan || '',
+        jabatan_utama: parsed.utama,
+        jabatan_tambahan: parsed.tambahan,
         no_hp: gtk.no_hp || '',
         alamat: gtk.alamat || '',
         nuptk: gtk.nuptk || '',
@@ -184,7 +216,7 @@ export default function GtkPtkPage() {
     } else {
       setEditingGtk(null);
       setFormData({ 
-        nip: '', nama: '', jabatan: '', no_hp: '', alamat: '', 
+        nip: '', nama: '', jabatan_utama: '', jabatan_tambahan: '', no_hp: '', alamat: '', 
         nuptk: '', nik: '', lulusan: '', email: '', mapel: '',
         tempat_lahir: '', tanggal_lahir: undefined, jenis_kelamin: ''
       });
@@ -199,7 +231,7 @@ export default function GtkPtkPage() {
       const payload = {
         nip: formData.nip || null,
         nama: formData.nama,
-        jabatan: formData.jabatan || null,
+        jabatan: combineJabatan(formData.jabatan_utama, formData.jabatan_tambahan),
         no_hp: formData.no_hp || null,
         alamat: formData.alamat || null,
         nuptk: formData.nuptk || null,
@@ -272,14 +304,14 @@ export default function GtkPtkPage() {
       }
     });
 
-    // Jabatan breakdown - categorize as Guru or Tenaga Kependidikan
+    // Jabatan breakdown - use parseJabatan for consistency
     const guru = gtkPtk.filter(g => {
-      const j = g.jabatan?.toLowerCase() || '';
-      return j.includes('guru') || j.includes('pengajar') || j.includes('kepala sekolah') || j.includes('kepala madrasah');
+      const parsed = parseJabatan(g.jabatan);
+      return parsed.utama === 'Guru';
     }).length;
     const tendik = gtkPtk.filter(g => {
-      const j = g.jabatan?.toLowerCase() || '';
-      return j && !j.includes('guru') && !j.includes('pengajar') && !j.includes('kepala sekolah') && !j.includes('kepala madrasah');
+      const parsed = parseJabatan(g.jabatan);
+      return parsed.utama === 'Tenaga Kependidikan';
     }).length;
     const belumDiisi = gtkPtk.filter(g => !g.jabatan?.trim()).length;
 
@@ -582,14 +614,34 @@ export default function GtkPtkPage() {
                 max={format(new Date(), 'yyyy-MM-dd')}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="jabatan">Jabatan</Label>
-              <Input
-                id="jabatan"
-                value={formData.jabatan}
-                onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
-                placeholder="Contoh: Guru, Kepala Sekolah, TU"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Jabatan Utama</Label>
+                <Select value={formData.jabatan_utama || 'none'} onValueChange={(v) => setFormData({ ...formData, jabatan_utama: v === 'none' ? '' : v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih jabatan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">-- Pilih --</SelectItem>
+                    <SelectItem value="Guru">Guru</SelectItem>
+                    <SelectItem value="Tenaga Kependidikan">Tenaga Kependidikan</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Jabatan Tambahan</Label>
+                <Select value={formData.jabatan_tambahan || 'none'} onValueChange={(v) => setFormData({ ...formData, jabatan_tambahan: v === 'none' ? '' : v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Opsional" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">-- Tidak ada --</SelectItem>
+                    <SelectItem value="Kepala Madrasah">Kepala Madrasah</SelectItem>
+                    <SelectItem value="Wakil Kurikulum">Wakil Kurikulum</SelectItem>
+                    <SelectItem value="Wakil Kesiswaan">Wakil Kesiswaan</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
