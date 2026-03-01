@@ -165,15 +165,19 @@ const AbsensiGtk = () => {
 
   // Export data
   const exportData = useMemo(() => {
+    const formattedDate = format(new Date(selectedDate), 'd MMMM yyyy', { locale: idLocale });
+    const dayName = format(new Date(selectedDate), 'EEEE', { locale: idLocale });
     return gtkList.map((g, idx) => ({
       no: idx + 1,
+      tanggal: formattedDate,
+      hari: dayName,
       nama: g.nama,
       nip: g.nip || '-',
       jabatan: g.jabatan || '-',
       status: holidayInfo.isLibur ? 'Libur' : STATUS_CONFIG[absensiData[g.id]?.status || 'hadir'].label,
       keterangan: holidayInfo.isLibur ? holidayInfo.reason : (absensiData[g.id]?.keterangan || ''),
     }));
-  }, [gtkList, absensiData, holidayInfo]);
+  }, [gtkList, absensiData, holidayInfo, selectedDate]);
 
   const exportFilename = `Absensi_GTK_${selectedDate}`;
 
@@ -246,6 +250,8 @@ const AbsensiGtk = () => {
                   data={exportData}
                   columns={[
                     { header: 'No', accessor: (d) => d.no },
+                    { header: 'Tanggal', accessor: (d) => d.tanggal },
+                    { header: 'Hari', accessor: (d) => d.hari },
                     { header: 'Nama', accessor: (d) => d.nama },
                     { header: 'NIP', accessor: (d) => d.nip },
                     { header: 'Jabatan', accessor: (d) => d.jabatan },
