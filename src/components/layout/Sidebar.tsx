@@ -54,7 +54,7 @@ interface MenuItem {
 // All menu items with role restrictions
 const allMenuItems: MenuItem[] = [
   { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' }, // All roles
-  { title: 'Profil Saya', icon: User, path: '/profil-guru', roles: ['guru'] }, // Guru only
+  { title: 'Profil Saya', icon: User, path: '/profil-guru', roles: ['guru', 'bendahara'] },
   { title: 'Siswa', icon: Users, path: '/siswa', roles: ['admin', 'operator', 'bendahara'] }, // All roles can view (bendahara = read-only handled in page)
   { title: 'Kelas', icon: School, path: '/kelas', roles: ['admin', 'operator'] },
   { title: 'Tahun Ajaran', icon: Calendar, path: '/tahun-ajaran', roles: ['admin', 'operator'] },
