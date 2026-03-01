@@ -160,6 +160,14 @@ serve(async (req) => {
         await supabaseAdmin.from("user_roles").insert(rolesToInsert);
       }
 
+      // Save initial password to profiles for admin reference
+      if (newUser.user) {
+        await supabaseAdmin
+          .from("profiles")
+          .update({ initial_password: password })
+          .eq("user_id", newUser.user.id);
+      }
+
       return new Response(
         JSON.stringify({ success: true, user: { id: newUser.user?.id, email: newUser.user?.email, full_name } }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
