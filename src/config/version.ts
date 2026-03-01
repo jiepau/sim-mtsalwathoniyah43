@@ -1,8 +1,8 @@
 // Centralized version configuration
 // Update this file when releasing new versions
 
-export const APP_VERSION = "1.3.1";
-export const APP_BUILD_DATE = "2026-03-08";
+export const APP_VERSION = "1.4.0";
+export const APP_BUILD_DATE = "2026-03-15";
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,21 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "1.4.0",
+    date: "2026-03-15",
+    changes: [
+      "Notifikasi WhatsApp pengingat absensi GTK (pagi & siang) via Fonnte",
+      "Statistik gender GTK/PTK di Dashboard (Admin & Bendahara)",
+      "Modul Absensi Siswa & GTK dengan deteksi hari libur otomatis",
+      "Kalender Akademik untuk pengelolaan hari libur nasional & cuti bersama",
+      "Rekap Absensi bulanan dengan ekspor CSV",
+      "Absensi mandiri (Self-attendance) untuk role Guru",
+      "Activity Log realtime di Dashboard (khusus Admin)",
+      "Sistem Changelog untuk semua role (What's New popup + halaman Riwayat Pembaruan)",
+      "Perbaikan stabilitas login Google Sign-In (race condition & redirect)",
+    ],
+  },
   {
     version: "1.3.1",
     date: "2026-03-08",
