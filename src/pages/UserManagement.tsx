@@ -264,6 +264,9 @@ export default function UserManagement() {
     }
   };
 
+  // Check if user is a Google Sign-In user (no initial_password)
+  const isGoogleUser = (userData: UserWithRoles) => !userData.initial_password;
+
   // Approve pending user (assign role)
   const handleApproveUser = (userData: UserWithRoles) => {
     handleOpenEditDialog(userData);
@@ -480,8 +483,12 @@ export default function UserManagement() {
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription>Ubah data user {editingUser?.full_name}</DialogDescription>
+            <DialogTitle>{editingUser && editingUser.roles.length === 0 ? "Approve User" : "Edit User"}</DialogTitle>
+            <DialogDescription>
+              {editingUser && editingUser.roles.length === 0 
+                ? `Berikan role untuk ${editingUser?.full_name}` 
+                : `Ubah data user ${editingUser?.full_name}`}
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -506,29 +513,40 @@ export default function UserManagement() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="edit_password">Password Baru</Label>
-              <div className="relative">
-                <Input
-                  id="edit_password"
-                  type={showPassword ? "text" : "password"}
-                  value={editData.password}
-                  onChange={(e) => setEditData({ ...editData, password: e.target.value })}
-                  placeholder="Kosongkan jika tidak diubah"
-                  className="pr-10"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
+            {/* Hide password field for Google Sign-In users when approving */}
+            {!(editingUser && isGoogleUser(editingUser) && editingUser.roles.length === 0) && (
+              <div className="space-y-2">
+                <Label htmlFor="edit_password">Password Baru</Label>
+                <div className="relative">
+                  <Input
+                    id="edit_password"
+                    type={showPassword ? "text" : "password"}
+                    value={editData.password}
+                    onChange={(e) => setEditData({ ...editData, password: e.target.value })}
+                    placeholder="Kosongkan jika tidak diubah"
+                    className="pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">Minimal 6 karakter</p>
               </div>
-              <p className="text-xs text-muted-foreground">Minimal 6 karakter</p>
-            </div>
+            )}
+            
+            {editingUser && isGoogleUser(editingUser) && editingUser.roles.length === 0 && (
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-700">
+                  ℹ️ Akun ini terdaftar via Google Sign-In. Tidak perlu mengatur password — cukup pilih role lalu simpan.
+                </p>
+              </div>
+            )}
 
             <div className="space-y-3">
               <Label>

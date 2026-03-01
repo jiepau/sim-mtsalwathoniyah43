@@ -153,8 +153,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
         
-        // For SIGNED_IN when we already have roles (tab visibility change), skip refetch
-        if (event === 'SIGNED_IN' && rolesRef.current.length > 0 && newSession?.user) {
+        // For SIGNED_IN when we already have roles AND same user (tab visibility change), skip refetch
+        if (event === 'SIGNED_IN' && rolesRef.current.length > 0 && newSession?.user && 
+            newSession.user.id === user?.id) {
           setSession(newSession);
           setUser(newSession?.user ?? null);
           return;
