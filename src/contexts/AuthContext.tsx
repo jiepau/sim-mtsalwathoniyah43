@@ -27,8 +27,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   
   // Refs for preventing race conditions
   const isSigningIn = useRef(false);
-  const currentFetchId = useRef(0); // Track which fetch is "current"
+  const currentFetchId = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const rolesRef = useRef<AppRole[]>([]);
 
   // Memoized role fetcher with abort capability
   // silent = true means don't show loading spinner (for background refresh)
@@ -64,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (thisFetchId === currentFetchId.current) {
         console.log('fetchRoles success - fetchId:', thisFetchId, 'roles:', userRoles);
         setRoles(userRoles);
+        rolesRef.current = userRoles;
         if (!silent) {
           setRolesLoading(false);
         }
@@ -92,6 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         console.error('fetchRoles all retries failed');
         setRoles([]);
+        rolesRef.current = [];
         if (!silent) {
           setRolesLoading(false);
         }
@@ -151,7 +154,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         
         // For SIGNED_IN when we already have roles (tab visibility change), skip refetch
-        if (event === 'SIGNED_IN' && roles.length > 0 && newSession?.user) {
+        if (event === 'SIGNED_IN' && rolesRef.current.length > 0 && newSession?.user) {
           setSession(newSession);
           setUser(newSession?.user ?? null);
           return;
@@ -170,6 +173,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }, 100);
         } else {
           setRoles([]);
+          rolesRef.current = [];
         }
         
         setAuthLoading(false);
@@ -191,6 +195,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Reset state before signing in
     setRoles([]);
+    rolesRef.current = [];
     setRolesLoading(true);
     
     try {
@@ -240,6 +245,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('signOut: Starting...');
     // Clear roles immediately
     setRoles([]);
+    rolesRef.current = [];
     currentFetchId.current++; // Invalidate any in-flight fetches
     await supabase.auth.signOut();
     console.log('signOut: Complete');
