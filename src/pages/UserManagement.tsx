@@ -202,35 +202,25 @@ export default function UserManagement() {
       if (response.error) throw new Error(response.error.message);
       if (response.data?.error) throw new Error(response.data.error);
 
-      // Update GTK linkage if role includes guru
-      if (editData.roles.includes("guru")) {
-        // First, unlink any previously linked GTK for this user
-        if (editingUser.gtk_id && editingUser.gtk_id !== editData.gtk_id) {
-          await supabase
-            .from("gtk_ptk")
-            .update({ user_id: null })
-            .eq("id", editingUser.gtk_id);
-        }
+      // Update GTK linkage
+      // First, unlink any previously linked GTK for this user
+      if (editingUser.gtk_id && editingUser.gtk_id !== editData.gtk_id) {
+        await supabase
+          .from("gtk_ptk")
+          .update({ user_id: null })
+          .eq("id", editingUser.gtk_id);
+      }
+      
+      // Link new GTK if selected
+      if (editData.gtk_id) {
+        const { error: gtkError } = await supabase
+          .from("gtk_ptk")
+          .update({ user_id: editingUser.id })
+          .eq("id", editData.gtk_id);
         
-        // Link new GTK if selected
-        if (editData.gtk_id) {
-          const { error: gtkError } = await supabase
-            .from("gtk_ptk")
-            .update({ user_id: editingUser.id })
-            .eq("id", editData.gtk_id);
-          
-          if (gtkError) {
-            console.error("Error linking GTK:", gtkError);
-            toast.error("User diupdate, tapi gagal menghubungkan ke data GTK");
-          }
-        }
-      } else {
-        // If role no longer includes guru, unlink GTK
-        if (editingUser.gtk_id) {
-          await supabase
-            .from("gtk_ptk")
-            .update({ user_id: null })
-            .eq("id", editingUser.gtk_id);
+        if (gtkError) {
+          console.error("Error linking GTK:", gtkError);
+          toast.error("User diupdate, tapi gagal menghubungkan ke data GTK");
         }
       }
 
@@ -321,8 +311,8 @@ export default function UserManagement() {
         throw new Error(response.data.error);
       }
 
-      // Link GTK if role includes guru and gtk_id is selected
-      if (newUserData.roles.includes("guru") && newUserData.gtk_id && response.data?.user?.id) {
+      // Link GTK if gtk_id is selected
+      if (newUserData.gtk_id && response.data?.user?.id) {
         const { error: gtkError } = await supabase
           .from("gtk_ptk")
           .update({ user_id: response.data.user.id })
@@ -516,8 +506,8 @@ export default function UserManagement() {
               ))}
             </div>
 
-            {/* GTK Link dropdown - only show if guru role is selected */}
-            {editData.roles.includes("guru") && (
+            {/* GTK Link dropdown - show for all roles */}
+            {editData.roles.length > 0 && (
               <div className="space-y-2 p-3 border rounded-lg bg-muted/30">
                 <Label htmlFor="edit_gtk_id" className="flex items-center gap-2">
                   <Link2 className="h-4 w-4" />
@@ -542,7 +532,7 @@ export default function UserManagement() {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Menghubungkan akun dengan data GTK agar guru dapat melihat profil di halaman "Profil Saya"
+                  Menghubungkan akun dengan data GTK/PTK untuk sinkronisasi data
                 </p>
               </div>
             )}
@@ -641,8 +631,8 @@ export default function UserManagement() {
               ))}
             </div>
 
-            {/* GTK Link dropdown - only show if guru role is selected */}
-            {newUserData.roles.includes("guru") && (
+            {/* GTK Link dropdown - show for all roles */}
+            {newUserData.roles.length > 0 && (
               <div className="space-y-2 p-3 border rounded-lg bg-muted/30">
                 <Label htmlFor="new_gtk_id" className="flex items-center gap-2">
                   <Link2 className="h-4 w-4" />
@@ -667,7 +657,7 @@ export default function UserManagement() {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Menghubungkan akun dengan data GTK agar guru dapat melihat profil di halaman "Profil Saya"
+                  Menghubungkan akun dengan data GTK/PTK untuk sinkronisasi data
                 </p>
               </div>
             )}
