@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Shield, Plus, Pencil, Trash2, UserPlus, Eye, EyeOff, Link2, Download, CheckCircle, Users } from "lucide-react";
+import { Shield, Plus, Pencil, Trash2, UserPlus, Eye, EyeOff, Link2, Download, CheckCircle, Users, UserMinus } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
@@ -95,6 +95,9 @@ export default function UserManagement() {
   const [generateLoading, setGenerateLoading] = useState(false);
   const [generateResults, setGenerateResults] = useState<any>(null);
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
+
+  // Delete all student accounts
+  const [deleteStudentsLoading, setDeleteStudentsLoading] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -427,6 +430,38 @@ export default function UserManagement() {
       setGenerateLoading(false);
     }
   };
+  const handleDeleteAllStudentAccounts = async () => {
+    const siswaCount = users.filter(u => u.roles.includes("siswa")).length;
+    if (siswaCount === 0) {
+      toast.info("Tidak ada akun siswa yang terdaftar");
+      return;
+    }
+
+    const confirmText = prompt(
+      `Anda akan menghapus ${siswaCount} akun siswa.\n\nKetik "HAPUS AKUN SISWA" untuk konfirmasi:`
+    );
+    if (confirmText !== "HAPUS AKUN SISWA") {
+      if (confirmText !== null) toast.error("Teks konfirmasi tidak sesuai");
+      return;
+    }
+
+    setDeleteStudentsLoading(true);
+    try {
+      const response = await supabase.functions.invoke("delete-student-accounts");
+      if (response.error) throw new Error(response.error.message);
+      if (response.data?.error) throw new Error(response.data.error);
+
+      const { deleted, total } = response.data;
+      toast.success(`${deleted} dari ${total} akun siswa berhasil dihapus`);
+      fetchUsers();
+    } catch (error: any) {
+      console.error("Error deleting student accounts:", error);
+      toast.error(mapDatabaseError(error));
+    } finally {
+      setDeleteStudentsLoading(false);
+    }
+  };
+
   const columns = [
     {
       header: "Nama",
@@ -513,6 +548,10 @@ export default function UserManagement() {
             <Button variant="outline" onClick={handleGenerateStudentAccounts} disabled={generateLoading}>
               <Users className="h-4 w-4 mr-2" />
               {generateLoading ? "Generating..." : "Generate Akun Siswa"}
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteAllStudentAccounts} disabled={deleteStudentsLoading}>
+              <UserMinus className="h-4 w-4 mr-2" />
+              {deleteStudentsLoading ? "Menghapus..." : "Hapus Semua Akun Siswa"}
             </Button>
             <Button onClick={() => setCreateDialogOpen(true)}>
               <UserPlus className="h-4 w-4 mr-2" />
