@@ -75,7 +75,7 @@ export default function KelasPage() {
   const [kelas, setKelas] = useState<Kelas[]>([]);
   const [gtkList, setGtkList] = useState<GtkPtk[]>([]);
   const [tahunAjaranList, setTahunAjaranList] = useState<TahunAjaran[]>([]);
-  const [siswaList, setSiswaList] = useState<Siswa[]>([]);
+  const [siswaRiwayatList, setSiswaRiwayatList] = useState<SiswaRiwayat[]>([]);
   const [selectedTA, setSelectedTA] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -103,10 +103,10 @@ export default function KelasPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [kelasRes, taRes, siswaRes, gtkRes] = await Promise.all([
+      const [kelasRes, taRes, riwayatRes, gtkRes] = await Promise.all([
         supabase.from('kelas').select('*, wali_kelas:gtk_ptk!wali_kelas_id(id, nama, jabatan)').order('tingkat').order('nama_kelas'),
         supabase.from('tahun_ajaran').select('*').order('nama_ta', { ascending: false }),
-        supabase.from('siswa').select('id, kelas_id, ta_id'),
+        supabase.from('siswa_riwayat').select('id, siswa_id, kelas_id, ta_id, status'),
         supabase.from('gtk_ptk').select('id, nama, jabatan').order('nama'),
       ]);
 
