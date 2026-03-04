@@ -26,6 +26,7 @@ interface TahunAjaran {
   id: string;
   nama_ta: string;
   is_active: boolean;
+  semester: string | null;
 }
 
 interface Kelas {
