@@ -166,6 +166,7 @@ export default function AlumniPage() {
     }
   };
 
+  const formatPhoneNumber = (phone: string): string => {
     let cleaned = phone.replace(/[^0-9]/g, '');
     if (cleaned.startsWith('0')) {
       cleaned = '62' + cleaned.substring(1);
