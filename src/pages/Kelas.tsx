@@ -54,10 +54,12 @@ interface TahunAjaran {
   is_active: boolean | null;
 }
 
-interface Siswa {
+interface SiswaRiwayat {
   id: string;
-  kelas_id: string | null;
-  ta_id: string | null;
+  siswa_id: string;
+  kelas_id: string;
+  ta_id: string;
+  status: string;
 }
 
 interface TASummary {
@@ -73,7 +75,7 @@ export default function KelasPage() {
   const [kelas, setKelas] = useState<Kelas[]>([]);
   const [gtkList, setGtkList] = useState<GtkPtk[]>([]);
   const [tahunAjaranList, setTahunAjaranList] = useState<TahunAjaran[]>([]);
-  const [siswaList, setSiswaList] = useState<Siswa[]>([]);
+  const [siswaRiwayatList, setSiswaRiwayatList] = useState<SiswaRiwayat[]>([]);
   const [selectedTA, setSelectedTA] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -101,21 +103,21 @@ export default function KelasPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [kelasRes, taRes, siswaRes, gtkRes] = await Promise.all([
+      const [kelasRes, taRes, riwayatRes, gtkRes] = await Promise.all([
         supabase.from('kelas').select('*, wali_kelas:gtk_ptk!wali_kelas_id(id, nama, jabatan)').order('tingkat').order('nama_kelas'),
         supabase.from('tahun_ajaran').select('*').order('nama_ta', { ascending: false }),
-        supabase.from('siswa').select('id, kelas_id, ta_id'),
+        supabase.from('siswa_riwayat').select('id, siswa_id, kelas_id, ta_id, status'),
         supabase.from('gtk_ptk').select('id, nama, jabatan').order('nama'),
       ]);
 
       if (kelasRes.error) throw kelasRes.error;
       if (taRes.error) throw taRes.error;
-      if (siswaRes.error) throw siswaRes.error;
+      if (riwayatRes.error) throw riwayatRes.error;
       if (gtkRes.error) throw gtkRes.error;
 
       setKelas(kelasRes.data || []);
       setTahunAjaranList(taRes.data || []);
-      setSiswaList(siswaRes.data || []);
+      setSiswaRiwayatList(riwayatRes.data || []);
       setGtkList(gtkRes.data || []);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -127,22 +129,20 @@ export default function KelasPage() {
 
   // Calculate siswa count per kelas based on selected TA
   const kelasWithCount = useMemo(() => {
-    const filteredSiswa = selectedTA === 'all' 
-      ? siswaList 
-      : siswaList.filter(s => s.ta_id === selectedTA);
+    const filteredRiwayat = selectedTA === 'all' 
+      ? siswaRiwayatList 
+      : siswaRiwayatList.filter(s => s.ta_id === selectedTA);
 
     const siswaCount = new Map<string, number>();
-    filteredSiswa.forEach(s => {
-      if (s.kelas_id) {
-        siswaCount.set(s.kelas_id, (siswaCount.get(s.kelas_id) || 0) + 1);
-      }
+    filteredRiwayat.forEach(s => {
+      siswaCount.set(s.kelas_id, (siswaCount.get(s.kelas_id) || 0) + 1);
     });
 
     return kelas.map(k => ({
       ...k,
       siswa_count: siswaCount.get(k.id) || 0,
     }));
-  }, [kelas, siswaList, selectedTA]);
+  }, [kelas, siswaRiwayatList, selectedTA]);
 
   // Calculate total siswa for selected TA
   const totalSiswa = useMemo(() => {
@@ -163,10 +163,10 @@ export default function KelasPage() {
   // Generate chart data comparing all TAs
   const chartData = useMemo(() => {
     const data: TASummary[] = tahunAjaranList.map(ta => {
-      const taSiswa = siswaList.filter(s => s.ta_id === ta.id);
+      const taRiwayat = siswaRiwayatList.filter(s => s.ta_id === ta.id);
       
       let kelas7 = 0, kelas8 = 0, kelas9 = 0;
-      taSiswa.forEach(s => {
+      taRiwayat.forEach(s => {
         const kelasData = kelas.find(k => k.id === s.kelas_id);
         if (kelasData) {
           if (kelasData.tingkat === 7) kelas7++;
@@ -178,15 +178,15 @@ export default function KelasPage() {
       const semesterLabel = ta.semester === 'genap' ? 'Genap' : 'Ganjil';
       return {
         ta_name: `${ta.nama_ta} ${semesterLabel}`,
-        total: taSiswa.length,
+        total: taRiwayat.length,
         kelas7,
         kelas8,
         kelas9,
       };
-    }).reverse(); // Show oldest first
+    }).reverse();
 
     return data;
-  }, [tahunAjaranList, siswaList, kelas]);
+  }, [tahunAjaranList, siswaRiwayatList, kelas]);
 
   const handleOpenDialog = (kelasData?: Kelas) => {
     if (kelasData) {

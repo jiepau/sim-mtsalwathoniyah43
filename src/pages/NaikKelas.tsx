@@ -231,7 +231,24 @@ export default function NaikKelas() {
       const lulusSiswa = siswaAssignments.filter(s => s.isLulus);
       const naikKelasSiswa = siswaAssignments.filter(s => !s.isLulus);
 
-      // 1. Pindahkan siswa lulus ke alumni
+      // 1. Simpan riwayat posisi lama untuk SEMUA siswa sebelum pindah
+      const allRiwayatInserts = siswaAssignments
+        .filter(s => s.kelas_id && s.ta_id)
+        .map(s => ({
+          siswa_id: s.id,
+          kelas_id: s.kelas_id!,
+          ta_id: s.ta_id!,
+          status: s.isLulus ? 'lulus' : 'naik_kelas',
+        }));
+
+      if (allRiwayatInserts.length > 0) {
+        const { error: riwayatError } = await supabase
+          .from('siswa_riwayat')
+          .upsert(allRiwayatInserts, { onConflict: 'siswa_id,kelas_id,ta_id' });
+        if (riwayatError) console.error('Error inserting riwayat lama:', riwayatError);
+      }
+
+      // 2. Pindahkan siswa lulus ke alumni
       for (const item of lulusSiswa) {
         await supabase.from('alumni').insert({
           nis: item.nis,
@@ -248,12 +265,24 @@ export default function NaikKelas() {
         await supabase.from('siswa').delete().eq('id', item.id);
       }
 
-      // 2. Update siswa yang naik kelas
+      // 3. Update siswa yang naik kelas & simpan riwayat baru
       for (const item of naikKelasSiswa) {
+        const newKelasId = item.kelasBaru?.id || item.kelas_id;
+        
         await supabase.from('siswa').update({
-          kelas_id: item.kelasBaru?.id || item.kelas_id,
+          kelas_id: newKelasId,
           ta_id: tahunAjaranBaru,
         }).eq('id', item.id);
+
+        // Insert riwayat posisi baru
+        if (newKelasId) {
+          await supabase.from('siswa_riwayat').upsert({
+            siswa_id: item.id,
+            kelas_id: newKelasId,
+            ta_id: tahunAjaranBaru,
+            status: 'aktif',
+          }, { onConflict: 'siswa_id,kelas_id,ta_id' });
+        }
       }
 
       // 3. Set TA baru sebagai aktif
