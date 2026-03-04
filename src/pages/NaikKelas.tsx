@@ -49,6 +49,7 @@ interface SiswaWithAssignment extends Siswa {
   kelasLama: Kelas | null;
   kelasBaru: Kelas | null;
   isLulus: boolean;
+  isTingkatAkhir: boolean;
   selected: boolean;
 }
 
@@ -125,11 +126,13 @@ export default function NaikKelas() {
 
     const assignments: SiswaWithAssignment[] = siswaFromTaLama.map(siswa => {
       const kelasLama = kelasList.find(k => k.id === siswa.kelas_id) || null;
-      const isLulus = kelasLama ? kelasLama.tingkat >= 9 : false;
+      // Kelas 9 TIDAK otomatis lulus - admin harus pilih manual
+      const isTingkatAkhir = kelasLama ? kelasLama.tingkat >= 9 : false;
+      const isLulus = false;
       
       // Default: suggest next tingkat kelas (first one found)
       let kelasBaru: Kelas | null = null;
-      if (!isLulus && kelasLama) {
+      if (kelasLama) {
         const nextTingkat = kelasLama.tingkat + 1;
         kelasBaru = kelasList.find(k => k.tingkat === nextTingkat) || null;
       }
@@ -139,6 +142,7 @@ export default function NaikKelas() {
         kelasLama,
         kelasBaru,
         isLulus,
+        isTingkatAkhir,
         selected: false,
       };
     });
@@ -171,6 +175,21 @@ export default function NaikKelas() {
     const kelasBaru = kelasList.find(k => k.id === kelasBaruId) || null;
     setSiswaAssignments(prev => prev.map(s => 
       s.id === siswaId ? { ...s, kelasBaru } : s
+    ));
+  };
+
+  const toggleLulus = (siswaId: string) => {
+    setSiswaAssignments(prev => prev.map(s => 
+      s.id === siswaId ? { ...s, isLulus: !s.isLulus, kelasBaru: !s.isLulus ? null : s.kelasBaru } : s
+    ));
+  };
+
+  const toggleLulusAll = (siswas: SiswaWithAssignment[]) => {
+    const allLulus = siswas.every(s => s.isLulus);
+    setSiswaAssignments(prev => prev.map(s => 
+      siswas.some(ss => ss.id === s.id) 
+        ? { ...s, isLulus: !allLulus, kelasBaru: !allLulus ? null : s.kelasBaru } 
+        : s
     ));
   };
 
@@ -442,7 +461,18 @@ export default function NaikKelas() {
                       <Users className="h-5 w-5" />
                       {kelasName} ({siswas.length} siswa)
                     </CardTitle>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
+                      {currentTingkat >= 9 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => toggleLulusAll(siswas)}
+                          className="text-xs"
+                        >
+                          <GraduationCap className="h-3 w-3 mr-1" />
+                          {siswas.every(s => s.isLulus) ? 'Batal Semua Lulus' : 'Tandai Semua Lulus'}
+                        </Button>
+                      )}
                       <Checkbox 
                         checked={allSelected}
                         onCheckedChange={() => {
@@ -475,23 +505,43 @@ export default function NaikKelas() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant="secondary">{kelasName}</Badge>
-                          <span>→</span>
-                          <Select 
-                            value={item.kelasBaru?.id || ''} 
-                            onValueChange={(val) => updateSiswaKelas(item.id, val)}
-                          >
-                            <SelectTrigger className="w-32 h-8">
-                              <SelectValue placeholder="Pilih kelas" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {availableKelas.map(k => (
-                                <SelectItem key={k.id} value={k.id}>
-                                  {k.nama_kelas}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          {item.isTingkatAkhir && (
+                            <Button
+                              variant={item.isLulus ? "default" : "outline"}
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => toggleLulus(item.id)}
+                            >
+                              <GraduationCap className="h-3 w-3 mr-1" />
+                              {item.isLulus ? 'Lulus ✓' : 'Tandai Lulus'}
+                            </Button>
+                          )}
+                          {!item.isLulus && (
+                            <>
+                              <Badge variant="secondary">{kelasName}</Badge>
+                              <span>→</span>
+                              <Select 
+                                value={item.kelasBaru?.id || ''} 
+                                onValueChange={(val) => updateSiswaKelas(item.id, val)}
+                              >
+                                <SelectTrigger className="w-32 h-8">
+                                  <SelectValue placeholder="Pilih kelas" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {kelasList.map(k => (
+                                    <SelectItem key={k.id} value={k.id}>
+                                      {k.nama_kelas}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </>
+                          )}
+                          {item.isLulus && (
+                            <Badge variant="outline" className="text-success border-success">
+                              → Alumni
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -535,7 +585,7 @@ export default function NaikKelas() {
             <AlertDescription>
               <ul className="list-disc list-inside mt-2 space-y-1">
                 <li>Proses ini <strong>tidak dapat dibatalkan</strong></li>
-                <li>Siswa kelas 9 akan dipindahkan ke tabel Alumni</li>
+                <li>Siswa yang ditandai <strong>"Lulus"</strong> akan dipindahkan ke tabel Alumni</li>
                 <li>Tunggakan siswa <strong>tidak akan dihapus</strong> dan tetap tercatat</li>
                 <li>Tahun ajaran baru akan diaktifkan secara otomatis</li>
               </ul>
