@@ -49,6 +49,7 @@ interface SiswaWithAssignment extends Siswa {
   kelasLama: Kelas | null;
   kelasBaru: Kelas | null;
   isLulus: boolean;
+  isTingkatAkhir: boolean;
   selected: boolean;
 }
 
