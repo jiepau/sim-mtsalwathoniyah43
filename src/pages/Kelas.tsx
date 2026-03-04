@@ -112,12 +112,12 @@ export default function KelasPage() {
 
       if (kelasRes.error) throw kelasRes.error;
       if (taRes.error) throw taRes.error;
-      if (siswaRes.error) throw siswaRes.error;
+      if (riwayatRes.error) throw riwayatRes.error;
       if (gtkRes.error) throw gtkRes.error;
 
       setKelas(kelasRes.data || []);
       setTahunAjaranList(taRes.data || []);
-      setSiswaList(siswaRes.data || []);
+      setSiswaRiwayatList(riwayatRes.data || []);
       setGtkList(gtkRes.data || []);
     } catch (error) {
       console.error('Error fetching data:', error);
