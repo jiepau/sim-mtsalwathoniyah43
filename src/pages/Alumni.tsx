@@ -147,7 +147,25 @@ export default function AlumniPage() {
     }
   };
 
-  const formatPhoneNumber = (phone: string): string => {
+  const handleDeleteAllAlumni = async () => {
+    if (confirmText !== 'HAPUS ALUMNI') return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase.from('alumni').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (error) throw error;
+      setAlumni([]);
+      setTunggakanMap({});
+      setConfirmDeleteOpen(false);
+      setConfirmText('');
+      toast({ title: 'Berhasil', description: 'Semua data alumni telah dihapus' });
+    } catch (error) {
+      console.error('Error deleting alumni:', error);
+      toast({ title: 'Error', description: mapDatabaseError(error), variant: 'destructive' });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
     let cleaned = phone.replace(/[^0-9]/g, '');
     if (cleaned.startsWith('0')) {
       cleaned = '62' + cleaned.substring(1);
