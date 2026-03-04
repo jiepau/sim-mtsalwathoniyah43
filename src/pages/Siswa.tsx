@@ -179,12 +179,26 @@ export default function SiswaPage() {
       }
     }
 
-    // Try dd/MM/yyyy format
+    // Try dd/MM/yyyy or M/D/YYYY format (auto-detect by checking if values are valid)
     const slashMatch = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
     if (slashMatch) {
-      const day = slashMatch[1].padStart(2, '0');
-      const month = slashMatch[2].padStart(2, '0');
+      const part1 = parseInt(slashMatch[1]);
+      const part2 = parseInt(slashMatch[2]);
       const year = slashMatch[3];
+      
+      // If part2 > 12, assume M/D/YYYY (US/Excel format: month first)
+      // If part1 > 12, assume DD/MM/YYYY (day first)
+      // If both <= 12, default to DD/MM/YYYY
+      let day: string, month: string;
+      if (part2 > 12 && part1 <= 12) {
+        // M/D/YYYY format (e.g., 3/23/2010 → month=3, day=23)
+        month = part1.toString().padStart(2, '0');
+        day = part2.toString().padStart(2, '0');
+      } else {
+        // DD/MM/YYYY format (e.g., 23/03/2010 → day=23, month=03)
+        day = part1.toString().padStart(2, '0');
+        month = part2.toString().padStart(2, '0');
+      }
       return `${year}-${month}-${day}`;
     }
 
