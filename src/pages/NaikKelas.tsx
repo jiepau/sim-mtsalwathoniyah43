@@ -461,7 +461,18 @@ export default function NaikKelas() {
                       <Users className="h-5 w-5" />
                       {kelasName} ({siswas.length} siswa)
                     </CardTitle>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
+                      {currentTingkat >= 9 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => toggleLulusAll(siswas)}
+                          className="text-xs"
+                        >
+                          <GraduationCap className="h-3 w-3 mr-1" />
+                          {siswas.every(s => s.isLulus) ? 'Batal Semua Lulus' : 'Tandai Semua Lulus'}
+                        </Button>
+                      )}
                       <Checkbox 
                         checked={allSelected}
                         onCheckedChange={() => {
