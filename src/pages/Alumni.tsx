@@ -378,6 +378,37 @@ export default function AlumniPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete All Confirmation */}
+      <AlertDialog open={confirmDeleteOpen} onOpenChange={(open) => { setConfirmDeleteOpen(open); if (!open) setConfirmText(''); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus Semua Data Alumni?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tindakan ini akan menghapus <strong>{alumni.length}</strong> data alumni secara permanen. Data yang sudah dihapus tidak dapat dikembalikan.
+              <br /><br />
+              Ketik <strong>HAPUS ALUMNI</strong> untuk mengkonfirmasi:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+            placeholder="Ketik HAPUS ALUMNI"
+            className="mt-2"
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAllAlumni}
+              disabled={confirmText !== 'HAPUS ALUMNI' || deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+              Hapus Semua
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
