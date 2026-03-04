@@ -125,11 +125,12 @@ export default function NaikKelas() {
 
     const assignments: SiswaWithAssignment[] = siswaFromTaLama.map(siswa => {
       const kelasLama = kelasList.find(k => k.id === siswa.kelas_id) || null;
-      const isLulus = kelasLama ? kelasLama.tingkat >= 9 : false;
+      // Kelas 9 TIDAK otomatis lulus - admin harus pilih manual
+      const isLulus = false;
       
       // Default: suggest next tingkat kelas (first one found)
       let kelasBaru: Kelas | null = null;
-      if (!isLulus && kelasLama) {
+      if (kelasLama) {
         const nextTingkat = kelasLama.tingkat + 1;
         kelasBaru = kelasList.find(k => k.tingkat === nextTingkat) || null;
       }
