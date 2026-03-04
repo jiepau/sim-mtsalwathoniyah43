@@ -268,14 +268,23 @@ export default function SiswaPage() {
           }
         }
 
-        // Find ta_id by name
+        // Find ta_id by name (support combined format like "2023/2024 Ganjil")
         let taId: string | null = null;
         if (taNama) {
-          const foundTa = tahunAjaran.find(ta => ta.nama_ta.toLowerCase() === taNama.toLowerCase());
+          const taNamaLower = taNama.toLowerCase().trim();
+          const foundTa = tahunAjaran.find(ta => {
+            // Match exact nama_ta
+            if (ta.nama_ta.toLowerCase() === taNamaLower) return true;
+            // Match combined "nama_ta semester" format
+            const combined = `${ta.nama_ta} ${ta.semester || ''}`.trim().toLowerCase();
+            if (combined === taNamaLower) return true;
+            return false;
+          });
           if (foundTa) {
             taId = foundTa.id;
           } else {
-            throw new Error(`Tahun Ajaran "${taNama}" tidak ditemukan. TA yang tersedia: ${tahunAjaran.map(t => t.nama_ta).join(', ')}`);
+            const taList = tahunAjaran.map(t => `${t.nama_ta} ${t.semester || ''}`.trim());
+            throw new Error(`Tahun Ajaran "${taNama}" tidak ditemukan. TA yang tersedia: ${taList.join(', ')}`);
           }
         }
 
