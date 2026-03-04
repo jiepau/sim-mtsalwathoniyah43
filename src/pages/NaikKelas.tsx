@@ -178,6 +178,21 @@ export default function NaikKelas() {
     ));
   };
 
+  const toggleLulus = (siswaId: string) => {
+    setSiswaAssignments(prev => prev.map(s => 
+      s.id === siswaId ? { ...s, isLulus: !s.isLulus, kelasBaru: !s.isLulus ? null : s.kelasBaru } : s
+    ));
+  };
+
+  const toggleLulusAll = (siswas: SiswaWithAssignment[]) => {
+    const allLulus = siswas.every(s => s.isLulus);
+    setSiswaAssignments(prev => prev.map(s => 
+      siswas.some(ss => ss.id === s.id) 
+        ? { ...s, isLulus: !allLulus, kelasBaru: !allLulus ? null : s.kelasBaru } 
+        : s
+    ));
+  };
+
   const applyBulkAssignment = () => {
     if (!bulkTargetKelas) {
       toast({ title: 'Peringatan', description: 'Pilih kelas tujuan terlebih dahulu', variant: 'destructive' });
