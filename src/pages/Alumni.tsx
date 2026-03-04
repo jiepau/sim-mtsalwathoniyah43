@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { GraduationCap, Search, Phone, Loader2, AlertCircle, Banknote } from 'lucide-react';
+import { GraduationCap, Search, Phone, Loader2, AlertCircle, Banknote, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
 
 interface Alumni {
   id: string;
@@ -51,6 +62,10 @@ export default function AlumniPage() {
   const [selectedAlumni, setSelectedAlumni] = useState<Alumni | null>(null);
   const [tunggakanList, setTunggakanList] = useState<Tunggakan[]>([]);
   const [loadingTunggakan, setLoadingTunggakan] = useState(false);
+
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchAlumni();
@@ -132,6 +147,25 @@ export default function AlumniPage() {
     }
   };
 
+  const handleDeleteAllAlumni = async () => {
+    if (confirmText !== 'HAPUS ALUMNI') return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase.from('alumni').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (error) throw error;
+      setAlumni([]);
+      setTunggakanMap({});
+      setConfirmDeleteOpen(false);
+      setConfirmText('');
+      toast({ title: 'Berhasil', description: 'Semua data alumni telah dihapus' });
+    } catch (error) {
+      console.error('Error deleting alumni:', error);
+      toast({ title: 'Error', description: mapDatabaseError(error), variant: 'destructive' });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const formatPhoneNumber = (phone: string): string => {
     let cleaned = phone.replace(/[^0-9]/g, '');
     if (cleaned.startsWith('0')) {
@@ -202,11 +236,23 @@ export default function AlumniPage() {
 
   return (
     <div className="animate-fadeIn space-y-6">
-      <PageHeader 
-        title="Data Alumni" 
-        description="Daftar siswa yang telah lulus"
-        icon={<GraduationCap className="h-6 w-6" />}
-      />
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <PageHeader 
+          title="Data Alumni" 
+          description="Daftar siswa yang telah lulus"
+          icon={<GraduationCap className="h-6 w-6" />}
+        />
+        {alumni.length > 0 && (
+          <Button 
+            variant="destructive" 
+            size="sm"
+            onClick={() => setConfirmDeleteOpen(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Hapus Semua Alumni
+          </Button>
+        )}
+      </div>
 
       {/* Summary Cards */}
       {totalTunggakan > 0 && (
@@ -333,6 +379,37 @@ export default function AlumniPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete All Confirmation */}
+      <AlertDialog open={confirmDeleteOpen} onOpenChange={(open) => { setConfirmDeleteOpen(open); if (!open) setConfirmText(''); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus Semua Data Alumni?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tindakan ini akan menghapus <strong>{alumni.length}</strong> data alumni secara permanen. Data yang sudah dihapus tidak dapat dikembalikan.
+              <br /><br />
+              Ketik <strong>HAPUS ALUMNI</strong> untuk mengkonfirmasi:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+            placeholder="Ketik HAPUS ALUMNI"
+            className="mt-2"
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAllAlumni}
+              disabled={confirmText !== 'HAPUS ALUMNI' || deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+              Hapus Semua
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
