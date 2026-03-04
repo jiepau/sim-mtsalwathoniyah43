@@ -129,22 +129,20 @@ export default function KelasPage() {
 
   // Calculate siswa count per kelas based on selected TA
   const kelasWithCount = useMemo(() => {
-    const filteredSiswa = selectedTA === 'all' 
-      ? siswaList 
-      : siswaList.filter(s => s.ta_id === selectedTA);
+    const filteredRiwayat = selectedTA === 'all' 
+      ? siswaRiwayatList 
+      : siswaRiwayatList.filter(s => s.ta_id === selectedTA);
 
     const siswaCount = new Map<string, number>();
-    filteredSiswa.forEach(s => {
-      if (s.kelas_id) {
-        siswaCount.set(s.kelas_id, (siswaCount.get(s.kelas_id) || 0) + 1);
-      }
+    filteredRiwayat.forEach(s => {
+      siswaCount.set(s.kelas_id, (siswaCount.get(s.kelas_id) || 0) + 1);
     });
 
     return kelas.map(k => ({
       ...k,
       siswa_count: siswaCount.get(k.id) || 0,
     }));
-  }, [kelas, siswaList, selectedTA]);
+  }, [kelas, siswaRiwayatList, selectedTA]);
 
   // Calculate total siswa for selected TA
   const totalSiswa = useMemo(() => {
@@ -165,10 +163,10 @@ export default function KelasPage() {
   // Generate chart data comparing all TAs
   const chartData = useMemo(() => {
     const data: TASummary[] = tahunAjaranList.map(ta => {
-      const taSiswa = siswaList.filter(s => s.ta_id === ta.id);
+      const taRiwayat = siswaRiwayatList.filter(s => s.ta_id === ta.id);
       
       let kelas7 = 0, kelas8 = 0, kelas9 = 0;
-      taSiswa.forEach(s => {
+      taRiwayat.forEach(s => {
         const kelasData = kelas.find(k => k.id === s.kelas_id);
         if (kelasData) {
           if (kelasData.tingkat === 7) kelas7++;
@@ -180,15 +178,15 @@ export default function KelasPage() {
       const semesterLabel = ta.semester === 'genap' ? 'Genap' : 'Ganjil';
       return {
         ta_name: `${ta.nama_ta} ${semesterLabel}`,
-        total: taSiswa.length,
+        total: taRiwayat.length,
         kelas7,
         kelas8,
         kelas9,
       };
-    }).reverse(); // Show oldest first
+    }).reverse();
 
     return data;
-  }, [tahunAjaranList, siswaList, kelas]);
+  }, [tahunAjaranList, siswaRiwayatList, kelas]);
 
   const handleOpenDialog = (kelasData?: Kelas) => {
     if (kelasData) {
