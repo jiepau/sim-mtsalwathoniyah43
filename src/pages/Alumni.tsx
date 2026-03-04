@@ -235,11 +235,23 @@ export default function AlumniPage() {
 
   return (
     <div className="animate-fadeIn space-y-6">
-      <PageHeader 
-        title="Data Alumni" 
-        description="Daftar siswa yang telah lulus"
-        icon={<GraduationCap className="h-6 w-6" />}
-      />
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <PageHeader 
+          title="Data Alumni" 
+          description="Daftar siswa yang telah lulus"
+          icon={<GraduationCap className="h-6 w-6" />}
+        />
+        {alumni.length > 0 && (
+          <Button 
+            variant="destructive" 
+            size="sm"
+            onClick={() => setConfirmDeleteOpen(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Hapus Semua Alumni
+          </Button>
+        )}
+      </div>
 
       {/* Summary Cards */}
       {totalTunggakan > 0 && (
