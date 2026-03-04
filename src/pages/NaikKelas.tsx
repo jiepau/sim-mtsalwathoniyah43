@@ -494,23 +494,43 @@ export default function NaikKelas() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant="secondary">{kelasName}</Badge>
-                          <span>→</span>
-                          <Select 
-                            value={item.kelasBaru?.id || ''} 
-                            onValueChange={(val) => updateSiswaKelas(item.id, val)}
-                          >
-                            <SelectTrigger className="w-32 h-8">
-                              <SelectValue placeholder="Pilih kelas" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {availableKelas.map(k => (
-                                <SelectItem key={k.id} value={k.id}>
-                                  {k.nama_kelas}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          {item.isTingkatAkhir && (
+                            <Button
+                              variant={item.isLulus ? "default" : "outline"}
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => toggleLulus(item.id)}
+                            >
+                              <GraduationCap className="h-3 w-3 mr-1" />
+                              {item.isLulus ? 'Lulus ✓' : 'Tandai Lulus'}
+                            </Button>
+                          )}
+                          {!item.isLulus && (
+                            <>
+                              <Badge variant="secondary">{kelasName}</Badge>
+                              <span>→</span>
+                              <Select 
+                                value={item.kelasBaru?.id || ''} 
+                                onValueChange={(val) => updateSiswaKelas(item.id, val)}
+                              >
+                                <SelectTrigger className="w-32 h-8">
+                                  <SelectValue placeholder="Pilih kelas" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {kelasList.map(k => (
+                                    <SelectItem key={k.id} value={k.id}>
+                                      {k.nama_kelas}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </>
+                          )}
+                          {item.isLulus && (
+                            <Badge variant="outline" className="text-success border-success">
+                              → Alumni
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     ))}
