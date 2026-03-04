@@ -63,6 +63,10 @@ export default function AlumniPage() {
   const [tunggakanList, setTunggakanList] = useState<Tunggakan[]>([]);
   const [loadingTunggakan, setLoadingTunggakan] = useState(false);
 
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
+
   useEffect(() => {
     fetchAlumni();
   }, []);
