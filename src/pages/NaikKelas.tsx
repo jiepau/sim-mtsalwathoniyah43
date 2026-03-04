@@ -112,7 +112,12 @@ export default function NaikKelas() {
 
     const siswaFromTaLama = siswaList.filter(s => s.ta_id === tahunAjaranLama);
     
-    const taLamaName = tahunAjaranList.find(ta => ta.id === tahunAjaranLama)?.nama_ta || '';
+    const taLama = tahunAjaranList.find(ta => ta.id === tahunAjaranLama);
+    const taBaru = tahunAjaranList.find(ta => ta.id === tahunAjaranBaru);
+    const taLamaName = taLama?.nama_ta || '';
+
+    // Detect if this is a semester change (same nama_ta) vs grade promotion (different nama_ta)
+    const isSemesterChange = taLama && taBaru && taLama.nama_ta === taBaru.nama_ta;
 
     if (siswaFromTaLama.length === 0) {
       toast({ 
@@ -126,15 +131,19 @@ export default function NaikKelas() {
 
     const assignments: SiswaWithAssignment[] = siswaFromTaLama.map(siswa => {
       const kelasLama = kelasList.find(k => k.id === siswa.kelas_id) || null;
-      // Kelas 9 TIDAK otomatis lulus - admin harus pilih manual
       const isTingkatAkhir = kelasLama ? kelasLama.tingkat >= 9 : false;
       const isLulus = false;
       
-      // Default: suggest next tingkat kelas (first one found)
       let kelasBaru: Kelas | null = null;
       if (kelasLama) {
-        const nextTingkat = kelasLama.tingkat + 1;
-        kelasBaru = kelasList.find(k => k.tingkat === nextTingkat) || null;
+        if (isSemesterChange) {
+          // Semester change: keep same class
+          kelasBaru = kelasLama;
+        } else {
+          // Grade promotion: suggest next tingkat
+          const nextTingkat = kelasLama.tingkat + 1;
+          kelasBaru = kelasList.find(k => k.tingkat === nextTingkat) || null;
+        }
       }
 
       return {
