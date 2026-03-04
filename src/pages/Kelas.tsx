@@ -54,10 +54,12 @@ interface TahunAjaran {
   is_active: boolean | null;
 }
 
-interface Siswa {
+interface SiswaRiwayat {
   id: string;
-  kelas_id: string | null;
-  ta_id: string | null;
+  siswa_id: string;
+  kelas_id: string;
+  ta_id: string;
+  status: string;
 }
 
 interface TASummary {
