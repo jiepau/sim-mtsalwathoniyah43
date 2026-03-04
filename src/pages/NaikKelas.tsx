@@ -316,7 +316,7 @@ export default function NaikKelas() {
                 <SelectContent>
                   {tahunAjaranList.map(ta => (
                     <SelectItem key={ta.id} value={ta.id}>
-                      {ta.nama_ta} {ta.is_active && '(Aktif)'}
+                      {ta.nama_ta} {ta.semester ? `(${ta.semester === 'ganjil' ? 'Ganjil' : 'Genap'})` : ''} {ta.is_active && '— Aktif'}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -332,7 +332,7 @@ export default function NaikKelas() {
                 <SelectContent>
                   {tahunAjaranList.map(ta => (
                     <SelectItem key={ta.id} value={ta.id}>
-                      {ta.nama_ta}
+                      {ta.nama_ta} {ta.semester ? `(${ta.semester === 'ganjil' ? 'Ganjil' : 'Genap'})` : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>
