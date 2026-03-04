@@ -127,6 +127,7 @@ export default function NaikKelas() {
     const assignments: SiswaWithAssignment[] = siswaFromTaLama.map(siswa => {
       const kelasLama = kelasList.find(k => k.id === siswa.kelas_id) || null;
       // Kelas 9 TIDAK otomatis lulus - admin harus pilih manual
+      const isTingkatAkhir = kelasLama ? kelasLama.tingkat >= 9 : false;
       const isLulus = false;
       
       // Default: suggest next tingkat kelas (first one found)
@@ -141,6 +142,7 @@ export default function NaikKelas() {
         kelasLama,
         kelasBaru,
         isLulus,
+        isTingkatAkhir,
         selected: false,
       };
     });
