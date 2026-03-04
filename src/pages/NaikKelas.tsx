@@ -585,7 +585,7 @@ export default function NaikKelas() {
             <AlertDescription>
               <ul className="list-disc list-inside mt-2 space-y-1">
                 <li>Proses ini <strong>tidak dapat dibatalkan</strong></li>
-                <li>Siswa kelas 9 akan dipindahkan ke tabel Alumni</li>
+                <li>Siswa yang ditandai <strong>"Lulus"</strong> akan dipindahkan ke tabel Alumni</li>
                 <li>Tunggakan siswa <strong>tidak akan dihapus</strong> dan tetap tercatat</li>
                 <li>Tahun ajaran baru akan diaktifkan secara otomatis</li>
               </ul>
