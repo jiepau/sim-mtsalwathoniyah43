@@ -1395,6 +1395,55 @@ export type Database = {
           },
         ]
       }
+      siswa_riwayat: {
+        Row: {
+          created_at: string
+          id: string
+          kelas_id: string
+          siswa_id: string
+          status: string
+          ta_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kelas_id: string
+          siswa_id: string
+          status?: string
+          ta_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kelas_id?: string
+          siswa_id?: string
+          status?: string
+          ta_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "siswa_riwayat_kelas_id_fkey"
+            columns: ["kelas_id"]
+            isOneToOne: false
+            referencedRelation: "kelas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "siswa_riwayat_siswa_id_fkey"
+            columns: ["siswa_id"]
+            isOneToOne: false
+            referencedRelation: "siswa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "siswa_riwayat_ta_id_fkey"
+            columns: ["ta_id"]
+            isOneToOne: false
+            referencedRelation: "tahun_ajaran"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       surat_counter: {
         Row: {
           counter: number
