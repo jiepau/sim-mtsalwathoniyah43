@@ -98,7 +98,7 @@ HANYA output JSON, tanpa penjelasan tambahan.`;
 
           if (aiResponse.status === 429) {
             lastError = "rate_limited";
-            await delay(5000 * (retry + 1));
+            await delay(2000 * (retry + 1));
             continue;
           }
 
