@@ -146,7 +146,7 @@ export function GtkKtaCard({ gtk, madrasah }: GtkKtaCardProps) {
           padding: '1.5mm 4mm',
           textAlign: 'center',
         }}>
-          <div style={{ fontSize: '5.5pt', fontWeight: 700, color: '#fff' }}>
+          <div style={{ fontSize: '6pt', fontWeight: 700, color: '#fff', letterSpacing: '1px' }}>
             https://sim.mtsalwathoniyah43.com
           </div>
         </div>
