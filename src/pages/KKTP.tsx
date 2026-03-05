@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Target, Plus, Search, Pencil, Trash2, ArrowLeft, FileDown } from 'lucide-react';
+import { Target, Plus, Search, Pencil, Trash2, ArrowLeft, FileDown, Sparkles, Loader2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
