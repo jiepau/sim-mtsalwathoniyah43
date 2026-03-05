@@ -32,7 +32,7 @@ export function GtkKtaCard({ gtk, madrasah }: GtkKtaCardProps) {
     <div className="kta-card" style={{
       width: '85.6mm',
       height: '53.98mm',
-      border: '1.5px solid hsl(var(--primary))',
+      border: '1.5px solid #1a5d3a',
       borderRadius: '8px',
       padding: '4mm',
       fontFamily: 'system-ui, sans-serif',
