@@ -33,8 +33,11 @@ interface CPTemplate {
   kelas: number | null;
   semester: string | null;
   elemen: string[];
+  elemen_cp: string[];
   capaian_pembelajaran: string;
   tujuan_pembelajaran: string[];
+  iktp: string[][];
+  materi_pembelajaran: string[];
   sumber: string | null;
   created_at: string;
 }
@@ -109,7 +112,7 @@ export default function CPTemplatesPage() {
         .order('semester');
 
       if (error) throw error;
-      setData(templates || []);
+      setData((templates || []).map(t => ({ ...t, iktp: (t.iktp || []) as unknown as string[][] })));
     } catch (error) {
       console.error('Error fetching templates:', error);
       toast.error('Gagal memuat template CP');
