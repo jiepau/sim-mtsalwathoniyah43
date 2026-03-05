@@ -171,13 +171,17 @@ Buatkan KKTP untuk setiap TP di atas.`;
       throw new Error("AI returned empty KKTP");
     }
 
+    // Sanitize: remove non-Latin/non-Indonesian characters (CJK artifacts etc.)
+    const sanitize = (text: string): string =>
+      text.replace(/[^\x00-\x7F\u00C0-\u024F\u1E00-\u1EFF().,;:!?\-\s/'"0-9%&@#+=_[\]{}]/g, '').trim();
+
     // Insert into database
     const insertPayload = kktpItems.map((item: any) => ({
       atp_id,
-      tujuan_pembelajaran: item.tujuan_pembelajaran,
-      kriteria_ketercapaian: item.kriteria_ketercapaian,
-      teknik_penilaian: item.teknik_penilaian,
-      bentuk_instrumen: item.bentuk_instrumen,
+      tujuan_pembelajaran: sanitize(item.tujuan_pembelajaran),
+      kriteria_ketercapaian: (item.kriteria_ketercapaian || []).map((k: string) => sanitize(k)).filter((k: string) => k.length > 0),
+      teknik_penilaian: sanitize(item.teknik_penilaian || ''),
+      bentuk_instrumen: sanitize(item.bentuk_instrumen || ''),
     }));
 
     const { data: inserted, error: insertError } = await supabase
