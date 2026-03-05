@@ -1,3 +1,4 @@
+// Validate GTK public endpoint - returns GTK data for QR code verification
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
