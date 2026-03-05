@@ -1,5 +1,5 @@
-import { useEffect, useState, useMemo } from 'react';
-import { UserCog, Plus, Search, Upload, Pencil, Trash2, Phone, Mail, CalendarIcon, Eye, Users, GraduationCap, Briefcase, Printer, CreditCard } from 'lucide-react';
+import { useEffect, useState, useMemo, useRef } from 'react';
+import { UserCog, Plus, Search, Upload, Pencil, Trash2, Phone, Mail, CalendarIcon, Eye, Users, GraduationCap, Briefcase, Printer, CreditCard, Camera, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
@@ -54,6 +54,7 @@ interface GtkPtk {
   tempat_lahir: string | null;
   tanggal_lahir: string | null;
   jenis_kelamin: string | null;
+  foto_path: string | null;
 }
 
 export default function GtkPtkPage() {
@@ -68,6 +69,10 @@ export default function GtkPtkPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedGtk, setSelectedGtk] = useState<GtkPtk | null>(null);
   const [editingGtk, setEditingGtk] = useState<GtkPtk | null>(null);
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [fotoPreview, setFotoPreview] = useState<string | null>(null);
+  const [uploadingFoto, setUploadingFoto] = useState(false);
+  const fotoInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     nip: '',
     nama: '',
@@ -206,10 +211,39 @@ export default function GtkPtkPage() {
     }
   };
 
+  const getGtkFotoUrl = (fotoPath: string | null) => {
+    if (!fotoPath) return null;
+    const { data } = supabase.storage.from('gtk-photos').getPublicUrl(fotoPath);
+    return data?.publicUrl || null;
+  };
+
+  const handleFotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Ukuran foto maksimal 2MB');
+      return;
+    }
+    setFotoFile(file);
+    setFotoPreview(URL.createObjectURL(file));
+  };
+
+  const uploadFoto = async (gtkId: string): Promise<string | null> => {
+    if (!fotoFile) return null;
+    const fileExt = fotoFile.name.split('.').pop();
+    const filePath = `${gtkId}.${fileExt}`;
+    
+    const { error } = await supabase.storage.from('gtk-photos').upload(filePath, fotoFile, { upsert: true });
+    if (error) throw error;
+    return filePath;
+  };
+
   const handleOpenDialog = (gtk?: GtkPtk) => {
+    setFotoFile(null);
     if (gtk) {
       setEditingGtk(gtk);
       const parsed = parseJabatan(gtk.jabatan);
+      setFotoPreview(getGtkFotoUrl(gtk.foto_path));
       setFormData({
         nip: gtk.nip || '',
         nama: gtk.nama,
@@ -229,6 +263,7 @@ export default function GtkPtkPage() {
       });
     } else {
       setEditingGtk(null);
+      setFotoPreview(null);
       setFormData({ 
         nip: '', nama: '', jabatan_utama: '', jabatan_tambahan: [], no_hp: '', alamat: '', 
         nuptk: '', nik: '', lulusan: '', pendidikan: '', email: '', mapel: '',
@@ -240,6 +275,7 @@ export default function GtkPtkPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setUploadingFoto(true);
     
     try {
       const payload = {
@@ -260,6 +296,11 @@ export default function GtkPtkPage() {
       };
 
       if (editingGtk) {
+        // Upload foto if changed
+        if (fotoFile) {
+          const fotoPath = await uploadFoto(editingGtk.id);
+          if (fotoPath) (payload as any).foto_path = fotoPath;
+        }
         const { error } = await supabase
           .from('gtk_ptk')
           .update(payload)
@@ -267,15 +308,26 @@ export default function GtkPtkPage() {
         if (error) throw error;
         toast.success('Data berhasil diupdate');
       } else {
-        const { error } = await supabase.from('gtk_ptk').insert(payload);
+        const { data: inserted, error } = await supabase.from('gtk_ptk').insert(payload).select('id').single();
         if (error) throw error;
+        // Upload foto for new GTK
+        if (fotoFile && inserted) {
+          const fotoPath = await uploadFoto(inserted.id);
+          if (fotoPath) {
+            await supabase.from('gtk_ptk').update({ foto_path: fotoPath }).eq('id', inserted.id);
+          }
+        }
         toast.success('Data berhasil ditambahkan');
       }
 
       setDialogOpen(false);
+      setFotoFile(null);
+      setFotoPreview(null);
       fetchData();
     } catch (error: any) {
       toast.error(mapDatabaseError(error));
+    } finally {
+      setUploadingFoto(false);
     }
   };
 
@@ -608,6 +660,41 @@ export default function GtkPtkPage() {
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Foto Upload */}
+            <div className="flex items-center gap-4">
+              <div className="relative w-20 h-24 border rounded-md overflow-hidden bg-muted flex items-center justify-center shrink-0">
+                {fotoPreview ? (
+                  <>
+                    <img src={fotoPreview} alt="Foto" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      className="absolute top-0.5 right-0.5 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                      onClick={() => { setFotoFile(null); setFotoPreview(null); }}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </>
+                ) : (
+                  <Camera className="h-8 w-8 text-muted-foreground" />
+                )}
+              </div>
+              <div className="space-y-1">
+                <Label>Foto (opsional)</Label>
+                <p className="text-xs text-muted-foreground">Maks 2MB, format JPG/PNG</p>
+                <input
+                  ref={fotoInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={handleFotoChange}
+                />
+                <Button type="button" variant="outline" size="sm" onClick={() => fotoInputRef.current?.click()}>
+                  <Camera className="h-3 w-3 mr-1" />
+                  {fotoPreview ? 'Ganti Foto' : 'Upload Foto'}
+                </Button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="nuptk">NUPTK/PegID</Label>
@@ -788,8 +875,8 @@ export default function GtkPtkPage() {
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                 Batal
               </Button>
-              <Button type="submit">
-                {editingGtk ? 'Simpan' : 'Tambah'}
+              <Button type="submit" disabled={uploadingFoto}>
+                {uploadingFoto ? 'Menyimpan...' : editingGtk ? 'Simpan' : 'Tambah'}
               </Button>
             </DialogFooter>
           </form>

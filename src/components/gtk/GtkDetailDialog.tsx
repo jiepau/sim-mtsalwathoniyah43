@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { supabase } from '@/integrations/supabase/client';
 
 interface GtkPtk {
   id: string;
@@ -25,6 +26,7 @@ interface GtkPtk {
   tempat_lahir: string | null;
   tanggal_lahir: string | null;
   jenis_kelamin: string | null;
+  foto_path?: string | null;
 }
 
 interface GtkDetailDialogProps {
@@ -35,6 +37,14 @@ interface GtkDetailDialogProps {
 
 export function GtkDetailDialog({ open, onOpenChange, gtk }: GtkDetailDialogProps) {
   if (!gtk) return null;
+
+  const getFotoUrl = () => {
+    if (!gtk.foto_path) return null;
+    const { data } = supabase.storage.from('gtk-photos').getPublicUrl(gtk.foto_path);
+    return data?.publicUrl || null;
+  };
+
+  const fotoUrl = getFotoUrl();
 
   const formatTTL = () => {
     if (!gtk.tempat_lahir && !gtk.tanggal_lahir) return '-';
@@ -57,8 +67,14 @@ export function GtkDetailDialog({ open, onOpenChange, gtk }: GtkDetailDialogProp
         <div className="space-y-4">
           {/* Header Info */}
           <div className="text-center pb-4">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-              <UserCog className="h-8 w-8 text-primary" />
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-3 overflow-hidden border-2 border-primary/20">
+              {fotoUrl ? (
+                <img src={fotoUrl} alt={gtk.nama} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-primary/10 flex items-center justify-center">
+                  <UserCog className="h-8 w-8 text-primary" />
+                </div>
+              )}
             </div>
             <h3 className="text-xl font-semibold">{gtk.nama}</h3>
             {gtk.jabatan && (

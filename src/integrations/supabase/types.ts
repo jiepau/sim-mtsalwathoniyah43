@@ -610,6 +610,7 @@ export type Database = {
           alamat: string | null
           created_at: string
           email: string | null
+          foto_path: string | null
           id: string
           jabatan: string | null
           jenis_kelamin: string | null
@@ -630,6 +631,7 @@ export type Database = {
           alamat?: string | null
           created_at?: string
           email?: string | null
+          foto_path?: string | null
           id?: string
           jabatan?: string | null
           jenis_kelamin?: string | null
@@ -650,6 +652,7 @@ export type Database = {
           alamat?: string | null
           created_at?: string
           email?: string | null
+          foto_path?: string | null
           id?: string
           jabatan?: string | null
           jenis_kelamin?: string | null
