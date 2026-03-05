@@ -278,8 +278,6 @@ export default function CPTemplatesPage() {
       ),
       className: 'w-24'
     },
-      className: 'w-24'
-    },
     {
       header: 'Elemen',
       cell: (item: CPTemplate) => (
