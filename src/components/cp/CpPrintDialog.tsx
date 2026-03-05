@@ -16,8 +16,11 @@ interface CPTemplate {
   kelas: number | null;
   semester: string | null;
   elemen: string[];
+  elemen_cp: string[];
   capaian_pembelajaran: string;
   tujuan_pembelajaran: string[];
+  iktp: string[][];
+  materi_pembelajaran: string[];
   sumber: string | null;
 }
 
@@ -26,18 +29,6 @@ interface CpPrintDialogProps {
   onOpenChange: (open: boolean) => void;
   template: CPTemplate | null;
 }
-
-// Map elemen singkatan ke deskripsi CP per elemen (referensi Fase D)
-const ELEMEN_CP_MAP: Record<string, string> = {
-  'Berpikir Komputasional (BK)': 'Peserta didik mampu menerapkan berpikir komputasional untuk menghasilkan beberapa solusi dalam menyelesaikan persoalan dengan data diskrit bervolume kecil dan mendisposisikan berpikir komputasional dalam bidang lain terutama dalam literasi, numerasi, dan literasi sains (computationally literate).',
-  'Teknologi Informasi dan Komunikasi (TIK)': 'Peserta didik mampu menerapkan praktik baik dalam memanfaatkan aplikasi surel untuk berkomunikasi, aplikasi peramban untuk pencarian informasi di internet, Content Management System (CMS) untuk pengelolaan konten digital, dan memanfaatkan perkakas TIK untuk mendukung pembuatan laporan, presentasi serta analisis dan interpretasi data.',
-  'Sistem Komputer (SK)': 'Peserta didik mampu mendeskripsikan komponen, fungsi, dan cara kerja komputer yang membentuk sebuah sistem komputasi, serta menjelaskan proses dan penggunaan kodifikasi untuk penyimpanan data dalam memori komputer.',
-  'Jaringan Komputer dan Internet (JKI)': 'Peserta didik mampu memahami konektivitas jaringan lokal, komunikasi data via ponsel, konektivitas internet melalui jaringan kabel dan nirkabel (bluetooth, wifi, internet).',
-  'Analisis Data (AD)': 'Peserta didik mampu mengakses, mengolah, mengelola, dan menganalisis data secara efisien, terstruktur, dan sistematis untuk menginterpretasi dan memprediksi sekumpulan data dari situasi konkret sehari-hari yang berasal dari suatu sumber data dengan menggunakan perkakas TIK atau manual.',
-  'Algoritma dan Pemrograman (AP)': 'Peserta didik mampu memahami objek-objek dan instruksi dalam sebuah lingkungan pemrograman blok (visual) untuk mengembangkan program visual sederhana berdasarkan contoh-contoh yang diberikan, mengembangkan karya digital kreatif (game, animasi, atau presentasi), menerapkan aturan translasi konsep dari satu bahasa visual ke bahasa visual lainnya, dan mengenal pemrograman tekstual sederhana.',
-  'Dampak Sosial Informatika (DSI)': 'Peserta didik mampu memahami ketersediaan data dan informasi lewat aplikasi media sosial, memahami keterbukaan informasi, memilih informasi yang bersifat publik atau privat, menerapkan etika dan menjaga keamanan dirinya dalam masyarakat digital.',
-  'Praktik Lintas Bidang (PLB)': 'Peserta didik mampu bergotong royong untuk mengidentifikasi persoalan, merancang, mengimplementasi, menguji, dan menyempurnakan artefak komputasional sebagai solusi persoalan masyarakat serta mengomunikasikan produk dan proses pengembangannya dalam bentuk karya kreatif yang menyenangkan secara lisan maupun tertulis.',
-};
 
 const PRINT_STYLES = `
   @page { size: A4 landscape; margin: 15mm 20mm; }
@@ -51,18 +42,6 @@ const PRINT_STYLES = `
   .footer { margin-top: 14px; font-size: 9pt; color: #666; text-align: right; border-top: 1px solid #ccc; padding-top: 4px; }
   @media print { .no-print { display: none; } }
 `;
-
-function getElemenCp(elemenName: string): string {
-  // Try exact match first
-  if (ELEMEN_CP_MAP[elemenName]) return ELEMEN_CP_MAP[elemenName];
-  // Try partial match
-  for (const key of Object.keys(ELEMEN_CP_MAP)) {
-    if (key.toLowerCase().includes(elemenName.toLowerCase()) || elemenName.toLowerCase().includes(key.toLowerCase())) {
-      return ELEMEN_CP_MAP[key];
-    }
-  }
-  return '—';
-}
 
 export function CpPrintDialog({ open, onOpenChange, template }: CpPrintDialogProps) {
   const printRef = useRef<HTMLDivElement>(null);
@@ -92,6 +71,30 @@ export function CpPrintDialog({ open, onOpenChange, template }: CpPrintDialogPro
   const thStyle: React.CSSProperties = { border: '1px solid #000', padding: '5px 8px', background: '#d4edda', fontWeight: 'bold', textAlign: 'center', ...font, fontSize: '11pt' };
   const tdStyle: React.CSSProperties = { border: '1px solid #000', padding: '5px 8px', verticalAlign: 'top', ...font, fontSize: '11pt' };
   const tdCenter: React.CSSProperties = { ...tdStyle, textAlign: 'center', fontWeight: 'bold' };
+
+  // Get elemen CP description from DB field (parallel array)
+  const getElemenCp = (index: number): string => {
+    if (template.elemen_cp && template.elemen_cp.length > index && template.elemen_cp[index]) {
+      return template.elemen_cp[index];
+    }
+    return '—';
+  };
+
+  // Get IKTP for a TP index
+  const getIktp = (index: number): string[] => {
+    if (template.iktp && Array.isArray(template.iktp) && template.iktp.length > index && Array.isArray(template.iktp[index])) {
+      return template.iktp[index];
+    }
+    return [];
+  };
+
+  // Get Materi for a TP index
+  const getMateri = (index: number): string => {
+    if (template.materi_pembelajaran && template.materi_pembelajaran.length > index && template.materi_pembelajaran[index]) {
+      return template.materi_pembelajaran[index];
+    }
+    return '';
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -162,7 +165,7 @@ export function CpPrintDialog({ open, onOpenChange, template }: CpPrintDialogPro
                     <tr key={i}>
                       <td style={{ ...tdStyle, fontWeight: 'bold', textAlign: 'center' }}>{el}</td>
                       <td style={{ ...tdStyle, textAlign: 'justify', fontStyle: 'italic' }}>
-                        {getElemenCp(el)}
+                        {getElemenCp(i)}
                       </td>
                     </tr>
                   ))}
@@ -177,21 +180,37 @@ export function CpPrintDialog({ open, onOpenChange, template }: CpPrintDialogPro
               <table style={tblStyle}>
                 <thead>
                   <tr>
-                    <th style={{ ...thStyle, width: '5%' }} rowSpan={2}></th>
-                    <th style={{ ...thStyle, width: '25%' }}>Tujuan Pembelajaran</th>
+                    <th style={{ ...thStyle, width: '4%' }}></th>
+                    <th style={{ ...thStyle, width: '24%' }}>Tujuan Pembelajaran</th>
                     <th style={{ ...thStyle, width: '45%' }}>Indikator Ketercapaian Tujuan Pembelajaran (IKTP)</th>
-                    <th style={{ ...thStyle, width: '25%' }}>Materi Pembelajaran / Topik / Subtopik</th>
+                    <th style={{ ...thStyle, width: '27%' }}>Materi Pembelajaran / Topik / Subtopik</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {template.tujuan_pembelajaran.map((tp, i) => (
-                    <tr key={i}>
-                      <td style={tdCenter}>{i + 1}</td>
-                      <td style={tdStyle}>{tp}</td>
-                      <td style={{ ...tdStyle, color: '#666', fontStyle: 'italic' }}>—</td>
-                      <td style={{ ...tdStyle, color: '#666', fontStyle: 'italic' }}>—</td>
-                    </tr>
-                  ))}
+                  {template.tujuan_pembelajaran.map((tp, i) => {
+                    const iktpItems = getIktp(i);
+                    const materi = getMateri(i);
+                    return (
+                      <tr key={i}>
+                        <td style={tdCenter}>{i + 1}</td>
+                        <td style={tdStyle}>{tp}</td>
+                        <td style={tdStyle}>
+                          {iktpItems.length > 0 ? (
+                            <ul style={{ margin: 0, paddingLeft: 16 }}>
+                              {iktpItems.map((item, j) => (
+                                <li key={j} style={{ marginBottom: 2 }}>{item}</li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <span style={{ color: '#999', fontStyle: 'italic' }}>—</span>
+                          )}
+                        </td>
+                        <td style={tdStyle}>
+                          {materi || <span style={{ color: '#999', fontStyle: 'italic' }}>—</span>}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
