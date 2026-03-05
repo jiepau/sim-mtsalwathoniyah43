@@ -41,12 +41,6 @@ serve(async (req) => {
     const results = [];
 
     for (const template of templates) {
-      // Skip if already has IKTP data
-      const existingIktp = template.iktp as any[];
-      if (existingIktp && Array.isArray(existingIktp) && existingIktp.length > 0 && existingIktp.some((arr: any) => Array.isArray(arr) && arr.length > 0)) {
-        results.push({ id: template.id, mapel: template.mapel, kelas: template.kelas, semester: template.semester, status: "skipped" });
-        continue;
-      }
 
       const tpList = (template.tujuan_pembelajaran || []) as string[];
       if (tpList.length === 0) {
