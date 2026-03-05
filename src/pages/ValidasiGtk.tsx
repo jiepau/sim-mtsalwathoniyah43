@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { UserCog, CheckCircle2, XCircle, Building2, Mail, Phone, GraduationCap, Briefcase } from 'lucide-react';
+import { UserCog, CheckCircle2, XCircle, Building2, GraduationCap, Briefcase } from 'lucide-react';
 
 interface GtkInfo {
   nama: string;
@@ -9,10 +9,9 @@ interface GtkInfo {
   nuptk: string | null;
   jabatan: string | null;
   email: string | null;
-  no_hp: string | null;
   pendidikan: string | null;
   mapel: string | null;
-  foto_path: string | null;
+  foto_url: string | null;
 }
 
 interface MadrasahInfo {
@@ -33,47 +32,38 @@ export default function ValidasiGtk() {
 
     const fetchData = async () => {
       setLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('validate-gtk', {
+          body: null,
+          headers: {},
+        });
 
-      // Try to find GTK by nuptk first, then by nip
-      let { data } = await supabase
-        .from('gtk_ptk')
-        .select('nama, nip, nuptk, jabatan, email, no_hp, pendidikan, mapel, foto_path')
-        .eq('nuptk', id)
-        .maybeSingle();
+        // Use fetch directly with query param since functions.invoke sends POST
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        
+        const res = await fetch(`${supabaseUrl}/functions/v1/validate-gtk?id=${encodeURIComponent(id)}`, {
+          headers: {
+            'Authorization': `Bearer ${anonKey}`,
+            'apikey': anonKey,
+          },
+        });
+        const result = await res.json();
 
-      if (!data) {
-        const res = await supabase
-          .from('gtk_ptk')
-          .select('nama, nip, nuptk, jabatan, email, no_hp, pendidikan, mapel, foto_path')
-          .eq('nip', id)
-          .maybeSingle();
-        data = res.data;
-      }
-
-      if (data) {
-        setGtk(data);
-      } else {
+        if (result.found) {
+          setGtk(result.gtk);
+          setMadrasah(result.madrasah);
+        } else {
+          setNotFound(true);
+        }
+      } catch {
         setNotFound(true);
       }
-
-      const madrasahRes = await supabase
-        .from('madrasah_settings')
-        .select('nama_madrasah, alamat, npsn')
-        .limit(1)
-        .single();
-      if (madrasahRes.data) setMadrasah(madrasahRes.data);
-
       setLoading(false);
     };
 
     fetchData();
   }, [id]);
-
-  const getFotoUrl = () => {
-    if (!gtk?.foto_path) return null;
-    const { data } = supabase.storage.from('gtk-photos').getPublicUrl(gtk.foto_path);
-    return data?.publicUrl || null;
-  };
 
   if (loading) {
     return (
@@ -94,7 +84,7 @@ export default function ValidasiGtk() {
           <XCircle style={{ width: 64, height: 64, color: '#dc2626', margin: '0 auto 16px' }} />
           <h1 style={{ fontSize: 24, fontWeight: 700, color: '#991b1b', marginBottom: 8 }}>Data Tidak Ditemukan</h1>
           <p style={{ color: '#6b7280', lineHeight: 1.6 }}>
-            Data GTK dengan ID <strong>{id}</strong> tidak ditemukan dalam sistem. 
+            Data GTK dengan ID <strong>{id}</strong> tidak ditemukan dalam sistem.
             Kartu identitas ini mungkin tidak valid atau data telah dihapus.
           </p>
           <div style={{ marginTop: 24, padding: 12, background: '#fee2e2', borderRadius: 8, fontSize: 14, color: '#991b1b' }}>
@@ -105,7 +95,6 @@ export default function ValidasiGtk() {
     );
   }
 
-  const fotoUrl = getFotoUrl();
   const nuptkLabel = gtk?.nuptk && /^\d{16}$/.test(gtk.nuptk.trim()) ? 'NUPTK' : 'PegID';
 
   return (
@@ -147,8 +136,8 @@ export default function ValidasiGtk() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: '#f5f5f5', overflow: 'hidden',
             }}>
-              {fotoUrl ? (
-                <img src={fotoUrl} alt={gtk?.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              {gtk?.foto_url ? (
+                <img src={gtk.foto_url} alt={gtk?.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
                 <UserCog style={{ width: 40, height: 40, color: '#aaa' }} />
               )}
