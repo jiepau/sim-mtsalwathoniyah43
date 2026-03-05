@@ -189,10 +189,15 @@ export default function PromesPage() {
     return data || [];
   };
 
-  // Filter ATP based on selected semester
+  // Filter ATP based on selected semester and kelas
   const filteredAtpList = atpList.filter(atp => {
-    if (!formData.semester) return true;
-    return atp.semester === formData.semester || !atp.semester;
+    // Show ATP matching selected semester, or ATP without semester set
+    const semesterMatch = !formData.semester || !atp.semester || 
+      atp.semester.toLowerCase() === formData.semester.toLowerCase();
+    // Also filter by kelas if selected
+    const kelasMatch = !formData.kelas || !atp.kelas || 
+      atp.kelas.toString() === formData.kelas;
+    return semesterMatch && kelasMatch;
   });
 
   const handleSelectAtp = (atpId: string) => {
