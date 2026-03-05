@@ -97,6 +97,7 @@ export default function KKTPPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<KKTP | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   
   const [formData, setFormData] = useState({
     atp_id: '',
