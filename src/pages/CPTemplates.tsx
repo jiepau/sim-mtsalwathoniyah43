@@ -98,7 +98,8 @@ export default function CPTemplatesPage() {
         .from('cp_templates')
         .select('*')
         .order('mapel')
-        .order('fase');
+        .order('fase')
+        .order('kelas');
 
       if (error) throw error;
       setData(templates || []);
@@ -256,6 +257,13 @@ export default function CPTemplatesPage() {
         <Badge variant="secondary">{item.fase}</Badge>
       ),
       className: 'w-20'
+    },
+    {
+      header: 'Kelas',
+      cell: (item: CPTemplate) => (
+        <Badge variant="outline">{item.kelas ? `Kelas ${item.kelas}` : '-'}</Badge>
+      ),
+      className: 'w-24'
     },
     {
       header: 'Elemen',
