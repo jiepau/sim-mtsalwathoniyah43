@@ -478,7 +478,13 @@ export default function GtkPtkPage() {
         description={`Total ${gtkPtk.length} GTK/PTK terdaftar`}
         icon={<UserCog className="h-6 w-6" />}
         actions={
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            {selectedIds.size > 0 && (
+              <Button variant="outline" onClick={handlePrintKtaBulk}>
+                <Printer className="h-4 w-4 mr-2" />
+                Cetak KTA ({selectedIds.size})
+              </Button>
+            )}
             <ExportButton 
               data={filteredData} 
               columns={exportColumns} 
@@ -807,6 +813,13 @@ export default function GtkPtkPage() {
         open={detailDialogOpen}
         onOpenChange={setDetailDialogOpen}
         gtk={selectedGtk}
+      />
+
+      {/* KTA Print Dialog */}
+      <GtkKtaPrint
+        open={ktaPrintOpen}
+        onOpenChange={setKtaPrintOpen}
+        gtkList={ktaPrintList}
       />
     </div>
   );
