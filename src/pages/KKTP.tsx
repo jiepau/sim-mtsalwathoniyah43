@@ -283,6 +283,49 @@ export default function KKTPPage() {
     }
   };
 
+  const handleAutoGenerate = async () => {
+    if (!selectedAtp) return;
+
+    const tpsToGenerate = selectedAtp.tujuan_pembelajaran.filter(
+      tp => !data.some(kktp => kktp.tujuan_pembelajaran === tp)
+    );
+
+    if (tpsToGenerate.length === 0) {
+      toast.info('Semua TP sudah memiliki KKTP');
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      const token = session?.session?.access_token;
+      if (!token) throw new Error('Sesi tidak valid');
+
+      const { data: result, error } = await supabase.functions.invoke('generate-kktp', {
+        body: {
+          atp_id: selectedAtp.id,
+          mapel: selectedAtp.mapel,
+          fase: selectedAtp.fase,
+          kelas: selectedAtp.kelas,
+          capaian_pembelajaran: selectedAtp.capaian_pembelajaran,
+          tujuan_pembelajaran: tpsToGenerate,
+        },
+      });
+
+      if (error) throw error;
+      if (result?.error) throw new Error(result.error);
+
+      toast.success(`${result.count} KKTP berhasil di-generate oleh AI`);
+      fetchData(selectedAtp.id);
+    } catch (error: any) {
+      console.error('Generate KKTP error:', error);
+      const msg = error?.message || 'Gagal generate KKTP';
+      toast.error(msg);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const addKriteria = () => {
     setFormData(prev => ({
       ...prev,
