@@ -30,6 +30,7 @@ interface CPTemplate {
   mapel: string;
   fase: string;
   kelas: number | null;
+  semester: string | null;
   elemen: string[];
   capaian_pembelajaran: string;
   tujuan_pembelajaran: string[];
@@ -73,6 +74,7 @@ export default function CPTemplatesPage() {
     mapel: string;
     fase: FaseType;
     kelas: string;
+    semester: string;
     elemen: string[];
     capaian_pembelajaran: string;
     tujuan_pembelajaran: string[];
@@ -81,6 +83,7 @@ export default function CPTemplatesPage() {
     mapel: '',
     fase: 'D',
     kelas: '7',
+    semester: 'ganjil',
     elemen: [''],
     capaian_pembelajaran: '',
     tujuan_pembelajaran: [''],
@@ -99,7 +102,8 @@ export default function CPTemplatesPage() {
         .select('*')
         .order('mapel')
         .order('fase')
-        .order('kelas');
+        .order('kelas')
+        .order('semester');
 
       if (error) throw error;
       setData(templates || []);
@@ -118,6 +122,7 @@ export default function CPTemplatesPage() {
         mapel: item.mapel,
         fase: item.fase as FaseType,
         kelas: item.kelas?.toString() || '7',
+        semester: item.semester || 'ganjil',
         elemen: item.elemen.length > 0 ? item.elemen : [''],
         capaian_pembelajaran: item.capaian_pembelajaran,
         tujuan_pembelajaran: item.tujuan_pembelajaran.length > 0 ? item.tujuan_pembelajaran : [''],
@@ -129,6 +134,7 @@ export default function CPTemplatesPage() {
         mapel: '',
         fase: 'D',
         kelas: '7',
+        semester: 'ganjil',
         elemen: [''],
         capaian_pembelajaran: '',
         tujuan_pembelajaran: [''],
@@ -154,6 +160,7 @@ export default function CPTemplatesPage() {
         mapel: formData.mapel,
         fase: formData.fase,
         kelas: formData.kelas ? parseInt(formData.kelas) : null,
+        semester: formData.semester || 'ganjil',
         elemen: filteredElemen,
         capaian_pembelajaran: formData.capaian_pembelajaran,
         tujuan_pembelajaran: filteredTP,
@@ -262,6 +269,13 @@ export default function CPTemplatesPage() {
       header: 'Kelas',
       cell: (item: CPTemplate) => (
         <Badge variant="outline">{item.kelas ? `Kelas ${item.kelas}` : '-'}</Badge>
+      ),
+      className: 'w-24'
+    },
+    {
+      header: 'Semester',
+      cell: (item: CPTemplate) => (
+        <Badge variant="secondary" className="capitalize">{item.semester || '-'}</Badge>
       ),
       className: 'w-24'
     },
@@ -384,21 +398,38 @@ export default function CPTemplatesPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="kelas">Kelas Target</Label>
-              <Select
-                value={formData.kelas}
-                onValueChange={(value) => setFormData({ ...formData, kelas: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih kelas..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7">Kelas 7</SelectItem>
-                  <SelectItem value="8">Kelas 8</SelectItem>
-                  <SelectItem value="9">Kelas 9</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="kelas">Kelas Target</Label>
+                <Select
+                  value={formData.kelas}
+                  onValueChange={(value) => setFormData({ ...formData, kelas: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih kelas..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7">Kelas 7</SelectItem>
+                    <SelectItem value="8">Kelas 8</SelectItem>
+                    <SelectItem value="9">Kelas 9</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="semester">Semester *</Label>
+                <Select
+                  value={formData.semester}
+                  onValueChange={(value) => setFormData({ ...formData, semester: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih semester..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ganjil">Ganjil</SelectItem>
+                    <SelectItem value="genap">Genap</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
