@@ -17,6 +17,7 @@ interface GtkData {
   nip: string | null;
   nuptk: string | null;
   jabatan: string | null;
+  foto_path?: string | null;
 }
 
 interface GtkKtaPrintProps {
@@ -31,14 +32,29 @@ export function GtkKtaPrint({ open, onOpenChange, gtkList }: GtkKtaPrintProps) {
     alamat: string | null;
     npsn: string | null;
     nsm: string | null;
+    kabupaten_kota: string | null;
+    provinsi: string | null;
   } | null>(null);
+  const [tahunAjaran, setTahunAjaran] = useState<string | null>(null);
+  const [semester, setSemester] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open) {
-      supabase.from('madrasah_settings').select('nama_madrasah, alamat, npsn, nsm').limit(1).single()
+      supabase.from('madrasah_settings')
+        .select('nama_madrasah, alamat, npsn, nsm, kabupaten_kota, provinsi')
+        .limit(1).single()
+        .then(({ data }) => { if (data) setMadrasah(data); });
+
+      supabase.from('tahun_ajaran')
+        .select('nama_ta, semester')
+        .eq('is_active', true)
+        .limit(1).single()
         .then(({ data }) => {
-          if (data) setMadrasah(data);
+          if (data) {
+            setTahunAjaran(data.nama_ta);
+            setSemester(data.semester ? `Semester ${data.semester}` : 'Semester 1');
+          }
         });
     }
   }, [open]);
@@ -54,10 +70,10 @@ export function GtkKtaPrint({ open, onOpenChange, gtkList }: GtkKtaPrintProps) {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Cetak KTA GTK/PTK</title>
+        <title>Cetak Kartu Identitas GTK</title>
         <style>
           @page {
-            size: A4;
+            size: A4 landscape;
             margin: 10mm;
           }
           * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -68,10 +84,7 @@ export function GtkKtaPrint({ open, onOpenChange, gtkList }: GtkKtaPrintProps) {
             display: flex;
             flex-wrap: wrap;
             gap: 5mm;
-            justify-content: flex-start;
-          }
-          .kta-card {
-            page-break-inside: avoid;
+            justify-content: center;
           }
         </style>
       </head>
@@ -91,18 +104,24 @@ export function GtkKtaPrint({ open, onOpenChange, gtkList }: GtkKtaPrintProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Printer className="h-5 w-5" />
-            Cetak KTA - {gtkList.length} Kartu
+            Cetak Kartu Identitas GTK - {gtkList.length} Kartu
           </DialogTitle>
         </DialogHeader>
 
         <div ref={printRef}>
-          <div className="kta-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '5mm', justifyContent: 'flex-start' }}>
+          <div className="kta-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '5mm', justifyContent: 'center' }}>
             {gtkList.map((gtk) => (
-              <GtkKtaCard key={gtk.id} gtk={gtk} madrasah={madrasah} />
+              <GtkKtaCard
+                key={gtk.id}
+                gtk={gtk}
+                madrasah={madrasah}
+                tahunAjaran={tahunAjaran}
+                semester={semester}
+              />
             ))}
           </div>
         </div>
