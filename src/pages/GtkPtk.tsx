@@ -660,6 +660,41 @@ export default function GtkPtkPage() {
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Foto Upload */}
+            <div className="flex items-center gap-4">
+              <div className="relative w-20 h-24 border rounded-md overflow-hidden bg-muted flex items-center justify-center shrink-0">
+                {fotoPreview ? (
+                  <>
+                    <img src={fotoPreview} alt="Foto" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      className="absolute top-0.5 right-0.5 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                      onClick={() => { setFotoFile(null); setFotoPreview(null); }}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </>
+                ) : (
+                  <Camera className="h-8 w-8 text-muted-foreground" />
+                )}
+              </div>
+              <div className="space-y-1">
+                <Label>Foto (opsional)</Label>
+                <p className="text-xs text-muted-foreground">Maks 2MB, format JPG/PNG</p>
+                <input
+                  ref={fotoInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={handleFotoChange}
+                />
+                <Button type="button" variant="outline" size="sm" onClick={() => fotoInputRef.current?.click()}>
+                  <Camera className="h-3 w-3 mr-1" />
+                  {fotoPreview ? 'Ganti Foto' : 'Upload Foto'}
+                </Button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="nuptk">NUPTK/PegID</Label>
