@@ -22,7 +22,7 @@ interface GtkKtaCardProps {
   semester?: string | null;
 }
 
-export function GtkKtaCard({ gtk, madrasah, tahunAjaran, semester }: GtkKtaCardProps) {
+export function GtkKtaCard({ gtk, madrasah }: GtkKtaCardProps) {
   const namaMadrasah = (madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43').toUpperCase();
 
   const getFotoUrl = () => {
@@ -32,7 +32,18 @@ export function GtkKtaCard({ gtk, madrasah, tahunAjaran, semester }: GtkKtaCardP
   };
 
   const fotoUrl = getFotoUrl();
-  const berlaku = semester && tahunAjaran ? `${semester} - Th. Ajaran ${tahunAjaran}` : null;
+
+  // Dynamic label: show NUPTK if nuptk looks like NUPTK format (16 digits), otherwise PegID
+  const getNuptkLabel = () => {
+    if (!gtk.nuptk) return null;
+    // NUPTK is typically 16 digits
+    if (/^\d{16}$/.test(gtk.nuptk.trim())) return 'NUPTK';
+    return 'PegID';
+  };
+  const nuptkLabel = getNuptkLabel();
+
+  const qrData = `https://sim.mtsalwathoniyah43.com/gtk/${gtk.nuptk || gtk.nip || ''}`;
+
 
   return (
     <div style={{
