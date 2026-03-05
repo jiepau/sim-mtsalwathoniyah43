@@ -34,6 +34,7 @@ const CPTemplates = lazy(() => import("@/pages/CPTemplates"));
 const GeneratorRPP = lazy(() => import("@/pages/GeneratorRPP"));
 const Prota = lazy(() => import("@/pages/Prota"));
 const Promes = lazy(() => import("@/pages/Promes"));
+const PanduanKurikulum = lazy(() => import("@/pages/PanduanKurikulum"));
 const PengaturanMadrasah = lazy(() => import("@/pages/PengaturanMadrasah"));
 const SuratMasuk = lazy(() => import("@/pages/SuratMasuk"));
 const SuratKeluar = lazy(() => import("@/pages/SuratKeluar"));
@@ -120,6 +121,7 @@ const App = () => {
                   <Route path="/generator-rpp" element={<GeneratorRPP />} />
                   <Route path="/prota" element={<Prota />} />
                   <Route path="/promes" element={<Promes />} />
+                  <Route path="/panduan-kurikulum" element={<PanduanKurikulum />} />
                   <Route path="/pengaturan-madrasah" element={<PengaturanMadrasah />} />
                   <Route path="/user-management" element={<UserManagement />} />
                   <Route path="/surat-masuk" element={<SuratMasuk />} />

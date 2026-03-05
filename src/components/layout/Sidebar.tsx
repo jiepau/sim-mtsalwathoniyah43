@@ -86,12 +86,13 @@ const allMenuItems: MenuItem[] = [
     title: 'Kurikulum', 
     icon: BookOpen,
     children: [
-      { title: 'Prota', icon: Calendar, path: '/prota' },
-      { title: 'Promes', icon: CalendarDays, path: '/promes' },
+      { title: '📋 Panduan', icon: BookOpen, path: '/panduan-kurikulum' },
+      { title: 'Template CP', icon: FileText, path: '/cp-templates' },
       { title: 'ATP', icon: BookOpen, path: '/atp' },
       { title: 'KKTP', icon: Target, path: '/kktp' },
+      { title: 'Prota', icon: Calendar, path: '/prota' },
+      { title: 'Promes', icon: CalendarDays, path: '/promes' },
       { title: 'Generator RPP', icon: Sparkles, path: '/generator-rpp' },
-      { title: 'Template CP', icon: FileText, path: '/cp-templates' },
     ],
     roles: ['admin', 'operator', 'guru']
   },
@@ -170,7 +171,7 @@ export function Sidebar() {
     if (['/jenis-tagihan', '/pembayaran', '/pemasukan', '/pengeluaran', '/tunggakan'].includes(path)) {
       expanded.push('Keuangan');
     }
-    if (['/prota', '/promes', '/generator-rpp', '/atp', '/kktp', '/cp-templates'].includes(path)) {
+    if (['/prota', '/promes', '/generator-rpp', '/atp', '/kktp', '/cp-templates', '/panduan-kurikulum'].includes(path)) {
       expanded.push('Kurikulum');
     }
     if (['/surat-masuk', '/surat-keluar'].includes(path)) {
