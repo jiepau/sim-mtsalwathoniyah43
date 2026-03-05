@@ -1,5 +1,6 @@
 import { UserCog } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface GtkKtaCardProps {
   gtk: {
