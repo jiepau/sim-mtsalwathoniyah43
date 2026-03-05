@@ -35,6 +35,8 @@ serve(async (req) => {
       });
     }
 
+    const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
+
     const results = [];
 
     for (const template of templates) {
@@ -72,25 +74,54 @@ Pastikan jumlah array iktp dan materi SAMA PERSIS dengan jumlah TP (${tpList.len
 Gunakan bahasa Indonesia yang formal dan sesuai standar kurikulum.
 HANYA output JSON, tanpa penjelasan tambahan.`;
 
-      try {
-        const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${lovableApiKey}`,
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
-            messages: [{ role: "user", content: prompt }],
-            temperature: 0.3,
-          }),
-        });
+      // Add delay between requests to avoid rate limiting
+      await delay(3000);
 
-        if (!aiResponse.ok) {
-          const errText = await aiResponse.text();
-          results.push({ id: template.id, mapel: template.mapel, status: "ai_error", error: errText });
-          continue;
+      const maxRetries = 3;
+      let lastError = "";
+      let aiData = null;
+
+      for (let retry = 0; retry < maxRetries; retry++) {
+        try {
+          const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${lovableApiKey}`,
+            },
+            body: JSON.stringify({
+              model: "google/gemini-2.5-flash",
+              messages: [{ role: "user", content: prompt }],
+              temperature: 0.3,
+            }),
+          });
+
+          if (aiResponse.status === 429) {
+            lastError = "rate_limited";
+            await delay(5000 * (retry + 1));
+            continue;
+          }
+
+          if (!aiResponse.ok) {
+            lastError = await aiResponse.text();
+            await delay(2000);
+            continue;
+          }
+
+          aiData = await aiResponse.json();
+          break;
+        } catch (e: any) {
+          lastError = e.message;
+          await delay(2000);
         }
+      }
+
+      if (!aiData) {
+        results.push({ id: template.id, mapel: template.mapel, status: "ai_error", error: lastError });
+        continue;
+      }
+
+      let content = aiData.choices?.[0]?.message?.content || "";
 
         const aiData = await aiResponse.json();
         let content = aiData.choices?.[0]?.message?.content || "";
