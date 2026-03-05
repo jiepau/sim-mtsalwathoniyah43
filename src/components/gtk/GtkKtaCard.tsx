@@ -113,7 +113,7 @@ export function GtkKtaCard({ gtk, madrasah }: GtkKtaCardProps) {
               </div>
               <div style={{ marginBottom: '1mm' }}>
                 <span style={{ color: '#1a5d3a', fontWeight: 700, marginRight: '1mm' }}>●</span>
-                Masa berlaku kartu adalah 1 (satu) Semester.
+                Scan QR Code untuk memvalidasi keabsahan data GTK.
               </div>
               <div>
                 <span style={{ color: '#1a5d3a', fontWeight: 700, marginRight: '1mm' }}>●</span>
