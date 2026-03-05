@@ -112,7 +112,7 @@ export default function CPTemplatesPage() {
         .order('semester');
 
       if (error) throw error;
-      setData(templates || []);
+      setData((templates || []).map(t => ({ ...t, iktp: (t.iktp || []) as unknown as string[][] })));
     } catch (error) {
       console.error('Error fetching templates:', error);
       toast.error('Gagal memuat template CP');
