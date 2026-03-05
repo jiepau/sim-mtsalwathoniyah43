@@ -933,6 +933,103 @@ export default function ATPPage() {
               </p>
             </div>
 
+            {/* Deep Learning Section */}
+            <Collapsible>
+              <CollapsibleTrigger asChild>
+                <Button type="button" variant="outline" className="w-full justify-between">
+                  <div className="flex items-center gap-2">
+                    <Brain className="h-4 w-4 text-primary" />
+                    <span>Deep Learning (Opsional)</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-4 pt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Model Pembelajaran</Label>
+                    <Select
+                      value={formData.model_pembelajaran}
+                      onValueChange={(value) => setFormData({ ...formData, model_pembelajaran: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih model..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(MODEL_PEMBELAJARAN).map(([key, val]) => (
+                          <SelectItem key={key} value={key}>{val.nama}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {formData.model_pembelajaran && MODEL_PEMBELAJARAN[formData.model_pembelajaran as keyof typeof MODEL_PEMBELAJARAN] && (
+                      <div className="text-xs text-muted-foreground p-2 bg-muted/50 rounded">
+                        <p className="font-medium mb-1">Sintaks:</p>
+                        <ol className="list-decimal list-inside space-y-0.5">
+                          {MODEL_PEMBELAJARAN[formData.model_pembelajaran as keyof typeof MODEL_PEMBELAJARAN].sintaks.map((s, i) => (
+                            <li key={i}>{s}</li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Sumber Belajar</Label>
+                    <Textarea
+                      value={formData.sumber_belajar}
+                      onChange={(e) => setFormData({ ...formData, sumber_belajar: e.target.value })}
+                      placeholder="Buku paket, LKPD, internet, dll."
+                      rows={2}
+                    />
+                    <Label>Media Pembelajaran</Label>
+                    <Textarea
+                      value={formData.media_pembelajaran}
+                      onChange={(e) => setFormData({ ...formData, media_pembelajaran: e.target.value })}
+                      placeholder="LCD Proyektor, alat peraga, dll."
+                      rows={2}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4 text-primary" />
+                    <Label>Profil Pelajar Pancasila</Label>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {Object.entries(PROFIL_PELAJAR_PANCASILA).map(([key, val]) => (
+                      <label 
+                        key={key}
+                        className="flex items-start gap-2 p-2 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.profil_pelajar.includes(key)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setFormData(prev => ({
+                                ...prev,
+                                profil_pelajar: [...prev.profil_pelajar, key]
+                              }));
+                            } else {
+                              setFormData(prev => ({
+                                ...prev,
+                                profil_pelajar: prev.profil_pelajar.filter(v => v !== key)
+                              }));
+                            }
+                          }}
+                          className="rounded mt-1"
+                        />
+                        <div>
+                          <span className="text-sm font-medium">{val.label}</span>
+                          <p className="text-xs text-muted-foreground">{val.subElemen.join(', ')}</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="alokasi_waktu">Alokasi Waktu</Label>
