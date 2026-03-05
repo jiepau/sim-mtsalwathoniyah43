@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
     // Get madrasah info
     const { data: madrasah } = await supabase
       .from("madrasah_settings")
-      .select("nama_madrasah, alamat, npsn")
+      .select("nama_madrasah, alamat, npsn, nsm")
       .limit(1)
       .single();
 

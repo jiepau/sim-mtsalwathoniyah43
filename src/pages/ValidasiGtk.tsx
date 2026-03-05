@@ -17,6 +17,7 @@ interface MadrasahInfo {
   nama_madrasah: string;
   alamat: string | null;
   npsn: string | null;
+  nsm: string | null;
 }
 
 export default function ValidasiGtk() {
@@ -159,6 +160,9 @@ export default function ValidasiGtk() {
               <InfoRow icon={<Building2 style={{ width: 16, height: 16 }} />} label="Instansi" value={madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43'} />
               {madrasah?.npsn && (
                 <InfoRow icon={<Building2 style={{ width: 16, height: 16 }} />} label="NPSN" value={madrasah.npsn} mono />
+              )}
+              {madrasah?.nsm && (
+                <InfoRow icon={<Building2 style={{ width: 16, height: 16 }} />} label="NSM" value={madrasah.nsm} mono />
               )}
             </div>
           </div>
