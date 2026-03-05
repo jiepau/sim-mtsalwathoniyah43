@@ -258,6 +258,7 @@ export type Database = {
           elemen: string[] | null
           fase: Database["public"]["Enums"]["fase_pembelajaran"]
           id: string
+          kelas: number | null
           mapel: string
           sumber: string | null
           tujuan_pembelajaran: string[] | null
@@ -269,6 +270,7 @@ export type Database = {
           elemen?: string[] | null
           fase?: Database["public"]["Enums"]["fase_pembelajaran"]
           id?: string
+          kelas?: number | null
           mapel: string
           sumber?: string | null
           tujuan_pembelajaran?: string[] | null
@@ -280,6 +282,7 @@ export type Database = {
           elemen?: string[] | null
           fase?: Database["public"]["Enums"]["fase_pembelajaran"]
           id?: string
+          kelas?: number | null
           mapel?: string
           sumber?: string | null
           tujuan_pembelajaran?: string[] | null
