@@ -74,17 +74,27 @@ export function GtkKtaPrint({ open, onOpenChange, gtkList }: GtkKtaPrintProps) {
         <style>
           @page {
             size: A4 landscape;
-            margin: 10mm;
+            margin: 8mm;
           }
-          * { margin: 0; padding: 0; box-sizing: border-box; }
+          * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
           body {
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
           }
           .kta-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 5mm;
+            gap: 3mm;
             justify-content: center;
+            align-content: flex-start;
+          }
+          .kta-grid > div {
+            page-break-inside: avoid;
           }
         </style>
       </head>
@@ -97,7 +107,7 @@ export function GtkKtaPrint({ open, onOpenChange, gtkList }: GtkKtaPrintProps) {
     setTimeout(() => {
       printWindow.print();
       printWindow.close();
-    }, 500);
+    }, 600);
   };
 
   if (gtkList.length === 0) return null;
@@ -113,7 +123,7 @@ export function GtkKtaPrint({ open, onOpenChange, gtkList }: GtkKtaPrintProps) {
         </DialogHeader>
 
         <div ref={printRef}>
-          <div className="kta-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '5mm', justifyContent: 'center' }}>
+          <div className="kta-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '3mm', justifyContent: 'center' }}>
             {gtkList.map((gtk) => (
               <GtkKtaCard
                 key={gtk.id}
