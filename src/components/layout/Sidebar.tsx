@@ -171,7 +171,7 @@ export function Sidebar() {
     if (['/jenis-tagihan', '/pembayaran', '/pemasukan', '/pengeluaran', '/tunggakan'].includes(path)) {
       expanded.push('Keuangan');
     }
-    if (['/prota', '/promes', '/generator-rpp', '/atp', '/kktp', '/cp-templates'].includes(path)) {
+    if (['/prota', '/promes', '/generator-rpp', '/atp', '/kktp', '/cp-templates', '/panduan-kurikulum'].includes(path)) {
       expanded.push('Kurikulum');
     }
     if (['/surat-masuk', '/surat-keluar'].includes(path)) {
