@@ -489,8 +489,21 @@ export default function KKTPPage() {
           {tpsWithoutKktp.length > 0 && (
             <Card className="mb-6 border-warning/50 bg-warning/10">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base text-warning-foreground">
-                  TP Belum Ada KKTP ({tpsWithoutKktp.length})
+                <CardTitle className="text-base text-warning-foreground flex items-center justify-between">
+                  <span>TP Belum Ada KKTP ({tpsWithoutKktp.length})</span>
+                  <Button
+                    size="sm"
+                    onClick={handleAutoGenerate}
+                    disabled={isGenerating}
+                    className="bg-primary"
+                  >
+                    {isGenerating ? (
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-4 w-4 mr-1" />
+                    )}
+                    {isGenerating ? 'Generating...' : 'Auto Generate AI'}
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
