@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { UserCog, CheckCircle2, XCircle, Building2, GraduationCap, Briefcase } from 'lucide-react';
 import { UserCog, CheckCircle2, XCircle, Building2, GraduationCap, Briefcase } from 'lucide-react';
 
 interface GtkInfo {
