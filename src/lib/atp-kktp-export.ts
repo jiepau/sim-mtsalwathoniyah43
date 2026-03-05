@@ -316,7 +316,7 @@ export async function exportATPToWord(
     sections: [{
       properties: {
         page: {
-          size: { width: 16838, height: 11906, orientation: 1 }, // Landscape A4 (values in twips, orientation 1 = landscape)
+          size: { width: 16838, height: 11906, orientation: 'landscape' as const },
           margin: { top: 720, right: 720, bottom: 720, left: 720 },
         },
       },
