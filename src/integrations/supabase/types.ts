@@ -194,8 +194,12 @@ export type Database = {
           kelas: number | null
           keterangan: string | null
           mapel: string
+          media_pembelajaran: string | null
+          model_pembelajaran: string | null
           nilai_karakter: string[] | null
+          profil_pelajar: string[] | null
           semester: string | null
+          sumber_belajar: string | null
           ta_id: string | null
           tujuan_pembelajaran: string[] | null
           updated_at: string
@@ -211,8 +215,12 @@ export type Database = {
           kelas?: number | null
           keterangan?: string | null
           mapel: string
+          media_pembelajaran?: string | null
+          model_pembelajaran?: string | null
           nilai_karakter?: string[] | null
+          profil_pelajar?: string[] | null
           semester?: string | null
+          sumber_belajar?: string | null
           ta_id?: string | null
           tujuan_pembelajaran?: string[] | null
           updated_at?: string
@@ -228,8 +236,12 @@ export type Database = {
           kelas?: number | null
           keterangan?: string | null
           mapel?: string
+          media_pembelajaran?: string | null
+          model_pembelajaran?: string | null
           nilai_karakter?: string[] | null
+          profil_pelajar?: string[] | null
           semester?: string | null
+          sumber_belajar?: string | null
           ta_id?: string | null
           tujuan_pembelajaran?: string[] | null
           updated_at?: string
