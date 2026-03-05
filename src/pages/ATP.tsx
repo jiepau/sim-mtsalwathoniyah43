@@ -576,6 +576,20 @@ export default function ATPPage() {
       className: 'w-16'
     },
     {
+      header: 'DL',
+      cell: (item: ATP) => (
+        item.model_pembelajaran ? (
+          <Badge variant="default" className="text-xs">
+            <Brain className="h-3 w-3 mr-1" />
+            {MODEL_PEMBELAJARAN[item.model_pembelajaran as keyof typeof MODEL_PEMBELAJARAN]?.nama?.split(' ')[0] || 'DL'}
+          </Badge>
+        ) : (
+          <span className="text-muted-foreground text-xs">-</span>
+        )
+      ),
+      className: 'w-24'
+    },
+    {
       header: 'Aksi',
       cell: (item: ATP) => (
         <div className="flex items-center gap-1">
