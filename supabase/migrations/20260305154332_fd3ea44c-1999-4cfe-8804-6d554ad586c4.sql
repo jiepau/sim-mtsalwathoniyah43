@@ -1,0 +1,1 @@
+ALTER TABLE public.cp_templates ADD COLUMN kelas integer NULL;

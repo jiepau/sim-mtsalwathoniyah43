@@ -95,6 +95,7 @@ interface CPTemplate {
   id: string;
   mapel: string;
   fase: string;
+  kelas: number | null;
   elemen: string[];
   capaian_pembelajaran: string;
   tujuan_pembelajaran: string[];
@@ -254,10 +255,11 @@ export default function ATPPage() {
     return templateMapels;
   };
 
-  // Load template when mapel and fase are selected
+  // Load template when mapel, fase, and kelas are selected
   const loadTemplate = () => {
+    const kelasNum = formData.kelas ? parseInt(formData.kelas) : null;
     const template = cpTemplates.find(
-      t => t.mapel === formData.mapel && t.fase === formData.fase
+      t => t.mapel === formData.mapel && t.fase === formData.fase && t.kelas === kelasNum
     );
     
     if (template) {
@@ -269,7 +271,21 @@ export default function ATPPage() {
       }));
       toast.success('Template CP berhasil dimuat!');
     } else {
-      toast.info('Template tidak tersedia untuk kombinasi mapel dan fase ini');
+      // Fallback: try without kelas filter
+      const fallback = cpTemplates.find(
+        t => t.mapel === formData.mapel && t.fase === formData.fase
+      );
+      if (fallback) {
+        setFormData(prev => ({
+          ...prev,
+          elemen: fallback.elemen.join(', '),
+          capaian_pembelajaran: fallback.capaian_pembelajaran,
+          tujuan_pembelajaran: fallback.tujuan_pembelajaran.length > 0 ? fallback.tujuan_pembelajaran : [''],
+        }));
+        toast.success('Template CP dimuat (umum untuk semua kelas)');
+      } else {
+        toast.info('Template tidak tersedia untuk kombinasi mapel, fase, dan kelas ini');
+      }
     }
   };
 
