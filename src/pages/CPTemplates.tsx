@@ -29,6 +29,7 @@ interface CPTemplate {
   id: string;
   mapel: string;
   fase: string;
+  kelas: number | null;
   elemen: string[];
   capaian_pembelajaran: string;
   tujuan_pembelajaran: string[];
@@ -71,6 +72,7 @@ export default function CPTemplatesPage() {
   const [formData, setFormData] = useState<{
     mapel: string;
     fase: FaseType;
+    kelas: string;
     elemen: string[];
     capaian_pembelajaran: string;
     tujuan_pembelajaran: string[];
@@ -78,6 +80,7 @@ export default function CPTemplatesPage() {
   }>({
     mapel: '',
     fase: 'D',
+    kelas: '7',
     elemen: [''],
     capaian_pembelajaran: '',
     tujuan_pembelajaran: [''],
@@ -113,6 +116,7 @@ export default function CPTemplatesPage() {
       setFormData({
         mapel: item.mapel,
         fase: item.fase as FaseType,
+        kelas: item.kelas?.toString() || '7',
         elemen: item.elemen.length > 0 ? item.elemen : [''],
         capaian_pembelajaran: item.capaian_pembelajaran,
         tujuan_pembelajaran: item.tujuan_pembelajaran.length > 0 ? item.tujuan_pembelajaran : [''],
@@ -123,10 +127,11 @@ export default function CPTemplatesPage() {
       setFormData({
         mapel: '',
         fase: 'D',
+        kelas: '7',
         elemen: [''],
         capaian_pembelajaran: '',
         tujuan_pembelajaran: [''],
-        sumber: 'SK Dirjen Pendis 3211/2022',
+        sumber: 'SK Dirjen Pendis 3302/2024',
       });
     }
     setDialogOpen(true);
@@ -147,6 +152,7 @@ export default function CPTemplatesPage() {
       const payload = {
         mapel: formData.mapel,
         fase: formData.fase,
+        kelas: formData.kelas ? parseInt(formData.kelas) : null,
         elemen: filteredElemen,
         capaian_pembelajaran: formData.capaian_pembelajaran,
         tujuan_pembelajaran: filteredTP,
