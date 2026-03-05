@@ -260,6 +260,7 @@ export type Database = {
           id: string
           kelas: number | null
           mapel: string
+          semester: string | null
           sumber: string | null
           tujuan_pembelajaran: string[] | null
           updated_at: string
@@ -272,6 +273,7 @@ export type Database = {
           id?: string
           kelas?: number | null
           mapel: string
+          semester?: string | null
           sumber?: string | null
           tujuan_pembelajaran?: string[] | null
           updated_at?: string
@@ -284,6 +286,7 @@ export type Database = {
           id?: string
           kelas?: number | null
           mapel?: string
+          semester?: string | null
           sumber?: string | null
           tujuan_pembelajaran?: string[] | null
           updated_at?: string
