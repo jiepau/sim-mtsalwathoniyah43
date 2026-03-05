@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, Plus, Search, Pencil, Trash2, ChevronDown, ChevronRight, Target, Sparkles, FileDown, Heart } from 'lucide-react';
+import { BookOpen, Plus, Search, Pencil, Trash2, ChevronDown, ChevronRight, Target, Sparkles, FileDown, Heart, Brain, GraduationCap } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,7 @@ import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
 import { useNavigate } from 'react-router-dom';
 import { exportATPToWord } from '@/lib/atp-kktp-export';
+import { MODEL_PEMBELAJARAN, PROFIL_PELAJAR_PANCASILA } from '@/lib/rpp-constants';
 
 interface GtkPtk {
   id: string;
@@ -57,6 +58,10 @@ interface ATP {
   tujuan_pembelajaran: string[];
   alokasi_waktu: string | null;
   nilai_karakter: string[];
+  model_pembelajaran: string | null;
+  profil_pelajar: string[];
+  sumber_belajar: string | null;
+  media_pembelajaran: string | null;
   keterangan: string | null;
   created_at: string;
   guru?: GtkPtk;
@@ -151,6 +156,10 @@ export default function ATPPage() {
     tujuan_pembelajaran: string[];
     alokasi_waktu: string;
     nilai_karakter: string[];
+    model_pembelajaran: string;
+    profil_pelajar: string[];
+    sumber_belajar: string;
+    media_pembelajaran: string;
     keterangan: string;
   }>({
     guru_id: '',
@@ -164,6 +173,10 @@ export default function ATPPage() {
     tujuan_pembelajaran: [''],
     alokasi_waktu: '',
     nilai_karakter: [],
+    model_pembelajaran: '',
+    profil_pelajar: [],
+    sumber_belajar: '',
+    media_pembelajaran: '',
     keterangan: '',
   });
 
@@ -320,6 +333,10 @@ export default function ATPPage() {
         tujuan_pembelajaran: item.tujuan_pembelajaran.length > 0 ? item.tujuan_pembelajaran : [''],
         alokasi_waktu: item.alokasi_waktu || '',
         nilai_karakter: item.nilai_karakter || [],
+        model_pembelajaran: item.model_pembelajaran || '',
+        profil_pelajar: item.profil_pelajar || [],
+        sumber_belajar: item.sumber_belajar || '',
+        media_pembelajaran: item.media_pembelajaran || '',
         keterangan: item.keterangan || '',
       });
     } else {
@@ -337,6 +354,10 @@ export default function ATPPage() {
         tujuan_pembelajaran: [''],
         alokasi_waktu: '',
         nilai_karakter: [],
+        model_pembelajaran: '',
+        profil_pelajar: [],
+        sumber_belajar: '',
+        media_pembelajaran: '',
         keterangan: '',
       });
     }
@@ -367,6 +388,10 @@ export default function ATPPage() {
         tujuan_pembelajaran: filteredTP,
         alokasi_waktu: formData.alokasi_waktu || null,
         nilai_karakter: formData.nilai_karakter,
+        model_pembelajaran: formData.model_pembelajaran || null,
+        profil_pelajar: formData.profil_pelajar,
+        sumber_belajar: formData.sumber_belajar || null,
+        media_pembelajaran: formData.media_pembelajaran || null,
         keterangan: formData.keterangan || null,
       };
 
@@ -551,6 +576,20 @@ export default function ATPPage() {
       className: 'w-16'
     },
     {
+      header: 'DL',
+      cell: (item: ATP) => (
+        item.model_pembelajaran ? (
+          <Badge variant="default" className="text-xs">
+            <Brain className="h-3 w-3 mr-1" />
+            {MODEL_PEMBELAJARAN[item.model_pembelajaran as keyof typeof MODEL_PEMBELAJARAN]?.nama?.split(' ')[0] || 'DL'}
+          </Badge>
+        ) : (
+          <span className="text-muted-foreground text-xs">-</span>
+        )
+      ),
+      className: 'w-24'
+    },
+    {
       header: 'Aksi',
       cell: (item: ATP) => (
         <div className="flex items-center gap-1">
@@ -644,6 +683,48 @@ export default function ATPPage() {
               <div>
                 <span className="text-xs font-medium text-muted-foreground">Alokasi Waktu:</span>
                 <p className="text-sm">{item.alokasi_waktu}</p>
+              </div>
+            )}
+            {/* Deep Learning Info */}
+            {(item.model_pembelajaran || (item.profil_pelajar && item.profil_pelajar.length > 0)) && (
+              <div className="border-t pt-3 mt-3">
+                <span className="text-xs font-medium text-primary flex items-center gap-1 mb-2">
+                  <Brain className="h-3 w-3" /> Deep Learning
+                </span>
+                <div className="grid grid-cols-2 gap-3">
+                  {item.model_pembelajaran && (
+                    <div>
+                      <span className="text-xs text-muted-foreground">Model Pembelajaran:</span>
+                      <p className="text-sm font-medium">
+                        {MODEL_PEMBELAJARAN[item.model_pembelajaran as keyof typeof MODEL_PEMBELAJARAN]?.nama || item.model_pembelajaran}
+                      </p>
+                    </div>
+                  )}
+                  {item.profil_pelajar && item.profil_pelajar.length > 0 && (
+                    <div>
+                      <span className="text-xs text-muted-foreground">Profil Pelajar Pancasila:</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {item.profil_pelajar.map(p => (
+                          <Badge key={p} variant="outline" className="text-xs">
+                            {PROFIL_PELAJAR_PANCASILA[p as keyof typeof PROFIL_PELAJAR_PANCASILA]?.label || p}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {item.sumber_belajar && (
+                    <div>
+                      <span className="text-xs text-muted-foreground">Sumber Belajar:</span>
+                      <p className="text-sm">{item.sumber_belajar}</p>
+                    </div>
+                  )}
+                  {item.media_pembelajaran && (
+                    <div>
+                      <span className="text-xs text-muted-foreground">Media Pembelajaran:</span>
+                      <p className="text-sm">{item.media_pembelajaran}</p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -907,6 +988,103 @@ export default function ATPPage() {
                 Pilih nilai-nilai karakter yang ingin dikembangkan dalam pembelajaran ini
               </p>
             </div>
+
+            {/* Deep Learning Section */}
+            <Collapsible>
+              <CollapsibleTrigger asChild>
+                <Button type="button" variant="outline" className="w-full justify-between">
+                  <div className="flex items-center gap-2">
+                    <Brain className="h-4 w-4 text-primary" />
+                    <span>Deep Learning (Opsional)</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-4 pt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Model Pembelajaran</Label>
+                    <Select
+                      value={formData.model_pembelajaran}
+                      onValueChange={(value) => setFormData({ ...formData, model_pembelajaran: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih model..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(MODEL_PEMBELAJARAN).map(([key, val]) => (
+                          <SelectItem key={key} value={key}>{val.nama}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {formData.model_pembelajaran && MODEL_PEMBELAJARAN[formData.model_pembelajaran as keyof typeof MODEL_PEMBELAJARAN] && (
+                      <div className="text-xs text-muted-foreground p-2 bg-muted/50 rounded">
+                        <p className="font-medium mb-1">Sintaks:</p>
+                        <ol className="list-decimal list-inside space-y-0.5">
+                          {MODEL_PEMBELAJARAN[formData.model_pembelajaran as keyof typeof MODEL_PEMBELAJARAN].sintaks.map((s, i) => (
+                            <li key={i}>{s}</li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Sumber Belajar</Label>
+                    <Textarea
+                      value={formData.sumber_belajar}
+                      onChange={(e) => setFormData({ ...formData, sumber_belajar: e.target.value })}
+                      placeholder="Buku paket, LKPD, internet, dll."
+                      rows={2}
+                    />
+                    <Label>Media Pembelajaran</Label>
+                    <Textarea
+                      value={formData.media_pembelajaran}
+                      onChange={(e) => setFormData({ ...formData, media_pembelajaran: e.target.value })}
+                      placeholder="LCD Proyektor, alat peraga, dll."
+                      rows={2}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4 text-primary" />
+                    <Label>Profil Pelajar Pancasila</Label>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {Object.entries(PROFIL_PELAJAR_PANCASILA).map(([key, val]) => (
+                      <label 
+                        key={key}
+                        className="flex items-start gap-2 p-2 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.profil_pelajar.includes(key)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setFormData(prev => ({
+                                ...prev,
+                                profil_pelajar: [...prev.profil_pelajar, key]
+                              }));
+                            } else {
+                              setFormData(prev => ({
+                                ...prev,
+                                profil_pelajar: prev.profil_pelajar.filter(v => v !== key)
+                              }));
+                            }
+                          }}
+                          className="rounded mt-1"
+                        />
+                        <div>
+                          <span className="text-sm font-medium">{val.label}</span>
+                          <p className="text-xs text-muted-foreground">{val.subElemen.join(', ')}</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
