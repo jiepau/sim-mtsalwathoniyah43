@@ -75,7 +75,7 @@ Gunakan bahasa Indonesia yang formal dan sesuai standar kurikulum.
 HANYA output JSON, tanpa penjelasan tambahan.`;
 
       // Add delay between requests to avoid rate limiting
-      await delay(3000);
+      await delay(1000);
 
       const maxRetries = 3;
       let lastError = "";
