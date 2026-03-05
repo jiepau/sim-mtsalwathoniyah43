@@ -96,6 +96,7 @@ interface CPTemplate {
   mapel: string;
   fase: string;
   kelas: number | null;
+  semester: string | null;
   elemen: string[];
   capaian_pembelajaran: string;
   tujuan_pembelajaran: string[];
@@ -255,12 +256,36 @@ export default function ATPPage() {
     return templateMapels;
   };
 
-  // Load template when mapel, fase, and kelas are selected
+  // Load template when mapel, fase, kelas, and semester are selected
   const loadTemplate = () => {
     const kelasNum = formData.kelas ? parseInt(formData.kelas) : null;
-    const template = cpTemplates.find(
-      t => t.mapel === formData.mapel && t.fase === formData.fase && t.kelas === kelasNum
+    const semester = formData.semester || null;
+    
+    // Try exact match with semester
+    let template = cpTemplates.find(
+      t => t.mapel === formData.mapel && t.fase === formData.fase && t.kelas === kelasNum && t.semester === semester
     );
+    
+    if (!template) {
+      // Fallback: try without semester
+      template = cpTemplates.find(
+        t => t.mapel === formData.mapel && t.fase === formData.fase && t.kelas === kelasNum
+      );
+    }
+    
+    if (!template) {
+      // Fallback: try without kelas
+      template = cpTemplates.find(
+        t => t.mapel === formData.mapel && t.fase === formData.fase && t.semester === semester
+      );
+    }
+
+    if (!template) {
+      // Last fallback
+      template = cpTemplates.find(
+        t => t.mapel === formData.mapel && t.fase === formData.fase
+      );
+    }
     
     if (template) {
       setFormData(prev => ({
@@ -271,21 +296,7 @@ export default function ATPPage() {
       }));
       toast.success('Template CP berhasil dimuat!');
     } else {
-      // Fallback: try without kelas filter
-      const fallback = cpTemplates.find(
-        t => t.mapel === formData.mapel && t.fase === formData.fase
-      );
-      if (fallback) {
-        setFormData(prev => ({
-          ...prev,
-          elemen: fallback.elemen.join(', '),
-          capaian_pembelajaran: fallback.capaian_pembelajaran,
-          tujuan_pembelajaran: fallback.tujuan_pembelajaran.length > 0 ? fallback.tujuan_pembelajaran : [''],
-        }));
-        toast.success('Template CP dimuat (umum untuk semua kelas)');
-      } else {
-        toast.info('Template tidak tersedia untuk kombinasi mapel, fase, dan kelas ini');
-      }
+      toast.info('Template tidak tersedia untuk kombinasi ini');
     }
   };
 
