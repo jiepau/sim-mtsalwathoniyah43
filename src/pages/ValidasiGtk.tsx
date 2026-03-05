@@ -33,12 +33,6 @@ export default function ValidasiGtk() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke('validate-gtk', {
-          body: null,
-          headers: {},
-        });
-
-        // Use fetch directly with query param since functions.invoke sends POST
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
         const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
         
