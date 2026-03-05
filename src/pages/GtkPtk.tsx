@@ -508,7 +508,7 @@ export default function GtkPtkPage() {
           >
             <Eye className="h-4 w-4" />
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => handlePrintKtaSingle(item)} title="Cetak KTA">
+          <Button size="sm" variant="ghost" onClick={() => handlePrintKtaSingle(item)} title="Kartu Identitas GTK">
             <CreditCard className="h-4 w-4" />
           </Button>
           <Button size="sm" variant="ghost" onClick={() => handleOpenDialog(item)} title="Edit">
@@ -534,7 +534,7 @@ export default function GtkPtkPage() {
             {selectedIds.size > 0 && (
               <Button variant="outline" onClick={handlePrintKtaBulk}>
                 <Printer className="h-4 w-4 mr-2" />
-                Cetak KTA ({selectedIds.size})
+                Cetak Kartu GTK ({selectedIds.size})
               </Button>
             )}
             <ExportButton 
