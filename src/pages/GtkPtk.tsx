@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { UserCog, Plus, Search, Upload, Pencil, Trash2, Phone, Mail, CalendarIcon, Eye, Users, GraduationCap, Briefcase } from 'lucide-react';
+import { UserCog, Plus, Search, Upload, Pencil, Trash2, Phone, Mail, CalendarIcon, Eye, Users, GraduationCap, Briefcase, Printer, CreditCard } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
@@ -33,6 +33,7 @@ import { cn } from '@/lib/utils';
 import { ImportDialog, ImportResult } from '@/components/import/ImportDialog';
 import { ExportButton } from '@/components/export/ExportButton';
 import { GtkDetailDialog } from '@/components/gtk/GtkDetailDialog';
+import { GtkKtaPrint } from '@/components/gtk/GtkKtaPrint';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
@@ -62,6 +63,9 @@ export default function GtkPtkPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [ktaPrintOpen, setKtaPrintOpen] = useState(false);
+  const [ktaPrintList, setKtaPrintList] = useState<GtkPtk[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedGtk, setSelectedGtk] = useState<GtkPtk | null>(null);
   const [editingGtk, setEditingGtk] = useState<GtkPtk | null>(null);
   const [formData, setFormData] = useState({
