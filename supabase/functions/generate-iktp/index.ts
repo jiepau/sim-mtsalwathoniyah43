@@ -122,13 +122,11 @@ HANYA output JSON, tanpa penjelasan tambahan.`;
       }
 
       let content = aiData.choices?.[0]?.message?.content || "";
-
-        const aiData = await aiResponse.json();
-        let content = aiData.choices?.[0]?.message?.content || "";
-        
-        // Clean up potential markdown code blocks
-        content = content.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
-        
+      
+      // Clean up potential markdown code blocks
+      content = content.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+      
+      try {
         const parsed = JSON.parse(content);
 
         if (!parsed.iktp || !parsed.materi || parsed.iktp.length !== tpList.length || parsed.materi.length !== tpList.length) {
@@ -150,8 +148,8 @@ HANYA output JSON, tanpa penjelasan tambahan.`;
         } else {
           results.push({ id: template.id, mapel: template.mapel, kelas: template.kelas, semester: template.semester, status: "success" });
         }
-      } catch (aiErr: any) {
-        results.push({ id: template.id, mapel: template.mapel, status: "error", error: aiErr.message });
+      } catch (parseErr: any) {
+        results.push({ id: template.id, mapel: template.mapel, status: "parse_error", error: parseErr.message });
       }
     }
 
