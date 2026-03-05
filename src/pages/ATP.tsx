@@ -671,6 +671,48 @@ export default function ATPPage() {
                 <p className="text-sm">{item.alokasi_waktu}</p>
               </div>
             )}
+            {/* Deep Learning Info */}
+            {(item.model_pembelajaran || (item.profil_pelajar && item.profil_pelajar.length > 0)) && (
+              <div className="border-t pt-3 mt-3">
+                <span className="text-xs font-medium text-primary flex items-center gap-1 mb-2">
+                  <Brain className="h-3 w-3" /> Deep Learning
+                </span>
+                <div className="grid grid-cols-2 gap-3">
+                  {item.model_pembelajaran && (
+                    <div>
+                      <span className="text-xs text-muted-foreground">Model Pembelajaran:</span>
+                      <p className="text-sm font-medium">
+                        {MODEL_PEMBELAJARAN[item.model_pembelajaran as keyof typeof MODEL_PEMBELAJARAN]?.nama || item.model_pembelajaran}
+                      </p>
+                    </div>
+                  )}
+                  {item.profil_pelajar && item.profil_pelajar.length > 0 && (
+                    <div>
+                      <span className="text-xs text-muted-foreground">Profil Pelajar Pancasila:</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {item.profil_pelajar.map(p => (
+                          <Badge key={p} variant="outline" className="text-xs">
+                            {PROFIL_PELAJAR_PANCASILA[p as keyof typeof PROFIL_PELAJAR_PANCASILA]?.label || p}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {item.sumber_belajar && (
+                    <div>
+                      <span className="text-xs text-muted-foreground">Sumber Belajar:</span>
+                      <p className="text-sm">{item.sumber_belajar}</p>
+                    </div>
+                  )}
+                  {item.media_pembelajaran && (
+                    <div>
+                      <span className="text-xs text-muted-foreground">Media Pembelajaran:</span>
+                      <p className="text-sm">{item.media_pembelajaran}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       ))}
