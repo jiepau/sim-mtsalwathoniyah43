@@ -19,14 +19,15 @@ serve(async (req) => {
 
     const { batch_size = 5, offset = 0 } = await req.json().catch(() => ({}));
 
-    // Fetch templates that need IKTP populated
+    // Fetch templates that need IKTP populated (only those without IKTP)
     const { data: templates, error } = await supabase
       .from("cp_templates")
       .select("id, mapel, kelas, semester, fase, elemen, tujuan_pembelajaran, iktp")
+      .or("iktp.is.null,iktp.eq.[]")
       .order("mapel")
       .order("kelas")
       .order("semester")
-      .range(offset, offset + batch_size - 1);
+      .limit(batch_size);
 
     if (error) throw error;
     if (!templates || templates.length === 0) {
