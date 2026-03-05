@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, Plus, Search, Pencil, Trash2, ChevronDown, ChevronRight, Target, Sparkles, FileDown, Heart } from 'lucide-react';
+import { BookOpen, Plus, Search, Pencil, Trash2, ChevronDown, ChevronRight, Target, Sparkles, FileDown, Heart, Brain, GraduationCap } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,7 @@ import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
 import { useNavigate } from 'react-router-dom';
 import { exportATPToWord } from '@/lib/atp-kktp-export';
+import { MODEL_PEMBELAJARAN, PROFIL_PELAJAR_PANCASILA } from '@/lib/rpp-constants';
 
 interface GtkPtk {
   id: string;
@@ -57,6 +58,10 @@ interface ATP {
   tujuan_pembelajaran: string[];
   alokasi_waktu: string | null;
   nilai_karakter: string[];
+  model_pembelajaran: string | null;
+  profil_pelajar: string[];
+  sumber_belajar: string | null;
+  media_pembelajaran: string | null;
   keterangan: string | null;
   created_at: string;
   guru?: GtkPtk;
@@ -151,6 +156,10 @@ export default function ATPPage() {
     tujuan_pembelajaran: string[];
     alokasi_waktu: string;
     nilai_karakter: string[];
+    model_pembelajaran: string;
+    profil_pelajar: string[];
+    sumber_belajar: string;
+    media_pembelajaran: string;
     keterangan: string;
   }>({
     guru_id: '',
@@ -164,6 +173,10 @@ export default function ATPPage() {
     tujuan_pembelajaran: [''],
     alokasi_waktu: '',
     nilai_karakter: [],
+    model_pembelajaran: '',
+    profil_pelajar: [],
+    sumber_belajar: '',
+    media_pembelajaran: '',
     keterangan: '',
   });
 
@@ -320,6 +333,10 @@ export default function ATPPage() {
         tujuan_pembelajaran: item.tujuan_pembelajaran.length > 0 ? item.tujuan_pembelajaran : [''],
         alokasi_waktu: item.alokasi_waktu || '',
         nilai_karakter: item.nilai_karakter || [],
+        model_pembelajaran: item.model_pembelajaran || '',
+        profil_pelajar: item.profil_pelajar || [],
+        sumber_belajar: item.sumber_belajar || '',
+        media_pembelajaran: item.media_pembelajaran || '',
         keterangan: item.keterangan || '',
       });
     } else {
@@ -337,6 +354,10 @@ export default function ATPPage() {
         tujuan_pembelajaran: [''],
         alokasi_waktu: '',
         nilai_karakter: [],
+        model_pembelajaran: '',
+        profil_pelajar: [],
+        sumber_belajar: '',
+        media_pembelajaran: '',
         keterangan: '',
       });
     }
@@ -367,6 +388,10 @@ export default function ATPPage() {
         tujuan_pembelajaran: filteredTP,
         alokasi_waktu: formData.alokasi_waktu || null,
         nilai_karakter: formData.nilai_karakter,
+        model_pembelajaran: formData.model_pembelajaran || null,
+        profil_pelajar: formData.profil_pelajar,
+        sumber_belajar: formData.sumber_belajar || null,
+        media_pembelajaran: formData.media_pembelajaran || null,
         keterangan: formData.keterangan || null,
       };
 
