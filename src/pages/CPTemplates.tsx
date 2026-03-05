@@ -385,6 +385,23 @@ export default function CPTemplatesPage() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="kelas">Kelas Target</Label>
+              <Select
+                value={formData.kelas}
+                onValueChange={(value) => setFormData({ ...formData, kelas: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih kelas..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7">Kelas 7</SelectItem>
+                  <SelectItem value="8">Kelas 8</SelectItem>
+                  <SelectItem value="9">Kelas 9</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Elemen</Label>
                 <Button type="button" variant="outline" size="sm" onClick={addElemen}>
