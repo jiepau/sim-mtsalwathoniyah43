@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FileText, Plus, Search, Pencil, Trash2, BookOpen } from 'lucide-react';
+import { FileText, Plus, Search, Pencil, Trash2, BookOpen, Eye } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
+import { CpPrintDialog } from '@/components/cp/CpPrintDialog';
 
 interface CPTemplate {
   id: string;
@@ -67,6 +68,8 @@ export default function CPTemplatesPage() {
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<CPTemplate | null>(null);
+  const [printItem, setPrintItem] = useState<CPTemplate | null>(null);
+  const [printDialogOpen, setPrintDialogOpen] = useState(false);
   
   type FaseType = 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
   
@@ -305,6 +308,9 @@ export default function CPTemplatesPage() {
       header: 'Aksi',
       cell: (item: CPTemplate) => (
         <div className="flex items-center gap-1">
+          <Button size="sm" variant="ghost" onClick={() => { setPrintItem(item); setPrintDialogOpen(true); }} title="Lihat & Cetak">
+            <Eye className="h-4 w-4" />
+          </Button>
           <Button size="sm" variant="ghost" onClick={() => handleOpenDialog(item)}>
             <Pencil className="h-4 w-4" />
           </Button>
@@ -313,7 +319,7 @@ export default function CPTemplatesPage() {
           </Button>
         </div>
       ),
-      className: 'w-24'
+      className: 'w-28'
     },
   ];
 
@@ -532,6 +538,12 @@ export default function CPTemplatesPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <CpPrintDialog
+        open={printDialogOpen}
+        onOpenChange={setPrintDialogOpen}
+        template={printItem}
+      />
     </div>
   );
 }
