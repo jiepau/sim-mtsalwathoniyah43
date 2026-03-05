@@ -159,6 +159,7 @@ export default function CPTemplatesPage() {
         mapel: formData.mapel,
         fase: formData.fase,
         kelas: formData.kelas ? parseInt(formData.kelas) : null,
+        semester: formData.semester || 'ganjil',
         elemen: filteredElemen,
         capaian_pembelajaran: formData.capaian_pembelajaran,
         tujuan_pembelajaran: filteredTP,
@@ -268,6 +269,15 @@ export default function CPTemplatesPage() {
       cell: (item: CPTemplate) => (
         <Badge variant="outline">{item.kelas ? `Kelas ${item.kelas}` : '-'}</Badge>
       ),
+      className: 'w-24'
+    },
+    {
+      header: 'Semester',
+      cell: (item: CPTemplate) => (
+        <Badge variant="secondary" className="capitalize">{item.semester || '-'}</Badge>
+      ),
+      className: 'w-24'
+    },
       className: 'w-24'
     },
     {
@@ -389,21 +399,38 @@ export default function CPTemplatesPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="kelas">Kelas Target</Label>
-              <Select
-                value={formData.kelas}
-                onValueChange={(value) => setFormData({ ...formData, kelas: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih kelas..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7">Kelas 7</SelectItem>
-                  <SelectItem value="8">Kelas 8</SelectItem>
-                  <SelectItem value="9">Kelas 9</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="kelas">Kelas Target</Label>
+                <Select
+                  value={formData.kelas}
+                  onValueChange={(value) => setFormData({ ...formData, kelas: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih kelas..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7">Kelas 7</SelectItem>
+                    <SelectItem value="8">Kelas 8</SelectItem>
+                    <SelectItem value="9">Kelas 9</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="semester">Semester *</Label>
+                <Select
+                  value={formData.semester}
+                  onValueChange={(value) => setFormData({ ...formData, semester: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih semester..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ganjil">Ganjil</SelectItem>
+                    <SelectItem value="genap">Genap</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
