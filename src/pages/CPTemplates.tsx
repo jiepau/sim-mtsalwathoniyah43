@@ -102,7 +102,8 @@ export default function CPTemplatesPage() {
         .select('*')
         .order('mapel')
         .order('fase')
-        .order('kelas');
+        .order('kelas')
+        .order('semester');
 
       if (error) throw error;
       setData(templates || []);
