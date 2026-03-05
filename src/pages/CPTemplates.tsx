@@ -30,6 +30,7 @@ interface CPTemplate {
   mapel: string;
   fase: string;
   kelas: number | null;
+  semester: string | null;
   elemen: string[];
   capaian_pembelajaran: string;
   tujuan_pembelajaran: string[];
@@ -73,6 +74,7 @@ export default function CPTemplatesPage() {
     mapel: string;
     fase: FaseType;
     kelas: string;
+    semester: string;
     elemen: string[];
     capaian_pembelajaran: string;
     tujuan_pembelajaran: string[];
@@ -81,6 +83,7 @@ export default function CPTemplatesPage() {
     mapel: '',
     fase: 'D',
     kelas: '7',
+    semester: 'ganjil',
     elemen: [''],
     capaian_pembelajaran: '',
     tujuan_pembelajaran: [''],
