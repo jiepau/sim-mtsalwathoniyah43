@@ -73,7 +73,7 @@ Gunakan bahasa Indonesia yang formal dan sesuai standar kurikulum.
 HANYA output JSON, tanpa penjelasan tambahan.`;
 
       try {
-        const aiResponse = await fetch("https://api.lovable.dev/v1/chat/completions", {
+        const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
