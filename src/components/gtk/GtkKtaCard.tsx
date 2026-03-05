@@ -1,5 +1,6 @@
 import { UserCog } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface GtkKtaCardProps {
   gtk: {
@@ -21,7 +22,7 @@ interface GtkKtaCardProps {
   semester?: string | null;
 }
 
-export function GtkKtaCard({ gtk, madrasah, tahunAjaran, semester }: GtkKtaCardProps) {
+export function GtkKtaCard({ gtk, madrasah }: GtkKtaCardProps) {
   const namaMadrasah = (madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43').toUpperCase();
 
   const getFotoUrl = () => {
@@ -31,7 +32,18 @@ export function GtkKtaCard({ gtk, madrasah, tahunAjaran, semester }: GtkKtaCardP
   };
 
   const fotoUrl = getFotoUrl();
-  const berlaku = semester && tahunAjaran ? `${semester} - Th. Ajaran ${tahunAjaran}` : null;
+
+  // Dynamic label: show NUPTK if nuptk looks like NUPTK format (16 digits), otherwise PegID
+  const getNuptkLabel = () => {
+    if (!gtk.nuptk) return null;
+    // NUPTK is typically 16 digits
+    if (/^\d{16}$/.test(gtk.nuptk.trim())) return 'NUPTK';
+    return 'PegID';
+  };
+  const nuptkLabel = getNuptkLabel();
+
+  const qrData = `https://sim.mtsalwathoniyah43.com/gtk/${gtk.nuptk || gtk.nip || ''}`;
+
 
   return (
     <div style={{
@@ -84,16 +96,13 @@ export function GtkKtaCard({ gtk, madrasah, tahunAjaran, semester }: GtkKtaCardP
             <div style={{
               width: '18mm',
               height: '18mm',
-              border: '1px solid #ccc',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: '#f7fafc',
+              background: '#fff',
               flexShrink: 0,
-              fontSize: '5pt',
-              color: '#999',
             }}>
-              QR CODE
+              <QRCodeSVG value={qrData} size={64} level="M" />
             </div>
 
             {/* Info */}
@@ -138,7 +147,7 @@ export function GtkKtaCard({ gtk, madrasah, tahunAjaran, semester }: GtkKtaCardP
           textAlign: 'center',
         }}>
           <div style={{ fontSize: '5.5pt', fontWeight: 700, color: '#fff' }}>
-            {madrasah?.alamat || ''}
+            https://sim.mtsalwathoniyah43.com
           </div>
         </div>
       </div>
@@ -215,9 +224,9 @@ export function GtkKtaCard({ gtk, madrasah, tahunAjaran, semester }: GtkKtaCardP
                     <td style={{ fontWeight: 700, fontFamily: 'monospace', fontSize: '5.5pt' }}>{gtk.nip}</td>
                   </tr>
                 )}
-                {gtk.nuptk && (
+                {gtk.nuptk && nuptkLabel && (
                   <tr>
-                    <td style={{ fontWeight: 600, paddingRight: '1mm', whiteSpace: 'nowrap', color: '#4a5568' }}>PegID</td>
+                    <td style={{ fontWeight: 600, paddingRight: '1mm', whiteSpace: 'nowrap', color: '#4a5568' }}>{nuptkLabel}</td>
                     <td style={{ paddingRight: '1mm', color: '#4a5568' }}>:</td>
                     <td style={{ fontWeight: 700, fontFamily: 'monospace', fontSize: '5.5pt' }}>{gtk.nuptk}</td>
                   </tr>
@@ -232,28 +241,8 @@ export function GtkKtaCard({ gtk, madrasah, tahunAjaran, semester }: GtkKtaCardP
                   <td style={{ paddingRight: '1mm', color: '#4a5568' }}>:</td>
                   <td style={{ fontWeight: 700, fontSize: '5pt' }}>{namaMadrasah}</td>
                 </tr>
-                {madrasah?.kabupaten_kota && (
-                  <tr>
-                    <td style={{ fontWeight: 600, paddingRight: '1mm', whiteSpace: 'nowrap', color: '#4a5568' }}>Kota/Kab</td>
-                    <td style={{ paddingRight: '1mm', color: '#4a5568' }}>:</td>
-                    <td>{madrasah.kabupaten_kota}</td>
-                  </tr>
-                )}
-                {madrasah?.provinsi && (
-                  <tr>
-                    <td style={{ fontWeight: 600, paddingRight: '1mm', whiteSpace: 'nowrap', color: '#4a5568' }}>Provinsi</td>
-                    <td style={{ paddingRight: '1mm', color: '#4a5568' }}>:</td>
-                    <td>{madrasah.provinsi}</td>
-                  </tr>
-                )}
               </tbody>
             </table>
-            {berlaku && (
-              <div style={{ marginTop: '1mm', fontSize: '5pt', color: '#4a5568' }}>
-                <span style={{ fontWeight: 600 }}>Berlaku:</span>{' '}
-                <span style={{ fontWeight: 700 }}>{berlaku}</span>
-              </div>
-            )}
           </div>
         </div>
 
