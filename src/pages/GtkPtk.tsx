@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { UserCog, Plus, Search, Upload, Pencil, Trash2, Phone, Mail, CalendarIcon, Eye, Users, GraduationCap, Briefcase } from 'lucide-react';
+import { UserCog, Plus, Search, Upload, Pencil, Trash2, Phone, Mail, CalendarIcon, Eye, Users, GraduationCap, Briefcase, Printer, CreditCard } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
@@ -33,6 +33,7 @@ import { cn } from '@/lib/utils';
 import { ImportDialog, ImportResult } from '@/components/import/ImportDialog';
 import { ExportButton } from '@/components/export/ExportButton';
 import { GtkDetailDialog } from '@/components/gtk/GtkDetailDialog';
+import { GtkKtaPrint } from '@/components/gtk/GtkKtaPrint';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
@@ -62,6 +63,9 @@ export default function GtkPtkPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [ktaPrintOpen, setKtaPrintOpen] = useState(false);
+  const [ktaPrintList, setKtaPrintList] = useState<GtkPtk[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedGtk, setSelectedGtk] = useState<GtkPtk | null>(null);
   const [editingGtk, setEditingGtk] = useState<GtkPtk | null>(null);
   const [formData, setFormData] = useState({
@@ -324,7 +328,55 @@ export default function GtkPtkPage() {
     return { laki, perempuan, lulusanMap, kepalaMadrasah, guru, tendik, belumDiisi };
   }, [gtkPtk]);
 
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredData.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredData.map(g => g.id)));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handlePrintKtaBulk = () => {
+    const selected = gtkPtk.filter(g => selectedIds.has(g.id));
+    if (selected.length === 0) {
+      toast.error('Pilih minimal satu GTK/PTK');
+      return;
+    }
+    setKtaPrintList(selected);
+    setKtaPrintOpen(true);
+  };
+
+  const handlePrintKtaSingle = (gtk: GtkPtk) => {
+    setKtaPrintList([gtk]);
+    setKtaPrintOpen(true);
+  };
+
   const columns = [
+    {
+      header: (
+        <Checkbox
+          checked={filteredData.length > 0 && selectedIds.size === filteredData.length}
+          onCheckedChange={toggleSelectAll}
+        />
+      ) as any,
+      cell: (item: GtkPtk) => (
+        <Checkbox
+          checked={selectedIds.has(item.id)}
+          onCheckedChange={() => toggleSelect(item.id)}
+          onClick={(e: React.MouseEvent) => e.stopPropagation()}
+        />
+      ),
+      className: 'w-10'
+    },
     { 
       header: 'NUPTK/PegID', 
       cell: (item: GtkPtk) => (
@@ -404,6 +456,9 @@ export default function GtkPtkPage() {
           >
             <Eye className="h-4 w-4" />
           </Button>
+          <Button size="sm" variant="ghost" onClick={() => handlePrintKtaSingle(item)} title="Cetak KTA">
+            <CreditCard className="h-4 w-4" />
+          </Button>
           <Button size="sm" variant="ghost" onClick={() => handleOpenDialog(item)} title="Edit">
             <Pencil className="h-4 w-4" />
           </Button>
@@ -412,7 +467,7 @@ export default function GtkPtkPage() {
           </Button>
         </div>
       ),
-      className: 'w-32'
+      className: 'w-40'
     },
   ];
 
@@ -423,7 +478,13 @@ export default function GtkPtkPage() {
         description={`Total ${gtkPtk.length} GTK/PTK terdaftar`}
         icon={<UserCog className="h-6 w-6" />}
         actions={
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            {selectedIds.size > 0 && (
+              <Button variant="outline" onClick={handlePrintKtaBulk}>
+                <Printer className="h-4 w-4 mr-2" />
+                Cetak KTA ({selectedIds.size})
+              </Button>
+            )}
             <ExportButton 
               data={filteredData} 
               columns={exportColumns} 
@@ -752,6 +813,13 @@ export default function GtkPtkPage() {
         open={detailDialogOpen}
         onOpenChange={setDetailDialogOpen}
         gtk={selectedGtk}
+      />
+
+      {/* KTA Print Dialog */}
+      <GtkKtaPrint
+        open={ktaPrintOpen}
+        onOpenChange={setKtaPrintOpen}
+        gtkList={ktaPrintList}
       />
     </div>
   );
