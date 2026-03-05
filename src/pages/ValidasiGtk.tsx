@@ -17,6 +17,7 @@ interface MadrasahInfo {
   nama_madrasah: string;
   alamat: string | null;
   npsn: string | null;
+  nsm: string | null;
 }
 
 export default function ValidasiGtk() {
