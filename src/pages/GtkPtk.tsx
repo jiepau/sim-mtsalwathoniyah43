@@ -328,7 +328,55 @@ export default function GtkPtkPage() {
     return { laki, perempuan, lulusanMap, kepalaMadrasah, guru, tendik, belumDiisi };
   }, [gtkPtk]);
 
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredData.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredData.map(g => g.id)));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handlePrintKtaBulk = () => {
+    const selected = gtkPtk.filter(g => selectedIds.has(g.id));
+    if (selected.length === 0) {
+      toast.error('Pilih minimal satu GTK/PTK');
+      return;
+    }
+    setKtaPrintList(selected);
+    setKtaPrintOpen(true);
+  };
+
+  const handlePrintKtaSingle = (gtk: GtkPtk) => {
+    setKtaPrintList([gtk]);
+    setKtaPrintOpen(true);
+  };
+
   const columns = [
+    {
+      header: (
+        <Checkbox
+          checked={filteredData.length > 0 && selectedIds.size === filteredData.length}
+          onCheckedChange={toggleSelectAll}
+        />
+      ) as any,
+      cell: (item: GtkPtk) => (
+        <Checkbox
+          checked={selectedIds.has(item.id)}
+          onCheckedChange={() => toggleSelect(item.id)}
+          onClick={(e: React.MouseEvent) => e.stopPropagation()}
+        />
+      ),
+      className: 'w-10'
+    },
     { 
       header: 'NUPTK/PegID', 
       cell: (item: GtkPtk) => (
@@ -408,6 +456,9 @@ export default function GtkPtkPage() {
           >
             <Eye className="h-4 w-4" />
           </Button>
+          <Button size="sm" variant="ghost" onClick={() => handlePrintKtaSingle(item)} title="Cetak KTA">
+            <CreditCard className="h-4 w-4" />
+          </Button>
           <Button size="sm" variant="ghost" onClick={() => handleOpenDialog(item)} title="Edit">
             <Pencil className="h-4 w-4" />
           </Button>
@@ -416,7 +467,7 @@ export default function GtkPtkPage() {
           </Button>
         </div>
       ),
-      className: 'w-32'
+      className: 'w-40'
     },
   ];
 
