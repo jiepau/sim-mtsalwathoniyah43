@@ -8,8 +8,9 @@ import {
   WidthType,
   AlignmentType,
   TextRun,
-  HeadingLevel,
   BorderStyle,
+  VerticalAlign,
+  TableLayoutType,
 } from 'docx';
 import { saveAs } from 'file-saver';
 
@@ -45,11 +46,18 @@ interface MadrasahSettings {
   nip_kepala: string | null;
 }
 
-const cellBorders = {
+const borders = {
   top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
   bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
   left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
   right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+};
+
+const noBorders = {
+  top: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+  bottom: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+  left: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+  right: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
 };
 
 const NILAI_KARAKTER_LABELS: Record<string, string> = {
@@ -63,208 +71,218 @@ const NILAI_KARAKTER_LABELS: Record<string, string> = {
   'kerjasama': 'Kerjasama',
 };
 
+function headerCell(text: string, widthPct: number): TableCell {
+  return new TableCell({
+    width: { size: widthPct, type: WidthType.PERCENTAGE },
+    borders,
+    shading: { fill: 'D9E2F3' },
+    verticalAlign: VerticalAlign.CENTER,
+    children: [
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 40, after: 40 },
+        children: [new TextRun({ text, bold: true, size: 20, font: 'Times New Roman' })],
+      }),
+    ],
+  });
+}
+
+function textCell(text: string, options?: { bold?: boolean; align?: typeof AlignmentType[keyof typeof AlignmentType] }): TableCell {
+  return new TableCell({
+    borders,
+    verticalAlign: VerticalAlign.TOP,
+    children: [
+      new Paragraph({
+        alignment: options?.align || AlignmentType.LEFT,
+        spacing: { before: 20, after: 20 },
+        children: [new TextRun({ text, size: 20, font: 'Times New Roman', bold: options?.bold })],
+      }),
+    ],
+  });
+}
+
+function infoRow(label: string, value: string): TableRow {
+  return new TableRow({
+    children: [
+      new TableCell({
+        width: { size: 30, type: WidthType.PERCENTAGE },
+        borders: noBorders,
+        children: [
+          new Paragraph({
+            spacing: { before: 20, after: 20 },
+            children: [new TextRun({ text: label, size: 22, font: 'Times New Roman' })],
+          }),
+        ],
+      }),
+      new TableCell({
+        width: { size: 3, type: WidthType.PERCENTAGE },
+        borders: noBorders,
+        children: [
+          new Paragraph({
+            spacing: { before: 20, after: 20 },
+            children: [new TextRun({ text: ':', size: 22, font: 'Times New Roman' })],
+          }),
+        ],
+      }),
+      new TableCell({
+        width: { size: 67, type: WidthType.PERCENTAGE },
+        borders: noBorders,
+        children: [
+          new Paragraph({
+            spacing: { before: 20, after: 20 },
+            children: [new TextRun({ text: value, size: 22, font: 'Times New Roman' })],
+          }),
+        ],
+      }),
+    ],
+  });
+}
+
 export async function exportATPToWord(
   atp: ATP,
   kktpList: KKTP[],
   madrasah: MadrasahSettings
 ): Promise<void> {
+  const semesterLabel = atp.semester === 'ganjil' ? 'Ganjil' : atp.semester === 'genap' ? 'Genap' : '-';
   const nilaiKarakterText = atp.nilai_karakter && atp.nilai_karakter.length > 0
     ? atp.nilai_karakter.map(n => NILAI_KARAKTER_LABELS[n] || n).join(', ')
     : '-';
 
-  const headerCellStyle = {
-    borders: cellBorders,
-    shading: { fill: 'D9E2F3' },
-  };
+  const children: (Paragraph | Table)[] = [];
 
-  const children: (Paragraph | Table)[] = [
-    // Title
+  // === JUDUL ===
+  children.push(
     new Paragraph({
       alignment: AlignmentType.CENTER,
-      spacing: { after: 100 },
-      children: [
-        new TextRun({ text: 'ALUR TUJUAN PEMBELAJARAN', bold: true, size: 28 }),
-      ],
+      spacing: { after: 80 },
+      children: [new TextRun({ text: 'ALUR TUJUAN PEMBELAJARAN (ATP)', bold: true, size: 26, font: 'Times New Roman' })],
     }),
     new Paragraph({
       alignment: AlignmentType.CENTER,
-      spacing: { after: 100 },
-      children: [
-        new TextRun({ text: `TAHUN PELAJARAN ${atp.tahun_ajaran?.nama_ta || '20.../20...'}`, bold: true, size: 24 }),
-      ],
+      spacing: { after: 200 },
+      children: [new TextRun({ text: madrasah.nama_madrasah.toUpperCase(), bold: true, size: 24, font: 'Times New Roman' })],
     }),
-    new Paragraph({ text: '', spacing: { after: 100 } }),
+  );
 
-    // Section A: Capaian Pembelajaran
-    new Paragraph({
-      spacing: { after: 100 },
-      children: [new TextRun({ text: 'A. CAPAIAN PEMBELAJARAN', bold: true, size: 24 })],
-    }),
-    new Paragraph({
-      spacing: { after: 100 },
-      children: [new TextRun({ text: atp.capaian_pembelajaran, size: 22 })],
-    }),
-    new Paragraph({ text: '' }),
-  ];
-
-  // Section B: Elemen Capaian Pembelajaran (if available)
-  if (atp.elemen) {
-    children.push(
-      new Paragraph({
-        spacing: { after: 100 },
-        children: [new TextRun({ text: 'B. ELEMEN CAPAIAN PEMBELAJARAN', bold: true, size: 24 })],
-      }),
-    );
-
-    const elemenList = atp.elemen.split(',').map(e => e.trim()).filter(e => e);
-    if (elemenList.length > 0) {
-      const elemenRows = [
-        new TableRow({
-          children: [
-            new TableCell({
-              width: { size: 30, type: WidthType.PERCENTAGE },
-              ...headerCellStyle,
-              children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'ELEMEN', bold: true, size: 20 })] })],
-            }),
-            new TableCell({
-              width: { size: 70, type: WidthType.PERCENTAGE },
-              ...headerCellStyle,
-              children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'CAPAIAN PEMBELAJARAN', bold: true, size: 20 })] })],
-            }),
-          ],
-        }),
-        ...elemenList.map(el =>
-          new TableRow({
-            children: [
-              new TableCell({
-                borders: cellBorders,
-                children: [new Paragraph({ children: [new TextRun({ text: el, bold: true, size: 20 })] })],
-              }),
-              new TableCell({
-                borders: cellBorders,
-                children: [new Paragraph({ children: [new TextRun({ text: '-', size: 20 })] })],
-              }),
-            ],
-          })
-        ),
-      ];
-      children.push(
-        new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: elemenRows }),
-        new Paragraph({ text: '' }),
-      );
-    }
-  }
-
-  // Info row: Mapel, Kelas/Semester, Fase, Alokasi Waktu
+  // === INFO IDENTITAS (tanpa border, format label : value) ===
   children.push(
     new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
+      layout: TableLayoutType.FIXED,
       rows: [
-        new TableRow({
-          children: [
-            new TableCell({
-              width: { size: 40, type: WidthType.PERCENTAGE },
-              borders: cellBorders,
-              children: [new Paragraph({ children: [
-                new TextRun({ text: 'Mata Pelajaran: ', bold: true, size: 20 }),
-                new TextRun({ text: atp.mapel, size: 20 }),
-              ] })],
-            }),
-            new TableCell({
-              width: { size: 30, type: WidthType.PERCENTAGE },
-              borders: cellBorders,
-              children: [new Paragraph({ children: [
-                new TextRun({ text: `Kelas/Semester: `, bold: true, size: 20 }),
-                new TextRun({ text: `${atp.kelas || '-'} / ${atp.semester === 'ganjil' ? 'Ganjil' : atp.semester === 'genap' ? 'Genap' : '-'}`, size: 20 }),
-              ] })],
-            }),
-            new TableCell({
-              width: { size: 30, type: WidthType.PERCENTAGE },
-              borders: cellBorders,
-              children: [new Paragraph({ children: [
-                new TextRun({ text: 'Fase: ', bold: true, size: 20 }),
-                new TextRun({ text: atp.fase, size: 20 }),
-                new TextRun({ text: '\nAlokasi Waktu: ', bold: true, size: 20 }),
-                new TextRun({ text: atp.alokasi_waktu || '-', size: 20 }),
-              ] })],
-            }),
-          ],
-        }),
+        infoRow('Mata Pelajaran', atp.mapel),
+        infoRow('Fase', atp.fase),
+        infoRow('Kelas / Semester', `${atp.kelas || '-'} / ${semesterLabel}`),
+        infoRow('Tahun Pelajaran', atp.tahun_ajaran?.nama_ta || '-'),
+        infoRow('Guru Pengampu', atp.guru?.nama || '-'),
+        infoRow('Alokasi Waktu', atp.alokasi_waktu || '-'),
       ],
     }),
-    new Paragraph({ text: '' }),
+    new Paragraph({ text: '', spacing: { after: 200 } }),
   );
 
-  // Main ATP Table: TP with KKTP data
-  const mainTableHeader = new TableRow({
+  // === CAPAIAN PEMBELAJARAN ===
+  children.push(
+    new Paragraph({
+      spacing: { after: 80 },
+      children: [new TextRun({ text: 'A. Capaian Pembelajaran', bold: true, size: 22, font: 'Times New Roman' })],
+    }),
+    new Paragraph({
+      spacing: { after: 200 },
+      indent: { left: 360 },
+      children: [new TextRun({ text: atp.capaian_pembelajaran, size: 22, font: 'Times New Roman' })],
+    }),
+  );
+
+  // === ELEMEN (jika ada) ===
+  if (atp.elemen) {
+    children.push(
+      new Paragraph({
+        spacing: { after: 80 },
+        children: [new TextRun({ text: 'B. Elemen Capaian Pembelajaran', bold: true, size: 22, font: 'Times New Roman' })],
+      }),
+    );
+    const elemenList = atp.elemen.split(',').map(e => e.trim()).filter(e => e);
+    elemenList.forEach((el, i) => {
+      children.push(
+        new Paragraph({
+          spacing: { after: 40 },
+          indent: { left: 360 },
+          children: [new TextRun({ text: `${i + 1}. ${el}`, size: 22, font: 'Times New Roman' })],
+        }),
+      );
+    });
+    children.push(new Paragraph({ text: '', spacing: { after: 200 } }));
+  }
+
+  // === TABEL UTAMA ATP ===
+  const sectionLabel = atp.elemen ? 'C' : 'B';
+  children.push(
+    new Paragraph({
+      spacing: { after: 100 },
+      children: [new TextRun({ text: `${sectionLabel}. Alur Tujuan Pembelajaran`, bold: true, size: 22, font: 'Times New Roman' })],
+    }),
+  );
+
+  const tableHeader = new TableRow({
+    tableHeader: true,
     children: [
-      new TableCell({
-        width: { size: 5, type: WidthType.PERCENTAGE },
-        ...headerCellStyle,
-        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'No', bold: true, size: 20 })] })],
-      }),
-      new TableCell({
-        width: { size: 30, type: WidthType.PERCENTAGE },
-        ...headerCellStyle,
-        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Tujuan Pembelajaran', bold: true, size: 20 })] })],
-      }),
-      new TableCell({
-        width: { size: 25, type: WidthType.PERCENTAGE },
-        ...headerCellStyle,
-        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Kriteria Ketercapaian', bold: true, size: 20 })] })],
-      }),
-      new TableCell({
-        width: { size: 15, type: WidthType.PERCENTAGE },
-        ...headerCellStyle,
-        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Teknik Penilaian', bold: true, size: 20 })] })],
-      }),
-      new TableCell({
-        width: { size: 15, type: WidthType.PERCENTAGE },
-        ...headerCellStyle,
-        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Instrumen', bold: true, size: 20 })] })],
-      }),
-      new TableCell({
-        width: { size: 10, type: WidthType.PERCENTAGE },
-        ...headerCellStyle,
-        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Nilai Karakter', bold: true, size: 20 })] })],
-      }),
+      headerCell('No', 5),
+      headerCell('Tujuan Pembelajaran', 35),
+      headerCell('Kriteria Ketercapaian TP', 25),
+      headerCell('Teknik Penilaian', 12),
+      headerCell('Instrumen', 12),
+      headerCell('Nilai Karakter', 11),
     ],
   });
 
-  const mainTableRows = atp.tujuan_pembelajaran.map((tp, idx) => {
-    // Find matching KKTP for this TP
+  const tableRows = atp.tujuan_pembelajaran.map((tp, idx) => {
     const matchingKktp = kktpList.find(k => k.tujuan_pembelajaran === tp) || kktpList[idx];
+    const kriteriaChildren = matchingKktp && matchingKktp.kriteria_ketercapaian && matchingKktp.kriteria_ketercapaian.length > 0
+      ? matchingKktp.kriteria_ketercapaian.map((k, i) =>
+          new Paragraph({
+            spacing: { before: 20, after: 20 },
+            children: [new TextRun({ text: `${i + 1}. ${k}`, size: 20, font: 'Times New Roman' })],
+          })
+        )
+      : [new Paragraph({
+          spacing: { before: 20, after: 20 },
+          children: [new TextRun({ text: '-', size: 20, font: 'Times New Roman' })],
+        })];
 
     return new TableRow({
       children: [
+        // No
         new TableCell({
-          borders: cellBorders,
-          children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: `${idx + 1}`, size: 20 })] })],
+          borders,
+          verticalAlign: VerticalAlign.TOP,
+          children: [new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 20, after: 20 },
+            children: [new TextRun({ text: `${idx + 1}`, size: 20, font: 'Times New Roman' })],
+          })],
         }),
+        // TP
         new TableCell({
-          borders: cellBorders,
-          children: [new Paragraph({ children: [new TextRun({ text: tp, size: 20 })] })],
+          borders,
+          verticalAlign: VerticalAlign.TOP,
+          children: [new Paragraph({
+            spacing: { before: 20, after: 20 },
+            children: [new TextRun({ text: tp, size: 20, font: 'Times New Roman' })],
+          })],
         }),
+        // Kriteria
         new TableCell({
-          borders: cellBorders,
-          children: matchingKktp && matchingKktp.kriteria_ketercapaian.length > 0
-            ? matchingKktp.kriteria_ketercapaian.map((k, i) =>
-                new Paragraph({ children: [new TextRun({ text: `${i + 1}. ${k}`, size: 20 })] })
-              )
-            : [new Paragraph({ children: [new TextRun({ text: '-', size: 20 })] })],
+          borders,
+          verticalAlign: VerticalAlign.TOP,
+          children: kriteriaChildren,
         }),
-        new TableCell({
-          borders: cellBorders,
-          children: [new Paragraph({ children: [new TextRun({ text: matchingKktp?.teknik_penilaian || '-', size: 20 })] })],
-        }),
-        new TableCell({
-          borders: cellBorders,
-          children: [new Paragraph({ children: [new TextRun({ text: matchingKktp?.bentuk_instrumen || '-', size: 20 })] })],
-        }),
-        new TableCell({
-          borders: cellBorders,
-          children: [new Paragraph({ children: [new TextRun({ text: idx === 0 ? nilaiKarakterText : '', size: 18 })] })],
-        }),
+        // Teknik Penilaian
+        textCell(matchingKktp?.teknik_penilaian || '-'),
+        // Instrumen
+        textCell(matchingKktp?.bentuk_instrumen || '-'),
+        // Nilai Karakter (hanya di baris pertama)
+        textCell(idx === 0 ? nilaiKarakterText : ''),
       ],
     });
   });
@@ -272,43 +290,74 @@ export async function exportATPToWord(
   children.push(
     new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: [mainTableHeader, ...mainTableRows],
+      layout: TableLayoutType.FIXED,
+      rows: [tableHeader, ...tableRows],
     }),
   );
 
-  // Guru info
+  // === TANDA TANGAN ===
   children.push(
-    new Paragraph({ text: '' }),
-    new Paragraph({
-      children: [
-        new TextRun({ text: 'Guru Pengampu: ', bold: true, size: 22 }),
-        new TextRun({ text: atp.guru?.nama || '-', size: 22 }),
+    new Paragraph({ text: '', spacing: { after: 100 } }),
+    new Paragraph({ text: '', spacing: { after: 100 } }),
+  );
+
+  // Tanda tangan 2 kolom: Kepala Madrasah (kiri) & Guru Pengampu (kanan)
+  children.push(
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      layout: TableLayoutType.FIXED,
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 50, type: WidthType.PERCENTAGE },
+              borders: noBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'Mengetahui,', size: 22, font: 'Times New Roman' })],
+                }),
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'Kepala Madrasah', size: 22, font: 'Times New Roman' })],
+                }),
+                new Paragraph({ text: '' }),
+                new Paragraph({ text: '' }),
+                new Paragraph({ text: '' }),
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: madrasah.kepala_madrasah || '_____________________', bold: true, size: 22, font: 'Times New Roman', underline: {} })],
+                }),
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: madrasah.nip_kepala ? `NIP. ${madrasah.nip_kepala}` : '', size: 20, font: 'Times New Roman' })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 50, type: WidthType.PERCENTAGE },
+              borders: noBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: '.............................., .................... 20.....', size: 22, font: 'Times New Roman' })],
+                }),
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'Guru Pengampu', size: 22, font: 'Times New Roman' })],
+                }),
+                new Paragraph({ text: '' }),
+                new Paragraph({ text: '' }),
+                new Paragraph({ text: '' }),
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: atp.guru?.nama || '_____________________', bold: true, size: 22, font: 'Times New Roman', underline: {} })],
+                }),
+              ],
+            }),
+          ],
+        }),
       ],
-    }),
-  );
-
-  // Signature section
-  children.push(
-    new Paragraph({ text: '' }),
-    new Paragraph({ text: '' }),
-    new Paragraph({
-      alignment: AlignmentType.RIGHT,
-      children: [new TextRun({ text: `.............................., ........................... 20.....`, size: 22 })],
-    }),
-    new Paragraph({
-      alignment: AlignmentType.RIGHT,
-      children: [new TextRun({ text: 'Mengetahui,', size: 22 })],
-    }),
-    new Paragraph({
-      alignment: AlignmentType.RIGHT,
-      children: [new TextRun({ text: 'Guru Pengampu,', size: 22 })],
-    }),
-    new Paragraph({ text: '' }),
-    new Paragraph({ text: '' }),
-    new Paragraph({ text: '' }),
-    new Paragraph({
-      alignment: AlignmentType.RIGHT,
-      children: [new TextRun({ text: atp.guru?.nama || '_____________________', bold: true, size: 22, underline: {} })],
     }),
   );
 
@@ -317,7 +366,7 @@ export async function exportATPToWord(
       properties: {
         page: {
           size: { width: 16838, height: 11906, orientation: 'landscape' as const },
-          margin: { top: 720, right: 720, bottom: 720, left: 720 },
+          margin: { top: 720, right: 720, bottom: 720, left: 1080 },
         },
       },
       children,
@@ -325,7 +374,7 @@ export async function exportATPToWord(
   });
 
   const blob = await Packer.toBlob(doc);
-  const fileName = `ATP_${atp.mapel}_Kelas${atp.kelas || 'X'}_${atp.semester || ''}.docx`.replace(/\s+/g, '_');
+  const fileName = `ATP_${atp.mapel}_Kelas${atp.kelas || 'X'}_${semesterLabel}.docx`.replace(/\s+/g, '_');
   saveAs(blob, fileName);
 }
 
@@ -334,153 +383,85 @@ export async function exportKKTPToWord(
   kktpList: KKTP[],
   madrasah: MadrasahSettings
 ): Promise<void> {
-  const children = [
+  const semesterLabel = atp.semester === 'ganjil' ? 'Ganjil' : atp.semester === 'genap' ? 'Genap' : '-';
+
+  const children: (Paragraph | Table)[] = [
     // Header
     new Paragraph({
       alignment: AlignmentType.CENTER,
-      children: [
-        new TextRun({ text: 'KRITERIA KETERCAPAIAN TUJUAN PEMBELAJARAN (KKTP)', bold: true, size: 28 }),
-      ],
+      spacing: { after: 80 },
+      children: [new TextRun({ text: 'KRITERIA KETERCAPAIAN TUJUAN PEMBELAJARAN (KKTP)', bold: true, size: 26, font: 'Times New Roman' })],
     }),
     new Paragraph({
       alignment: AlignmentType.CENTER,
-      children: [
-        new TextRun({ text: madrasah.nama_madrasah, bold: true, size: 24 }),
-      ],
+      spacing: { after: 200 },
+      children: [new TextRun({ text: madrasah.nama_madrasah.toUpperCase(), bold: true, size: 24, font: 'Times New Roman' })],
     }),
-    new Paragraph({
-      alignment: AlignmentType.CENTER,
-      children: [
-        new TextRun({ text: madrasah.alamat || '', size: 20 }),
-      ],
-    }),
-    new Paragraph({ text: '' }),
 
-    // Info Table
+    // Info
     new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
+      layout: TableLayoutType.FIXED,
       rows: [
-        new TableRow({
-          children: [
-            new TableCell({
-              width: { size: 25, type: WidthType.PERCENTAGE },
-              borders: cellBorders,
-              children: [new Paragraph({ children: [new TextRun({ text: 'Mata Pelajaran', bold: true })] })],
-            }),
-            new TableCell({
-              width: { size: 25, type: WidthType.PERCENTAGE },
-              borders: cellBorders,
-              children: [new Paragraph({ text: atp.mapel })],
-            }),
-            new TableCell({
-              width: { size: 25, type: WidthType.PERCENTAGE },
-              borders: cellBorders,
-              children: [new Paragraph({ children: [new TextRun({ text: 'Guru Pengampu', bold: true })] })],
-            }),
-            new TableCell({
-              width: { size: 25, type: WidthType.PERCENTAGE },
-              borders: cellBorders,
-              children: [new Paragraph({ text: atp.guru?.nama || '-' })],
-            }),
-          ],
-        }),
-        new TableRow({
-          children: [
-            new TableCell({
-              borders: cellBorders,
-              children: [new Paragraph({ children: [new TextRun({ text: 'Fase/Kelas', bold: true })] })],
-            }),
-            new TableCell({
-              borders: cellBorders,
-              children: [new Paragraph({ text: `Fase ${atp.fase} / Kelas ${atp.kelas || '-'}` })],
-            }),
-            new TableCell({
-              borders: cellBorders,
-              children: [new Paragraph({ children: [new TextRun({ text: 'Tahun Ajaran', bold: true })] })],
-            }),
-            new TableCell({
-              borders: cellBorders,
-              children: [new Paragraph({ text: atp.tahun_ajaran?.nama_ta || '-' })],
-            }),
-          ],
-        }),
+        infoRow('Mata Pelajaran', atp.mapel),
+        infoRow('Fase / Kelas', `Fase ${atp.fase} / Kelas ${atp.kelas || '-'}`),
+        infoRow('Semester', semesterLabel),
+        infoRow('Tahun Pelajaran', atp.tahun_ajaran?.nama_ta || '-'),
+        infoRow('Guru Pengampu', atp.guru?.nama || '-'),
       ],
     }),
-    new Paragraph({ text: '' }),
+    new Paragraph({ text: '', spacing: { after: 200 } }),
   ];
 
   // KKTP Table
   if (kktpList.length > 0) {
-    const kktpTableRows = [
+    const kktpRows = [
       new TableRow({
+        tableHeader: true,
         children: [
-          new TableCell({
-            width: { size: 5, type: WidthType.PERCENTAGE },
-            borders: cellBorders,
-            shading: { fill: 'E0E0E0' },
-            children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'No', bold: true })] })],
-          }),
-          new TableCell({
-            width: { size: 25, type: WidthType.PERCENTAGE },
-            borders: cellBorders,
-            shading: { fill: 'E0E0E0' },
-            children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Tujuan Pembelajaran', bold: true })] })],
-          }),
-          new TableCell({
-            width: { size: 30, type: WidthType.PERCENTAGE },
-            borders: cellBorders,
-            shading: { fill: 'E0E0E0' },
-            children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Kriteria Ketercapaian', bold: true })] })],
-          }),
-          new TableCell({
-            width: { size: 15, type: WidthType.PERCENTAGE },
-            borders: cellBorders,
-            shading: { fill: 'E0E0E0' },
-            children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Teknik Penilaian', bold: true })] })],
-          }),
-          new TableCell({
-            width: { size: 13, type: WidthType.PERCENTAGE },
-            borders: cellBorders,
-            shading: { fill: 'E0E0E0' },
-            children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Instrumen', bold: true })] })],
-          }),
-          new TableCell({
-            width: { size: 12, type: WidthType.PERCENTAGE },
-            borders: cellBorders,
-            shading: { fill: 'E0E0E0' },
-            children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Keterangan', bold: true })] })],
-          }),
+          headerCell('No', 5),
+          headerCell('Tujuan Pembelajaran', 25),
+          headerCell('Kriteria Ketercapaian', 30),
+          headerCell('Teknik Penilaian', 15),
+          headerCell('Instrumen', 13),
+          headerCell('Keterangan', 12),
         ],
       }),
-      ...kktpList.map((kktp, idx) => 
+      ...kktpList.map((kktp, idx) =>
         new TableRow({
           children: [
             new TableCell({
-              borders: cellBorders,
-              children: [new Paragraph({ alignment: AlignmentType.CENTER, text: `${idx + 1}` })],
+              borders,
+              verticalAlign: VerticalAlign.TOP,
+              children: [new Paragraph({
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 20, after: 20 },
+                children: [new TextRun({ text: `${idx + 1}`, size: 20, font: 'Times New Roman' })],
+              })],
             }),
             new TableCell({
-              borders: cellBorders,
-              children: [new Paragraph({ text: kktp.tujuan_pembelajaran })],
+              borders,
+              verticalAlign: VerticalAlign.TOP,
+              children: [new Paragraph({
+                spacing: { before: 20, after: 20 },
+                children: [new TextRun({ text: kktp.tujuan_pembelajaran, size: 20, font: 'Times New Roman' })],
+              })],
             }),
             new TableCell({
-              borders: cellBorders,
-              children: kktp.kriteria_ketercapaian.map((k, i) => 
-                new Paragraph({ text: `${i + 1}. ${k}` })
-              ),
+              borders,
+              verticalAlign: VerticalAlign.TOP,
+              children: (kktp.kriteria_ketercapaian && kktp.kriteria_ketercapaian.length > 0)
+                ? kktp.kriteria_ketercapaian.map((k, i) =>
+                    new Paragraph({
+                      spacing: { before: 20, after: 20 },
+                      children: [new TextRun({ text: `${i + 1}. ${k}`, size: 20, font: 'Times New Roman' })],
+                    })
+                  )
+                : [new Paragraph({ children: [new TextRun({ text: '-', size: 20, font: 'Times New Roman' })] })],
             }),
-            new TableCell({
-              borders: cellBorders,
-              children: [new Paragraph({ text: kktp.teknik_penilaian || '-' })],
-            }),
-            new TableCell({
-              borders: cellBorders,
-              children: [new Paragraph({ text: kktp.bentuk_instrumen || '-' })],
-            }),
-            new TableCell({
-              borders: cellBorders,
-              children: [new Paragraph({ text: kktp.keterangan || '-' })],
-            }),
+            textCell(kktp.teknik_penilaian || '-'),
+            textCell(kktp.bentuk_instrumen || '-'),
+            textCell(kktp.keterangan || '-'),
           ],
         })
       ),
@@ -489,47 +470,93 @@ export async function exportKKTPToWord(
     children.push(
       new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
-        rows: kktpTableRows,
+        layout: TableLayoutType.FIXED,
+        rows: kktpRows,
       }),
     );
   } else {
     children.push(
       new Paragraph({
         alignment: AlignmentType.CENTER,
-        children: [new TextRun({ text: 'Belum ada data KKTP untuk ATP ini', italics: true })],
+        children: [new TextRun({ text: 'Belum ada data KKTP untuk ATP ini', italics: true, size: 22, font: 'Times New Roman' })],
       }),
     );
   }
 
-  // Signature
+  // Tanda tangan
   children.push(
-    new Paragraph({ text: '' }),
-    new Paragraph({ text: '' }),
-    new Paragraph({
-      alignment: AlignmentType.RIGHT,
-      children: [new TextRun({ text: `.............................., ........................... 20.....` })],
-    }),
-    new Paragraph({
-      alignment: AlignmentType.RIGHT,
-      children: [new TextRun({ text: 'Guru Pengampu,' })],
-    }),
-    new Paragraph({ text: '' }),
-    new Paragraph({ text: '' }),
-    new Paragraph({ text: '' }),
-    new Paragraph({
-      alignment: AlignmentType.RIGHT,
-      children: [new TextRun({ text: atp.guru?.nama || '_____________________', bold: true })],
+    new Paragraph({ text: '', spacing: { after: 100 } }),
+    new Paragraph({ text: '', spacing: { after: 100 } }),
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      layout: TableLayoutType.FIXED,
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 50, type: WidthType.PERCENTAGE },
+              borders: noBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'Mengetahui,', size: 22, font: 'Times New Roman' })],
+                }),
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'Kepala Madrasah', size: 22, font: 'Times New Roman' })],
+                }),
+                new Paragraph({ text: '' }),
+                new Paragraph({ text: '' }),
+                new Paragraph({ text: '' }),
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: madrasah.kepala_madrasah || '_____________________', bold: true, size: 22, font: 'Times New Roman', underline: {} })],
+                }),
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: madrasah.nip_kepala ? `NIP. ${madrasah.nip_kepala}` : '', size: 20, font: 'Times New Roman' })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 50, type: WidthType.PERCENTAGE },
+              borders: noBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: '.............................., .................... 20.....', size: 22, font: 'Times New Roman' })],
+                }),
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: 'Guru Pengampu', size: 22, font: 'Times New Roman' })],
+                }),
+                new Paragraph({ text: '' }),
+                new Paragraph({ text: '' }),
+                new Paragraph({ text: '' }),
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: atp.guru?.nama || '_____________________', bold: true, size: 22, font: 'Times New Roman', underline: {} })],
+                }),
+              ],
+            }),
+          ],
+        }),
+      ],
     }),
   );
 
   const doc = new Document({
     sections: [{
-      properties: {},
+      properties: {
+        page: {
+          margin: { top: 1080, right: 720, bottom: 720, left: 1080 },
+        },
+      },
       children,
     }],
   });
 
   const blob = await Packer.toBlob(doc);
-  const fileName = `KKTP_${atp.mapel}_Kelas${atp.kelas || 'X'}_${atp.semester || ''}.docx`.replace(/\s+/g, '_');
+  const fileName = `KKTP_${atp.mapel}_Kelas${atp.kelas || 'X'}_${semesterLabel}.docx`.replace(/\s+/g, '_');
   saveAs(blob, fileName);
 }
