@@ -19,14 +19,15 @@ serve(async (req) => {
 
     const { batch_size = 5, offset = 0 } = await req.json().catch(() => ({}));
 
-    // Fetch templates that need IKTP populated
+    // Fetch templates that need IKTP populated (only those without IKTP)
     const { data: templates, error } = await supabase
       .from("cp_templates")
       .select("id, mapel, kelas, semester, fase, elemen, tujuan_pembelajaran, iktp")
+      .or("iktp.is.null,iktp.eq.[]")
       .order("mapel")
       .order("kelas")
       .order("semester")
-      .range(offset, offset + batch_size - 1);
+      .limit(batch_size);
 
     if (error) throw error;
     if (!templates || templates.length === 0) {
@@ -40,12 +41,6 @@ serve(async (req) => {
     const results = [];
 
     for (const template of templates) {
-      // Skip if already has IKTP data
-      const existingIktp = template.iktp as any[];
-      if (existingIktp && Array.isArray(existingIktp) && existingIktp.length > 0 && existingIktp.some((arr: any) => Array.isArray(arr) && arr.length > 0)) {
-        results.push({ id: template.id, mapel: template.mapel, kelas: template.kelas, semester: template.semester, status: "skipped" });
-        continue;
-      }
 
       const tpList = (template.tujuan_pembelajaran || []) as string[];
       if (tpList.length === 0) {
@@ -75,7 +70,7 @@ Gunakan bahasa Indonesia yang formal dan sesuai standar kurikulum.
 HANYA output JSON, tanpa penjelasan tambahan.`;
 
       // Add delay between requests to avoid rate limiting
-      await delay(1000);
+      await delay(3000);
 
       const maxRetries = 3;
       let lastError = "";
