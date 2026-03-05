@@ -25,7 +25,7 @@ interface GtkKtaCardProps {
 // Ukuran standar KTP/ID-1 (ISO/IEC 7810): 85.60mm x 53.98mm
 const CARD_W = '85.6mm';
 const CARD_H = '53.98mm';
-const TOTAL_W = '171.2mm'; // 2 kartu side-by-side
+const TOTAL_W = '171.2mm';
 
 export function GtkKtaCard({ gtk, madrasah }: GtkKtaCardProps) {
   const namaMadrasah = (madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43').toUpperCase();
@@ -47,7 +47,6 @@ export function GtkKtaCard({ gtk, madrasah }: GtkKtaCardProps) {
 
   const qrData = `https://sim.mtsalwathoniyah43.com/gtk/${gtk.nuptk || gtk.nip || ''}`;
 
-  // Shared styles
   const headerHeight = '11mm';
   const footerHeight = '7mm';
   const headerPadding = '2mm 3mm';
@@ -77,6 +76,25 @@ export function GtkKtaCard({ gtk, madrasah }: GtkKtaCardProps) {
         display: 'flex',
         flexDirection: 'column',
       }}>
+        {/* Watermark logo transparan */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '30mm',
+          height: '30mm',
+          opacity: 0.06,
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}>
+          <img
+            src="/logo-alwathoniyah.png"
+            alt=""
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          />
+        </div>
+
         {/* Header belakang */}
         <div style={{
           background: '#4a5568',
@@ -87,6 +105,8 @@ export function GtkKtaCard({ gtk, madrasah }: GtkKtaCardProps) {
           alignItems: 'center',
           gap: '2mm',
           flexShrink: 0,
+          position: 'relative',
+          zIndex: 1,
         }}>
           <img
             src="/logo-alwathoniyah.png"
@@ -108,12 +128,14 @@ export function GtkKtaCard({ gtk, madrasah }: GtkKtaCardProps) {
         <div style={{
           flex: 1,
           padding: '2mm 3mm',
-          fontSize: '5pt',
+          fontSize: '5.5pt',
           color: '#333',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
           overflow: 'hidden',
+          position: 'relative',
+          zIndex: 1,
         }}>
           <div style={{ display: 'flex', gap: '2.5mm' }}>
             {/* QR Code */}
@@ -131,18 +153,18 @@ export function GtkKtaCard({ gtk, madrasah }: GtkKtaCardProps) {
               <QRCodeSVG value={qrData} size={56} level="M" />
             </div>
 
-            {/* Info */}
-            <div style={{ flex: 1, fontSize: '4.5pt', lineHeight: 1.5 }}>
-              <div style={{ marginBottom: '0.8mm' }}>
-                <span style={{ color: '#1a5d3a', fontWeight: 700, marginRight: '0.8mm', fontSize: '5pt' }}>●</span>
+            {/* Info - ukuran font diperbesar */}
+            <div style={{ flex: 1, fontSize: '5.5pt', lineHeight: 1.6 }}>
+              <div style={{ marginBottom: '1mm' }}>
+                <span style={{ color: '#1a5d3a', fontWeight: 700, marginRight: '1mm', fontSize: '5.5pt' }}>●</span>
                 Kartu Identitas GTK ini diterbitkan oleh Madrasah.
               </div>
-              <div style={{ marginBottom: '0.8mm' }}>
-                <span style={{ color: '#1a5d3a', fontWeight: 700, marginRight: '0.8mm', fontSize: '5pt' }}>●</span>
+              <div style={{ marginBottom: '1mm' }}>
+                <span style={{ color: '#1a5d3a', fontWeight: 700, marginRight: '1mm', fontSize: '5.5pt' }}>●</span>
                 Scan QR Code untuk memvalidasi keabsahan data GTK.
               </div>
               <div>
-                <span style={{ color: '#1a5d3a', fontWeight: 700, marginRight: '0.8mm', fontSize: '5pt' }}>●</span>
+                <span style={{ color: '#1a5d3a', fontWeight: 700, marginRight: '1mm', fontSize: '5.5pt' }}>●</span>
                 Info lebih lanjut hubungi pihak Madrasah.
               </div>
             </div>
@@ -153,7 +175,7 @@ export function GtkKtaCard({ gtk, madrasah }: GtkKtaCardProps) {
             background: '#f7fafc',
             border: '0.5px solid #e2e8f0',
             borderRadius: '1px',
-            fontSize: '4pt',
+            fontSize: '4.5pt',
             color: '#666',
             textAlign: 'center',
             lineHeight: 1.4,
@@ -174,6 +196,8 @@ export function GtkKtaCard({ gtk, madrasah }: GtkKtaCardProps) {
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
+          position: 'relative',
+          zIndex: 1,
         }}>
           <div style={{ fontSize: '5.5pt', fontWeight: 700, color: '#fff', letterSpacing: '0.5px' }}>
             https://sim.mtsalwathoniyah43.com
@@ -246,43 +270,43 @@ export function GtkKtaCard({ gtk, madrasah }: GtkKtaCardProps) {
             )}
           </div>
 
-          {/* Data */}
+          {/* Data - ukuran font diperbesar */}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
-              fontSize: '7pt',
+              fontSize: '8pt',
               fontWeight: 700,
               color: '#1a202c',
-              marginBottom: '1mm',
+              marginBottom: '1.5mm',
               lineHeight: 1.2,
               wordBreak: 'break-word',
             }}>
               {gtk.nama}
             </div>
-            <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '5pt', lineHeight: 1.4 }}>
+            <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '5.5pt', lineHeight: 1.5 }}>
               <tbody>
                 {gtk.nip && (
                   <tr>
-                    <td style={{ fontWeight: 600, paddingRight: '0.8mm', whiteSpace: 'nowrap', color: '#4a5568', verticalAlign: 'top' }}>NIP</td>
-                    <td style={{ paddingRight: '0.8mm', color: '#4a5568', verticalAlign: 'top' }}>:</td>
-                    <td style={{ fontWeight: 700, fontFamily: "'Courier New', monospace", fontSize: '5pt' }}>{gtk.nip}</td>
+                    <td style={{ fontWeight: 600, paddingRight: '1mm', whiteSpace: 'nowrap', color: '#4a5568', verticalAlign: 'top' }}>NIP</td>
+                    <td style={{ paddingRight: '1mm', color: '#4a5568', verticalAlign: 'top' }}>:</td>
+                    <td style={{ fontWeight: 700, fontFamily: "'Courier New', monospace", fontSize: '5.5pt' }}>{gtk.nip}</td>
                   </tr>
                 )}
                 {gtk.nuptk && nuptkLabel && (
                   <tr>
-                    <td style={{ fontWeight: 600, paddingRight: '0.8mm', whiteSpace: 'nowrap', color: '#4a5568', verticalAlign: 'top' }}>{nuptkLabel}</td>
-                    <td style={{ paddingRight: '0.8mm', color: '#4a5568', verticalAlign: 'top' }}>:</td>
-                    <td style={{ fontWeight: 700, fontFamily: "'Courier New', monospace", fontSize: '5pt' }}>{gtk.nuptk}</td>
+                    <td style={{ fontWeight: 600, paddingRight: '1mm', whiteSpace: 'nowrap', color: '#4a5568', verticalAlign: 'top' }}>{nuptkLabel}</td>
+                    <td style={{ paddingRight: '1mm', color: '#4a5568', verticalAlign: 'top' }}>:</td>
+                    <td style={{ fontWeight: 700, fontFamily: "'Courier New', monospace", fontSize: '5.5pt' }}>{gtk.nuptk}</td>
                   </tr>
                 )}
                 <tr>
-                  <td style={{ fontWeight: 600, paddingRight: '0.8mm', whiteSpace: 'nowrap', color: '#4a5568', verticalAlign: 'top' }}>Fungsi</td>
-                  <td style={{ paddingRight: '0.8mm', color: '#4a5568', verticalAlign: 'top' }}>:</td>
-                  <td style={{ fontWeight: 700, fontSize: '5pt', wordBreak: 'break-word' }}>{gtk.jabatan || '-'}</td>
+                  <td style={{ fontWeight: 600, paddingRight: '1mm', whiteSpace: 'nowrap', color: '#4a5568', verticalAlign: 'top' }}>Fungsi</td>
+                  <td style={{ paddingRight: '1mm', color: '#4a5568', verticalAlign: 'top' }}>:</td>
+                  <td style={{ fontWeight: 700, fontSize: '5.5pt', wordBreak: 'break-word' }}>{gtk.jabatan || '-'}</td>
                 </tr>
                 <tr>
-                  <td style={{ fontWeight: 600, paddingRight: '0.8mm', whiteSpace: 'nowrap', color: '#4a5568', verticalAlign: 'top' }}>Instansi</td>
-                  <td style={{ paddingRight: '0.8mm', color: '#4a5568', verticalAlign: 'top' }}>:</td>
-                  <td style={{ fontWeight: 700, fontSize: '4.5pt', wordBreak: 'break-word' }}>{namaMadrasah}</td>
+                  <td style={{ fontWeight: 600, paddingRight: '1mm', whiteSpace: 'nowrap', color: '#4a5568', verticalAlign: 'top' }}>Instansi</td>
+                  <td style={{ paddingRight: '1mm', color: '#4a5568', verticalAlign: 'top' }}>:</td>
+                  <td style={{ fontWeight: 700, fontSize: '5pt', wordBreak: 'break-word' }}>{namaMadrasah}</td>
                 </tr>
               </tbody>
             </table>
