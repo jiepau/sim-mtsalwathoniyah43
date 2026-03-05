@@ -56,7 +56,6 @@ const MAPEL_UMUM = [
   'Bahasa Inggris',
   'PJOK',
   'Seni Budaya',
-  'Prakarya',
   'Informatika',
 ];
 
