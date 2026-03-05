@@ -875,8 +875,8 @@ export default function GtkPtkPage() {
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                 Batal
               </Button>
-              <Button type="submit">
-                {editingGtk ? 'Simpan' : 'Tambah'}
+              <Button type="submit" disabled={uploadingFoto}>
+                {uploadingFoto ? 'Menyimpan...' : editingGtk ? 'Simpan' : 'Tambah'}
               </Button>
             </DialogFooter>
           </form>

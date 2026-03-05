@@ -1,4 +1,5 @@
 import { UserCog } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface GtkKtaCardProps {
   gtk: {
@@ -6,6 +7,7 @@ interface GtkKtaCardProps {
     nip: string | null;
     nuptk: string | null;
     jabatan: string | null;
+    foto_path?: string | null;
   };
   madrasah: {
     nama_madrasah: string;
@@ -17,6 +19,14 @@ interface GtkKtaCardProps {
 
 export function GtkKtaCard({ gtk, madrasah }: GtkKtaCardProps) {
   const namaMadrasah = madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43';
+
+  const getFotoUrl = () => {
+    if (!gtk.foto_path) return null;
+    const { data } = supabase.storage.from('gtk-photos').getPublicUrl(gtk.foto_path);
+    return data?.publicUrl || null;
+  };
+
+  const fotoUrl = getFotoUrl();
 
   return (
     <div className="kta-card" style={{
@@ -75,7 +85,7 @@ export function GtkKtaCard({ gtk, madrasah }: GtkKtaCardProps) {
         gap: '3mm',
         alignItems: 'flex-start',
       }}>
-        {/* Photo placeholder */}
+        {/* Photo */}
         <div style={{
           width: '18mm',
           height: '24mm',
@@ -86,8 +96,13 @@ export function GtkKtaCard({ gtk, madrasah }: GtkKtaCardProps) {
           justifyContent: 'center',
           background: '#f5f5f5',
           flexShrink: 0,
+          overflow: 'hidden',
         }}>
-          <UserCog style={{ width: '8mm', height: '8mm', color: '#aaa' }} />
+          {fotoUrl ? (
+            <img src={fotoUrl} alt={gtk.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <UserCog style={{ width: '8mm', height: '8mm', color: '#aaa' }} />
+          )}
         </div>
 
         {/* Info */}
