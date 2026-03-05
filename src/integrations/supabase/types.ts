@@ -256,10 +256,13 @@ export type Database = {
           capaian_pembelajaran: string
           created_at: string
           elemen: string[] | null
+          elemen_cp: string[] | null
           fase: Database["public"]["Enums"]["fase_pembelajaran"]
           id: string
+          iktp: Json | null
           kelas: number | null
           mapel: string
+          materi_pembelajaran: string[] | null
           semester: string | null
           sumber: string | null
           tujuan_pembelajaran: string[] | null
@@ -269,10 +272,13 @@ export type Database = {
           capaian_pembelajaran: string
           created_at?: string
           elemen?: string[] | null
+          elemen_cp?: string[] | null
           fase?: Database["public"]["Enums"]["fase_pembelajaran"]
           id?: string
+          iktp?: Json | null
           kelas?: number | null
           mapel: string
+          materi_pembelajaran?: string[] | null
           semester?: string | null
           sumber?: string | null
           tujuan_pembelajaran?: string[] | null
@@ -282,10 +288,13 @@ export type Database = {
           capaian_pembelajaran?: string
           created_at?: string
           elemen?: string[] | null
+          elemen_cp?: string[] | null
           fase?: Database["public"]["Enums"]["fase_pembelajaran"]
           id?: string
+          iktp?: Json | null
           kelas?: number | null
           mapel?: string
+          materi_pembelajaran?: string[] | null
           semester?: string | null
           sumber?: string | null
           tujuan_pembelajaran?: string[] | null
