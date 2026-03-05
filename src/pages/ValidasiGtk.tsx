@@ -161,6 +161,9 @@ export default function ValidasiGtk() {
               {madrasah?.npsn && (
                 <InfoRow icon={<Building2 style={{ width: 16, height: 16 }} />} label="NPSN" value={madrasah.npsn} mono />
               )}
+              {madrasah?.nsm && (
+                <InfoRow icon={<Building2 style={{ width: 16, height: 16 }} />} label="NSM" value={madrasah.nsm} mono />
+              )}
             </div>
           </div>
         </div>
