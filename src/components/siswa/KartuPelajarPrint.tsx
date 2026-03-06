@@ -184,7 +184,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
           display: flex;
           align-items: flex-start;
           margin-bottom: 1.2mm;
-          font-size: 6.5pt;
+          font-size: 7.5pt;
           color: #222;
           line-height: 1.25;
         }
