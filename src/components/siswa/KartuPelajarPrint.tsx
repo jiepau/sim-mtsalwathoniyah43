@@ -139,7 +139,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* NAMA - di banner hijau tepat di bawah "KARTU PELAJAR" */}
               <div style={{
                 position: 'absolute',
-                top: '40%',
+                top: '44%',
                 left: '3%',
                 maxWidth: '46%',
                 fontSize: 9.5,
@@ -156,8 +156,8 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* NIS / NISN value - tepat setelah titik dua */}
               <div style={{
                 position: 'absolute',
-                top: '52%',
-                left: '18%',
+                top: '55%',
+                left: '20%',
                 fontSize: 8.5,
                 fontWeight: 600,
                 color: '#222',
@@ -169,8 +169,8 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* TTL value - tepat setelah titik dua */}
               <div style={{
                 position: 'absolute',
-                top: '61%',
-                left: '18%',
+                top: '65%',
+                left: '20%',
                 fontSize: 8.5,
                 fontWeight: 600,
                 color: '#222',
@@ -184,8 +184,8 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* JK value - tepat setelah titik dua */}
               <div style={{
                 position: 'absolute',
-                top: '73%',
-                left: '18%',
+                top: '76%',
+                left: '24%',
                 fontSize: 8.5,
                 fontWeight: 600,
                 color: '#222',
@@ -197,10 +197,10 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* FOTO - pas di dalam green border frame kanan */}
               <div style={{
                 position: 'absolute',
-                top: '19%',
-                right: '5.5%',
-                width: 76,
-                height: 100,
+                top: '36%',
+                right: '9%',
+                width: 62,
+                height: 80,
                 overflow: 'hidden',
                 display: 'flex',
                 alignItems: 'center',
