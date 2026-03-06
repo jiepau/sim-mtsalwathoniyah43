@@ -38,7 +38,10 @@ export default function ProfilGuru() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingFoto, setUploadingFoto] = useState(false);
   const [profile, setProfile] = useState<GtkProfile | null>(null);
+  const [fotoUrl, setFotoUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     nama: "",
     nip: "",
