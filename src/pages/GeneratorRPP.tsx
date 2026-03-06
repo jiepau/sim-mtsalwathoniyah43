@@ -721,17 +721,59 @@ const GeneratorRPP = () => {
                   </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-3 space-y-3">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs">Diferensiasi Konten</Label>
-                    <Textarea rows={2} placeholder="Penyesuaian materi berdasarkan kesiapan belajar..." value={formData.diferensiasi_konten} onChange={(e) => handleInputChange('diferensiasi_konten', e.target.value)} />
+                    <div className="space-y-1.5">
+                      {DIFERENSIASI_PRESETS.konten.map((item, i) => (
+                        <label key={i} className="flex items-center gap-2 text-xs cursor-pointer">
+                          <Checkbox
+                            checked={formData.diferensiasi_konten.includes(item)}
+                            onCheckedChange={(checked) => {
+                              const current = formData.diferensiasi_konten ? formData.diferensiasi_konten.split('\n').filter(Boolean) : [];
+                              const updated = checked ? [...current, item] : current.filter(v => v !== item);
+                              handleInputChange('diferensiasi_konten', updated.join('\n'));
+                            }}
+                          />
+                          <span>{item}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs">Diferensiasi Proses</Label>
-                    <Textarea rows={2} placeholder="Penyesuaian aktivitas (visual, auditori, kinestetik)..." value={formData.diferensiasi_proses} onChange={(e) => handleInputChange('diferensiasi_proses', e.target.value)} />
+                    <div className="space-y-1.5">
+                      {DIFERENSIASI_PRESETS.proses.map((item, i) => (
+                        <label key={i} className="flex items-center gap-2 text-xs cursor-pointer">
+                          <Checkbox
+                            checked={formData.diferensiasi_proses.includes(item)}
+                            onCheckedChange={(checked) => {
+                              const current = formData.diferensiasi_proses ? formData.diferensiasi_proses.split('\n').filter(Boolean) : [];
+                              const updated = checked ? [...current, item] : current.filter(v => v !== item);
+                              handleInputChange('diferensiasi_proses', updated.join('\n'));
+                            }}
+                          />
+                          <span>{item}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs">Diferensiasi Produk</Label>
-                    <Textarea rows={2} placeholder="Variasi hasil belajar yang bisa dipilih siswa..." value={formData.diferensiasi_produk} onChange={(e) => handleInputChange('diferensiasi_produk', e.target.value)} />
+                    <div className="space-y-1.5">
+                      {DIFERENSIASI_PRESETS.produk.map((item, i) => (
+                        <label key={i} className="flex items-center gap-2 text-xs cursor-pointer">
+                          <Checkbox
+                            checked={formData.diferensiasi_produk.includes(item)}
+                            onCheckedChange={(checked) => {
+                              const current = formData.diferensiasi_produk ? formData.diferensiasi_produk.split('\n').filter(Boolean) : [];
+                              const updated = checked ? [...current, item] : current.filter(v => v !== item);
+                              handleInputChange('diferensiasi_produk', updated.join('\n'));
+                            }}
+                          />
+                          <span>{item}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 </CollapsibleContent>
               </Collapsible>
