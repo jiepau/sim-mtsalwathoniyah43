@@ -174,15 +174,15 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
                 style={{
                   position: "absolute",
                   top: "44%",
-                  left: "10%",
+                  left: "12%",
                   maxWidth: "46%",
-                  fontSize: 11,
+                  fontSize: 13,
                   fontWeight: 800,
                   color: "#ffffff",
                   lineHeight: 1.15,
                   textTransform: "uppercase",
                   fontFamily: "Arial, sans-serif",
-                  letterSpacing: 0.3,
+                  letterSpacing: 0.6,
                 }}
               >
                 {siswa.nama}
