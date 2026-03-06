@@ -24,7 +24,6 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Wait for images to load
     const timer = setTimeout(() => setReady(true), 300);
     return () => clearTimeout(timer);
   }, []);
@@ -54,10 +53,9 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
     return tempat || tanggal;
   };
 
-  // Card dimensions in px (for screen) - KTP ratio 85.6:53.98 ≈ 1.586:1
-  // We use 428px x 270px for screen (5x scale from mm)
-  const CARD_W = 428;
-  const CARD_H = 270;
+  // Screen size: 428x270px (KTP ratio)
+  const W = 428;
+  const H = 270;
 
   return (
     <>
@@ -67,15 +65,9 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
           body * { visibility: hidden !important; }
           .kartu-print-area, .kartu-print-area * { visibility: visible !important; }
           .kartu-print-area {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
+            position: absolute; left: 0; top: 0; width: 100%;
           }
-          @page {
-            size: A4 portrait;
-            margin: 8mm;
-          }
+          @page { size: A4 portrait; margin: 8mm; }
           .no-print { display: none !important; }
           .kartu-card-wrapper {
             width: 85.6mm !important;
@@ -84,16 +76,6 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
           .kartu-card-wrapper img.kartu-bg {
             width: 85.6mm !important;
             height: 53.98mm !important;
-          }
-          .kartu-nama-overlay { font-size: 7pt !important; top: 28% !important; }
-          .kartu-nis-line { font-size: 6pt !important; }
-          .kartu-ttl-line { font-size: 6pt !important; }
-          .kartu-jk-line { font-size: 6pt !important; }
-          .kartu-photo-box {
-            width: 20mm !important;
-            height: 26mm !important;
-            top: 26% !important;
-            right: 8% !important;
           }
         }
         @media screen {
@@ -109,20 +91,13 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
         }
       `}</style>
 
-      {/* Close button */}
       <div className="no-print" style={{ position: 'fixed', top: 16, right: 16, zIndex: 50 }}>
         <button
           onClick={onClose}
           style={{
-            background: '#ef4444',
-            color: '#fff',
-            padding: '8px 20px',
-            borderRadius: 8,
-            border: 'none',
-            cursor: 'pointer',
-            fontWeight: 600,
-            fontSize: 14,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            background: '#ef4444', color: '#fff', padding: '8px 20px',
+            borderRadius: 8, border: 'none', cursor: 'pointer',
+            fontWeight: 600, fontSize: 14, boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
           }}
         >
           ✕ Tutup Preview
@@ -132,95 +107,82 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
       <div className="kartu-print-area">
         {siswaList.map((siswa) => (
           <div key={siswa.id} style={{ display: 'flex', gap: 12, marginBottom: 8, pageBreakInside: 'avoid' }}>
-            {/* === FRONT === */}
+            {/* === SISI DEPAN === */}
             <div
               className="kartu-card-wrapper"
-              style={{
-                width: CARD_W,
-                height: CARD_H,
-                position: 'relative',
-                borderRadius: 10,
-                overflow: 'hidden',
-                flexShrink: 0,
-              }}
+              style={{ width: W, height: H, position: 'relative', borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}
             >
-              <img
-                src={kartuFrontBg}
-                alt=""
-                className="kartu-bg"
-                style={{
-                  width: CARD_W,
-                  height: CARD_H,
-                  objectFit: 'cover',
-                  display: 'block',
-                }}
-              />
-              {/* Nama overlay */}
-              <div
-                className="kartu-nama-overlay"
-                style={{
-                  position: 'absolute',
-                  top: '28%',
-                  left: '8%',
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: '#fff',
-                  maxWidth: '50%',
-                  lineHeight: 1.3,
-                  textTransform: 'uppercase',
-                }}
-              >
+              <img src={kartuFrontBg} alt="" className="kartu-bg" style={{ width: W, height: H, objectFit: 'cover', display: 'block' }} />
+
+              {/* NAMA - di atas badge hijau yang sudah ada di background */}
+              <div style={{
+                position: 'absolute',
+                top: '33.5%',
+                left: '9%',
+                fontSize: 11,
+                fontWeight: 700,
+                color: '#fff',
+                maxWidth: '48%',
+                lineHeight: 1.2,
+                textTransform: 'uppercase',
+                fontFamily: 'Arial, sans-serif',
+              }}>
                 {siswa.nama}
               </div>
-              {/* Data fields */}
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '42%',
-                  left: '8%',
-                  fontSize: 9,
-                  color: '#222',
-                  lineHeight: 2,
-                  fontFamily: 'Arial, sans-serif',
-                }}
-              >
-                <div className="kartu-nis-line">
-                  <span style={{ display: 'inline-block', width: 80 }}>NIS/NISN</span>
-                  <span style={{ display: 'inline-block', width: 14, textAlign: 'center' }}>:</span>
-                  <strong>{siswa.nis}{siswa.nisn ? ` / ${siswa.nisn}` : ''}</strong>
-                </div>
-                <div className="kartu-ttl-line">
-                  <span style={{ display: 'inline-block', width: 80 }}>Tempat,</span>
-                  <span style={{ display: 'inline-block', width: 14, textAlign: 'center' }}>:</span>
-                  <strong>{formatTTL(siswa)}</strong>
-                </div>
-                <div style={{ marginTop: -4 }}>
-                  <span style={{ display: 'inline-block', width: 80, fontSize: 8 }}>Tanggal Lahir</span>
-                </div>
-                <div className="kartu-jk-line">
-                  <span style={{ display: 'inline-block', width: 80 }}>Jenis Kelamin</span>
-                  <span style={{ display: 'inline-block', width: 14, textAlign: 'center' }}>:</span>
-                  <strong>{siswa.jenis_kelamin || '-'}</strong>
-                </div>
+
+              {/* NIS / NISN value - setelah label "NIS/NISN :" di background */}
+              <div style={{
+                position: 'absolute',
+                top: '49%',
+                left: '30%',
+                fontSize: 10,
+                fontWeight: 700,
+                color: '#222',
+                fontFamily: 'Arial, sans-serif',
+              }}>
+                {siswa.nis}{siswa.nisn ? `    / ${siswa.nisn}` : ''}
               </div>
-              {/* Photo */}
-              <div
-                className="kartu-photo-box"
-                style={{
-                  position: 'absolute',
-                  top: '26%',
-                  right: '8%',
-                  width: 95,
-                  height: 120,
-                  borderRadius: 6,
-                  overflow: 'hidden',
-                  border: '2px solid #2e7d5e',
-                  background: '#e8f5e9',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+
+              {/* TTL value - setelah label "Tempat, Tanggal Lahir :" */}
+              <div style={{
+                position: 'absolute',
+                top: '60.5%',
+                left: '30%',
+                fontSize: 10,
+                fontWeight: 700,
+                color: '#222',
+                fontFamily: 'Arial, sans-serif',
+                maxWidth: '30%',
+              }}>
+                {formatTTL(siswa)}
+              </div>
+
+              {/* JK value - setelah label "Jenis Kelamin :" */}
+              <div style={{
+                position: 'absolute',
+                top: '74%',
+                left: '30%',
+                fontSize: 10,
+                fontWeight: 700,
+                color: '#222',
+                fontFamily: 'Arial, sans-serif',
+              }}>
+                {siswa.jenis_kelamin || '-'}
+              </div>
+
+              {/* FOTO - di area frame foto hijau yang sudah ada di background */}
+              <div style={{
+                position: 'absolute',
+                top: '27%',
+                right: '7%',
+                width: 90,
+                height: 115,
+                borderRadius: 5,
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
                 {siswa.foto_path ? (
                   <img
                     src={getPhotoUrl(siswa.foto_path) || ''}
@@ -228,37 +190,19 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 ) : (
-                  <div style={{ textAlign: 'center', color: '#999', fontSize: 10 }}>
-                    <div style={{ fontSize: 24 }}>📷</div>
-                    Foto
+                  <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.6)', fontSize: 10 }}>
+                    <div style={{ fontSize: 28 }}>📷</div>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* === BACK === */}
+            {/* === SISI BELAKANG === */}
             <div
               className="kartu-card-wrapper"
-              style={{
-                width: CARD_W,
-                height: CARD_H,
-                position: 'relative',
-                borderRadius: 10,
-                overflow: 'hidden',
-                flexShrink: 0,
-              }}
+              style={{ width: W, height: H, position: 'relative', borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}
             >
-              <img
-                src={kartuBackBg}
-                alt=""
-                className="kartu-bg"
-                style={{
-                  width: CARD_W,
-                  height: CARD_H,
-                  objectFit: 'cover',
-                  display: 'block',
-                }}
-              />
+              <img src={kartuBackBg} alt="" className="kartu-bg" style={{ width: W, height: H, objectFit: 'cover', display: 'block' }} />
             </div>
           </div>
         ))}
