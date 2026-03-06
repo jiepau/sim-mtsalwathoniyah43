@@ -136,13 +136,13 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
             >
               <img src={kartuFrontBg} alt="" className="kartu-bg" style={{ width: W, height: H, objectFit: 'cover', display: 'block' }} />
 
-              {/* NAMA - di banner hijau, warna putih */}
+              {/* NAMA - di area banner hijau bawah "KARTU PELAJAR" */}
               <div style={{
                 position: 'absolute',
-                top: '33%',
+                top: '38%',
                 left: '4%',
-                maxWidth: '50%',
-                fontSize: 11,
+                maxWidth: '48%',
+                fontSize: 10,
                 fontWeight: 700,
                 color: '#ffffff',
                 lineHeight: 1.2,
@@ -153,7 +153,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
                 {siswa.nama}
               </div>
 
-              {/* NIS / NISN value - setelah ":" */}
+              {/* NIS / NISN value */}
               <div style={{
                 position: 'absolute',
                 top: '53%',
@@ -166,7 +166,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
                 {siswa.nis}{siswa.nisn ? ` / ${siswa.nisn}` : ''}
               </div>
 
-              {/* TTL value - setelah ":" */}
+              {/* TTL value */}
               <div style={{
                 position: 'absolute',
                 top: '62%',
@@ -181,7 +181,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
                 {formatTTL(siswa)}
               </div>
 
-              {/* JK value - setelah ":" */}
+              {/* JK value */}
               <div style={{
                 position: 'absolute',
                 top: '75%',
@@ -194,13 +194,13 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
                 {siswa.jenis_kelamin || '-'}
               </div>
 
-              {/* FOTO - pas di dalam border frame */}
+              {/* FOTO - dalam border frame kanan */}
               <div style={{
                 position: 'absolute',
-                top: '18%',
-                right: '5%',
-                width: 85,
-                height: 110,
+                top: '15%',
+                right: '3%',
+                width: 80,
+                height: 105,
                 overflow: 'hidden',
                 display: 'flex',
                 alignItems: 'center',
