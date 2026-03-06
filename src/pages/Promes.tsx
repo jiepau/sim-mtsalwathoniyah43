@@ -585,7 +585,7 @@ export default function PromesPage() {
     },
   ];
 
-  const bulanList = selectedPromes?.semester === 'ganjil' ? BULAN_GANJIL : BULAN_GENAP;
+  
 
   return (
     <div className="animate-fadeIn">
