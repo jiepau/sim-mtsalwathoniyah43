@@ -134,7 +134,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* NIS / NISN value - setelah ":" */}
               <div style={{
                 position: 'absolute',
-                top: '49%',
+                top: '51%',
                 left: '22%',
                 fontSize: 9,
                 fontWeight: 600,
@@ -147,7 +147,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* TTL value - setelah ":" */}
               <div style={{
                 position: 'absolute',
-                top: '59%',
+                top: '60%',
                 left: '22%',
                 fontSize: 9,
                 fontWeight: 600,
@@ -162,7 +162,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* JK value - setelah ":" */}
               <div style={{
                 position: 'absolute',
-                top: '70%',
+                top: '72%',
                 left: '22%',
                 fontSize: 9,
                 fontWeight: 600,
