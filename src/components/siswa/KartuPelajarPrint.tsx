@@ -15,40 +15,25 @@ interface Siswa {
   kelas?: { nama_kelas: string };
 }
 
-interface MadrasahSettings {
-  nama_madrasah: string;
-  kepala_madrasah: string | null;
-  nip_kepala: string | null;
-  no_telp: string | null;
-  email: string | null;
-  alamat: string | null;
-  website: string | null;
-}
-
 interface Props {
   siswaList: Siswa[];
   onClose: () => void;
 }
 
 export function KartuPelajarPrint({ siswaList, onClose }: Props) {
-  const [madrasah, setMadrasah] = useState<MadrasahSettings | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const fetchMadrasah = async () => {
-      const { data } = await supabase.from('madrasah_settings').select('*').limit(1).maybeSingle();
-      if (data) setMadrasah(data);
-    };
-    fetchMadrasah();
+    // Wait for images to load
+    const timer = setTimeout(() => setReady(true), 300);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    if (!madrasah) return;
-    // Auto print after render
-    const timer = setTimeout(() => {
-      window.print();
-    }, 500);
+    if (!ready) return;
+    const timer = setTimeout(() => window.print(), 600);
     return () => clearTimeout(timer);
-  }, [madrasah]);
+  }, [ready]);
 
   const getPhotoUrl = (foto_path: string | null | undefined): string | null => {
     if (!foto_path) return null;
@@ -69,180 +54,211 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
     return tempat || tanggal;
   };
 
-  if (!madrasah) return null;
+  // Card dimensions in px (for screen) - KTP ratio 85.6:53.98 ≈ 1.586:1
+  // We use 428px x 270px for screen (5x scale from mm)
+  const CARD_W = 428;
+  const CARD_H = 270;
 
   return (
     <>
       <style>{`
         @media print {
+          html, body { margin: 0 !important; padding: 0 !important; }
           body * { visibility: hidden !important; }
-          .kartu-pelajar-print-area, .kartu-pelajar-print-area * { visibility: visible !important; }
-          .kartu-pelajar-print-area { 
-            position: absolute; 
-            left: 0; 
-            top: 0; 
+          .kartu-print-area, .kartu-print-area * { visibility: visible !important; }
+          .kartu-print-area {
+            position: absolute;
+            left: 0;
+            top: 0;
             width: 100%;
           }
-          @page { 
-            size: A4 portrait; 
-            margin: 10mm; 
+          @page {
+            size: A4 portrait;
+            margin: 8mm;
           }
           .no-print { display: none !important; }
-        }
-        @media screen {
-          .kartu-pelajar-print-area {
-            max-width: 800px;
-            margin: 0 auto;
+          .kartu-card-wrapper {
+            width: 85.6mm !important;
+            height: 53.98mm !important;
+          }
+          .kartu-card-wrapper img.kartu-bg {
+            width: 85.6mm !important;
+            height: 53.98mm !important;
+          }
+          .kartu-nama-overlay { font-size: 7pt !important; top: 28% !important; }
+          .kartu-nis-line { font-size: 6pt !important; }
+          .kartu-ttl-line { font-size: 6pt !important; }
+          .kartu-jk-line { font-size: 6pt !important; }
+          .kartu-photo-box {
+            width: 20mm !important;
+            height: 26mm !important;
+            top: 26% !important;
+            right: 8% !important;
           }
         }
-        .kartu-card {
-          width: 85.6mm;
-          height: 53.98mm;
-          position: relative;
-          overflow: hidden;
-          page-break-inside: avoid;
-          background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
-          border-radius: 3mm;
-        }
-        .kartu-front {
-          background-image: url(${kartuFrontBg});
-        }
-        .kartu-back {
-          background-image: url(${kartuBackBg});
-        }
-        .kartu-front-overlay {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          display: flex;
-          flex-direction: column;
-        }
-        .kartu-nama {
-          position: absolute;
-          top: 15.5mm;
-          left: 8mm;
-          font-size: 7pt;
-          font-weight: 700;
-          color: #fff;
-          max-width: 42mm;
-          line-height: 1.2;
-          background: hsl(160, 72%, 37%);
-          padding: 1mm 3mm;
-          border-radius: 1mm;
-        }
-        .kartu-data {
-          position: absolute;
-          top: 23mm;
-          left: 8mm;
-          font-size: 6.5pt;
-          color: #333;
-          line-height: 1.8;
-        }
-        .kartu-data-label {
-          display: inline-block;
-          width: 18mm;
-          font-weight: 400;
-        }
-        .kartu-data-sep {
-          display: inline-block;
-          width: 3mm;
-          text-align: center;
-        }
-        .kartu-data-value {
-          font-weight: 700;
-        }
-        .kartu-photo-frame {
-          position: absolute;
-          top: 14mm;
-          right: 6mm;
-          width: 22mm;
-          height: 28mm;
-          border: 1.5px solid hsl(160, 72%, 37%);
-          border-radius: 1.5mm;
-          overflow: hidden;
-          background: #e8f5e9;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .kartu-photo-frame img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-        .kartu-photo-placeholder {
-          font-size: 5pt;
-          color: #999;
-          text-align: center;
-        }
-        .kartu-pair {
-          display: flex;
-          gap: 5mm;
-          margin-bottom: 4mm;
-          page-break-inside: avoid;
+        @media screen {
+          .kartu-print-area {
+            background: #1a1a2e;
+            min-height: 100vh;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+          }
         }
       `}</style>
 
-      {/* Close button - screen only */}
-      <div className="no-print fixed top-4 right-4 z-50">
+      {/* Close button */}
+      <div className="no-print" style={{ position: 'fixed', top: 16, right: 16, zIndex: 50 }}>
         <button
           onClick={onClose}
-          className="bg-destructive text-destructive-foreground px-4 py-2 rounded-md shadow-lg hover:opacity-90"
+          style={{
+            background: '#ef4444',
+            color: '#fff',
+            padding: '8px 20px',
+            borderRadius: 8,
+            border: 'none',
+            cursor: 'pointer',
+            fontWeight: 600,
+            fontSize: 14,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          }}
         >
           ✕ Tutup Preview
         </button>
       </div>
 
-      <div className="kartu-pelajar-print-area p-4">
-        {siswaList.map((siswa, idx) => (
-          <div key={siswa.id} className="kartu-pair" style={{ pageBreakAfter: (idx + 1) % 4 === 0 ? 'always' : 'auto' }}>
-            {/* Front */}
-            <div className="kartu-card kartu-front">
-              <div className="kartu-front-overlay">
-                <div className="kartu-nama">{siswa.nama}</div>
-                <div className="kartu-data">
-                  <div>
-                    <span className="kartu-data-label">NIS/NISN</span>
-                    <span className="kartu-data-sep">:</span>
-                    <span className="kartu-data-value">{siswa.nis}</span>
-                    {siswa.nisn && <span className="kartu-data-value"> / {siswa.nisn}</span>}
-                  </div>
-                  <div>
-                    <span className="kartu-data-label">Tempat,</span>
-                    <span className="kartu-data-sep">:</span>
-                    <span className="kartu-data-value">{formatTTL(siswa)}</span>
-                  </div>
-                  <div style={{ marginTop: '-1mm' }}>
-                    <span className="kartu-data-label">Tanggal Lahir</span>
-                    <span className="kartu-data-sep"></span>
-                    <span className="kartu-data-value"></span>
-                  </div>
-                  <div>
-                    <span className="kartu-data-label">Jenis Kelamin</span>
-                    <span className="kartu-data-sep">:</span>
-                    <span className="kartu-data-value">{siswa.jenis_kelamin || '-'}</span>
-                  </div>
+      <div className="kartu-print-area">
+        {siswaList.map((siswa) => (
+          <div key={siswa.id} style={{ display: 'flex', gap: 12, marginBottom: 8, pageBreakInside: 'avoid' }}>
+            {/* === FRONT === */}
+            <div
+              className="kartu-card-wrapper"
+              style={{
+                width: CARD_W,
+                height: CARD_H,
+                position: 'relative',
+                borderRadius: 10,
+                overflow: 'hidden',
+                flexShrink: 0,
+              }}
+            >
+              <img
+                src={kartuFrontBg}
+                alt=""
+                className="kartu-bg"
+                style={{
+                  width: CARD_W,
+                  height: CARD_H,
+                  objectFit: 'cover',
+                  display: 'block',
+                }}
+              />
+              {/* Nama overlay */}
+              <div
+                className="kartu-nama-overlay"
+                style={{
+                  position: 'absolute',
+                  top: '28%',
+                  left: '8%',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: '#fff',
+                  maxWidth: '50%',
+                  lineHeight: 1.3,
+                  textTransform: 'uppercase',
+                }}
+              >
+                {siswa.nama}
+              </div>
+              {/* Data fields */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '42%',
+                  left: '8%',
+                  fontSize: 9,
+                  color: '#222',
+                  lineHeight: 2,
+                  fontFamily: 'Arial, sans-serif',
+                }}
+              >
+                <div className="kartu-nis-line">
+                  <span style={{ display: 'inline-block', width: 80 }}>NIS/NISN</span>
+                  <span style={{ display: 'inline-block', width: 14, textAlign: 'center' }}>:</span>
+                  <strong>{siswa.nis}{siswa.nisn ? ` / ${siswa.nisn}` : ''}</strong>
                 </div>
-                <div className="kartu-photo-frame">
-                  {siswa.foto_path ? (
-                    <img src={getPhotoUrl(siswa.foto_path) || ''} alt={siswa.nama} />
-                  ) : (
-                    <div className="kartu-photo-placeholder">
-                      <div style={{ fontSize: '14pt' }}>📷</div>
-                      <div>Foto</div>
-                    </div>
-                  )}
+                <div className="kartu-ttl-line">
+                  <span style={{ display: 'inline-block', width: 80 }}>Tempat,</span>
+                  <span style={{ display: 'inline-block', width: 14, textAlign: 'center' }}>:</span>
+                  <strong>{formatTTL(siswa)}</strong>
                 </div>
+                <div style={{ marginTop: -4 }}>
+                  <span style={{ display: 'inline-block', width: 80, fontSize: 8 }}>Tanggal Lahir</span>
+                </div>
+                <div className="kartu-jk-line">
+                  <span style={{ display: 'inline-block', width: 80 }}>Jenis Kelamin</span>
+                  <span style={{ display: 'inline-block', width: 14, textAlign: 'center' }}>:</span>
+                  <strong>{siswa.jenis_kelamin || '-'}</strong>
+                </div>
+              </div>
+              {/* Photo */}
+              <div
+                className="kartu-photo-box"
+                style={{
+                  position: 'absolute',
+                  top: '26%',
+                  right: '8%',
+                  width: 95,
+                  height: 120,
+                  borderRadius: 6,
+                  overflow: 'hidden',
+                  border: '2px solid #2e7d5e',
+                  background: '#e8f5e9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {siswa.foto_path ? (
+                  <img
+                    src={getPhotoUrl(siswa.foto_path) || ''}
+                    alt={siswa.nama}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div style={{ textAlign: 'center', color: '#999', fontSize: 10 }}>
+                    <div style={{ fontSize: 24 }}>📷</div>
+                    Foto
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Back */}
-            <div className="kartu-card kartu-back">
-              {/* Back side uses full background image - no overlay needed */}
+            {/* === BACK === */}
+            <div
+              className="kartu-card-wrapper"
+              style={{
+                width: CARD_W,
+                height: CARD_H,
+                position: 'relative',
+                borderRadius: 10,
+                overflow: 'hidden',
+                flexShrink: 0,
+              }}
+            >
+              <img
+                src={kartuBackBg}
+                alt=""
+                className="kartu-bg"
+                style={{
+                  width: CARD_W,
+                  height: CARD_H,
+                  objectFit: 'cover',
+                  display: 'block',
+                }}
+              />
             </div>
           </div>
         ))}
