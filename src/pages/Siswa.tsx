@@ -640,6 +640,9 @@ export default function SiswaPage() {
       className: 'w-40'
     },
   ];
+  if (printMode) {
+    return <KartuPelajarPrint siswaList={printSiswaList} onClose={() => setPrintMode(false)} />;
+  }
 
   return (
     <div className="animate-fadeIn">
@@ -663,6 +666,10 @@ export default function SiswaPage() {
               columns={exportColumns} 
               filename="data_siswa"
             />
+            <Button variant="outline" onClick={handlePrintBatch}>
+              <IdCard className="h-4 w-4 mr-2" />
+              Cetak Kartu
+            </Button>
             <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
               <Upload className="h-4 w-4 mr-2" />
               Import
