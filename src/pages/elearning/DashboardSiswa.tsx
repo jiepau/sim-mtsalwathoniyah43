@@ -78,8 +78,16 @@ export default function DashboardSiswa() {
       {/* Student info */}
       <Card>
         <CardContent className="flex items-center gap-4 p-6">
-          <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
-            <User className="h-7 w-7 text-primary" />
+          <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+            {siswaData.foto_path ? (
+              <img 
+                src={supabase.storage.from('siswa-photos').getPublicUrl(siswaData.foto_path).data.publicUrl} 
+                alt={siswaData.nama} 
+                className="w-full h-full object-cover" 
+              />
+            ) : (
+              <User className="h-7 w-7 text-primary" />
+            )}
           </div>
           <div>
             <h2 className="text-xl font-bold">{siswaData.nama}</h2>

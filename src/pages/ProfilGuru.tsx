@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { User, Save, Mail, Phone, MapPin, GraduationCap, Briefcase, Calendar, FileText } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { User, Save, Mail, Phone, MapPin, GraduationCap, Briefcase, Calendar, FileText, Camera, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
