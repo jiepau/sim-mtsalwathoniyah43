@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { CalendarDays, Plus, Search, Pencil, Trash2, Eye, Database, Download, Sparkles, Loader2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import PromesSpreadsheetView, { type PromesSpreadsheetData, spreadsheetToDetails } from '@/components/promes/PromesSpreadsheetView';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -103,6 +104,8 @@ export default function PromesPage() {
   const [selectedAtpId, setSelectedAtpId] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const spreadsheetDataRef = useRef<PromesSpreadsheetData | null>(null);
+  const [linkedAtpTP, setLinkedAtpTP] = useState<string[]>([]);
   
   const [formData, setFormData] = useState({
     mapel: '',
@@ -291,25 +294,15 @@ export default function PromesPage() {
     setSelectedPromes(item);
     const details = await fetchPromesDetails(item.id);
     setPromesDetails(details);
+    spreadsheetDataRef.current = null;
     
-    // Initialize form based on semester
-    const bulanList = item.semester === 'ganjil' ? BULAN_GANJIL : BULAN_GENAP;
-    const formInit: Record<DetailFormKey, any> = {};
+    // Try to find linked ATP to get TP list
+    const linkedAtp = atpList.find(a => 
+      a.mapel === item.mapel && a.kelas === item.kelas && 
+      (a.semester === item.semester || !a.semester)
+    );
+    setLinkedAtpTP(linkedAtp?.tujuan_pembelajaran || []);
     
-    bulanList.forEach(b => {
-      for (let minggu = 1; minggu <= 5; minggu++) {
-        const key = `${b.bulan}-${minggu}` as DetailFormKey;
-        const existing = details.find(d => d.bulan === b.bulan && d.minggu === minggu);
-        formInit[key] = {
-          tema: existing?.tema || '',
-          sub_tema: existing?.sub_tema || '',
-          tujuan_pembelajaran: existing?.tujuan_pembelajaran || '',
-          alokasi_waktu: existing?.alokasi_waktu || '',
-          keterangan: existing?.keterangan || '',
-        };
-      }
-    });
-    setDetailForm(formInit);
     setDetailDialogOpen(true);
   };
 
@@ -385,39 +378,46 @@ export default function PromesPage() {
   };
 
   const handleSaveDetails = async () => {
-    if (!selectedPromes) return;
+    if (!selectedPromes || !spreadsheetDataRef.current) return;
 
     try {
       // Delete existing details first
       await supabase.from('promes_detail').delete().eq('promes_id', selectedPromes.id);
 
-      // Insert new details
-      const bulanList = selectedPromes.semester === 'ganjil' ? BULAN_GANJIL : BULAN_GENAP;
-      const detailsToInsert: any[] = [];
+      // Convert spreadsheet data to promes_detail format
+      const rawDetails = spreadsheetToDetails(spreadsheetDataRef.current);
+      
+      const detailsToInsert = rawDetails
+        .filter(d => d.bulan > 0) // Skip placeholder entries
+        .map(d => ({
+          promes_id: selectedPromes.id,
+          bulan: d.bulan,
+          minggu: d.minggu,
+          tema: d.tema || null,
+          sub_tema: d.sub_tema || null,
+          tujuan_pembelajaran: d.tujuan_pembelajaran || null,
+          alokasi_waktu: d.alokasi_waktu || null,
+          keterangan: d.keterangan || null,
+        }));
 
-      bulanList.forEach(b => {
-        for (let minggu = 1; minggu <= 5; minggu++) {
-          const key = `${b.bulan}-${minggu}` as DetailFormKey;
-          const detail = detailForm[key];
-          
-          // Only insert if at least tema or TP is filled
-          if (detail?.tema?.trim() || detail?.tujuan_pembelajaran?.trim()) {
-            detailsToInsert.push({
-              promes_id: selectedPromes.id,
-              bulan: b.bulan,
-              minggu,
-              tema: detail.tema || null,
-              sub_tema: detail.sub_tema || null,
-              tujuan_pembelajaran: detail.tujuan_pembelajaran || null,
-              alokasi_waktu: detail.alokasi_waktu || null,
-              keterangan: detail.keterangan || null,
-            });
-          }
-        }
-      });
+      // Also save unscheduled TPs (bulan=0) with bulan=1, minggu=0 for persistence
+      const unscheduledDetails = rawDetails
+        .filter(d => d.bulan === 0)
+        .map(d => ({
+          promes_id: selectedPromes.id,
+          bulan: 0,
+          minggu: 0,
+          tema: d.tema || null,
+          sub_tema: d.sub_tema || null,
+          tujuan_pembelajaran: d.tujuan_pembelajaran || null,
+          alokasi_waktu: d.alokasi_waktu || null,
+          keterangan: d.keterangan || null,
+        }));
 
-      if (detailsToInsert.length > 0) {
-        const { error } = await supabase.from('promes_detail').insert(detailsToInsert);
+      const allDetails = [...detailsToInsert, ...unscheduledDetails];
+
+      if (allDetails.length > 0) {
+        const { error } = await supabase.from('promes_detail').insert(allDetails);
         if (error) throw error;
       }
 
@@ -585,7 +585,7 @@ export default function PromesPage() {
     },
   ];
 
-  const bulanList = selectedPromes?.semester === 'ganjil' ? BULAN_GANJIL : BULAN_GENAP;
+  
 
   return (
     <div className="animate-fadeIn">
@@ -823,70 +823,24 @@ export default function PromesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Detail Dialog */}
+      {/* Detail Dialog - Spreadsheet Format */}
       <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              Detail Promes: {selectedPromes?.mapel} - Semester {selectedPromes?.semester === 'ganjil' ? 'Ganjil' : 'Genap'}
+              Program Semester: {selectedPromes?.mapel} - Semester {selectedPromes?.semester === 'ganjil' ? 'Ganjil' : 'Genap'}
+              {selectedPromes?.kelas ? ` - Kelas ${selectedPromes.kelas}` : ''}
             </DialogTitle>
           </DialogHeader>
           
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-muted">
-                  <th className="border p-2 text-left w-28">Bulan</th>
-                  {[1, 2, 3, 4, 5].map(w => (
-                    <th key={w} className="border p-2 text-center">Minggu {w}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {bulanList.map(b => (
-                  <tr key={b.bulan}>
-                    <td className="border p-2 font-medium bg-muted/50">{b.nama}</td>
-                    {[1, 2, 3, 4, 5].map(minggu => {
-                      const key = `${b.bulan}-${minggu}` as DetailFormKey;
-                      return (
-                        <td key={minggu} className="border p-1">
-                          <div className="space-y-1">
-                            <Input
-                              value={detailForm[key]?.tema || ''}
-                              onChange={(e) => setDetailForm(prev => ({
-                                ...prev,
-                                [key]: { ...prev[key], tema: e.target.value }
-                              }))}
-                              placeholder="Tema/Materi"
-                              className="text-xs h-8"
-                            />
-                            <Textarea
-                              value={detailForm[key]?.tujuan_pembelajaran || ''}
-                              onChange={(e) => setDetailForm(prev => ({
-                                ...prev,
-                                [key]: { ...prev[key], tujuan_pembelajaran: e.target.value }
-                              }))}
-                              placeholder="Tujuan Pembelajaran"
-                              className="text-xs min-h-[60px]"
-                            />
-                            <Input
-                              value={detailForm[key]?.alokasi_waktu || ''}
-                              onChange={(e) => setDetailForm(prev => ({
-                                ...prev,
-                                [key]: { ...prev[key], alokasi_waktu: e.target.value }
-                              }))}
-                              placeholder="JP"
-                              className="text-xs h-8 w-16"
-                            />
-                          </div>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {selectedPromes && (
+            <PromesSpreadsheetView
+              semester={selectedPromes.semester}
+              initialDetails={promesDetails}
+              atpTujuanPembelajaran={linkedAtpTP}
+              onChange={(data) => { spreadsheetDataRef.current = data; }}
+            />
+          )}
 
           <DialogFooter className="flex-wrap gap-2">
             <Button 
