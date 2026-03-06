@@ -157,7 +157,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               <div style={{
                 position: 'absolute',
                 top: '55%',
-                left: '20%',
+                left: '24%',
                 fontSize: 8.5,
                 fontWeight: 600,
                 color: '#222',
@@ -170,7 +170,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               <div style={{
                 position: 'absolute',
                 top: '65%',
-                left: '20%',
+                left: '24%',
                 fontSize: 8.5,
                 fontWeight: 600,
                 color: '#222',
