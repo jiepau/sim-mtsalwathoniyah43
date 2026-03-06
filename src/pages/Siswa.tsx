@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Users, Plus, Search, Upload, Pencil, Trash2, Phone, X, Eye, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Users, Plus, Search, Upload, Pencil, Trash2, Phone, X, Eye, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, IdCard, Camera } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
@@ -33,6 +33,7 @@ import { cn } from '@/lib/utils';
 import { ImportDialog, ImportResult } from '@/components/import/ImportDialog';
 import { ExportButton } from '@/components/export/ExportButton';
 import { SiswaDetailDialog } from '@/components/siswa/SiswaDetailDialog';
+import { KartuPelajarPrint } from '@/components/siswa/KartuPelajarPrint';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
@@ -51,6 +52,7 @@ interface Siswa {
   jenis_kelamin: string | null;
   nama_ibu_kandung: string | null;
   nama_ayah_kandung: string | null;
+  foto_path: string | null;
   kelas?: { nama_kelas: string };
   tahun_ajaran?: { nama_ta: string; semester?: string };
 }
