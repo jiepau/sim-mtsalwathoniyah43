@@ -104,6 +104,8 @@ export default function PromesPage() {
   const [selectedAtpId, setSelectedAtpId] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const spreadsheetDataRef = useRef<PromesSpreadsheetData | null>(null);
+  const [linkedAtpTP, setLinkedAtpTP] = useState<string[]>([]);
   
   const [formData, setFormData] = useState({
     mapel: '',
