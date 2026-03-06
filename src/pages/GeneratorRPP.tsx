@@ -451,7 +451,14 @@ const GeneratorRPP = () => {
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs">Kelas *</Label>
-                      <Input className="h-9" placeholder="VII, VIII, IX" value={formData.kelas} onChange={(e) => handleInputChange('kelas', e.target.value)} />
+                      <Select value={formData.kelas} onValueChange={(v) => handleInputChange('kelas', v)} disabled={!formData.jenjang}>
+                        <SelectTrigger className="h-9"><SelectValue placeholder={formData.jenjang ? "Pilih Kelas" : "Pilih Jenjang dulu"} /></SelectTrigger>
+                        <SelectContent>
+                          {kelasOptions.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
