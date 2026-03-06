@@ -21,18 +21,40 @@ interface Props {
 }
 
 export function KartuPelajarPrint({ siswaList, onClose }: Props) {
-  const [ready, setReady] = useState(false);
+  const [canPrint, setCanPrint] = useState(false);
 
+  // Wait for ALL images to fully load before triggering print
   useEffect(() => {
-    const timer = setTimeout(() => setReady(true), 300);
-    return () => clearTimeout(timer);
+    const checkImages = () => {
+      const container = document.querySelector('.kartu-print-area');
+      if (!container) return;
+
+      const images = Array.from(container.querySelectorAll('img'));
+      if (images.length === 0) { setCanPrint(true); return; }
+
+      let loaded = 0;
+      const onLoad = () => { loaded++; if (loaded >= images.length) setCanPrint(true); };
+
+      images.forEach((img) => {
+        if (img.complete && img.naturalHeight > 0) onLoad();
+        else {
+          img.addEventListener('load', onLoad);
+          img.addEventListener('error', onLoad);
+        }
+      });
+    };
+
+    const timer = setTimeout(checkImages, 500);
+    // Fallback: force print after 6 seconds max
+    const fallback = setTimeout(() => setCanPrint(true), 6000);
+    return () => { clearTimeout(timer); clearTimeout(fallback); };
   }, []);
 
   useEffect(() => {
-    if (!ready) return;
-    const timer = setTimeout(() => window.print(), 600);
+    if (!canPrint) return;
+    const timer = setTimeout(() => window.print(), 300);
     return () => clearTimeout(timer);
-  }, [ready]);
+  }, [canPrint]);
 
   const getPhotoUrl = (foto_path: string | null | undefined): string | null => {
     if (!foto_path) return null;
