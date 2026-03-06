@@ -114,75 +114,105 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
             >
               <img src={kartuFrontBg} alt="" className="kartu-bg" style={{ width: W, height: H, objectFit: 'cover', display: 'block' }} />
 
-              {/* NAMA - di atas badge hijau yang sudah ada di background */}
+              {/* NAMA - menutupi "nama" di badge hijau */}
               <div style={{
                 position: 'absolute',
-                top: '33%',
-                left: '8%',
-                fontSize: 11,
+                top: '34%',
+                left: '3%',
+                width: '44%',
+                height: '14%',
+                fontSize: 10,
                 fontWeight: 700,
                 color: '#fff',
-                maxWidth: '45%',
-                lineHeight: 1.2,
+                lineHeight: 1.15,
                 textTransform: 'uppercase',
                 fontFamily: 'Arial, sans-serif',
+                letterSpacing: 0.3,
+                zIndex: 2,
+                display: 'flex',
+                alignItems: 'center',
+                background: '#1a7a3a',
+                padding: '0 6px',
+                borderRadius: 3,
               }}>
                 {siswa.nama}
               </div>
 
-              {/* NIS / NISN value - setelah tanda ":" di background */}
+              {/* NIS / NISN value */}
               <div style={{
                 position: 'absolute',
-                top: '49%',
-                left: '38%',
-                fontSize: 10,
-                fontWeight: 700,
-                color: '#222',
-                fontFamily: 'Arial, sans-serif',
-              }}>
-                {siswa.nis}{siswa.nisn ? ` / ${siswa.nisn}` : ''}
-              </div>
-
-              {/* TTL value - setelah tanda ":" di background */}
-              <div style={{
-                position: 'absolute',
-                top: '60%',
-                left: '38%',
+                top: '54%',
+                left: '24%',
+                right: '19%',
+                height: '9%',
                 fontSize: 9,
                 fontWeight: 700,
                 color: '#222',
                 fontFamily: 'Arial, sans-serif',
-                maxWidth: '28%',
+                background: '#f8f6ee',
+                padding: '2px 6px',
+                zIndex: 2,
+                display: 'flex',
+                alignItems: 'center',
+              }}>
+                {siswa.nis}{siswa.nisn ? ` / ${siswa.nisn}` : ''}
+              </div>
+
+              {/* TTL value */}
+              <div style={{
+                position: 'absolute',
+                top: '64%',
+                left: '24%',
+                right: '19%',
+                minHeight: '10%',
+                fontSize: 8,
+                fontWeight: 700,
+                color: '#222',
+                fontFamily: 'Arial, sans-serif',
+                background: '#f8f6ee',
+                padding: '2px 6px',
                 lineHeight: 1.2,
+                zIndex: 2,
+                display: 'flex',
+                alignItems: 'center',
               }}>
                 {formatTTL(siswa)}
               </div>
 
-              {/* JK value - setelah tanda ":" di background */}
+              {/* JK value */}
               <div style={{
                 position: 'absolute',
-                top: '74%',
-                left: '38%',
-                fontSize: 10,
+                top: '76%',
+                left: '24%',
+                right: '19%',
+                height: '9%',
+                fontSize: 9,
                 fontWeight: 700,
                 color: '#222',
                 fontFamily: 'Arial, sans-serif',
+                background: '#f8f6ee',
+                padding: '2px 6px',
+                zIndex: 2,
+                display: 'flex',
+                alignItems: 'center',
               }}>
                 {siswa.jenis_kelamin || '-'}
               </div>
 
-              {/* FOTO - di area frame foto hijau yang sudah ada di background */}
+              {/* FOTO */}
               <div style={{
                 position: 'absolute',
-                top: '27%',
-                right: '7%',
-                width: 90,
-                height: 115,
-                borderRadius: 5,
+                top: '42%',
+                right: '3%',
+                width: 55,
+                height: 70,
+                borderRadius: 3,
                 overflow: 'hidden',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                zIndex: 3,
+                background: '#eee',
               }}>
                 {siswa.foto_path ? (
                   <img
@@ -191,8 +221,8 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 ) : (
-                  <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.6)', fontSize: 10 }}>
-                    <div style={{ fontSize: 28 }}>📷</div>
+                  <div style={{ textAlign: 'center', color: 'rgba(150,150,150,0.8)', fontSize: 10 }}>
+                    <div style={{ fontSize: 18 }}>📷</div>
                   </div>
                 )}
               </div>
