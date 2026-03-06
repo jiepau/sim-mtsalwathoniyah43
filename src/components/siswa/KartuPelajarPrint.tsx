@@ -142,7 +142,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               <div style={{
                 position: 'absolute',
                 top: '54%',
-                left: '27%',
+                left: '24%',
                 right: '19%',
                 height: '9%',
                 fontSize: 9,
@@ -162,7 +162,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               <div style={{
                 position: 'absolute',
                 top: '64%',
-                left: '27%',
+                left: '24%',
                 right: '19%',
                 minHeight: '10%',
                 fontSize: 8,
@@ -183,7 +183,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               <div style={{
                 position: 'absolute',
                 top: '76%',
-                left: '27%',
+                left: '24%',
                 right: '19%',
                 height: '9%',
                 fontSize: 9,
