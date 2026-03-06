@@ -197,10 +197,10 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* FOTO - pas di dalam green border frame kanan */}
               <div style={{
                 position: 'absolute',
-                top: '33%',
-                right: '8.5%',
-                width: 66,
-                height: 86,
+                top: '36%',
+                right: '9%',
+                width: 62,
+                height: 80,
                 overflow: 'hidden',
                 display: 'flex',
                 alignItems: 'center',
