@@ -294,25 +294,15 @@ export default function PromesPage() {
     setSelectedPromes(item);
     const details = await fetchPromesDetails(item.id);
     setPromesDetails(details);
+    spreadsheetDataRef.current = null;
     
-    // Initialize form based on semester
-    const bulanList = item.semester === 'ganjil' ? BULAN_GANJIL : BULAN_GENAP;
-    const formInit: Record<DetailFormKey, any> = {};
+    // Try to find linked ATP to get TP list
+    const linkedAtp = atpList.find(a => 
+      a.mapel === item.mapel && a.kelas === item.kelas && 
+      (a.semester === item.semester || !a.semester)
+    );
+    setLinkedAtpTP(linkedAtp?.tujuan_pembelajaran || []);
     
-    bulanList.forEach(b => {
-      for (let minggu = 1; minggu <= 5; minggu++) {
-        const key = `${b.bulan}-${minggu}` as DetailFormKey;
-        const existing = details.find(d => d.bulan === b.bulan && d.minggu === minggu);
-        formInit[key] = {
-          tema: existing?.tema || '',
-          sub_tema: existing?.sub_tema || '',
-          tujuan_pembelajaran: existing?.tujuan_pembelajaran || '',
-          alokasi_waktu: existing?.alokasi_waktu || '',
-          keterangan: existing?.keterangan || '',
-        };
-      }
-    });
-    setDetailForm(formInit);
     setDetailDialogOpen(true);
   };
 
