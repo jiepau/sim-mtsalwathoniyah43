@@ -626,6 +626,9 @@ export default function SiswaPage() {
           >
             <Eye className="h-4 w-4" />
           </Button>
+          <Button size="sm" variant="ghost" onClick={() => handlePrintKartu(item)} title="Cetak Kartu Pelajar">
+            <IdCard className="h-4 w-4" />
+          </Button>
           <Button size="sm" variant="ghost" onClick={() => handleOpenDialog(item)} title="Edit">
             <Pencil className="h-4 w-4" />
           </Button>
@@ -634,7 +637,7 @@ export default function SiswaPage() {
           </Button>
         </div>
       ),
-      className: 'w-32'
+      className: 'w-40'
     },
   ];
 
