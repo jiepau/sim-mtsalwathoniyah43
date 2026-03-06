@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Users, Plus, Search, Upload, Pencil, Trash2, Phone, X, Eye, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Users, Plus, Search, Upload, Pencil, Trash2, Phone, X, Eye, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, IdCard, Camera } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
@@ -33,6 +33,7 @@ import { cn } from '@/lib/utils';
 import { ImportDialog, ImportResult } from '@/components/import/ImportDialog';
 import { ExportButton } from '@/components/export/ExportButton';
 import { SiswaDetailDialog } from '@/components/siswa/SiswaDetailDialog';
+import { KartuPelajarPrint } from '@/components/siswa/KartuPelajarPrint';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
@@ -51,6 +52,7 @@ interface Siswa {
   jenis_kelamin: string | null;
   nama_ibu_kandung: string | null;
   nama_ayah_kandung: string | null;
+  foto_path: string | null;
   kelas?: { nama_kelas: string };
   tahun_ajaran?: { nama_ta: string; semester?: string };
 }
@@ -81,6 +83,10 @@ export default function SiswaPage() {
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedSiswa, setSelectedSiswa] = useState<Siswa | null>(null);
   const [editingSiswa, setEditingSiswa] = useState<Siswa | null>(null);
+  const [printMode, setPrintMode] = useState(false);
+  const [printSiswaList, setPrintSiswaList] = useState<Siswa[]>([]);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -452,6 +458,56 @@ export default function SiswaPage() {
     }
   };
 
+  // Photo upload handler
+  const handlePhotoUpload = async (siswaId: string, file: File) => {
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Ukuran foto maksimal 2MB');
+      return;
+    }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      toast.error('Format foto harus JPG, PNG, atau WebP');
+      return;
+    }
+    setUploadingPhoto(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const filePath = `${siswaId}.${ext}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('siswa-photos')
+        .upload(filePath, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      const { error: updateError } = await supabase
+        .from('siswa')
+        .update({ foto_path: filePath } as any)
+        .eq('id', siswaId);
+      if (updateError) throw updateError;
+
+      toast.success('Foto berhasil diupload');
+      fetchData();
+    } catch (error: any) {
+      toast.error('Gagal upload foto: ' + error.message);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  // Print kartu pelajar
+  const handlePrintKartu = (siswaData: Siswa) => {
+    setPrintSiswaList([siswaData]);
+    setPrintMode(true);
+  };
+
+  const handlePrintBatch = () => {
+    if (filteredSiswa.length === 0) {
+      toast.info('Tidak ada siswa untuk dicetak');
+      return;
+    }
+    setPrintSiswaList(filteredSiswa);
+    setPrintMode(true);
+  };
+
   // Filter by search, kelas, and TA from URL
   const filteredSiswa = siswa.filter(s => {
     const matchesSearch = s.nama.toLowerCase().includes(search.toLowerCase()) ||
@@ -570,6 +626,9 @@ export default function SiswaPage() {
           >
             <Eye className="h-4 w-4" />
           </Button>
+          <Button size="sm" variant="ghost" onClick={() => handlePrintKartu(item)} title="Cetak Kartu Pelajar">
+            <IdCard className="h-4 w-4" />
+          </Button>
           <Button size="sm" variant="ghost" onClick={() => handleOpenDialog(item)} title="Edit">
             <Pencil className="h-4 w-4" />
           </Button>
@@ -578,9 +637,12 @@ export default function SiswaPage() {
           </Button>
         </div>
       ),
-      className: 'w-32'
+      className: 'w-40'
     },
   ];
+  if (printMode) {
+    return <KartuPelajarPrint siswaList={printSiswaList} onClose={() => setPrintMode(false)} />;
+  }
 
   return (
     <div className="animate-fadeIn">
@@ -604,6 +666,10 @@ export default function SiswaPage() {
               columns={exportColumns} 
               filename="data_siswa"
             />
+            <Button variant="outline" onClick={handlePrintBatch}>
+              <IdCard className="h-4 w-4 mr-2" />
+              Cetak Kartu
+            </Button>
             <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
               <Upload className="h-4 w-4 mr-2" />
               Import
@@ -838,6 +904,48 @@ export default function SiswaPage() {
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Photo upload - only show when editing */}
+            {editingSiswa && (
+              <div className="flex items-center gap-4">
+                <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center overflow-hidden border-2 border-primary/20">
+                  {editingSiswa.foto_path ? (
+                    <img 
+                      src={supabase.storage.from('siswa-photos').getPublicUrl(editingSiswa.foto_path).data.publicUrl} 
+                      alt="Foto" 
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Camera className="h-6 w-6 text-muted-foreground" />
+                  )}
+                </div>
+                <div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={uploadingPhoto}
+                    onClick={() => photoInputRef.current?.click()}
+                  >
+                    <Camera className="h-4 w-4 mr-1" />
+                    {uploadingPhoto ? 'Mengupload...' : 'Upload Foto'}
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-1">JPG/PNG/WebP, maks 2MB</p>
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file && editingSiswa) {
+                        handlePhotoUpload(editingSiswa.id, file);
+                      }
+                      e.target.value = '';
+                    }}
+                  />
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="nis">NIS</Label>

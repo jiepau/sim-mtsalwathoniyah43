@@ -1354,6 +1354,7 @@ export type Database = {
         Row: {
           alamat: string | null
           created_at: string
+          foto_path: string | null
           id: string
           jenis_kelamin: string | null
           kelas_id: string | null
@@ -1373,6 +1374,7 @@ export type Database = {
         Insert: {
           alamat?: string | null
           created_at?: string
+          foto_path?: string | null
           id?: string
           jenis_kelamin?: string | null
           kelas_id?: string | null
@@ -1392,6 +1394,7 @@ export type Database = {
         Update: {
           alamat?: string | null
           created_at?: string
+          foto_path?: string | null
           id?: string
           jenis_kelamin?: string | null
           kelas_id?: string | null
