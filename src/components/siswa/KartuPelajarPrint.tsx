@@ -157,7 +157,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               <div style={{
                 position: 'absolute',
                 top: '55%',
-                left: '19%',
+                left: '20%',
                 fontSize: 8.5,
                 fontWeight: 600,
                 color: '#222',
@@ -170,7 +170,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               <div style={{
                 position: 'absolute',
                 top: '65%',
-                left: '19%',
+                left: '20%',
                 fontSize: 8.5,
                 fontWeight: 600,
                 color: '#222',
@@ -185,7 +185,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               <div style={{
                 position: 'absolute',
                 top: '76%',
-                left: '19%',
+                left: '24%',
                 fontSize: 8.5,
                 fontWeight: 600,
                 color: '#222',
@@ -197,7 +197,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* FOTO - pas di dalam green border frame kanan */}
               <div style={{
                 position: 'absolute',
-                top: '30%',
+                top: '33%',
                 right: '8.5%',
                 width: 66,
                 height: 86,
