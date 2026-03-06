@@ -171,7 +171,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
                 position: 'absolute',
                 top: '65%',
                 left: '24%',
-                fontSize: 10,
+                fontSize: 8.5,
                 fontWeight: 700,
                 color: '#222',
                 fontFamily: 'Arial, sans-serif',
