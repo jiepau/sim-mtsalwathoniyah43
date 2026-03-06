@@ -147,6 +147,51 @@ export default function ProfilGuru() {
     }
   };
 
+  const handleFotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+
+    if (!file.type.match(/^image\/(jpeg|png|webp)$/)) {
+      toast.error("Format file harus JPG, PNG, atau WebP");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Ukuran file maksimal 2MB");
+      return;
+    }
+
+    setUploadingFoto(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const filePath = `${profile.id}.${ext}`;
+
+      // Delete old photo if exists
+      if (profile.foto_path) {
+        await supabase.storage.from('gtk-photos').remove([profile.foto_path]);
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from('gtk-photos')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { error: updateError } = await supabase
+        .from('gtk_ptk')
+        .update({ foto_path: filePath })
+        .eq('id', profile.id);
+
+      if (updateError) throw updateError;
+
+      toast.success("Foto berhasil diperbarui");
+      fetchProfile();
+    } catch (error: any) {
+      toast.error("Gagal upload foto: " + error.message);
+    } finally {
+      setUploadingFoto(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+
   if (loading) {
     return (
       <div className="animate-fadeIn">
