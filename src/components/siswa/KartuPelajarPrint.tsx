@@ -117,10 +117,10 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* NAMA */}
               <div style={{
                 position: 'absolute',
-                top: '39%',
+                top: '35%',
                 left: '4%',
-                maxWidth: '50%',
-                fontSize: 11,
+                maxWidth: '52%',
+                fontSize: 12,
                 fontWeight: 700,
                 color: '#1a1a1a',
                 lineHeight: 1.2,
@@ -134,9 +134,9 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* NIS / NISN value - setelah ":" */}
               <div style={{
                 position: 'absolute',
-                top: '51%',
-                left: '22%',
-                fontSize: 9,
+                top: '53%',
+                left: '30%',
+                fontSize: 10,
                 fontWeight: 600,
                 color: '#222',
                 fontFamily: 'Arial, sans-serif',
@@ -147,13 +147,13 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* TTL value - setelah ":" */}
               <div style={{
                 position: 'absolute',
-                top: '60%',
-                left: '22%',
-                fontSize: 9,
+                top: '63%',
+                left: '30%',
+                fontSize: 10,
                 fontWeight: 600,
                 color: '#222',
                 fontFamily: 'Arial, sans-serif',
-                maxWidth: '35%',
+                maxWidth: '30%',
                 lineHeight: 1.2,
               }}>
                 {formatTTL(siswa)}
@@ -162,9 +162,9 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* JK value - setelah ":" */}
               <div style={{
                 position: 'absolute',
-                top: '72%',
-                left: '22%',
-                fontSize: 9,
+                top: '74%',
+                left: '30%',
+                fontSize: 10,
                 fontWeight: 600,
                 color: '#222',
                 fontFamily: 'Arial, sans-serif',
@@ -175,10 +175,10 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* FOTO - di dalam frame foto */}
               <div style={{
                 position: 'absolute',
-                top: '30%',
-                right: '6%',
-                width: 95,
-                height: 120,
+                top: '23%',
+                right: '4%',
+                width: 100,
+                height: 128,
                 borderRadius: 4,
                 overflow: 'hidden',
                 display: 'flex',
