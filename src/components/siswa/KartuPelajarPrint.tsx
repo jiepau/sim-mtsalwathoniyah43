@@ -117,10 +117,10 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* NAMA - menutupi "nama" di badge hijau */}
               <div style={{
                 position: 'absolute',
-                top: '37%',
-                left: '4%',
-                width: '42%',
-                height: '8%',
+                top: '35%',
+                left: '3%',
+                width: '44%',
+                height: '12%',
                 fontSize: 10,
                 fontWeight: 700,
                 color: '#fff',
@@ -131,8 +131,9 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
                 zIndex: 2,
                 display: 'flex',
                 alignItems: 'center',
-                background: 'linear-gradient(90deg, #1a7a3a 0%, #1a7a3a 90%, transparent 100%)',
+                background: '#1a7a3a',
                 padding: '0 6px',
+                borderRadius: 3,
               }}>
                 {siswa.nama}
               </div>
@@ -140,15 +141,15 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* NIS / NISN value */}
               <div style={{
                 position: 'absolute',
-                top: '54.5%',
-                left: '30%',
-                right: '20%',
-                height: '8%',
+                top: '54%',
+                left: '27%',
+                right: '19%',
+                height: '9%',
                 fontSize: 9,
                 fontWeight: 700,
                 color: '#222',
                 fontFamily: 'Arial, sans-serif',
-                background: '#f9f9f0',
+                background: '#f8f6ee',
                 padding: '2px 6px',
                 zIndex: 2,
                 display: 'flex',
@@ -161,14 +162,14 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               <div style={{
                 position: 'absolute',
                 top: '64%',
-                left: '30%',
-                right: '20%',
+                left: '27%',
+                right: '19%',
                 minHeight: '10%',
                 fontSize: 8,
                 fontWeight: 700,
                 color: '#222',
                 fontFamily: 'Arial, sans-serif',
-                background: '#f9f9f0',
+                background: '#f8f6ee',
                 padding: '2px 6px',
                 lineHeight: 1.2,
                 zIndex: 2,
@@ -182,14 +183,14 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               <div style={{
                 position: 'absolute',
                 top: '76%',
-                left: '30%',
-                right: '20%',
-                height: '8%',
+                left: '27%',
+                right: '19%',
+                height: '9%',
                 fontSize: 9,
                 fontWeight: 700,
                 color: '#222',
                 fontFamily: 'Arial, sans-serif',
-                background: '#f9f9f0',
+                background: '#f8f6ee',
                 padding: '2px 6px',
                 zIndex: 2,
                 display: 'flex',
@@ -211,6 +212,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 zIndex: 3,
+                background: '#eee',
               }}>
                 {siswa.foto_path ? (
                   <img
@@ -219,7 +221,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 ) : (
-                  <div style={{ textAlign: 'center', color: 'rgba(200,200,200,0.8)', fontSize: 10 }}>
+                  <div style={{ textAlign: 'center', color: 'rgba(150,150,150,0.8)', fontSize: 10 }}>
                     <div style={{ fontSize: 18 }}>📷</div>
                   </div>
                 )}
