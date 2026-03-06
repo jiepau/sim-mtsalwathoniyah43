@@ -149,7 +149,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               textTransform: 'uppercase',
               fontFamily: 'Arial, sans-serif',
               letterSpacing: 0.3
-            }} className="pt-[8px]">
+            }}>
                 {siswa.nama}
               </div>
 
