@@ -904,6 +904,48 @@ export default function SiswaPage() {
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Photo upload - only show when editing */}
+            {editingSiswa && (
+              <div className="flex items-center gap-4">
+                <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center overflow-hidden border-2 border-primary/20">
+                  {editingSiswa.foto_path ? (
+                    <img 
+                      src={supabase.storage.from('siswa-photos').getPublicUrl(editingSiswa.foto_path).data.publicUrl} 
+                      alt="Foto" 
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Camera className="h-6 w-6 text-muted-foreground" />
+                  )}
+                </div>
+                <div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={uploadingPhoto}
+                    onClick={() => photoInputRef.current?.click()}
+                  >
+                    <Camera className="h-4 w-4 mr-1" />
+                    {uploadingPhoto ? 'Mengupload...' : 'Upload Foto'}
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-1">JPG/PNG/WebP, maks 2MB</p>
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file && editingSiswa) {
+                        handlePhotoUpload(editingSiswa.id, file);
+                      }
+                      e.target.value = '';
+                    }}
+                  />
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="nis">NIS</Label>
