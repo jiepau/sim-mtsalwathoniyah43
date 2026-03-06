@@ -121,6 +121,14 @@ const GeneratorRPP = () => {
     diferensiasi: false,
   });
 
+  // Kelas options based on jenjang
+  const kelasOptions = formData.jenjang ? (KELAS_OPTIONS[formData.jenjang] || []) : [];
+
+  // Topik options from ATP tujuan_pembelajaran
+  const topikOptions = selectedAtpId 
+    ? (atpList.find(a => a.id === selectedAtpId)?.tujuan_pembelajaran || [])
+    : [];
+
   // Update filtered ATP when jenjang or mapel changes
   useEffect(() => {
     if (formData.mapel && formData.jenjang) {
@@ -128,6 +136,10 @@ const GeneratorRPP = () => {
       const fase = jenjangOption?.fase;
       const filtered = getAtpByMapelAndFase(formData.mapel, fase);
       setFilteredAtp(filtered);
+      // Auto-open kurikulum section if ATP available
+      if (filtered.length > 0) {
+        setOpenSections(prev => ({ ...prev, kurikulum: true }));
+      }
     } else {
       setFilteredAtp([]);
     }
