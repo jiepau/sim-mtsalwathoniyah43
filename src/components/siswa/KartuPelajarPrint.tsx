@@ -114,28 +114,29 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
             >
               <img src={kartuFrontBg} alt="" className="kartu-bg" style={{ width: W, height: H, objectFit: 'cover', display: 'block' }} />
 
-              {/* NAMA - di atas badge hijau yang sudah ada di background */}
+              {/* NAMA - di atas badge hijau */}
               <div style={{
                 position: 'absolute',
-                top: '33%',
-                left: '8%',
-                fontSize: 11,
+                top: '35.5%',
+                left: '5%',
+                fontSize: 10,
                 fontWeight: 700,
                 color: '#fff',
-                maxWidth: '45%',
-                lineHeight: 1.2,
+                maxWidth: '42%',
+                lineHeight: 1.15,
                 textTransform: 'uppercase',
                 fontFamily: 'Arial, sans-serif',
+                letterSpacing: 0.3,
               }}>
                 {siswa.nama}
               </div>
 
-              {/* NIS / NISN value - setelah tanda ":" di background */}
+              {/* NIS / NISN value */}
               <div style={{
                 position: 'absolute',
-                top: '49%',
-                left: '38%',
-                fontSize: 10,
+                top: '52%',
+                left: '32%',
+                fontSize: 9,
                 fontWeight: 700,
                 color: '#222',
                 fontFamily: 'Arial, sans-serif',
@@ -143,27 +144,27 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
                 {siswa.nis}{siswa.nisn ? ` / ${siswa.nisn}` : ''}
               </div>
 
-              {/* TTL value - setelah tanda ":" di background */}
+              {/* TTL value */}
               <div style={{
                 position: 'absolute',
-                top: '60%',
-                left: '38%',
-                fontSize: 9,
+                top: '62%',
+                left: '32%',
+                fontSize: 8,
                 fontWeight: 700,
                 color: '#222',
                 fontFamily: 'Arial, sans-serif',
-                maxWidth: '28%',
-                lineHeight: 1.2,
+                maxWidth: '30%',
+                lineHeight: 1.15,
               }}>
                 {formatTTL(siswa)}
               </div>
 
-              {/* JK value - setelah tanda ":" di background */}
+              {/* JK value */}
               <div style={{
                 position: 'absolute',
-                top: '74%',
-                left: '38%',
-                fontSize: 10,
+                top: '73%',
+                left: '32%',
+                fontSize: 9,
                 fontWeight: 700,
                 color: '#222',
                 fontFamily: 'Arial, sans-serif',
@@ -171,14 +172,14 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
                 {siswa.jenis_kelamin || '-'}
               </div>
 
-              {/* FOTO - di area frame foto hijau yang sudah ada di background */}
+              {/* FOTO */}
               <div style={{
                 position: 'absolute',
-                top: '27%',
-                right: '7%',
-                width: 90,
-                height: 115,
-                borderRadius: 5,
+                top: '30%',
+                right: '5%',
+                width: 76,
+                height: 100,
+                borderRadius: 4,
                 overflow: 'hidden',
                 display: 'flex',
                 alignItems: 'center',
@@ -192,7 +193,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
                   />
                 ) : (
                   <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.6)', fontSize: 10 }}>
-                    <div style={{ fontSize: 28 }}>📷</div>
+                    <div style={{ fontSize: 24 }}>📷</div>
                   </div>
                 )}
               </div>
