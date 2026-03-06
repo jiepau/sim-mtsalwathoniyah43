@@ -117,10 +117,10 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* NAMA - menutupi "nama" di badge hijau */}
               <div style={{
                 position: 'absolute',
-                top: '35%',
+                top: '34%',
                 left: '3%',
                 width: '44%',
-                height: '12%',
+                height: '14%',
                 fontSize: 10,
                 fontWeight: 700,
                 color: '#fff',
