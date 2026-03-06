@@ -79,6 +79,12 @@ export default function ProfilGuru() {
 
       if (data) {
         setProfile(data);
+        if (data.foto_path) {
+          const { data: urlData } = supabase.storage.from('gtk-photos').getPublicUrl(data.foto_path);
+          setFotoUrl(urlData?.publicUrl || null);
+        } else {
+          setFotoUrl(null);
+        }
         setFormData({
           nama: data.nama || "",
           nip: data.nip || "",
