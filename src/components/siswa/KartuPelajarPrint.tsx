@@ -139,7 +139,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* NAMA - di banner hijau tepat di bawah "KARTU PELAJAR" */}
               <div style={{
                 position: 'absolute',
-                top: '36%',
+                top: '40%',
                 left: '3%',
                 maxWidth: '46%',
                 fontSize: 9.5,
@@ -157,7 +157,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               <div style={{
                 position: 'absolute',
                 top: '52%',
-                left: '21%',
+                left: '18%',
                 fontSize: 8.5,
                 fontWeight: 600,
                 color: '#222',
@@ -170,7 +170,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               <div style={{
                 position: 'absolute',
                 top: '61%',
-                left: '21%',
+                left: '18%',
                 fontSize: 8.5,
                 fontWeight: 600,
                 color: '#222',
@@ -185,7 +185,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               <div style={{
                 position: 'absolute',
                 top: '73%',
-                left: '21%',
+                left: '18%',
                 fontSize: 8.5,
                 fontWeight: 600,
                 color: '#222',
