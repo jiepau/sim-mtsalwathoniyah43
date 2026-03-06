@@ -140,15 +140,15 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               <div style={{
                 position: 'absolute',
                 top: '44%',
-                left: '3%',
+                left: '6%',
                 maxWidth: '46%',
-                fontSize: 9.5,
-                fontWeight: 700,
+                fontSize: 11,
+                fontWeight: 800,
                 color: '#ffffff',
                 lineHeight: 1.15,
                 textTransform: 'uppercase',
                 fontFamily: 'Arial, sans-serif',
-                letterSpacing: 0.2,
+                letterSpacing: 0.3,
               }}>
                 {siswa.nama}
               </div>
