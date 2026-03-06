@@ -178,7 +178,14 @@ const GeneratorRPP = () => {
   };
 
   const handleInputChange = (field: keyof FormData, value: string | string[]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+      // Reset kelas when jenjang changes
+      if (field === 'jenjang') {
+        updated.kelas = '';
+      }
+      return updated;
+    });
   };
 
   const handleCheckboxChange = (field: keyof FormData, value: string, checked: boolean) => {
