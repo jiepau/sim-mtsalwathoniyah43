@@ -269,48 +269,71 @@ export default function ATPPage() {
     return templateMapels;
   };
 
-  // Load template when mapel, fase, kelas, and semester are selected
-  const loadTemplate = () => {
-    const kelasNum = formData.kelas ? parseInt(formData.kelas) : null;
-    const semester = formData.semester || null;
+  // Find matching template for given params
+  const findTemplate = (mapel: string, fase: string, kelas: string, semester: string) => {
+    const kelasNum = kelas ? parseInt(kelas) : null;
+    const sem = semester || null;
     
-    // Try exact match with semester
-    let template = cpTemplates.find(
-      t => t.mapel === formData.mapel && t.fase === formData.fase && t.kelas === kelasNum && t.semester === semester
-    );
-    
-    if (!template) {
-      // Fallback: try without semester
-      template = cpTemplates.find(
-        t => t.mapel === formData.mapel && t.fase === formData.fase && t.kelas === kelasNum
-      );
-    }
-    
-    if (!template) {
-      // Fallback: try without kelas
-      template = cpTemplates.find(
-        t => t.mapel === formData.mapel && t.fase === formData.fase && t.semester === semester
-      );
-    }
+    return cpTemplates.find(
+      t => t.mapel === mapel && t.fase === fase && t.kelas === kelasNum && t.semester === sem
+    ) || cpTemplates.find(
+      t => t.mapel === mapel && t.fase === fase && t.kelas === kelasNum
+    ) || cpTemplates.find(
+      t => t.mapel === mapel && t.fase === fase && t.semester === sem
+    ) || cpTemplates.find(
+      t => t.mapel === mapel && t.fase === fase
+    ) || null;
+  };
 
-    if (!template) {
-      // Last fallback
-      template = cpTemplates.find(
-        t => t.mapel === formData.mapel && t.fase === formData.fase
-      );
-    }
-    
+  // Apply template to form
+  const applyTemplate = (template: CPTemplate) => {
+    setFormData(prev => ({
+      ...prev,
+      elemen: template.elemen.join(', '),
+      capaian_pembelajaran: template.capaian_pembelajaran,
+      tujuan_pembelajaran: template.tujuan_pembelajaran.length > 0 ? template.tujuan_pembelajaran : [''],
+    }));
+    toast.success('Template CP berhasil dimuat otomatis!');
+  };
+
+  // Auto-fill: try to load template whenever key fields change
+  const tryAutoFillTemplate = (mapel: string, fase: string, kelas: string, semester: string) => {
+    if (!mapel) return;
+    const template = findTemplate(mapel, fase, kelas, semester);
     if (template) {
-      setFormData(prev => ({
-        ...prev,
-        elemen: template.elemen.join(', '),
-        capaian_pembelajaran: template.capaian_pembelajaran,
-        tujuan_pembelajaran: template.tujuan_pembelajaran.length > 0 ? template.tujuan_pembelajaran : [''],
-      }));
-      toast.success('Template CP berhasil dimuat!');
+      applyTemplate(template);
+    }
+  };
+
+  // Manual load template button
+  const loadTemplate = () => {
+    const template = findTemplate(formData.mapel, formData.fase, formData.kelas, formData.semester);
+    if (template) {
+      applyTemplate(template);
     } else {
       toast.info('Template tidak tersedia untuk kombinasi ini');
     }
+  };
+
+  // Handlers that trigger auto-fill
+  const handleMapelChange = (value: string) => {
+    setFormData(prev => ({ ...prev, mapel: value }));
+    if (!editingItem) tryAutoFillTemplate(value, formData.fase, formData.kelas, formData.semester);
+  };
+
+  const handleFaseChange = (value: string) => {
+    setFormData(prev => ({ ...prev, fase: value as FaseType }));
+    if (!editingItem) tryAutoFillTemplate(formData.mapel, value, formData.kelas, formData.semester);
+  };
+
+  const handleKelasChange = (value: string) => {
+    setFormData(prev => ({ ...prev, kelas: value }));
+    if (!editingItem) tryAutoFillTemplate(formData.mapel, formData.fase, value, formData.semester);
+  };
+
+  const handleSemesterChange = (value: string) => {
+    setFormData(prev => ({ ...prev, semester: value }));
+    if (!editingItem) tryAutoFillTemplate(formData.mapel, formData.fase, formData.kelas, value);
   };
 
   // Check if template is available for current selection
@@ -759,7 +782,7 @@ export default function ATPPage() {
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Pilih mapel dan fase, lalu klik "Muat Template" untuk mengisi CP & TP secara otomatis
+                  CP & TP akan terisi otomatis saat Anda memilih mapel, kelas, dan semester. Atau klik tombol untuk memuat ulang.
                 </p>
               </div>
             )}
@@ -770,7 +793,7 @@ export default function ATPPage() {
                 {cpTemplates.length > 0 ? (
                   <Select
                     value={formData.mapel}
-                    onValueChange={(value) => setFormData({ ...formData, mapel: value })}
+                    onValueChange={handleMapelChange}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Pilih mapel..." />
@@ -799,7 +822,7 @@ export default function ATPPage() {
                 <Label htmlFor="fase">Fase *</Label>
                 <Select
                   value={formData.fase}
-                  onValueChange={(value) => setFormData({ ...formData, fase: value as FaseType })}
+                  onValueChange={handleFaseChange}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -820,7 +843,7 @@ export default function ATPPage() {
                 <Label htmlFor="kelas">Kelas Target</Label>
                 <Select
                   value={formData.kelas}
-                  onValueChange={(value) => setFormData({ ...formData, kelas: value })}
+                  onValueChange={handleKelasChange}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Pilih kelas..." />
@@ -838,7 +861,7 @@ export default function ATPPage() {
                 <Label htmlFor="semester">Semester</Label>
                 <Select
                   value={formData.semester}
-                  onValueChange={(value) => setFormData({ ...formData, semester: value })}
+                  onValueChange={handleSemesterChange}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Pilih semester..." />
