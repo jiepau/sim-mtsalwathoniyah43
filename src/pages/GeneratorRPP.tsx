@@ -474,7 +474,14 @@ const GeneratorRPP = () => {
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs">Alokasi Waktu *</Label>
-                      <Input className="h-9" placeholder="2 x 40 menit" value={formData.alokasi_waktu} onChange={(e) => handleInputChange('alokasi_waktu', e.target.value)} />
+                      <Select value={formData.alokasi_waktu} onValueChange={(v) => handleInputChange('alokasi_waktu', v)}>
+                        <SelectTrigger className="h-9"><SelectValue placeholder="Pilih Alokasi Waktu" /></SelectTrigger>
+                        <SelectContent>
+                          {ALOKASI_WAKTU_OPTIONS.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   <div className="space-y-1.5">
