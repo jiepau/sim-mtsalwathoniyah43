@@ -241,6 +241,43 @@ export default function ProfilGuru() {
       />
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Photo Section */}
+        <Card>
+          <CardContent className="py-6">
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative group">
+                <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-primary/20 flex items-center justify-center bg-muted">
+                  {fotoUrl ? (
+                    <img src={fotoUrl} alt={profile.nama} className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="h-12 w-12 text-muted-foreground" />
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingFoto}
+                  className="absolute bottom-0 right-0 h-9 w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                >
+                  {uploadingFoto ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleFotoUpload}
+                  className="hidden"
+                />
+              </div>
+              <div className="text-center">
+                <h3 className="text-lg font-semibold">{profile.nama}</h3>
+                {profile.jabatan && <p className="text-sm text-muted-foreground">{profile.jabatan}</p>}
+              </div>
+              <p className="text-xs text-muted-foreground">Klik ikon kamera untuk mengubah foto (JPG/PNG/WebP, maks 2MB)</p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Basic Info */}
         <Card>
           <CardHeader>
