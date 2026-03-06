@@ -179,10 +179,12 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
                   fontSize: 13,
                   fontWeight: 800,
                   color: "#ffffff",
-                  lineHeight: 1.15,
+                  lineHeight: 1.2,
                   textTransform: "uppercase",
                   fontFamily: "Arial, sans-serif",
                   letterSpacing: 0.6,
+                  wordBreak: "break-word",
+                  overflowWrap: "break-word",
                 }}
               >
                 {siswa.nama}
@@ -240,10 +242,10 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               <div
                 style={{
                   position: "absolute",
-                  top: "36%",
-                  right: "9%",
-                  width: 62,
-                  height: 80,
+                  top: "38%",
+                  right: "10%",
+                  width: 56,
+                  height: 72,
                   overflow: "hidden",
                   display: "flex",
                   alignItems: "center",
