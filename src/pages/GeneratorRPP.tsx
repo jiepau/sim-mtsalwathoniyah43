@@ -41,6 +41,9 @@ import {
   JENIS_ASESMEN,
   JENJANG_OPTIONS,
   MAPEL_OPTIONS,
+  KELAS_OPTIONS,
+  ALOKASI_WAKTU_OPTIONS,
+  DIFERENSIASI_PRESETS,
   generateMateriInsersi
 } from '@/lib/rpp-constants';
 
