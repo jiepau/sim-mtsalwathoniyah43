@@ -117,12 +117,12 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               {/* NAMA - di atas badge hijau yang sudah ada di background */}
               <div style={{
                 position: 'absolute',
-                top: '33.5%',
-                left: '9%',
+                top: '33%',
+                left: '8%',
                 fontSize: 11,
                 fontWeight: 700,
                 color: '#fff',
-                maxWidth: '48%',
+                maxWidth: '45%',
                 lineHeight: 1.2,
                 textTransform: 'uppercase',
                 fontFamily: 'Arial, sans-serif',
@@ -130,38 +130,39 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
                 {siswa.nama}
               </div>
 
-              {/* NIS / NISN value - setelah label "NIS/NISN :" di background */}
+              {/* NIS / NISN value - setelah tanda ":" di background */}
               <div style={{
                 position: 'absolute',
                 top: '49%',
-                left: '30%',
+                left: '38%',
                 fontSize: 10,
                 fontWeight: 700,
                 color: '#222',
                 fontFamily: 'Arial, sans-serif',
               }}>
-                {siswa.nis}{siswa.nisn ? `    / ${siswa.nisn}` : ''}
+                {siswa.nis}{siswa.nisn ? ` / ${siswa.nisn}` : ''}
               </div>
 
-              {/* TTL value - setelah label "Tempat, Tanggal Lahir :" */}
+              {/* TTL value - setelah tanda ":" di background */}
               <div style={{
                 position: 'absolute',
-                top: '60.5%',
-                left: '30%',
-                fontSize: 10,
+                top: '60%',
+                left: '38%',
+                fontSize: 9,
                 fontWeight: 700,
                 color: '#222',
                 fontFamily: 'Arial, sans-serif',
-                maxWidth: '30%',
+                maxWidth: '28%',
+                lineHeight: 1.2,
               }}>
                 {formatTTL(siswa)}
               </div>
 
-              {/* JK value - setelah label "Jenis Kelamin :" */}
+              {/* JK value - setelah tanda ":" di background */}
               <div style={{
                 position: 'absolute',
                 top: '74%',
-                left: '30%',
+                left: '38%',
                 fontSize: 10,
                 fontWeight: 700,
                 color: '#222',
