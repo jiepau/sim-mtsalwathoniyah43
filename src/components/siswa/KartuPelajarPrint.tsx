@@ -12,7 +12,7 @@ interface Siswa {
   tanggal_lahir: string | null;
   jenis_kelamin: string | null;
   foto_path?: string | null;
-  kelas?: { nama_kelas: string };
+  kelas?: {nama_kelas: string;};
 }
 
 interface Props {
@@ -30,14 +30,14 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
       if (!container) return;
 
       const images = Array.from(container.querySelectorAll('img'));
-      if (images.length === 0) { setCanPrint(true); return; }
+      if (images.length === 0) {setCanPrint(true);return;}
 
       let loaded = 0;
-      const onLoad = () => { loaded++; if (loaded >= images.length) setCanPrint(true); };
+      const onLoad = () => {loaded++;if (loaded >= images.length) setCanPrint(true);};
 
       images.forEach((img) => {
-        if (img.complete && img.naturalHeight > 0) onLoad();
-        else {
+        if (img.complete && img.naturalHeight > 0) onLoad();else
+        {
           img.addEventListener('load', onLoad);
           img.addEventListener('error', onLoad);
         }
@@ -47,7 +47,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
     const timer = setTimeout(checkImages, 500);
     // Fallback: force print after 6 seconds max
     const fallback = setTimeout(() => setCanPrint(true), 6000);
-    return () => { clearTimeout(timer); clearTimeout(fallback); };
+    return () => {clearTimeout(timer);clearTimeout(fallback);};
   }, []);
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
     let tanggal = '';
     if (siswa.tanggal_lahir) {
       const d = new Date(siswa.tanggal_lahir);
-      const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+      const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
       tanggal = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
     }
     if (tempat && tanggal) return `${tempat}, ${tanggal}`;
@@ -119,117 +119,117 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
           style={{
             background: '#ef4444', color: '#fff', padding: '8px 20px',
             borderRadius: 8, border: 'none', cursor: 'pointer',
-            fontWeight: 600, fontSize: 14, boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-          }}
-        >
+            fontWeight: 600, fontSize: 14, boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+          }}>
+          
           ✕ Tutup Preview
         </button>
       </div>
 
       <div className="kartu-print-area">
-        {siswaList.map((siswa) => (
-          <div key={siswa.id} style={{ display: 'flex', gap: 12, marginBottom: 8, pageBreakInside: 'avoid' }}>
+        {siswaList.map((siswa) =>
+        <div key={siswa.id} style={{ display: 'flex', gap: 12, marginBottom: 8, pageBreakInside: 'avoid' }}>
             {/* === SISI DEPAN === */}
             <div
-              className="kartu-card-wrapper"
-              style={{ width: W, height: H, position: 'relative', borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}
-            >
+            className="kartu-card-wrapper"
+            style={{ width: W, height: H, position: 'relative', borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
+            
               <img src={kartuFrontBg} alt="" className="kartu-bg" style={{ width: W, height: H, objectFit: 'cover', display: 'block' }} />
 
               {/* NAMA - di banner hijau tepat di bawah "KARTU PELAJAR" */}
               <div style={{
-                position: 'absolute',
-                top: '44%',
-                left: '6%',
-                maxWidth: '46%',
-                fontSize: 11,
-                fontWeight: 800,
-                color: '#ffffff',
-                lineHeight: 1.15,
-                textTransform: 'uppercase',
-                fontFamily: 'Arial, sans-serif',
-                letterSpacing: 0.3,
-              }}>
+              position: 'absolute',
+              top: '44%',
+              left: '6%',
+              maxWidth: '46%',
+              fontSize: 11,
+              fontWeight: 800,
+              color: '#ffffff',
+              lineHeight: 1.15,
+              textTransform: 'uppercase',
+              fontFamily: 'Arial, sans-serif',
+              letterSpacing: 0.3
+            }} className="pt-[8px]">
                 {siswa.nama}
               </div>
 
               {/* NIS / NISN value - tepat setelah titik dua */}
               <div style={{
-                position: 'absolute',
-                top: '55%',
-                left: '24%',
-                fontSize: 10,
-                fontWeight: 700,
-                color: '#222',
-                fontFamily: 'Arial, sans-serif',
-              }}>
+              position: 'absolute',
+              top: '55%',
+              left: '24%',
+              fontSize: 10,
+              fontWeight: 700,
+              color: '#222',
+              fontFamily: 'Arial, sans-serif'
+            }}>
                 {siswa.nis}{siswa.nisn ? ` / ${siswa.nisn}` : ''}
               </div>
 
               {/* TTL value - tepat setelah titik dua */}
               <div style={{
-                position: 'absolute',
-                top: '65%',
-                left: '24%',
-                fontSize: 8.5,
-                fontWeight: 700,
-                color: '#222',
-                fontFamily: 'Arial, sans-serif',
-                maxWidth: '34%',
-                lineHeight: 1.15,
-              }}>
+              position: 'absolute',
+              top: '65%',
+              left: '24%',
+              fontSize: 8.5,
+              fontWeight: 700,
+              color: '#222',
+              fontFamily: 'Arial, sans-serif',
+              maxWidth: '34%',
+              lineHeight: 1.15
+            }}>
                 {formatTTL(siswa)}
               </div>
 
               {/* JK value - tepat setelah titik dua */}
               <div style={{
-                position: 'absolute',
-                top: '76%',
-                left: '24%',
-                fontSize: 10,
-                fontWeight: 700,
-                color: '#222',
-                fontFamily: 'Arial, sans-serif',
-              }}>
+              position: 'absolute',
+              top: '76%',
+              left: '24%',
+              fontSize: 10,
+              fontWeight: 700,
+              color: '#222',
+              fontFamily: 'Arial, sans-serif'
+            }}>
                 {siswa.jenis_kelamin || '-'}
               </div>
 
               {/* FOTO - pas di dalam green border frame kanan */}
               <div style={{
-                position: 'absolute',
-                top: '36%',
-                right: '9%',
-                width: 62,
-                height: 80,
-                overflow: 'hidden',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                {siswa.foto_path ? (
-                  <img
-                    src={getPhotoUrl(siswa.foto_path) || ''}
-                    alt={siswa.nama}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                ) : (
-                  <div style={{ textAlign: 'center', color: 'rgba(150,150,150,0.5)', fontSize: 10 }}>
+              position: 'absolute',
+              top: '36%',
+              right: '9%',
+              width: 62,
+              height: 80,
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+                {siswa.foto_path ?
+              <img
+                src={getPhotoUrl(siswa.foto_path) || ''}
+                alt={siswa.nama}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> :
+
+
+              <div style={{ textAlign: 'center', color: 'rgba(150,150,150,0.5)', fontSize: 10 }}>
                     <div style={{ fontSize: 24 }}>📷</div>
                   </div>
-                )}
+              }
               </div>
             </div>
 
             {/* === SISI BELAKANG === */}
             <div
-              className="kartu-card-wrapper"
-              style={{ width: W, height: H, position: 'relative', borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}
-            >
+            className="kartu-card-wrapper"
+            style={{ width: W, height: H, position: 'relative', borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
+            
               <img src={kartuBackBg} alt="" className="kartu-bg" style={{ width: W, height: H, objectFit: 'cover', display: 'block' }} />
             </div>
           </div>
-        ))}
+        )}
       </div>
-    </>
-  );
+    </>);
+
 }
