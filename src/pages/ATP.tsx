@@ -782,7 +782,7 @@ export default function ATPPage() {
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Pilih mapel dan fase, lalu klik "Muat Template" untuk mengisi CP & TP secara otomatis
+                  CP & TP akan terisi otomatis saat Anda memilih mapel, kelas, dan semester. Atau klik tombol untuk memuat ulang.
                 </p>
               </div>
             )}
