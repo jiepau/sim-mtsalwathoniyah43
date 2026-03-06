@@ -495,7 +495,21 @@ const GeneratorRPP = () => {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs">Topik/Materi Utama *</Label>
-                    <Input className="h-9" placeholder="Contoh: Shalat Berjamaah" value={formData.topik} onChange={(e) => handleInputChange('topik', e.target.value)} />
+                    {topikOptions.length > 0 ? (
+                      <Select value={formData.topik} onValueChange={(v) => handleInputChange('topik', v)}>
+                        <SelectTrigger className="h-9"><SelectValue placeholder="Pilih Topik dari TP" /></SelectTrigger>
+                        <SelectContent>
+                          {topikOptions.map((tp, i) => (
+                            <SelectItem key={i} value={tp}>{tp.length > 80 ? tp.substring(0, 80) + '...' : tp}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input className="h-9" placeholder="Contoh: Shalat Berjamaah" value={formData.topik} onChange={(e) => handleInputChange('topik', e.target.value)} />
+                    )}
+                    {topikOptions.length > 0 && (
+                      <p className="text-xs text-muted-foreground">Topik otomatis dari Tujuan Pembelajaran ATP</p>
+                    )}
                   </div>
                 </CollapsibleContent>
               </Collapsible>
