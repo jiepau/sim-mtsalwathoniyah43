@@ -173,7 +173,7 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
               <div
                 style={{
                   position: "absolute",
-                  top: "44%",
+                  top: "40%",
                   left: "12%",
                   maxWidth: "46%",
                   fontSize: 13,
