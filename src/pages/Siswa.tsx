@@ -458,6 +458,56 @@ export default function SiswaPage() {
     }
   };
 
+  // Photo upload handler
+  const handlePhotoUpload = async (siswaId: string, file: File) => {
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Ukuran foto maksimal 2MB');
+      return;
+    }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      toast.error('Format foto harus JPG, PNG, atau WebP');
+      return;
+    }
+    setUploadingPhoto(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const filePath = `${siswaId}.${ext}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('siswa-photos')
+        .upload(filePath, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      const { error: updateError } = await supabase
+        .from('siswa')
+        .update({ foto_path: filePath } as any)
+        .eq('id', siswaId);
+      if (updateError) throw updateError;
+
+      toast.success('Foto berhasil diupload');
+      fetchData();
+    } catch (error: any) {
+      toast.error('Gagal upload foto: ' + error.message);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  // Print kartu pelajar
+  const handlePrintKartu = (siswaData: Siswa) => {
+    setPrintSiswaList([siswaData]);
+    setPrintMode(true);
+  };
+
+  const handlePrintBatch = () => {
+    if (filteredSiswa.length === 0) {
+      toast.info('Tidak ada siswa untuk dicetak');
+      return;
+    }
+    setPrintSiswaList(filteredSiswa);
+    setPrintMode(true);
+  };
+
   // Filter by search, kelas, and TA from URL
   const filteredSiswa = siswa.filter(s => {
     const matchesSearch = s.nama.toLowerCase().includes(search.toLowerCase()) ||
