@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import kartuFrontBg from '@/assets/kartu-pelajar-front-bg.png';
+import kartuBackBg from '@/assets/kartu-pelajar-back-bg.png';
 
 interface Siswa {
   id: string;
@@ -18,26 +20,32 @@ interface Props {
   onClose: () => void;
 }
 
-const CARD_W = '85.6mm';
-const CARD_H = '54mm';
-
 export function KartuPelajarPrint({ siswaList, onClose }: Props) {
   const [canPrint, setCanPrint] = useState(false);
 
+  // Wait for ALL images to fully load before triggering print
   useEffect(() => {
     const checkImages = () => {
       const container = document.querySelector('.kartu-print-area');
       if (!container) return;
+
       const images = Array.from(container.querySelectorAll('img'));
       if (images.length === 0) { setCanPrint(true); return; }
+
       let loaded = 0;
       const onLoad = () => { loaded++; if (loaded >= images.length) setCanPrint(true); };
+
       images.forEach((img) => {
         if (img.complete && img.naturalHeight > 0) onLoad();
-        else { img.addEventListener('load', onLoad); img.addEventListener('error', onLoad); }
+        else {
+          img.addEventListener('load', onLoad);
+          img.addEventListener('error', onLoad);
+        }
       });
     };
+
     const timer = setTimeout(checkImages, 500);
+    // Fallback: force print after 6 seconds max
     const fallback = setTimeout(() => setCanPrint(true), 6000);
     return () => { clearTimeout(timer); clearTimeout(fallback); };
   }, []);
@@ -67,6 +75,10 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
     return tempat || tanggal;
   };
 
+  // Screen size: 428x270px (KTP ratio)
+  const W = 428;
+  const H = 270;
+
   return (
     <>
       <style>{`
@@ -79,6 +91,14 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
           }
           @page { size: A4 portrait; margin: 8mm; }
           .no-print { display: none !important; }
+          .kartu-card-wrapper {
+            width: 85.6mm !important;
+            height: 53.98mm !important;
+          }
+          .kartu-card-wrapper img.kartu-bg {
+            width: 85.6mm !important;
+            height: 53.98mm !important;
+          }
         }
         @media screen {
           .kartu-print-area {
@@ -90,212 +110,6 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
             align-items: center;
             gap: 16px;
           }
-        }
-        .kartu-card {
-          width: ${CARD_W};
-          height: ${CARD_H};
-          position: relative;
-          overflow: hidden;
-          background: #fff;
-          font-family: Arial, Helvetica, sans-serif;
-          box-sizing: border-box;
-          flex-shrink: 0;
-        }
-        .kartu-pair {
-          display: flex;
-          gap: 4mm;
-          margin-bottom: 4mm;
-          page-break-inside: avoid;
-        }
-
-        /* === FRONT CARD === */
-        .front-header-line {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 2.5mm;
-          background: linear-gradient(90deg, #16a34a, #15803d);
-        }
-        .front-title {
-          position: absolute;
-          top: 3.5mm;
-          left: 0;
-          right: 0;
-          text-align: center;
-          font-size: 8pt;
-          font-weight: 800;
-          color: #15803d;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        .front-subtitle {
-          position: absolute;
-          top: 8mm;
-          left: 8mm;
-          font-size: 9pt;
-          font-weight: 800;
-          color: #1a1a1a;
-          text-transform: uppercase;
-          letter-spacing: 0.3px;
-        }
-        .front-photo-frame {
-          position: absolute;
-          top: 14mm;
-          right: 6mm;
-          width: 25mm;
-          height: 32mm;
-          border: 0.8mm solid #16a34a;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #f0fdf4;
-        }
-        .front-photo-frame img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-        .front-photo-placeholder {
-          color: #a3a3a3;
-          font-size: 7pt;
-          text-align: center;
-        }
-        .front-nama {
-          position: absolute;
-          top: 14mm;
-          left: 8mm;
-          font-size: 8pt;
-          font-weight: 700;
-          color: #111;
-          text-transform: uppercase;
-          max-width: 45mm;
-          line-height: 1.2;
-        }
-        .front-data-area {
-          position: absolute;
-          top: 21mm;
-          left: 8mm;
-          width: 45mm;
-        }
-        .front-data-row {
-          display: flex;
-          align-items: flex-start;
-          margin-bottom: 1.2mm;
-          font-size: 7.5pt;
-          color: #222;
-          line-height: 1.25;
-        }
-        .front-data-label {
-          width: 18mm;
-          flex-shrink: 0;
-          font-weight: 400;
-        }
-        .front-data-sep {
-          width: 3mm;
-          flex-shrink: 0;
-          text-align: center;
-          font-weight: 400;
-        }
-        .front-data-value {
-          flex: 1;
-          font-weight: 700;
-          word-break: break-word;
-        }
-        .front-ttd {
-          position: absolute;
-          bottom: 2mm;
-          right: 4mm;
-          text-align: center;
-          font-size: 5pt;
-          color: #333;
-          line-height: 1.3;
-        }
-        .front-ttd-name {
-          font-weight: 700;
-          text-decoration: underline;
-        }
-        .front-bottom-line {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          height: 2.5mm;
-          background: linear-gradient(90deg, #16a34a, #15803d);
-        }
-
-        /* === BACK CARD === */
-        .back-header-line {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 2.5mm;
-          background: linear-gradient(90deg, #16a34a, #15803d);
-        }
-        .back-title {
-          position: absolute;
-          top: 3.5mm;
-          left: 0;
-          right: 0;
-          text-align: center;
-          font-size: 7pt;
-          font-weight: 800;
-          color: #15803d;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        .back-ketentuan-title {
-          position: absolute;
-          top: 9mm;
-          left: 6mm;
-          font-size: 6.5pt;
-          font-weight: 700;
-          color: #111;
-        }
-        .back-ketentuan-list {
-          position: absolute;
-          top: 13mm;
-          left: 6mm;
-          right: 6mm;
-          font-size: 5.5pt;
-          color: #333;
-          line-height: 1.45;
-        }
-        .back-ketentuan-item {
-          margin-bottom: 1.5mm;
-          padding-left: 3mm;
-          text-indent: -3mm;
-        }
-        .back-footer {
-          position: absolute;
-          bottom: 3mm;
-          left: 6mm;
-          right: 6mm;
-          font-size: 5pt;
-          color: #444;
-          line-height: 1.4;
-          border-top: 0.3mm solid #d1d5db;
-          padding-top: 1.5mm;
-        }
-        .back-footer-row {
-          display: flex;
-          gap: 1mm;
-          margin-bottom: 0.5mm;
-        }
-        .back-footer-label {
-          font-weight: 700;
-          flex-shrink: 0;
-        }
-        .back-bottom-line {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          height: 2.5mm;
-          background: linear-gradient(90deg, #16a34a, #15803d);
         }
       `}</style>
 
@@ -314,96 +128,104 @@ export function KartuPelajarPrint({ siswaList, onClose }: Props) {
 
       <div className="kartu-print-area">
         {siswaList.map((siswa) => (
-          <div key={siswa.id} className="kartu-pair">
+          <div key={siswa.id} style={{ display: 'flex', gap: 12, marginBottom: 8, pageBreakInside: 'avoid' }}>
             {/* === SISI DEPAN === */}
-            <div className="kartu-card">
-              <div className="front-header-line" />
-              <div className="front-title">MTs Al Wathoniyah 43</div>
-              <div className="front-subtitle">Kartu Pelajar</div>
+            <div
+              className="kartu-card-wrapper"
+              style={{ width: W, height: H, position: 'relative', borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}
+            >
+              <img src={kartuFrontBg} alt="" className="kartu-bg" style={{ width: W, height: H, objectFit: 'cover', display: 'block' }} />
 
-              {/* Foto */}
-              <div className="front-photo-frame">
+              {/* NAMA - di banner hijau tepat di bawah "KARTU PELAJAR" */}
+              <div style={{
+                position: 'absolute',
+                top: '44%',
+                left: '3%',
+                maxWidth: '46%',
+                fontSize: 9.5,
+                fontWeight: 700,
+                color: '#ffffff',
+                lineHeight: 1.15,
+                textTransform: 'uppercase',
+                fontFamily: 'Arial, sans-serif',
+                letterSpacing: 0.2,
+              }}>
+                {siswa.nama}
+              </div>
+
+              {/* NIS / NISN value - tepat setelah titik dua */}
+              <div style={{
+                position: 'absolute',
+                top: '55%',
+                left: '24%',
+                fontSize: 10,
+                fontWeight: 700,
+                color: '#222',
+                fontFamily: 'Arial, sans-serif',
+              }}>
+                {siswa.nis}{siswa.nisn ? ` / ${siswa.nisn}` : ''}
+              </div>
+
+              {/* TTL value - tepat setelah titik dua */}
+              <div style={{
+                position: 'absolute',
+                top: '65%',
+                left: '24%',
+                fontSize: 8.5,
+                fontWeight: 700,
+                color: '#222',
+                fontFamily: 'Arial, sans-serif',
+                maxWidth: '34%',
+                lineHeight: 1.15,
+              }}>
+                {formatTTL(siswa)}
+              </div>
+
+              {/* JK value - tepat setelah titik dua */}
+              <div style={{
+                position: 'absolute',
+                top: '76%',
+                left: '24%',
+                fontSize: 10,
+                fontWeight: 700,
+                color: '#222',
+                fontFamily: 'Arial, sans-serif',
+              }}>
+                {siswa.jenis_kelamin || '-'}
+              </div>
+
+              {/* FOTO - pas di dalam green border frame kanan */}
+              <div style={{
+                position: 'absolute',
+                top: '36%',
+                right: '9%',
+                width: 62,
+                height: 80,
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
                 {siswa.foto_path ? (
-                  <img src={getPhotoUrl(siswa.foto_path) || ''} alt={siswa.nama} />
+                  <img
+                    src={getPhotoUrl(siswa.foto_path) || ''}
+                    alt={siswa.nama}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
                 ) : (
-                  <div className="front-photo-placeholder">
-                    <div style={{ fontSize: '14pt' }}>📷</div>
-                    <div>Foto</div>
+                  <div style={{ textAlign: 'center', color: 'rgba(150,150,150,0.5)', fontSize: 10 }}>
+                    <div style={{ fontSize: 24 }}>📷</div>
                   </div>
                 )}
               </div>
-
-              {/* Nama */}
-              <div className="front-nama">{siswa.nama}</div>
-
-              {/* Data siswa */}
-              <div className="front-data-area">
-                <div className="front-data-row">
-                  <span className="front-data-label">NIS/NISN</span>
-                  <span className="front-data-sep">:</span>
-                  <span className="front-data-value">{siswa.nis}{siswa.nisn ? ` / ${siswa.nisn}` : ''}</span>
-                </div>
-                <div className="front-data-row">
-                  <span className="front-data-label">TTL</span>
-                  <span className="front-data-sep">:</span>
-                  <span className="front-data-value">{formatTTL(siswa)}</span>
-                </div>
-                <div className="front-data-row">
-                  <span className="front-data-label">Jenis Kelamin</span>
-                  <span className="front-data-sep">:</span>
-                  <span className="front-data-value">{siswa.jenis_kelamin || '-'}</span>
-                </div>
-              </div>
-
-              {/* TTD Kepala Madrasah */}
-              <div className="front-ttd">
-                <div>Kepala Madrasah</div>
-                <div style={{ height: '6mm' }} />
-                <div className="front-ttd-name">Dra. Hj. Munawaroh, M.Pd.I</div>
-                <div>NIP: 196912102007012040</div>
-              </div>
-
-              <div className="front-bottom-line" />
             </div>
 
             {/* === SISI BELAKANG === */}
-            <div className="kartu-card">
-              <div className="back-header-line" />
-              <div className="back-title">MTs Al Wathoniyah 43</div>
-              <div className="back-ketentuan-title">KETENTUAN :</div>
-
-              <div className="back-ketentuan-list">
-                <div className="back-ketentuan-item">
-                  1. Kartu ini berlaku selama pemilik berstatus sebagai siswa/i di MTs Al Wathoniyah 43
-                </div>
-                <div className="back-ketentuan-item">
-                  2. Kartu ini tidak boleh berpindah kepemilikan
-                </div>
-                <div className="back-ketentuan-item">
-                  3. Jika kartu hilang harap menghubungi pihak madrasah
-                </div>
-              </div>
-
-              <div className="back-footer">
-                <div className="back-footer-row">
-                  <span className="back-footer-label">WhatsApp</span>
-                  <span>: 0857-9683-6507</span>
-                </div>
-                <div className="back-footer-row">
-                  <span className="back-footer-label">Email</span>
-                  <span>: wath43.mts@gmail.com</span>
-                </div>
-                <div className="back-footer-row">
-                  <span className="back-footer-label">Instagram</span>
-                  <span>: @mtsalwathoniyah43</span>
-                </div>
-                <div className="back-footer-row">
-                  <span className="back-footer-label">Alamat</span>
-                  <span>: Jl. Rorotan No.1 Jakarta Utara</span>
-                </div>
-              </div>
-
-              <div className="back-bottom-line" />
+            <div
+              className="kartu-card-wrapper"
+              style={{ width: W, height: H, position: 'relative', borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}
+            >
+              <img src={kartuBackBg} alt="" className="kartu-bg" style={{ width: W, height: H, objectFit: 'cover', display: 'block' }} />
             </div>
           </div>
         ))}
