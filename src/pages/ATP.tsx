@@ -793,7 +793,7 @@ export default function ATPPage() {
                 {cpTemplates.length > 0 ? (
                   <Select
                     value={formData.mapel}
-                    onValueChange={(value) => setFormData({ ...formData, mapel: value })}
+                    onValueChange={handleMapelChange}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Pilih mapel..." />
@@ -822,7 +822,7 @@ export default function ATPPage() {
                 <Label htmlFor="fase">Fase *</Label>
                 <Select
                   value={formData.fase}
-                  onValueChange={(value) => setFormData({ ...formData, fase: value as FaseType })}
+                  onValueChange={handleFaseChange}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -843,7 +843,7 @@ export default function ATPPage() {
                 <Label htmlFor="kelas">Kelas Target</Label>
                 <Select
                   value={formData.kelas}
-                  onValueChange={(value) => setFormData({ ...formData, kelas: value })}
+                  onValueChange={handleKelasChange}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Pilih kelas..." />
@@ -861,7 +861,7 @@ export default function ATPPage() {
                 <Label htmlFor="semester">Semester</Label>
                 <Select
                   value={formData.semester}
-                  onValueChange={(value) => setFormData({ ...formData, semester: value })}
+                  onValueChange={handleSemesterChange}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Pilih semester..." />
