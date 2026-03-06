@@ -30,6 +30,7 @@ interface GtkProfile {
   lulusan: string | null;
   pendidikan: string | null;
   user_id: string | null;
+  foto_path: string | null;
   created_at: string;
   updated_at: string;
 }
