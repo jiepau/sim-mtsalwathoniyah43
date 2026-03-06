@@ -83,6 +83,10 @@ export default function SiswaPage() {
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedSiswa, setSelectedSiswa] = useState<Siswa | null>(null);
   const [editingSiswa, setEditingSiswa] = useState<Siswa | null>(null);
+  const [printMode, setPrintMode] = useState(false);
+  const [printSiswaList, setPrintSiswaList] = useState<Siswa[]>([]);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
