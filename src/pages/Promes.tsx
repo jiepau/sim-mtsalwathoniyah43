@@ -378,39 +378,46 @@ export default function PromesPage() {
   };
 
   const handleSaveDetails = async () => {
-    if (!selectedPromes) return;
+    if (!selectedPromes || !spreadsheetDataRef.current) return;
 
     try {
       // Delete existing details first
       await supabase.from('promes_detail').delete().eq('promes_id', selectedPromes.id);
 
-      // Insert new details
-      const bulanList = selectedPromes.semester === 'ganjil' ? BULAN_GANJIL : BULAN_GENAP;
-      const detailsToInsert: any[] = [];
+      // Convert spreadsheet data to promes_detail format
+      const rawDetails = spreadsheetToDetails(spreadsheetDataRef.current);
+      
+      const detailsToInsert = rawDetails
+        .filter(d => d.bulan > 0) // Skip placeholder entries
+        .map(d => ({
+          promes_id: selectedPromes.id,
+          bulan: d.bulan,
+          minggu: d.minggu,
+          tema: d.tema || null,
+          sub_tema: d.sub_tema || null,
+          tujuan_pembelajaran: d.tujuan_pembelajaran || null,
+          alokasi_waktu: d.alokasi_waktu || null,
+          keterangan: d.keterangan || null,
+        }));
 
-      bulanList.forEach(b => {
-        for (let minggu = 1; minggu <= 5; minggu++) {
-          const key = `${b.bulan}-${minggu}` as DetailFormKey;
-          const detail = detailForm[key];
-          
-          // Only insert if at least tema or TP is filled
-          if (detail?.tema?.trim() || detail?.tujuan_pembelajaran?.trim()) {
-            detailsToInsert.push({
-              promes_id: selectedPromes.id,
-              bulan: b.bulan,
-              minggu,
-              tema: detail.tema || null,
-              sub_tema: detail.sub_tema || null,
-              tujuan_pembelajaran: detail.tujuan_pembelajaran || null,
-              alokasi_waktu: detail.alokasi_waktu || null,
-              keterangan: detail.keterangan || null,
-            });
-          }
-        }
-      });
+      // Also save unscheduled TPs (bulan=0) with bulan=1, minggu=0 for persistence
+      const unscheduledDetails = rawDetails
+        .filter(d => d.bulan === 0)
+        .map(d => ({
+          promes_id: selectedPromes.id,
+          bulan: 0,
+          minggu: 0,
+          tema: d.tema || null,
+          sub_tema: d.sub_tema || null,
+          tujuan_pembelajaran: d.tujuan_pembelajaran || null,
+          alokasi_waktu: d.alokasi_waktu || null,
+          keterangan: d.keterangan || null,
+        }));
 
-      if (detailsToInsert.length > 0) {
-        const { error } = await supabase.from('promes_detail').insert(detailsToInsert);
+      const allDetails = [...detailsToInsert, ...unscheduledDetails];
+
+      if (allDetails.length > 0) {
+        const { error } = await supabase.from('promes_detail').insert(allDetails);
         if (error) throw error;
       }
 
