@@ -191,6 +191,7 @@ export default function ProfilGuru() {
       setUploadingFoto(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
+  };
 
   if (loading) {
     return (
