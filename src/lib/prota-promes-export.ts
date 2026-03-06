@@ -296,14 +296,10 @@ export async function exportPromesToDocx(data: PromesExportData): Promise<void> 
       children: [
         new TableCell({
           children: [new Paragraph({ children: [] })],
-        }),
-        new TableCell({
-          children: [],
-          columnSpan: 2,
+          columnSpan: 3,
         }),
         new TableCell({
           children: [new Paragraph({ children: [new TextRun({ text: `SUMATIF ${group.no}`, bold: true, size: 18, font: 'Times New Roman' })], alignment: AlignmentType.CENTER })],
-          columnSpan: 2,
         }),
         ...bulanList.flatMap(() =>
           [1, 2, 3, 4, 5].map(() => new TableCell({ children: [new Paragraph({ children: [] })] }))
