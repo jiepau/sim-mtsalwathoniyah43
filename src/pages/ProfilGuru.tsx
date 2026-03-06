@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { User, Save, Mail, Phone, MapPin, GraduationCap, Briefcase, Calendar, FileText } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { User, Save, Mail, Phone, MapPin, GraduationCap, Briefcase, Calendar, FileText, Camera, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ interface GtkProfile {
   lulusan: string | null;
   pendidikan: string | null;
   user_id: string | null;
+  foto_path: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -38,7 +39,10 @@ export default function ProfilGuru() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingFoto, setUploadingFoto] = useState(false);
   const [profile, setProfile] = useState<GtkProfile | null>(null);
+  const [fotoUrl, setFotoUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     nama: "",
     nip: "",
@@ -75,6 +79,12 @@ export default function ProfilGuru() {
 
       if (data) {
         setProfile(data);
+        if (data.foto_path) {
+          const { data: urlData } = supabase.storage.from('gtk-photos').getPublicUrl(data.foto_path);
+          setFotoUrl(urlData?.publicUrl || null);
+        } else {
+          setFotoUrl(null);
+        }
         setFormData({
           nama: data.nama || "",
           nip: data.nip || "",
@@ -137,6 +147,52 @@ export default function ProfilGuru() {
     }
   };
 
+  const handleFotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+
+    if (!file.type.match(/^image\/(jpeg|png|webp)$/)) {
+      toast.error("Format file harus JPG, PNG, atau WebP");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Ukuran file maksimal 2MB");
+      return;
+    }
+
+    setUploadingFoto(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const filePath = `${profile.id}.${ext}`;
+
+      // Delete old photo if exists
+      if (profile.foto_path) {
+        await supabase.storage.from('gtk-photos').remove([profile.foto_path]);
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from('gtk-photos')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { error: updateError } = await supabase
+        .from('gtk_ptk')
+        .update({ foto_path: filePath })
+        .eq('id', profile.id);
+
+      if (updateError) throw updateError;
+
+      toast.success("Foto berhasil diperbarui");
+      fetchProfile();
+    } catch (error: any) {
+      toast.error("Gagal upload foto: " + error.message);
+    } finally {
+      setUploadingFoto(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   if (loading) {
     return (
       <div className="animate-fadeIn">
@@ -185,6 +241,43 @@ export default function ProfilGuru() {
       />
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Photo Section */}
+        <Card>
+          <CardContent className="py-6">
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative group">
+                <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-primary/20 flex items-center justify-center bg-muted">
+                  {fotoUrl ? (
+                    <img src={fotoUrl} alt={profile.nama} className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="h-12 w-12 text-muted-foreground" />
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingFoto}
+                  className="absolute bottom-0 right-0 h-9 w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                >
+                  {uploadingFoto ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleFotoUpload}
+                  className="hidden"
+                />
+              </div>
+              <div className="text-center">
+                <h3 className="text-lg font-semibold">{profile.nama}</h3>
+                {profile.jabatan && <p className="text-sm text-muted-foreground">{profile.jabatan}</p>}
+              </div>
+              <p className="text-xs text-muted-foreground">Klik ikon kamera untuk mengubah foto (JPG/PNG/WebP, maks 2MB)</p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Basic Info */}
         <Card>
           <CardHeader>
