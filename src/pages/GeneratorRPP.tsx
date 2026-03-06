@@ -41,6 +41,9 @@ import {
   JENIS_ASESMEN,
   JENJANG_OPTIONS,
   MAPEL_OPTIONS,
+  KELAS_OPTIONS,
+  ALOKASI_WAKTU_OPTIONS,
+  DIFERENSIASI_PRESETS,
   generateMateriInsersi
 } from '@/lib/rpp-constants';
 
@@ -118,6 +121,14 @@ const GeneratorRPP = () => {
     diferensiasi: false,
   });
 
+  // Kelas options based on jenjang
+  const kelasOptions = formData.jenjang ? (KELAS_OPTIONS[formData.jenjang] || []) : [];
+
+  // Topik options from ATP tujuan_pembelajaran
+  const topikOptions = selectedAtpId 
+    ? (atpList.find(a => a.id === selectedAtpId)?.tujuan_pembelajaran || [])
+    : [];
+
   // Update filtered ATP when jenjang or mapel changes
   useEffect(() => {
     if (formData.mapel && formData.jenjang) {
@@ -125,6 +136,10 @@ const GeneratorRPP = () => {
       const fase = jenjangOption?.fase;
       const filtered = getAtpByMapelAndFase(formData.mapel, fase);
       setFilteredAtp(filtered);
+      // Auto-open kurikulum section if ATP available
+      if (filtered.length > 0) {
+        setOpenSections(prev => ({ ...prev, kurikulum: true }));
+      }
     } else {
       setFilteredAtp([]);
     }
@@ -163,7 +178,14 @@ const GeneratorRPP = () => {
   };
 
   const handleInputChange = (field: keyof FormData, value: string | string[]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+      // Reset kelas when jenjang changes
+      if (field === 'jenjang') {
+        updated.kelas = '';
+      }
+      return updated;
+    });
   };
 
   const handleCheckboxChange = (field: keyof FormData, value: string, checked: boolean) => {
@@ -436,7 +458,14 @@ const GeneratorRPP = () => {
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs">Kelas *</Label>
-                      <Input className="h-9" placeholder="VII, VIII, IX" value={formData.kelas} onChange={(e) => handleInputChange('kelas', e.target.value)} />
+                      <Select value={formData.kelas} onValueChange={(v) => handleInputChange('kelas', v)} disabled={!formData.jenjang}>
+                        <SelectTrigger className="h-9"><SelectValue placeholder={formData.jenjang ? "Pilih Kelas" : "Pilih Jenjang dulu"} /></SelectTrigger>
+                        <SelectContent>
+                          {kelasOptions.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -452,7 +481,14 @@ const GeneratorRPP = () => {
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs">Alokasi Waktu *</Label>
-                      <Input className="h-9" placeholder="2 x 40 menit" value={formData.alokasi_waktu} onChange={(e) => handleInputChange('alokasi_waktu', e.target.value)} />
+                      <Select value={formData.alokasi_waktu} onValueChange={(v) => handleInputChange('alokasi_waktu', v)}>
+                        <SelectTrigger className="h-9"><SelectValue placeholder="Pilih Alokasi Waktu" /></SelectTrigger>
+                        <SelectContent>
+                          {ALOKASI_WAKTU_OPTIONS.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   <div className="space-y-1.5">
@@ -466,7 +502,21 @@ const GeneratorRPP = () => {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs">Topik/Materi Utama *</Label>
-                    <Input className="h-9" placeholder="Contoh: Shalat Berjamaah" value={formData.topik} onChange={(e) => handleInputChange('topik', e.target.value)} />
+                    {topikOptions.length > 0 ? (
+                      <Select value={formData.topik} onValueChange={(v) => handleInputChange('topik', v)}>
+                        <SelectTrigger className="h-9"><SelectValue placeholder="Pilih Topik dari TP" /></SelectTrigger>
+                        <SelectContent>
+                          {topikOptions.map((tp, i) => (
+                            <SelectItem key={i} value={tp}>{tp.length > 80 ? tp.substring(0, 80) + '...' : tp}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input className="h-9" placeholder="Contoh: Shalat Berjamaah" value={formData.topik} onChange={(e) => handleInputChange('topik', e.target.value)} />
+                    )}
+                    {topikOptions.length > 0 && (
+                      <p className="text-xs text-muted-foreground">Topik otomatis dari Tujuan Pembelajaran ATP</p>
+                    )}
                   </div>
                 </CollapsibleContent>
               </Collapsible>
@@ -678,17 +728,59 @@ const GeneratorRPP = () => {
                   </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-3 space-y-3">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs">Diferensiasi Konten</Label>
-                    <Textarea rows={2} placeholder="Penyesuaian materi berdasarkan kesiapan belajar..." value={formData.diferensiasi_konten} onChange={(e) => handleInputChange('diferensiasi_konten', e.target.value)} />
+                    <div className="space-y-1.5">
+                      {DIFERENSIASI_PRESETS.konten.map((item, i) => (
+                        <label key={i} className="flex items-center gap-2 text-xs cursor-pointer">
+                          <Checkbox
+                            checked={formData.diferensiasi_konten.includes(item)}
+                            onCheckedChange={(checked) => {
+                              const current = formData.diferensiasi_konten ? formData.diferensiasi_konten.split('\n').filter(Boolean) : [];
+                              const updated = checked ? [...current, item] : current.filter(v => v !== item);
+                              handleInputChange('diferensiasi_konten', updated.join('\n'));
+                            }}
+                          />
+                          <span>{item}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs">Diferensiasi Proses</Label>
-                    <Textarea rows={2} placeholder="Penyesuaian aktivitas (visual, auditori, kinestetik)..." value={formData.diferensiasi_proses} onChange={(e) => handleInputChange('diferensiasi_proses', e.target.value)} />
+                    <div className="space-y-1.5">
+                      {DIFERENSIASI_PRESETS.proses.map((item, i) => (
+                        <label key={i} className="flex items-center gap-2 text-xs cursor-pointer">
+                          <Checkbox
+                            checked={formData.diferensiasi_proses.includes(item)}
+                            onCheckedChange={(checked) => {
+                              const current = formData.diferensiasi_proses ? formData.diferensiasi_proses.split('\n').filter(Boolean) : [];
+                              const updated = checked ? [...current, item] : current.filter(v => v !== item);
+                              handleInputChange('diferensiasi_proses', updated.join('\n'));
+                            }}
+                          />
+                          <span>{item}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs">Diferensiasi Produk</Label>
-                    <Textarea rows={2} placeholder="Variasi hasil belajar yang bisa dipilih siswa..." value={formData.diferensiasi_produk} onChange={(e) => handleInputChange('diferensiasi_produk', e.target.value)} />
+                    <div className="space-y-1.5">
+                      {DIFERENSIASI_PRESETS.produk.map((item, i) => (
+                        <label key={i} className="flex items-center gap-2 text-xs cursor-pointer">
+                          <Checkbox
+                            checked={formData.diferensiasi_produk.includes(item)}
+                            onCheckedChange={(checked) => {
+                              const current = formData.diferensiasi_produk ? formData.diferensiasi_produk.split('\n').filter(Boolean) : [];
+                              const updated = checked ? [...current, item] : current.filter(v => v !== item);
+                              handleInputChange('diferensiasi_produk', updated.join('\n'));
+                            }}
+                          />
+                          <span>{item}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 </CollapsibleContent>
               </Collapsible>

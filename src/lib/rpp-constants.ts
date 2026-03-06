@@ -247,6 +247,80 @@ export const MAPEL_OPTIONS = [
   'Informatika',
 ];
 
+// Kelas options per jenjang
+export const KELAS_OPTIONS: Record<string, { value: string; label: string }[]> = {
+  MI: [
+    { value: '1', label: 'Kelas 1' },
+    { value: '2', label: 'Kelas 2' },
+    { value: '3', label: 'Kelas 3' },
+    { value: '4', label: 'Kelas 4' },
+    { value: '5', label: 'Kelas 5' },
+    { value: '6', label: 'Kelas 6' },
+  ],
+  SD: [
+    { value: '1', label: 'Kelas 1' },
+    { value: '2', label: 'Kelas 2' },
+    { value: '3', label: 'Kelas 3' },
+    { value: '4', label: 'Kelas 4' },
+    { value: '5', label: 'Kelas 5' },
+    { value: '6', label: 'Kelas 6' },
+  ],
+  MTs: [
+    { value: '7', label: 'Kelas 7 (VII)' },
+    { value: '8', label: 'Kelas 8 (VIII)' },
+    { value: '9', label: 'Kelas 9 (IX)' },
+  ],
+  SMP: [
+    { value: '7', label: 'Kelas 7 (VII)' },
+    { value: '8', label: 'Kelas 8 (VIII)' },
+    { value: '9', label: 'Kelas 9 (IX)' },
+  ],
+  MA: [
+    { value: '10', label: 'Kelas 10 (X)' },
+    { value: '11', label: 'Kelas 11 (XI)' },
+    { value: '12', label: 'Kelas 12 (XII)' },
+  ],
+  SMA: [
+    { value: '10', label: 'Kelas 10 (X)' },
+    { value: '11', label: 'Kelas 11 (XI)' },
+    { value: '12', label: 'Kelas 12 (XII)' },
+  ],
+};
+
+// Alokasi Waktu options
+export const ALOKASI_WAKTU_OPTIONS = [
+  { value: '1 x 40 menit', label: '1 x 40 menit (1 JP)' },
+  { value: '2 x 40 menit', label: '2 x 40 menit (2 JP)' },
+  { value: '3 x 40 menit', label: '3 x 40 menit (3 JP)' },
+  { value: '4 x 40 menit', label: '4 x 40 menit (4 JP)' },
+  { value: '2 x 35 menit', label: '2 x 35 menit (MI/SD)' },
+  { value: '2 x 45 menit', label: '2 x 45 menit (MA/SMA)' },
+  { value: '3 x 45 menit', label: '3 x 45 menit (MA/SMA)' },
+];
+
+// Diferensiasi presets
+export const DIFERENSIASI_PRESETS = {
+  konten: [
+    'Teks bacaan dengan tingkat kesulitan berbeda',
+    'Video pembelajaran dan infografis untuk visual learner',
+    'Materi ringkasan untuk siswa yang membutuhkan scaffolding',
+    'Materi pengayaan untuk siswa yang sudah menguasai',
+  ],
+  proses: [
+    'Diskusi kelompok kecil untuk auditori learner',
+    'Praktik langsung / hands-on untuk kinestetik learner',
+    'Membaca dan menulis catatan untuk visual learner',
+    'Bimbingan individual untuk siswa yang membutuhkan bantuan',
+  ],
+  produk: [
+    'Presentasi lisan',
+    'Poster / infografis',
+    'Laporan tertulis',
+    'Video pendek / vlog pembelajaran',
+    'Mind map / peta konsep',
+  ],
+};
+
 // Helper functions
 export const generateMateriInsersi = (nilaiKarakter: string[]): string => {
   const materiList: string[] = [];
