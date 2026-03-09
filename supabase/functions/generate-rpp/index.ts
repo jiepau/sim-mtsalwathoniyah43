@@ -96,6 +96,10 @@ const rppInputSchema = z.object({
   tujuan_pembelajaran: z.string().max(3000).optional(),
   capaian_pembelajaran: z.string().max(3000).optional(),
   
+  // Format output
+  format_output: z.enum(["per_topik", "per_bab"]).optional().default("per_topik"),
+  jumlah_pertemuan: z.string().max(2).optional(),
+  
   // Deep Learning Model
   model_pembelajaran: z.string().max(100).optional(),
   
