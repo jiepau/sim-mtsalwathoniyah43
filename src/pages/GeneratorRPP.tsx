@@ -536,7 +536,7 @@ const GeneratorRPP = () => {
                   </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-3 space-y-3">
-                  {filteredAtp.length > 0 && (
+                  {filteredAtp.length > 0 ? (
                     <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 space-y-2">
                       <Label className="text-xs flex items-center gap-1">
                         <Database className="h-3 w-3" />
@@ -554,6 +554,20 @@ const GeneratorRPP = () => {
                       </Select>
                       <p className="text-xs text-muted-foreground">
                         {isLoadingAtp || isLoadingKktp ? 'Memuat data...' : `${filteredAtp.length} ATP tersedia`}
+                      </p>
+                    </div>
+                  ) : formData.mapel && formData.jenjang && formData.kelas && formData.semester ? (
+                    <div className="p-3 rounded-lg border border-destructive/30 bg-destructive/5 space-y-1">
+                      <p className="text-sm font-medium text-destructive">Tidak ada ATP yang cocok</p>
+                      <p className="text-xs text-muted-foreground">
+                        Belum ada ATP untuk <strong>{formData.mapel}</strong> Kelas <strong>{formData.kelas}</strong> Semester <strong>{formData.semester}</strong>. 
+                        Silakan buat ATP terlebih dahulu di menu <strong>ATP</strong>, atau isi data CP & TP secara manual di bawah.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-3 rounded-lg border border-muted bg-muted/30">
+                      <p className="text-xs text-muted-foreground">
+                        Pilih Jenjang, Kelas, Semester, dan Mapel terlebih dahulu untuk menampilkan ATP yang tersedia.
                       </p>
                     </div>
                   )}
