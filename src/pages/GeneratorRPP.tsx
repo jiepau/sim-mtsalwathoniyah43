@@ -628,7 +628,7 @@ const GeneratorRPP = () => {
                     </div>
                   )}
                   <div className="space-y-2">
-                    <Label className="text-xs">Profil Pelajar Pancasila (P5)</Label>
+                    <Label className="text-xs">Profil Pelajar Pancasila</Label>
                     <div className="grid grid-cols-1 gap-2">
                       {Object.entries(PROFIL_PELAJAR_PANCASILA).map(([key, data]) => (
                         <label key={key} className="flex items-start gap-2 text-xs cursor-pointer">

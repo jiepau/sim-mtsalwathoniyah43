@@ -212,7 +212,7 @@ PENDEKATAN UTAMA:
 2. **Deep Learning** - Penerapan model pembelajaran ${modelData.nama} dengan sintaks:
    ${modelData.sintaks.map((s, i) => `${i + 1}. ${s}`).join('\n   ')}
 3. **Higher Order Thinking Skills (HOTS)** - Asesmen berbasis C4-C6 (Menganalisis, Mengevaluasi, Mencipta)
-4. **Profil Pelajar Pancasila** - Integrasi dimensi P5 dalam pembelajaran
+4. **Profil Pelajar Pancasila** - Integrasi dimensi Profil Pelajar Pancasila dalam pembelajaran
 
 FORMAT OUTPUT (Markdown terstruktur):
 
@@ -226,7 +226,7 @@ FORMAT OUTPUT (Markdown terstruktur):
 | Materi Pokok | [topik] |
 | Alokasi Waktu | [alokasi waktu] |
 | Model Pembelajaran | ${modelData.nama} |
-| Profil Pelajar Pancasila | [dimensi P5 yang dikembangkan] |
+| Profil Pelajar Pancasila | [dimensi yang dikembangkan] |
 | Tema Kurikulum Berbasis Cinta | [nilai karakter KBC] |
 
 ## A. CAPAIAN PEMBELAJARAN (CP)
@@ -273,20 +273,23 @@ ${modelData.sintaks.map((s, i) => `#### Tahap ${i + 1}: ${s}
 
 ## F. ASESMEN
 
-### Asesmen Formatif
-| Teknik | Instrumen | Level HOTS | Kriteria Penilaian |
-|--------|-----------|------------|-------------------|
-[Tabel asesmen formatif dengan rubrik]
+### Asesmen Formatif (Proses)
+| No | Teknik | Instrumen | Deskripsi | Level HOTS | Kriteria Penilaian |
+|----|--------|-----------|-----------|------------|-------------------|
+| 1  | [teknik yang dipilih] | [instrumen konkret] | [penjelasan singkat] | [C4/C5/C6] | [kriteria detail] |
+[Isi minimal 2-3 baris dengan instrumen yang KONKRET dan SPESIFIK sesuai topik]
 
-### Asesmen Sumatif
-| Teknik | Instrumen | Level HOTS | Kriteria Penilaian |
-|--------|-----------|------------|-------------------|
-[Tabel asesmen sumatif dengan rubrik]
+### Asesmen Sumatif (Akhir)
+| No | Teknik | Instrumen | Deskripsi | Level HOTS | Kriteria Penilaian |
+|----|--------|-----------|-----------|------------|-------------------|
+| 1  | [teknik yang dipilih] | [instrumen konkret] | [penjelasan singkat] | [C4/C5/C6] | [kriteria detail] |
+[Isi minimal 2-3 baris dengan instrumen yang KONKRET dan SPESIFIK sesuai topik]
 
-### Asesmen Sikap/Karakter
-| Nilai Karakter | Indikator | Teknik Penilaian |
-|----------------|-----------|------------------|
-[Penilaian internalisasi nilai KBC]
+### Asesmen Sikap/Karakter (KBC)
+| No | Nilai Karakter | Indikator Perilaku | Teknik Penilaian | Instrumen |
+|----|----------------|-------------------|------------------|-----------|
+| 1  | [nilai KBC] | [indikator observable] | [observasi/self-assessment/peer] | [checklist/rubrik/jurnal] |
+[Penilaian internalisasi nilai KBC - WAJIB diisi dengan detail]
 
 ## G. DIFERENSIASI PEMBELAJARAN
 
@@ -319,7 +322,8 @@ INSTRUKSI PENTING:
 2. Setiap aktivitas harus mencakup level HOTS (C4-C6)
 3. Berikan contoh konkret untuk setiap langkah pembelajaran
 4. Sertakan rubrik penilaian yang detail
-5. Pastikan diferensiasi muncul di kegiatan inti`;
+5. Pastikan diferensiasi muncul di kegiatan inti
+6. **BAGIAN F. ASESMEN WAJIB DIISI LENGKAP** - Jangan hanya menulis heading kosong! Setiap sub-bagian asesmen HARUS berisi tabel dengan isi yang konkret dan spesifik sesuai topik pembelajaran. Ini adalah bagian KRITIS yang sering kosong - pastikan terisi penuh.`;
 
     // Build user prompt
     let userPrompt = `Buatkan Modul Ajar/RPP LENGKAP dengan detail berikut:
@@ -363,13 +367,20 @@ INSTRUKSI PENTING:
 
     // Asesmen HOTS
     if (input.teknik_asesmen || input.jenis_asesmen) {
-      userPrompt += `\n\n## ASESMEN`;
+      userPrompt += `\n\n## ASESMEN (WAJIB DIISI LENGKAP DENGAN TABEL DAN RUBRIK)`;
       if (input.teknik_asesmen) {
-        userPrompt += `\n- Teknik Asesmen: ${input.teknik_asesmen}`;
+        userPrompt += `\n- Teknik Asesmen yang HARUS digunakan: ${input.teknik_asesmen}`;
+        userPrompt += `\n  PENTING: Buatkan tabel asesmen LENGKAP untuk setiap teknik di atas, termasuk instrumen, level HOTS, dan kriteria penilaian.`;
       }
       if (input.jenis_asesmen) {
-        userPrompt += `\n- Jenis Asesmen: ${input.jenis_asesmen}`;
+        userPrompt += `\n- Jenis Asesmen yang HARUS ada: ${input.jenis_asesmen}`;
+        userPrompt += `\n  PENTING: Setiap jenis asesmen harus memiliki sub-bagian tersendiri dengan tabel instrumen dan rubrik yang detail.`;
       }
+      if (!input.teknik_asesmen && !input.jenis_asesmen) {
+        userPrompt += `\n  Gunakan teknik dan jenis asesmen default yang sesuai dengan topik.`;
+      }
+    } else {
+      userPrompt += `\n\n## ASESMEN\nTidak ada teknik/jenis asesmen spesifik dipilih. Buatkan asesmen formatif, sumatif, dan sikap/karakter yang sesuai dengan topik, lengkap dengan tabel dan rubrik.`;
     }
 
     // Diferensiasi
