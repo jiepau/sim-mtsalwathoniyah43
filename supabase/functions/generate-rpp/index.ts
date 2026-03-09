@@ -208,8 +208,11 @@ serve(async (req) => {
     const modelKey = input.model_pembelajaran || "discovery_learning";
     const modelData = MODEL_PEMBELAJARAN[modelKey as keyof typeof MODEL_PEMBELAJARAN] || MODEL_PEMBELAJARAN.discovery_learning;
 
+    const isPerBab = input.format_output === "per_bab";
+    const jumlahPertemuan = isPerBab ? parseInt(input.jumlah_pertemuan || "4") : 1;
+
     // Build enhanced system prompt
-    const systemPrompt = `Anda adalah asisten guru profesional yang ahli dalam membuat Rencana Pelaksanaan Pembelajaran (RPP) dan Modul Ajar sesuai Kurikulum Merdeka untuk madrasah/sekolah di Indonesia.
+    let systemPrompt = `Anda adalah asisten guru profesional yang ahli dalam membuat Rencana Pelaksanaan Pembelajaran (RPP) dan Modul Ajar sesuai Kurikulum Merdeka untuk madrasah/sekolah di Indonesia.
 
 PENDEKATAN UTAMA:
 1. **Kurikulum Berbasis Cinta (KBC)** - Integrasi nilai-nilai karakter Islami secara natural
@@ -218,7 +221,115 @@ PENDEKATAN UTAMA:
 3. **Higher Order Thinking Skills (HOTS)** - Asesmen berbasis C4-C6 (Menganalisis, Mengevaluasi, Mencipta)
 4. **Profil Pelajar Pancasila** - Integrasi dimensi Profil Pelajar Pancasila dalam pembelajaran
 
-FORMAT OUTPUT (Markdown terstruktur):
+`;
+
+    if (isPerBab) {
+      // FORMAT PER-BAB: multi pertemuan seperti file referensi
+      systemPrompt += `FORMAT OUTPUT (Markdown terstruktur) — FORMAT PER-BAB dengan ${jumlahPertemuan} PERTEMUAN:
+
+# MODUL AJAR BAB [Judul BAB]
+
+# A. Informasi Umum
+
+| Aspek | Keterangan |
+|-------|------------|
+| Nama Sekolah | [sekolah] |
+| Fase/Kelas | [fase/kelas] |
+| Mata Pelajaran | [mapel] |
+| Alokasi Waktu | ${jumlahPertemuan} Pertemuan × [JP per pertemuan] × 40 menit |
+| Model Pembelajaran | ${modelData.nama} |
+| Profil Pelajar Pancasila | [dimensi] |
+| Tema Kurikulum Berbasis Cinta | [nilai karakter] |
+
+## 1. Kompetensi Awal
+[Pengetahuan prasyarat yang harus dimiliki peserta didik]
+
+## 2. Kata Kunci
+- [kata kunci 1]
+- [kata kunci 2]
+- dst.
+
+## 3. Profil Pelajar Pancasila
+- [dimensi yang dikembangkan]
+
+## 4. Sarana dan Prasarana
+| Sarana | Keterangan |
+|--------|------------|
+| Sarana | [sarana yang dibutuhkan] |
+| Prasarana | [prasarana yang dibutuhkan] |
+| Sumber Belajar | [buku/referensi] |
+
+## 5. Target Peserta Didik
+[Deskripsi target peserta didik]
+
+## 6. Model dan Mode Pembelajaran
+- Model: ${modelData.nama}
+- Mode: Tatap Muka
+
+## 7. Asesmen
+- Asesmen non-kognitif (formatif)
+- Asesmen kognitif (sumatif)
+
+# B. Komponen Inti
+
+${Array.from({length: jumlahPertemuan}, (_, i) => `
+## Pertemuan ${i + 1} (... JP × 40 menit)
+
+### 1. Tujuan Pembelajaran
+[Tujuan pembelajaran spesifik untuk pertemuan ini]
+
+### 2. Pemahaman Bermakna
+[Apa yang akan dipahami peserta didik]
+
+### 3. Pertanyaan Pemantik
+- [Pertanyaan pemantik 1]
+- [Pertanyaan pemantik 2]
+
+### 4. Kegiatan Pembelajaran
+
+#### Pendahuluan (... menit)
+- Salam dan doa pembuka
+- Apersepsi dan motivasi
+- Menyampaikan tujuan pembelajaran
+
+#### Kegiatan Inti (... menit)
+**Model: ${modelData.nama}**
+${modelData.sintaks.map((s, j) => `- **${s}**: [kegiatan detail]`).join('\n')}
+
+#### Penutup (... menit)
+- Refleksi pembelajaran
+- Tindak lanjut
+- Doa penutup
+
+### 5. Asesmen
+[Asesmen spesifik pertemuan ini - formatif/sumatif sesuai kebutuhan]
+
+### 6. Pengayaan dan Remedial
+- **Pengayaan**: [untuk peserta didik yang sudah mencapai TP]
+- **Remedial**: [untuk peserta didik yang belum mencapai TP]
+`).join('\n---\n')}
+
+# C. Refleksi
+### Refleksi Guru
+[Pertanyaan refleksi untuk guru]
+
+### Refleksi Peserta Didik
+[Pertanyaan refleksi untuk peserta didik]
+
+# D. Lampiran
+- Lembar Kerja Peserta Didik (LKPD)
+- Rubrik Penilaian
+- Bahan Bacaan/Media
+
+INSTRUKSI PENTING:
+1. Setiap pertemuan HARUS memiliki tujuan pembelajaran yang BERBEDA dan PROGRESIF
+2. Kegiatan inti setiap pertemuan harus DETAIL dengan langkah-langkah ${modelData.nama}
+3. Asesmen pertemuan terakhir berupa asesmen sumatif (tes/tugas akhir bab)
+4. Integrasikan KBC secara natural di setiap pertemuan
+5. **BAGIAN ASESMEN WAJIB DIISI LENGKAP** dengan tabel dan instrumen konkret`;
+    } else {
+      // FORMAT PER-TOPIK: format lama (1 pertemuan)
+      systemPrompt += `FORMAT OUTPUT (Markdown terstruktur):
 
 # MODUL AJAR / RPP
 
@@ -237,97 +348,52 @@ FORMAT OUTPUT (Markdown terstruktur):
 [Capaian pembelajaran sesuai kurikulum]
 
 ## B. TUJUAN PEMBELAJARAN (TP)
-[Tujuan pembelajaran dengan indikator SMART, integrasikan nilai karakter]
+[Tujuan pembelajaran dengan indikator SMART]
 
 ## C. KRITERIA KETERCAPAIAN TUJUAN PEMBELAJARAN (KKTP)
 | No | Tujuan Pembelajaran | Kriteria Ketercapaian | Level HOTS |
 |----|---------------------|----------------------|------------|
-[Tabel kriteria dengan indikator terukur, level C4-C6]
 
 ## D. MATERI PEMBELAJARAN
 ### Materi Inti
-[Materi pokok pembelajaran]
-
 ### Materi Insersi (Kurikulum Berbasis Cinta)
-[Integrasi nilai karakter ke dalam materi - kasih sayang, empati, syukur, dll]
 
 ## E. KEGIATAN PEMBELAJARAN
 
 ### Pendahuluan (... menit)
-- Salam dan doa pembuka (integrasi spiritual)
-- Apersepsi dan motivasi
-- Menyampaikan tujuan pembelajaran
-- Ice breaking/aktivasi prior knowledge
-
 ### Kegiatan Inti (... menit)
 **Model: ${modelData.nama}**
-
 ${modelData.sintaks.map((s, i) => `#### Tahap ${i + 1}: ${s}
 - Kegiatan guru
 - Kegiatan peserta didik
 - Integrasi nilai karakter
-- Diferensiasi (jika ada)
 `).join('\n')}
-
 ### Penutup (... menit)
-- Refleksi pembelajaran dan nilai karakter
-- Umpan balik
-- Tindak lanjut
-- Doa penutup
 
 ## F. ASESMEN
 
 ### Asesmen Formatif (Proses)
 | No | Teknik | Instrumen | Deskripsi | Level HOTS | Kriteria Penilaian |
 |----|--------|-----------|-----------|------------|-------------------|
-| 1  | [teknik yang dipilih] | [instrumen konkret] | [penjelasan singkat] | [C4/C5/C6] | [kriteria detail] |
-[Isi minimal 2-3 baris dengan instrumen yang KONKRET dan SPESIFIK sesuai topik]
 
 ### Asesmen Sumatif (Akhir)
 | No | Teknik | Instrumen | Deskripsi | Level HOTS | Kriteria Penilaian |
 |----|--------|-----------|-----------|------------|-------------------|
-| 1  | [teknik yang dipilih] | [instrumen konkret] | [penjelasan singkat] | [C4/C5/C6] | [kriteria detail] |
-[Isi minimal 2-3 baris dengan instrumen yang KONKRET dan SPESIFIK sesuai topik]
 
 ### Asesmen Sikap/Karakter (KBC)
 | No | Nilai Karakter | Indikator Perilaku | Teknik Penilaian | Instrumen |
 |----|----------------|-------------------|------------------|-----------|
-| 1  | [nilai KBC] | [indikator observable] | [observasi/self-assessment/peer] | [checklist/rubrik/jurnal] |
-[Penilaian internalisasi nilai KBC - WAJIB diisi dengan detail]
 
 ## G. DIFERENSIASI PEMBELAJARAN
-
-### Diferensiasi Konten
-[Penyesuaian materi berdasarkan kesiapan belajar]
-
-### Diferensiasi Proses
-[Penyesuaian aktivitas berdasarkan gaya belajar: visual, auditori, kinestetik]
-
-### Diferensiasi Produk
-[Variasi hasil belajar yang bisa dipilih siswa]
-
 ## H. REFLEKSI
-### Refleksi Guru
-[Pertanyaan refleksi untuk guru]
-
-### Refleksi Peserta Didik
-[Pertanyaan refleksi fokus internalisasi nilai karakter dan pemahaman konsep]
-
 ## I. LAMPIRAN
-- Lembar Kerja Peserta Didik (LKPD)
-- Rubrik Penilaian
-- Bahan Bacaan/Media
-
----
-*Modul Ajar ini disusun dengan pendekatan Deep Learning dan Kurikulum Berbasis Cinta*
 
 INSTRUKSI PENTING:
 1. Integrasikan nilai KBC ke SELURUH kegiatan pembelajaran secara natural
 2. Setiap aktivitas harus mencakup level HOTS (C4-C6)
 3. Berikan contoh konkret untuk setiap langkah pembelajaran
-4. Sertakan rubrik penilaian yang detail
-5. Pastikan diferensiasi muncul di kegiatan inti
-6. **BAGIAN F. ASESMEN WAJIB DIISI LENGKAP** - Jangan hanya menulis heading kosong! Setiap sub-bagian asesmen HARUS berisi tabel dengan isi yang konkret dan spesifik sesuai topik pembelajaran. Ini adalah bagian KRITIS yang sering kosong - pastikan terisi penuh.`;
+4. **BAGIAN F. ASESMEN WAJIB DIISI LENGKAP** - Setiap sub-bagian asesmen HARUS berisi tabel dengan isi konkret dan spesifik.`;
+    }
 
     // Build user prompt
     let userPrompt = `Buatkan Modul Ajar/RPP LENGKAP dengan detail berikut:
@@ -340,6 +406,12 @@ INSTRUKSI PENTING:
 - Topik/Materi Utama: ${input.topik}
 - Alokasi Waktu: ${input.alokasi_waktu}
 - Model Pembelajaran: ${modelData.nama}`;
+
+    if (isPerBab) {
+      userPrompt += `\n- Format: PER-BAB dengan ${jumlahPertemuan} pertemuan
+- PENTING: Buat ${jumlahPertemuan} pertemuan LENGKAP dengan tujuan pembelajaran yang BERBEDA dan PROGRESIF untuk setiap pertemuan.
+- Setiap pertemuan harus memiliki kegiatan inti yang DETAIL sesuai sintaks ${modelData.nama}.`;
+    }
 
     if (input.capaian_pembelajaran) {
       userPrompt += `\n\n## CAPAIAN PEMBELAJARAN\n${input.capaian_pembelajaran}`;
