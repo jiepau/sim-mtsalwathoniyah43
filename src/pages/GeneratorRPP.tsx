@@ -245,6 +245,8 @@ const GeneratorRPP = () => {
             alokasi_waktu: formData.alokasi_waktu,
             capaian_pembelajaran: formData.capaian_pembelajaran,
             tujuan_pembelajaran: formData.tujuan_pembelajaran,
+            format_output: formData.format_output,
+            jumlah_pertemuan: formData.format_output === 'per_bab' ? formData.jumlah_pertemuan : undefined,
             // Deep Learning
             model_pembelajaran: formData.model_pembelajaran,
             // Profil Pelajar Pancasila
