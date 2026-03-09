@@ -226,7 +226,7 @@ FORMAT OUTPUT (Markdown terstruktur):
 | Materi Pokok | [topik] |
 | Alokasi Waktu | [alokasi waktu] |
 | Model Pembelajaran | ${modelData.nama} |
-| Profil Pelajar Pancasila | [dimensi P5 yang dikembangkan] |
+| Profil Pelajar Pancasila | [dimensi yang dikembangkan] |
 | Tema Kurikulum Berbasis Cinta | [nilai karakter KBC] |
 
 ## A. CAPAIAN PEMBELAJARAN (CP)
