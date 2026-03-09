@@ -56,6 +56,8 @@ interface FormData {
   alokasi_waktu: string;
   capaian_pembelajaran: string;
   tujuan_pembelajaran: string;
+  format_output: 'per_topik' | 'per_bab';
+  jumlah_pertemuan: string;
   // Deep Learning
   model_pembelajaran: string;
   // Profil Pelajar Pancasila
@@ -83,6 +85,8 @@ const initialFormData: FormData = {
   alokasi_waktu: '',
   capaian_pembelajaran: '',
   tujuan_pembelajaran: '',
+  format_output: 'per_topik',
+  jumlah_pertemuan: '2',
   model_pembelajaran: 'discovery_learning',
   profil_pelajar: [],
   tema_kbc: [],
