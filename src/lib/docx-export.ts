@@ -1,4 +1,4 @@
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } from 'docx';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle, Table, TableRow, TableCell, WidthType, VerticalAlign } from 'docx';
 import { saveAs } from 'file-saver';
 
 interface RppExportData {
@@ -19,10 +19,8 @@ function parseMarkdownSections(content: string): { heading: string; content: str
   let currentContent: string[] = [];
 
   for (const line of lines) {
-    // Check for headings (## or ###)
     const headingMatch = line.match(/^#{1,3}\s+(.+)$/);
     if (headingMatch) {
-      // Save previous section
       if (currentHeading || currentContent.length > 0) {
         sections.push({
           heading: currentHeading,
@@ -36,7 +34,6 @@ function parseMarkdownSections(content: string): { heading: string; content: str
     }
   }
 
-  // Save last section
   if (currentHeading || currentContent.length > 0) {
     sections.push({
       heading: currentHeading,
@@ -50,8 +47,6 @@ function parseMarkdownSections(content: string): { heading: string; content: str
 // Convert markdown text to TextRun array
 function parseInlineMarkdown(text: string): TextRun[] {
   const runs: TextRun[] = [];
-  
-  // Simple parsing for bold (**text**) and clean up
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
   
   for (const part of parts) {
@@ -59,12 +54,12 @@ function parseInlineMarkdown(text: string): TextRun[] {
       runs.push(new TextRun({ 
         text: part.slice(2, -2), 
         bold: true,
-        size: 24 // 12pt
+        size: 22
       }));
     } else if (part.trim()) {
       runs.push(new TextRun({ 
         text: part,
-        size: 24 // 12pt
+        size: 22
       }));
     }
   }
@@ -72,56 +67,158 @@ function parseInlineMarkdown(text: string): TextRun[] {
   return runs;
 }
 
-// Create paragraphs from content
-function createContentParagraphs(content: string): Paragraph[] {
-  const paragraphs: Paragraph[] = [];
-  const lines = content.split('\n');
-  
+// Parse a markdown table into rows of cells
+function parseMarkdownTable(lines: string[]): string[][] {
+  const rows: string[][] = [];
   for (const line of lines) {
-    const trimmedLine = line.trim();
+    const trimmed = line.trim();
+    if (!trimmed.startsWith('|')) continue;
+    // Skip separator rows like |---|---|
+    if (/^\|[\s\-:|]+\|$/.test(trimmed)) continue;
     
-    if (!trimmedLine) continue;
+    const cells = trimmed
+      .split('|')
+      .slice(1, -1) // remove first and last empty strings
+      .map(c => c.trim());
     
-    // Check for list items
-    if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ')) {
-      paragraphs.push(new Paragraph({
-        children: parseInlineMarkdown(trimmedLine.slice(2)),
-        bullet: { level: 0 },
-        spacing: { after: 100 }
-      }));
-    } else if (trimmedLine.match(/^\d+\.\s/)) {
-      // Numbered list
-      const textContent = trimmedLine.replace(/^\d+\.\s/, '');
-      paragraphs.push(new Paragraph({
-        children: parseInlineMarkdown(textContent),
-        bullet: { level: 0 },
-        spacing: { after: 100 }
-      }));
-    } else if (trimmedLine.startsWith('|')) {
-      // Skip table markdown (handled separately if needed)
-      continue;
-    } else {
-      paragraphs.push(new Paragraph({
-        children: parseInlineMarkdown(trimmedLine),
-        spacing: { after: 120 }
-      }));
+    if (cells.length > 0) {
+      rows.push(cells);
     }
   }
+  return rows;
+}
+
+// Create a DOCX table from parsed markdown table data
+function createDocxTable(tableData: string[][]): Table {
+  if (tableData.length === 0) {
+    return new Table({ rows: [new TableRow({ children: [new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: '-', size: 22 })] })] })] })] });
+  }
+
+  const numCols = Math.max(...tableData.map(r => r.length));
+
+  const docxRows = tableData.map((row, rowIndex) => {
+    const cells = [];
+    for (let i = 0; i < numCols; i++) {
+      const cellText = row[i] || '';
+      const isHeader = rowIndex === 0;
+      cells.push(
+        new TableCell({
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: cellText,
+                  bold: isHeader,
+                  size: 20, // 10pt
+                  font: 'Calibri',
+                }),
+              ],
+              spacing: { before: 40, after: 40 },
+            }),
+          ],
+          verticalAlign: VerticalAlign.CENTER,
+          shading: isHeader ? { fill: 'D9E2F3' } : undefined,
+          margins: { top: 40, bottom: 40, left: 80, right: 80 },
+        })
+      );
+    }
+    return new TableRow({ children: cells });
+  });
+
+  return new Table({
+    rows: docxRows,
+    width: { size: 100, type: WidthType.PERCENTAGE },
+  });
+}
+
+// Create paragraphs from content, now handling tables
+function createContentElements(content: string): (Paragraph | Table)[] {
+  const elements: (Paragraph | Table)[] = [];
+  const lines = content.split('\n');
   
-  return paragraphs;
+  let i = 0;
+  while (i < lines.length) {
+    const trimmedLine = lines[i].trim();
+    
+    if (!trimmedLine) {
+      i++;
+      continue;
+    }
+    
+    // Detect table block (consecutive lines starting with |)
+    if (trimmedLine.startsWith('|')) {
+      const tableLines: string[] = [];
+      while (i < lines.length && lines[i].trim().startsWith('|')) {
+        tableLines.push(lines[i]);
+        i++;
+      }
+      const tableData = parseMarkdownTable(tableLines);
+      if (tableData.length > 0) {
+        elements.push(createDocxTable(tableData));
+        elements.push(new Paragraph({ children: [], spacing: { after: 120 } }));
+      }
+      continue;
+    }
+    
+    // Sub-heading (####)
+    if (trimmedLine.startsWith('#### ')) {
+      elements.push(new Paragraph({
+        children: [new TextRun({ 
+          text: trimmedLine.replace(/^####\s+/, ''), 
+          bold: true, 
+          size: 22,
+          font: 'Calibri',
+        })],
+        spacing: { before: 200, after: 100 },
+      }));
+      i++;
+      continue;
+    }
+    
+    // List items
+    if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ')) {
+      elements.push(new Paragraph({
+        children: parseInlineMarkdown(trimmedLine.slice(2)),
+        bullet: { level: 0 },
+        spacing: { after: 80 }
+      }));
+      i++;
+      continue;
+    }
+    
+    if (trimmedLine.match(/^\d+\.\s/)) {
+      const textContent = trimmedLine.replace(/^\d+\.\s/, '');
+      elements.push(new Paragraph({
+        children: parseInlineMarkdown(textContent),
+        bullet: { level: 0 },
+        spacing: { after: 80 }
+      }));
+      i++;
+      continue;
+    }
+    
+    // Regular paragraph
+    elements.push(new Paragraph({
+      children: parseInlineMarkdown(trimmedLine),
+      spacing: { after: 120 }
+    }));
+    i++;
+  }
+  
+  return elements;
 }
 
 export async function exportToDocx(data: RppExportData): Promise<void> {
   const sections = parseMarkdownSections(data.content);
   
-  const docChildren: Paragraph[] = [];
+  const docChildren: (Paragraph | Table)[] = [];
   
   // Title
   docChildren.push(new Paragraph({
     children: [new TextRun({ 
       text: 'RENCANA PELAKSANAAN PEMBELAJARAN', 
       bold: true,
-      size: 32 // 16pt
+      size: 32
     })],
     heading: HeadingLevel.TITLE,
     alignment: AlignmentType.CENTER,
@@ -132,7 +229,7 @@ export async function exportToDocx(data: RppExportData): Promise<void> {
     children: [new TextRun({ 
       text: '(RPP/MODUL AJAR)', 
       bold: true,
-      size: 28 // 14pt
+      size: 28
     })],
     alignment: AlignmentType.CENTER,
     spacing: { after: 400 }
@@ -155,12 +252,8 @@ export async function exportToDocx(data: RppExportData): Promise<void> {
     }));
   }
   
-  docChildren.push(new Paragraph({
-    children: [],
-    spacing: { after: 300 }
-  }));
+  docChildren.push(new Paragraph({ children: [], spacing: { after: 300 } }));
   
-  // Separator line
   docChildren.push(new Paragraph({
     border: {
       bottom: { style: BorderStyle.SINGLE, size: 6, color: '000000' }
@@ -175,7 +268,7 @@ export async function exportToDocx(data: RppExportData): Promise<void> {
         children: [new TextRun({ 
           text: section.heading.toUpperCase(), 
           bold: true,
-          size: 26 // 13pt
+          size: 26
         })],
         heading: HeadingLevel.HEADING_1,
         spacing: { before: 300, after: 150 }
@@ -183,8 +276,8 @@ export async function exportToDocx(data: RppExportData): Promise<void> {
     }
     
     if (section.content) {
-      const contentParagraphs = createContentParagraphs(section.content);
-      docChildren.push(...contentParagraphs);
+      const contentElements = createContentElements(section.content);
+      docChildren.push(...contentElements);
     }
   }
   
@@ -193,7 +286,7 @@ export async function exportToDocx(data: RppExportData): Promise<void> {
       properties: {
         page: {
           margin: {
-            top: 1440, // 1 inch
+            top: 1440,
             right: 1440,
             bottom: 1440,
             left: 1440
