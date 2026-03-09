@@ -363,13 +363,20 @@ INSTRUKSI PENTING:
 
     // Asesmen HOTS
     if (input.teknik_asesmen || input.jenis_asesmen) {
-      userPrompt += `\n\n## ASESMEN`;
+      userPrompt += `\n\n## ASESMEN (WAJIB DIISI LENGKAP DENGAN TABEL DAN RUBRIK)`;
       if (input.teknik_asesmen) {
-        userPrompt += `\n- Teknik Asesmen: ${input.teknik_asesmen}`;
+        userPrompt += `\n- Teknik Asesmen yang HARUS digunakan: ${input.teknik_asesmen}`;
+        userPrompt += `\n  PENTING: Buatkan tabel asesmen LENGKAP untuk setiap teknik di atas, termasuk instrumen, level HOTS, dan kriteria penilaian.`;
       }
       if (input.jenis_asesmen) {
-        userPrompt += `\n- Jenis Asesmen: ${input.jenis_asesmen}`;
+        userPrompt += `\n- Jenis Asesmen yang HARUS ada: ${input.jenis_asesmen}`;
+        userPrompt += `\n  PENTING: Setiap jenis asesmen harus memiliki sub-bagian tersendiri dengan tabel instrumen dan rubrik yang detail.`;
       }
+      if (!input.teknik_asesmen && !input.jenis_asesmen) {
+        userPrompt += `\n  Gunakan teknik dan jenis asesmen default yang sesuai dengan topik.`;
+      }
+    } else {
+      userPrompt += `\n\n## ASESMEN\nTidak ada teknik/jenis asesmen spesifik dipilih. Buatkan asesmen formatif, sumatif, dan sikap/karakter yang sesuai dengan topik, lengkap dengan tabel dan rubrik.`;
     }
 
     // Diferensiasi
