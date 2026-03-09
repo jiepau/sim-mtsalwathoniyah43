@@ -56,6 +56,8 @@ interface FormData {
   alokasi_waktu: string;
   capaian_pembelajaran: string;
   tujuan_pembelajaran: string;
+  format_output: 'per_topik' | 'per_bab';
+  jumlah_pertemuan: string;
   // Deep Learning
   model_pembelajaran: string;
   // Profil Pelajar Pancasila
@@ -83,6 +85,8 @@ const initialFormData: FormData = {
   alokasi_waktu: '',
   capaian_pembelajaran: '',
   tujuan_pembelajaran: '',
+  format_output: 'per_topik',
+  jumlah_pertemuan: '2',
   model_pembelajaran: 'discovery_learning',
   profil_pelajar: [],
   tema_kbc: [],
@@ -241,6 +245,8 @@ const GeneratorRPP = () => {
             alokasi_waktu: formData.alokasi_waktu,
             capaian_pembelajaran: formData.capaian_pembelajaran,
             tujuan_pembelajaran: formData.tujuan_pembelajaran,
+            format_output: formData.format_output,
+            jumlah_pertemuan: formData.format_output === 'per_bab' ? formData.jumlah_pertemuan : undefined,
             // Deep Learning
             model_pembelajaran: formData.model_pembelajaran,
             // Profil Pelajar Pancasila
@@ -490,6 +496,33 @@ const GeneratorRPP = () => {
                         </SelectContent>
                       </Select>
                     </div>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Format Output</Label>
+                      <Select value={formData.format_output} onValueChange={(v) => handleInputChange('format_output', v)}>
+                        <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="per_topik">Per Topik (1 Pertemuan)</SelectItem>
+                          <SelectItem value="per_bab">Per BAB (Multi Pertemuan)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {formData.format_output === 'per_bab' && (
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Jumlah Pertemuan</Label>
+                        <Select value={formData.jumlah_pertemuan} onValueChange={(v) => handleInputChange('jumlah_pertemuan', v)}>
+                          <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="2">2 Pertemuan</SelectItem>
+                            <SelectItem value="3">3 Pertemuan</SelectItem>
+                            <SelectItem value="4">4 Pertemuan</SelectItem>
+                            <SelectItem value="5">5 Pertemuan</SelectItem>
+                            <SelectItem value="6">6 Pertemuan</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs">Mata Pelajaran *</Label>
