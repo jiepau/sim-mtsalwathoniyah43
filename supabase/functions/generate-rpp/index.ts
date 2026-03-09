@@ -212,7 +212,7 @@ PENDEKATAN UTAMA:
 2. **Deep Learning** - Penerapan model pembelajaran ${modelData.nama} dengan sintaks:
    ${modelData.sintaks.map((s, i) => `${i + 1}. ${s}`).join('\n   ')}
 3. **Higher Order Thinking Skills (HOTS)** - Asesmen berbasis C4-C6 (Menganalisis, Mengevaluasi, Mencipta)
-4. **Profil Pelajar Pancasila** - Integrasi dimensi P5 dalam pembelajaran
+4. **Profil Pelajar Pancasila** - Integrasi dimensi Profil Pelajar Pancasila dalam pembelajaran
 
 FORMAT OUTPUT (Markdown terstruktur):
 
