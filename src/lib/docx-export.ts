@@ -213,54 +213,6 @@ export async function exportToDocx(data: RppExportData): Promise<void> {
   
   const docChildren: (Paragraph | Table)[] = [];
   
-  // Title
-  docChildren.push(new Paragraph({
-    children: [new TextRun({ 
-      text: 'RENCANA PELAKSANAAN PEMBELAJARAN', 
-      bold: true,
-      size: 32
-    })],
-    heading: HeadingLevel.TITLE,
-    alignment: AlignmentType.CENTER,
-    spacing: { after: 200 }
-  }));
-  
-  docChildren.push(new Paragraph({
-    children: [new TextRun({ 
-      text: '(RPP/MODUL AJAR)', 
-      bold: true,
-      size: 28
-    })],
-    alignment: AlignmentType.CENTER,
-    spacing: { after: 400 }
-  }));
-  
-  // Header info
-  const headerInfo = [
-    `Jenjang: ${data.jenjang}`,
-    `Kelas: ${data.kelas}`,
-    `Semester: ${data.semester}`,
-    `Mata Pelajaran: ${data.mapel}`,
-    `Topik: ${data.topik}`,
-    `Alokasi Waktu: ${data.alokasi_waktu}`
-  ];
-  
-  for (const info of headerInfo) {
-    docChildren.push(new Paragraph({
-      children: [new TextRun({ text: info, size: 24 })],
-      spacing: { after: 60 }
-    }));
-  }
-  
-  docChildren.push(new Paragraph({ children: [], spacing: { after: 300 } }));
-  
-  docChildren.push(new Paragraph({
-    border: {
-      bottom: { style: BorderStyle.SINGLE, size: 6, color: '000000' }
-    },
-    spacing: { after: 300 }
-  }));
-  
   // Content sections
   for (const section of sections) {
     if (section.heading) {
