@@ -365,23 +365,33 @@ INSTRUKSI PENTING:
       }
     }
 
-    // Asesmen HOTS
-    if (input.teknik_asesmen || input.jenis_asesmen) {
-      userPrompt += `\n\n## ASESMEN (WAJIB DIISI LENGKAP DENGAN TABEL DAN RUBRIK)`;
-      if (input.teknik_asesmen) {
-        userPrompt += `\n- Teknik Asesmen yang HARUS digunakan: ${input.teknik_asesmen}`;
-        userPrompt += `\n  PENTING: Buatkan tabel asesmen LENGKAP untuk setiap teknik di atas, termasuk instrumen, level HOTS, dan kriteria penilaian.`;
-      }
-      if (input.jenis_asesmen) {
-        userPrompt += `\n- Jenis Asesmen yang HARUS ada: ${input.jenis_asesmen}`;
-        userPrompt += `\n  PENTING: Setiap jenis asesmen harus memiliki sub-bagian tersendiri dengan tabel instrumen dan rubrik yang detail.`;
-      }
-      if (!input.teknik_asesmen && !input.jenis_asesmen) {
-        userPrompt += `\n  Gunakan teknik dan jenis asesmen default yang sesuai dengan topik.`;
-      }
-    } else {
-      userPrompt += `\n\n## ASESMEN\nTidak ada teknik/jenis asesmen spesifik dipilih. Buatkan asesmen formatif, sumatif, dan sikap/karakter yang sesuai dengan topik, lengkap dengan tabel dan rubrik.`;
-    }
+    // Asesmen HOTS - force detailed content
+    const teknikList = input.teknik_asesmen || "Tes Tertulis; Observasi; Penugasan";
+    const jenisList = input.jenis_asesmen || "Formatif; Sumatif";
+    
+    userPrompt += `\n\n## F. ASESMEN — BAGIAN INI ADALAH YANG PALING PENTING DAN WAJIB TERISI PENUH
+    
+**PERINTAH MUTLAK**: Bagian asesmen TIDAK BOLEH KOSONG. Anda HARUS mengisi SETIAP tabel di bawah dengan MINIMAL 3 baris data yang KONKRET dan SPESIFIK sesuai topik "${input.topik}".
+
+Teknik asesmen yang dipilih: ${teknikList}
+Jenis asesmen yang dipilih: ${jenisList}
+
+Anda WAJIB menghasilkan KETIGA sub-bagian berikut dengan ISI LENGKAP:
+
+### F.1 Asesmen Formatif (Proses)
+Buatkan tabel dengan kolom: No | Teknik | Instrumen | Deskripsi | Level HOTS | Kriteria Penilaian
+Isi MINIMAL 3 baris. Contoh format baris:
+| 1 | Observasi | Lembar observasi diskusi | Mengamati keaktifan siswa dalam diskusi kelompok | C4 (Menganalisis) | Sangat Baik: aktif bertanya dan menjawab... |
+
+### F.2 Asesmen Sumatif (Akhir)
+Buatkan tabel dengan kolom: No | Teknik | Instrumen | Deskripsi | Level HOTS | Kriteria Penilaian
+Isi MINIMAL 3 baris dengan soal/tugas yang KONKRET sesuai topik.
+
+### F.3 Asesmen Sikap/Karakter (KBC)
+Buatkan tabel dengan kolom: No | Nilai Karakter | Indikator Perilaku | Teknik Penilaian | Instrumen
+Isi MINIMAL 3 baris dengan nilai karakter yang relevan.
+
+JIKA BAGIAN ASESMEN KOSONG ATAU HANYA BERISI HEADER TANPA TABEL, MAKA OUTPUT DIANGGAP GAGAL.`;
 
     // Diferensiasi
     if (input.diferensiasi_konten || input.diferensiasi_proses || input.diferensiasi_produk) {
