@@ -322,7 +322,8 @@ INSTRUKSI PENTING:
 2. Setiap aktivitas harus mencakup level HOTS (C4-C6)
 3. Berikan contoh konkret untuk setiap langkah pembelajaran
 4. Sertakan rubrik penilaian yang detail
-5. Pastikan diferensiasi muncul di kegiatan inti`;
+5. Pastikan diferensiasi muncul di kegiatan inti
+6. **BAGIAN F. ASESMEN WAJIB DIISI LENGKAP** - Jangan hanya menulis heading kosong! Setiap sub-bagian asesmen HARUS berisi tabel dengan isi yang konkret dan spesifik sesuai topik pembelajaran. Ini adalah bagian KRITIS yang sering kosong - pastikan terisi penuh.`;
 
     // Build user prompt
     let userPrompt = `Buatkan Modul Ajar/RPP LENGKAP dengan detail berikut:
