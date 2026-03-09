@@ -129,12 +129,13 @@ const GeneratorRPP = () => {
     ? (atpList.find(a => a.id === selectedAtpId)?.tujuan_pembelajaran || [])
     : [];
 
-  // Update filtered ATP when jenjang or mapel changes
+  // Update filtered ATP when jenjang, mapel, or kelas changes
   useEffect(() => {
     if (formData.mapel && formData.jenjang) {
       const jenjangOption = JENJANG_OPTIONS.find(j => j.value === formData.jenjang);
       const fase = jenjangOption?.fase;
-      const filtered = getAtpByMapelAndFase(formData.mapel, fase);
+      const kelas = formData.kelas ? parseInt(formData.kelas) : undefined;
+      const filtered = getAtpByMapelAndFase(formData.mapel, fase, kelas);
       setFilteredAtp(filtered);
       // Auto-open kurikulum section if ATP available
       if (filtered.length > 0) {
@@ -144,7 +145,7 @@ const GeneratorRPP = () => {
       setFilteredAtp([]);
     }
     setSelectedAtpId('');
-  }, [formData.mapel, formData.jenjang]);
+  }, [formData.mapel, formData.jenjang, formData.kelas]);
 
   // Auto-fill from selected ATP including KKTP
   const handleAtpSelect = (atpId: string) => {
