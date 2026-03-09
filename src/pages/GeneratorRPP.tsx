@@ -161,8 +161,7 @@ const GeneratorRPP = () => {
       
       setFormData(prev => ({
         ...prev,
-        semester: atp.semester || prev.semester,
-        kelas: atp.kelas?.toString() || prev.kelas,
+        // Don't overwrite semester and kelas - user already selected them
         capaian_pembelajaran: atp.capaian_pembelajaran || '',
         tujuan_pembelajaran: atp.tujuan_pembelajaran?.join('\n') || '',
         alokasi_waktu: atp.alokasi_waktu || prev.alokasi_waktu,
