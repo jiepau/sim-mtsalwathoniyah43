@@ -107,7 +107,7 @@ const rppInputSchema = z.object({
   materi_insersi: z.string().max(2000).optional(),
   
   // KKTP Integration
-  kriteria_ketercapaian: z.string().max(3000).optional(),
+  kriteria_ketercapaian: z.string().max(10000).optional(),
   
   // Asesmen HOTS
   teknik_asesmen: z.string().max(500).optional(),
