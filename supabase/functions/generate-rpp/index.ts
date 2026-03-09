@@ -273,20 +273,23 @@ ${modelData.sintaks.map((s, i) => `#### Tahap ${i + 1}: ${s}
 
 ## F. ASESMEN
 
-### Asesmen Formatif
-| Teknik | Instrumen | Level HOTS | Kriteria Penilaian |
-|--------|-----------|------------|-------------------|
-[Tabel asesmen formatif dengan rubrik]
+### Asesmen Formatif (Proses)
+| No | Teknik | Instrumen | Deskripsi | Level HOTS | Kriteria Penilaian |
+|----|--------|-----------|-----------|------------|-------------------|
+| 1  | [teknik yang dipilih] | [instrumen konkret] | [penjelasan singkat] | [C4/C5/C6] | [kriteria detail] |
+[Isi minimal 2-3 baris dengan instrumen yang KONKRET dan SPESIFIK sesuai topik]
 
-### Asesmen Sumatif
-| Teknik | Instrumen | Level HOTS | Kriteria Penilaian |
-|--------|-----------|------------|-------------------|
-[Tabel asesmen sumatif dengan rubrik]
+### Asesmen Sumatif (Akhir)
+| No | Teknik | Instrumen | Deskripsi | Level HOTS | Kriteria Penilaian |
+|----|--------|-----------|-----------|------------|-------------------|
+| 1  | [teknik yang dipilih] | [instrumen konkret] | [penjelasan singkat] | [C4/C5/C6] | [kriteria detail] |
+[Isi minimal 2-3 baris dengan instrumen yang KONKRET dan SPESIFIK sesuai topik]
 
-### Asesmen Sikap/Karakter
-| Nilai Karakter | Indikator | Teknik Penilaian |
-|----------------|-----------|------------------|
-[Penilaian internalisasi nilai KBC]
+### Asesmen Sikap/Karakter (KBC)
+| No | Nilai Karakter | Indikator Perilaku | Teknik Penilaian | Instrumen |
+|----|----------------|-------------------|------------------|-----------|
+| 1  | [nilai KBC] | [indikator observable] | [observasi/self-assessment/peer] | [checklist/rubrik/jurnal] |
+[Penilaian internalisasi nilai KBC - WAJIB diisi dengan detail]
 
 ## G. DIFERENSIASI PEMBELAJARAN
 
