@@ -483,12 +483,20 @@ JIKA BAGIAN ASESMEN KOSONG ATAU HANYA BERISI HEADER TANPA TABEL, MAKA OUTPUT DIA
       }
     }
 
-    userPrompt += `\n\nBuatkan Modul Ajar/RPP yang LENGKAP, DETAIL, dan SIAP PAKAI dengan:
+    if (isPerBab) {
+      userPrompt += `\n\nBuatkan Modul Ajar PER-BAB yang LENGKAP dengan ${jumlahPertemuan} pertemuan:
+1. Setiap pertemuan memiliki TP, pemahaman bermakna, pertanyaan pemantik, dan kegiatan pembelajaran LENGKAP
+2. Kegiatan inti menggunakan sintaks ${modelData.nama} secara detail
+3. Integrasi KBC di setiap pertemuan
+4. Pertemuan terakhir berisi asesmen sumatif`;
+    } else {
+      userPrompt += `\n\nBuatkan Modul Ajar/RPP yang LENGKAP, DETAIL, dan SIAP PAKAI dengan:
 1. Sintaks ${modelData.nama} yang jelas di setiap tahap kegiatan inti
 2. Integrasi nilai Kurikulum Berbasis Cinta secara natural
 3. Asesmen berbasis HOTS dengan rubrik penilaian
 4. Diferensiasi pembelajaran yang praktis
 5. LKPD dan instrumen penilaian`;
+    }
 
     console.log(`RPP generation by user ${userId} for ${input.mapel} - ${input.topik} using ${modelData.nama}`);
 
