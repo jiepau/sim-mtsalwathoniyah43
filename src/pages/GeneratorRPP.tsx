@@ -129,15 +129,15 @@ const GeneratorRPP = () => {
     ? (atpList.find(a => a.id === selectedAtpId)?.tujuan_pembelajaran || [])
     : [];
 
-  // Update filtered ATP when jenjang, mapel, or kelas changes
+  // Update filtered ATP when jenjang, mapel, kelas, or semester changes
   useEffect(() => {
     if (formData.mapel && formData.jenjang) {
       const jenjangOption = JENJANG_OPTIONS.find(j => j.value === formData.jenjang);
       const fase = jenjangOption?.fase;
       const kelas = formData.kelas ? parseInt(formData.kelas) : undefined;
-      const filtered = getAtpByMapelAndFase(formData.mapel, fase, kelas);
+      const semester = formData.semester || undefined;
+      const filtered = getAtpByMapelAndFase(formData.mapel, fase, kelas, semester);
       setFilteredAtp(filtered);
-      // Auto-open kurikulum section if ATP available
       if (filtered.length > 0) {
         setOpenSections(prev => ({ ...prev, kurikulum: true }));
       }
@@ -145,7 +145,7 @@ const GeneratorRPP = () => {
       setFilteredAtp([]);
     }
     setSelectedAtpId('');
-  }, [formData.mapel, formData.jenjang, formData.kelas]);
+  }, [formData.mapel, formData.jenjang, formData.kelas, formData.semester]);
 
   // Auto-fill from selected ATP including KKTP
   const handleAtpSelect = (atpId: string) => {
@@ -161,8 +161,7 @@ const GeneratorRPP = () => {
       
       setFormData(prev => ({
         ...prev,
-        semester: atp.semester || prev.semester,
-        kelas: atp.kelas?.toString() || prev.kelas,
+        // Don't overwrite semester and kelas - user already selected them
         capaian_pembelajaran: atp.capaian_pembelajaran || '',
         tujuan_pembelajaran: atp.tujuan_pembelajaran?.join('\n') || '',
         alokasi_waktu: atp.alokasi_waktu || prev.alokasi_waktu,
