@@ -42,13 +42,12 @@ export function useAtpData() {
     }
   };
 
-  const getAtpByMapelAndFase = (mapel: string, fase?: string) => {
+  const getAtpByMapelAndFase = (mapel: string, fase?: string, kelas?: number) => {
     return atpList.filter(atp => {
       const mapelMatch = atp.mapel.toLowerCase() === mapel.toLowerCase();
-      if (fase) {
-        return mapelMatch && atp.fase === fase;
-      }
-      return mapelMatch;
+      const faseMatch = fase ? atp.fase === fase : true;
+      const kelasMatch = kelas ? atp.kelas === kelas : true;
+      return mapelMatch && faseMatch && kelasMatch;
     });
   };
 
