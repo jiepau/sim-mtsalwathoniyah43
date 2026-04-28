@@ -13,7 +13,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { 
   Sparkles, Loader2, Copy, Download, RefreshCw, FileText, Database, 
-  BookOpen, Target, Brain, Users, Heart, Save, History, ChevronDown
+  BookOpen, Target, Brain, Users, Heart, Save, History, ChevronDown,
+  FileStack, BookMarked, Eye, Code2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAtpData } from '@/hooks/useAtpData';
@@ -104,6 +105,8 @@ const GeneratorRPP = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [result, setResult] = useState('');
+  const [previewTab, setPreviewTab] = useState<'preview' | 'markdown'>('preview');
+  const [activePertemuan, setActivePertemuan] = useState<number>(0); // 0 = semua
   const resultRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   
@@ -219,6 +222,7 @@ const GeneratorRPP = () => {
 
     setIsLoading(true);
     setResult('');
+    setActivePertemuan(0);
 
     try {
       const modelData = MODEL_PEMBELAJARAN[formData.model_pembelajaran as keyof typeof MODEL_PEMBELAJARAN];
@@ -417,6 +421,45 @@ const GeneratorRPP = () => {
   const allMapelOptions = [...new Set([...MAPEL_OPTIONS, ...atpMapelOptions])].sort();
   const selectedModel = MODEL_PEMBELAJARAN[formData.model_pembelajaran as keyof typeof MODEL_PEMBELAJARAN];
 
+  // Parse pertemuan blocks dari hasil markdown (Per-BAB)
+  // Mendeteksi heading "## Pertemuan N" dan memecah konten ke segmen
+  const pertemuanSegments = (() => {
+    if (!result || formData.format_output !== 'per_bab') return [];
+    const lines = result.split('\n');
+    const segments: { title: string; content: string; index: number }[] = [];
+    let currentTitle = '';
+    let currentLines: string[] = [];
+    let pertemuanIdx = 0;
+    const flush = () => {
+      if (currentTitle) {
+        segments.push({ title: currentTitle, content: currentLines.join('\n').trim(), index: pertemuanIdx });
+      }
+    };
+    for (const line of lines) {
+      const m = line.match(/^##\s+Pertemuan\s+(\d+)/i);
+      if (m) {
+        flush();
+        pertemuanIdx = parseInt(m[1], 10);
+        currentTitle = line.replace(/^##\s+/, '').trim();
+        currentLines = [];
+      } else if (currentTitle) {
+        currentLines.push(line);
+      }
+    }
+    flush();
+    return segments;
+  })();
+
+  // Konten yang ditampilkan di tab Preview (filtered by activePertemuan jika Per-BAB)
+  const displayedContent = (() => {
+    if (formData.format_output !== 'per_bab' || activePertemuan === 0 || pertemuanSegments.length === 0) {
+      return result;
+    }
+    const seg = pertemuanSegments.find(s => s.index === activePertemuan);
+    if (!seg) return result;
+    return `## ${seg.title}\n\n${seg.content}`;
+  })();
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -497,20 +540,49 @@ const GeneratorRPP = () => {
                       </Select>
                     </div>
                   </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Format Output</Label>
-                      <Select value={formData.format_output} onValueChange={(v) => handleInputChange('format_output', v)}>
-                        <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="per_topik">Per Topik (1 Pertemuan)</SelectItem>
-                          <SelectItem value="per_bab">Per BAB (Multi Pertemuan)</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                    <Label className="text-xs font-semibold flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-primary" />
+                      Mode Cepat — Format Output
+                    </Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleInputChange('format_output', 'per_topik')}
+                        className={`flex flex-col items-start gap-1 rounded-md border-2 p-3 text-left transition-all ${
+                          formData.format_output === 'per_topik'
+                            ? 'border-primary bg-primary/10 shadow-sm'
+                            : 'border-border bg-background hover:border-primary/40'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 text-xs font-semibold">
+                          <FileText className="h-3.5 w-3.5" />
+                          Per Topik
+                        </div>
+                        <span className="text-[10px] text-muted-foreground leading-tight">1 pertemuan, fokus 1 TP</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleInputChange('format_output', 'per_bab')}
+                        className={`flex flex-col items-start gap-1 rounded-md border-2 p-3 text-left transition-all ${
+                          formData.format_output === 'per_bab'
+                            ? 'border-primary bg-primary/10 shadow-sm'
+                            : 'border-border bg-background hover:border-primary/40'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 text-xs font-semibold">
+                          <BookMarked className="h-3.5 w-3.5" />
+                          Per BAB
+                        </div>
+                        <span className="text-[10px] text-muted-foreground leading-tight">Multi pertemuan, 1 bab utuh</span>
+                      </button>
                     </div>
                     {formData.format_output === 'per_bab' && (
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Jumlah Pertemuan</Label>
+                      <div className="space-y-1.5 pt-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                        <Label className="text-xs flex items-center gap-1">
+                          <FileStack className="h-3 w-3" />
+                          Jumlah Pertemuan
+                        </Label>
                         <Select value={formData.jumlah_pertemuan} onValueChange={(v) => handleInputChange('jumlah_pertemuan', v)}>
                           <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                           <SelectContent>
@@ -849,22 +921,29 @@ const GeneratorRPP = () => {
         {/* Result Output */}
         <Card>
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
               <div>
-                <CardTitle className="text-lg">Hasil Modul Ajar</CardTitle>
-                <CardDescription>RPP/Modul Ajar yang dihasilkan AI</CardDescription>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  Hasil Modul Ajar
+                  {result && formData.format_output === 'per_bab' && pertemuanSegments.length > 0 && (
+                    <Badge variant="secondary" className="text-[10px]">
+                      {pertemuanSegments.length} Pertemuan
+                    </Badge>
+                  )}
+                </CardTitle>
+                <CardDescription>Preview hasil sebelum export ke Word</CardDescription>
               </div>
               {result && (
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={handleSaveToDatabase} disabled={isSaving}>
+                  <Button variant="outline" size="sm" onClick={handleSaveToDatabase} disabled={isSaving} title="Simpan ke database">
                     {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleCopy}>
+                  <Button variant="outline" size="sm" onClick={handleCopy} title="Salin ke clipboard">
                     <Copy className="h-4 w-4" />
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" disabled={isExporting}>
+                      <Button variant="outline" size="sm" disabled={isExporting} title="Download">
                         {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                       </Button>
                     </DropdownMenuTrigger>
@@ -881,28 +960,86 @@ const GeneratorRPP = () => {
               )}
             </div>
           </CardHeader>
-          <CardContent>
-            <div ref={resultRef} className="min-h-[600px] max-h-[700px] overflow-y-auto rounded-lg border bg-muted/30 p-4">
+          <CardContent className="space-y-3">
+            {/* Tab Preview vs Markdown */}
+            {result && (
+              <Tabs value={previewTab} onValueChange={(v) => setPreviewTab(v as 'preview' | 'markdown')}>
+                <TabsList className="grid w-full grid-cols-2 h-9">
+                  <TabsTrigger value="preview" className="text-xs gap-1.5">
+                    <Eye className="h-3.5 w-3.5" /> Preview
+                  </TabsTrigger>
+                  <TabsTrigger value="markdown" className="text-xs gap-1.5">
+                    <Code2 className="h-3.5 w-3.5" /> Markdown
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            )}
+
+            {/* Navigasi pertemuan (hanya Per-BAB) */}
+            {result && formData.format_output === 'per_bab' && pertemuanSegments.length > 0 && previewTab === 'preview' && (
+              <div className="flex gap-1.5 flex-wrap items-center p-2 rounded-md bg-muted/40 border">
+                <span className="text-[10px] font-semibold text-muted-foreground mr-1">LIHAT:</span>
+                <button
+                  type="button"
+                  onClick={() => setActivePertemuan(0)}
+                  className={`text-[11px] px-2.5 py-1 rounded-md border transition-all ${
+                    activePertemuan === 0
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-background hover:border-primary/40'
+                  }`}
+                >
+                  Semua
+                </button>
+                {pertemuanSegments.map((seg) => (
+                  <button
+                    key={seg.index}
+                    type="button"
+                    onClick={() => setActivePertemuan(seg.index)}
+                    className={`text-[11px] px-2.5 py-1 rounded-md border transition-all ${
+                      activePertemuan === seg.index
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-background hover:border-primary/40'
+                    }`}
+                  >
+                    Pertemuan {seg.index}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div ref={resultRef} className="min-h-[560px] max-h-[680px] overflow-y-auto rounded-lg border bg-card p-4">
               {isLoading && !result && (
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-20">
                   <Loader2 className="h-8 w-8 animate-spin mb-2" />
                   <p>Sedang menghasilkan Modul Ajar...</p>
                   <p className="text-sm">Dengan model {selectedModel?.nama}</p>
                 </div>
               )}
               {!result && !isLoading && (
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-20">
                   <Sparkles className="h-12 w-12 mb-4 opacity-50" />
                   <p>Hasil Modul Ajar akan muncul di sini</p>
                   <p className="text-sm">Isi form di sebelah kiri dan klik "Generate Modul Ajar"</p>
                 </div>
               )}
-              {result && (
-                <div className="prose prose-sm max-w-none dark:prose-invert">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{result}</ReactMarkdown>
+              {result && previewTab === 'preview' && (
+                <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:scroll-mt-4 prose-table:text-xs prose-th:bg-muted prose-th:p-2 prose-td:p-2 prose-table:border prose-th:border prose-td:border">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{displayedContent}</ReactMarkdown>
                 </div>
               )}
+              {result && previewTab === 'markdown' && (
+                <pre className="text-[11px] font-mono whitespace-pre-wrap break-words text-foreground/90">
+                  {result}
+                </pre>
+              )}
             </div>
+
+            {result && (
+              <p className="text-[10px] text-muted-foreground text-center">
+                💡 Pastikan preview sudah sesuai sebelum klik <strong>Download Word</strong>.
+                {formData.format_output === 'per_bab' && ' Gunakan navigasi pertemuan untuk cek detail tiap sesi.'}
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
