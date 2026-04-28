@@ -61,6 +61,7 @@ interface Siswa {
 interface Kelas {
   id: string;
   nama_kelas: string;
+  tingkat?: number;
 }
 
 interface TahunAjaran {
