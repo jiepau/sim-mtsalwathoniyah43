@@ -105,6 +105,8 @@ const GeneratorRPP = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [result, setResult] = useState('');
+  const [previewTab, setPreviewTab] = useState<'preview' | 'markdown'>('preview');
+  const [activePertemuan, setActivePertemuan] = useState<number>(0); // 0 = semua
   const resultRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   
