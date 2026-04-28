@@ -420,6 +420,45 @@ const GeneratorRPP = () => {
   const allMapelOptions = [...new Set([...MAPEL_OPTIONS, ...atpMapelOptions])].sort();
   const selectedModel = MODEL_PEMBELAJARAN[formData.model_pembelajaran as keyof typeof MODEL_PEMBELAJARAN];
 
+  // Parse pertemuan blocks dari hasil markdown (Per-BAB)
+  // Mendeteksi heading "## Pertemuan N" dan memecah konten ke segmen
+  const pertemuanSegments = (() => {
+    if (!result || formData.format_output !== 'per_bab') return [];
+    const lines = result.split('\n');
+    const segments: { title: string; content: string; index: number }[] = [];
+    let currentTitle = '';
+    let currentLines: string[] = [];
+    let pertemuanIdx = 0;
+    const flush = () => {
+      if (currentTitle) {
+        segments.push({ title: currentTitle, content: currentLines.join('\n').trim(), index: pertemuanIdx });
+      }
+    };
+    for (const line of lines) {
+      const m = line.match(/^##\s+Pertemuan\s+(\d+)/i);
+      if (m) {
+        flush();
+        pertemuanIdx = parseInt(m[1], 10);
+        currentTitle = line.replace(/^##\s+/, '').trim();
+        currentLines = [];
+      } else if (currentTitle) {
+        currentLines.push(line);
+      }
+    }
+    flush();
+    return segments;
+  })();
+
+  // Konten yang ditampilkan di tab Preview (filtered by activePertemuan jika Per-BAB)
+  const displayedContent = (() => {
+    if (formData.format_output !== 'per_bab' || activePertemuan === 0 || pertemuanSegments.length === 0) {
+      return result;
+    }
+    const seg = pertemuanSegments.find(s => s.index === activePertemuan);
+    if (!seg) return result;
+    return `## ${seg.title}\n\n${seg.content}`;
+  })();
+
   return (
     <div className="space-y-6">
       <PageHeader
