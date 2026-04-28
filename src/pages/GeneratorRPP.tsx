@@ -13,7 +13,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { 
   Sparkles, Loader2, Copy, Download, RefreshCw, FileText, Database, 
-  BookOpen, Target, Brain, Users, Heart, Save, History, ChevronDown
+  BookOpen, Target, Brain, Users, Heart, Save, History, ChevronDown,
+  FileStack, BookMarked, Eye, Code2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAtpData } from '@/hooks/useAtpData';
