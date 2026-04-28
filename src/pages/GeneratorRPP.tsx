@@ -920,22 +920,29 @@ const GeneratorRPP = () => {
         {/* Result Output */}
         <Card>
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
               <div>
-                <CardTitle className="text-lg">Hasil Modul Ajar</CardTitle>
-                <CardDescription>RPP/Modul Ajar yang dihasilkan AI</CardDescription>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  Hasil Modul Ajar
+                  {result && formData.format_output === 'per_bab' && pertemuanSegments.length > 0 && (
+                    <Badge variant="secondary" className="text-[10px]">
+                      {pertemuanSegments.length} Pertemuan
+                    </Badge>
+                  )}
+                </CardTitle>
+                <CardDescription>Preview hasil sebelum export ke Word</CardDescription>
               </div>
               {result && (
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={handleSaveToDatabase} disabled={isSaving}>
+                  <Button variant="outline" size="sm" onClick={handleSaveToDatabase} disabled={isSaving} title="Simpan ke database">
                     {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleCopy}>
+                  <Button variant="outline" size="sm" onClick={handleCopy} title="Salin ke clipboard">
                     <Copy className="h-4 w-4" />
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" disabled={isExporting}>
+                      <Button variant="outline" size="sm" disabled={isExporting} title="Download">
                         {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                       </Button>
                     </DropdownMenuTrigger>
@@ -952,28 +959,86 @@ const GeneratorRPP = () => {
               )}
             </div>
           </CardHeader>
-          <CardContent>
-            <div ref={resultRef} className="min-h-[600px] max-h-[700px] overflow-y-auto rounded-lg border bg-muted/30 p-4">
+          <CardContent className="space-y-3">
+            {/* Tab Preview vs Markdown */}
+            {result && (
+              <Tabs value={previewTab} onValueChange={(v) => setPreviewTab(v as 'preview' | 'markdown')}>
+                <TabsList className="grid w-full grid-cols-2 h-9">
+                  <TabsTrigger value="preview" className="text-xs gap-1.5">
+                    <Eye className="h-3.5 w-3.5" /> Preview
+                  </TabsTrigger>
+                  <TabsTrigger value="markdown" className="text-xs gap-1.5">
+                    <Code2 className="h-3.5 w-3.5" /> Markdown
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            )}
+
+            {/* Navigasi pertemuan (hanya Per-BAB) */}
+            {result && formData.format_output === 'per_bab' && pertemuanSegments.length > 0 && previewTab === 'preview' && (
+              <div className="flex gap-1.5 flex-wrap items-center p-2 rounded-md bg-muted/40 border">
+                <span className="text-[10px] font-semibold text-muted-foreground mr-1">LIHAT:</span>
+                <button
+                  type="button"
+                  onClick={() => setActivePertemuan(0)}
+                  className={`text-[11px] px-2.5 py-1 rounded-md border transition-all ${
+                    activePertemuan === 0
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-background hover:border-primary/40'
+                  }`}
+                >
+                  Semua
+                </button>
+                {pertemuanSegments.map((seg) => (
+                  <button
+                    key={seg.index}
+                    type="button"
+                    onClick={() => setActivePertemuan(seg.index)}
+                    className={`text-[11px] px-2.5 py-1 rounded-md border transition-all ${
+                      activePertemuan === seg.index
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-background hover:border-primary/40'
+                    }`}
+                  >
+                    Pertemuan {seg.index}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div ref={resultRef} className="min-h-[560px] max-h-[680px] overflow-y-auto rounded-lg border bg-card p-4">
               {isLoading && !result && (
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-20">
                   <Loader2 className="h-8 w-8 animate-spin mb-2" />
                   <p>Sedang menghasilkan Modul Ajar...</p>
                   <p className="text-sm">Dengan model {selectedModel?.nama}</p>
                 </div>
               )}
               {!result && !isLoading && (
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-20">
                   <Sparkles className="h-12 w-12 mb-4 opacity-50" />
                   <p>Hasil Modul Ajar akan muncul di sini</p>
                   <p className="text-sm">Isi form di sebelah kiri dan klik "Generate Modul Ajar"</p>
                 </div>
               )}
-              {result && (
-                <div className="prose prose-sm max-w-none dark:prose-invert">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{result}</ReactMarkdown>
+              {result && previewTab === 'preview' && (
+                <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:scroll-mt-4 prose-table:text-xs prose-th:bg-muted prose-th:p-2 prose-td:p-2 prose-table:border prose-th:border prose-td:border">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{displayedContent}</ReactMarkdown>
                 </div>
               )}
+              {result && previewTab === 'markdown' && (
+                <pre className="text-[11px] font-mono whitespace-pre-wrap break-words text-foreground/90">
+                  {result}
+                </pre>
+              )}
             </div>
+
+            {result && (
+              <p className="text-[10px] text-muted-foreground text-center">
+                💡 Pastikan preview sudah sesuai sebelum klik <strong>Download Word</strong>.
+                {formData.format_output === 'per_bab' && ' Gunakan navigasi pertemuan untuk cek detail tiap sesi.'}
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
