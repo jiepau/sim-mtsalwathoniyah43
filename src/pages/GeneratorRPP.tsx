@@ -222,6 +222,7 @@ const GeneratorRPP = () => {
 
     setIsLoading(true);
     setResult('');
+    setActivePertemuan(0);
 
     try {
       const modelData = MODEL_PEMBELAJARAN[formData.model_pembelajaran as keyof typeof MODEL_PEMBELAJARAN];
