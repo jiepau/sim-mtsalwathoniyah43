@@ -498,20 +498,49 @@ const GeneratorRPP = () => {
                       </Select>
                     </div>
                   </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Format Output</Label>
-                      <Select value={formData.format_output} onValueChange={(v) => handleInputChange('format_output', v)}>
-                        <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="per_topik">Per Topik (1 Pertemuan)</SelectItem>
-                          <SelectItem value="per_bab">Per BAB (Multi Pertemuan)</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                    <Label className="text-xs font-semibold flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-primary" />
+                      Mode Cepat — Format Output
+                    </Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleInputChange('format_output', 'per_topik')}
+                        className={`flex flex-col items-start gap-1 rounded-md border-2 p-3 text-left transition-all ${
+                          formData.format_output === 'per_topik'
+                            ? 'border-primary bg-primary/10 shadow-sm'
+                            : 'border-border bg-background hover:border-primary/40'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 text-xs font-semibold">
+                          <FileText className="h-3.5 w-3.5" />
+                          Per Topik
+                        </div>
+                        <span className="text-[10px] text-muted-foreground leading-tight">1 pertemuan, fokus 1 TP</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleInputChange('format_output', 'per_bab')}
+                        className={`flex flex-col items-start gap-1 rounded-md border-2 p-3 text-left transition-all ${
+                          formData.format_output === 'per_bab'
+                            ? 'border-primary bg-primary/10 shadow-sm'
+                            : 'border-border bg-background hover:border-primary/40'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 text-xs font-semibold">
+                          <BookMarked className="h-3.5 w-3.5" />
+                          Per BAB
+                        </div>
+                        <span className="text-[10px] text-muted-foreground leading-tight">Multi pertemuan, 1 bab utuh</span>
+                      </button>
                     </div>
                     {formData.format_output === 'per_bab' && (
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Jumlah Pertemuan</Label>
+                      <div className="space-y-1.5 pt-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                        <Label className="text-xs flex items-center gap-1">
+                          <FileStack className="h-3 w-3" />
+                          Jumlah Pertemuan
+                        </Label>
                         <Select value={formData.jumlah_pertemuan} onValueChange={(v) => handleInputChange('jumlah_pertemuan', v)}>
                           <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                           <SelectContent>
