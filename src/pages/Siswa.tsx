@@ -31,6 +31,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ImportDialog, ImportResult } from '@/components/import/ImportDialog';
+import { EmisImportWizard } from '@/components/siswa/EmisImportWizard';
 import { ExportButton } from '@/components/export/ExportButton';
 import { SiswaDetailDialog } from '@/components/siswa/SiswaDetailDialog';
 import { KartuPelajarPrint } from '@/components/siswa/KartuPelajarPrint';
@@ -60,6 +61,7 @@ interface Siswa {
 interface Kelas {
   id: string;
   nama_kelas: string;
+  tingkat?: number;
 }
 
 interface TahunAjaran {
@@ -80,6 +82,7 @@ export default function SiswaPage() {
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [emisImportOpen, setEmisImportOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedSiswa, setSelectedSiswa] = useState<Siswa | null>(null);
   const [editingSiswa, setEditingSiswa] = useState<Siswa | null>(null);
@@ -672,7 +675,11 @@ export default function SiswaPage() {
             </Button>
             <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
               <Upload className="h-4 w-4 mr-2" />
-              Import
+              Import CSV
+            </Button>
+            <Button onClick={() => setEmisImportOpen(true)} className="bg-gradient-to-r from-primary to-primary/80">
+              <Upload className="h-4 w-4 mr-2" />
+              Import EMIS
             </Button>
             <Button onClick={() => handleOpenDialog()}>
               <Plus className="h-4 w-4 mr-2" />
@@ -1100,6 +1107,15 @@ export default function SiswaPage() {
         templateFileName="template_siswa.csv"
         templateSampleData={importSampleData}
         onImport={handleImport}
+        onSuccess={fetchData}
+      />
+
+      {/* EMIS Import Wizard */}
+      <EmisImportWizard
+        open={emisImportOpen}
+        onOpenChange={setEmisImportOpen}
+        kelasList={kelas as any}
+        taList={tahunAjaran as any}
         onSuccess={fetchData}
       />
 
