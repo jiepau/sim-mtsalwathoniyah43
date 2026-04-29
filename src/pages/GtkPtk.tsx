@@ -279,6 +279,10 @@ export default function GtkPtkPage() {
         tempat_lahir: gtk.tempat_lahir || '',
         tanggal_lahir: gtk.tanggal_lahir ? new Date(gtk.tanggal_lahir) : undefined,
         jenis_kelamin: gtk.jenis_kelamin || '',
+        status_kepegawaian: gtk.status_kepegawaian || '',
+        sertifikasi: !!gtk.sertifikasi,
+        nomor_sertifikasi: gtk.nomor_sertifikasi || '',
+        status_aktif: gtk.status_aktif || 'aktif',
       });
     } else {
       setEditingGtk(null);
@@ -286,7 +290,8 @@ export default function GtkPtkPage() {
       setFormData({ 
         nip: '', nama: '', jabatan_utama: '', jabatan_tambahan: [], no_hp: '', alamat: '', 
         nuptk: '', nik: '', lulusan: '', pendidikan: '', email: '', mapel: '',
-        tempat_lahir: '', tanggal_lahir: undefined, jenis_kelamin: ''
+        tempat_lahir: '', tanggal_lahir: undefined, jenis_kelamin: '',
+        status_kepegawaian: '', sertifikasi: false, nomor_sertifikasi: '', status_aktif: 'aktif',
       });
     }
     setDialogOpen(true);
