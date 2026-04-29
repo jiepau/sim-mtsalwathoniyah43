@@ -75,7 +75,7 @@ export function TopBar() {
         <div className="md:hidden pl-12" />
 
         {/* Right: notification + user */}
-        <div className="ml-auto flex items-center gap-1 sm:gap-2 min-w-0">
+        <div className="ml-auto flex items-center gap-1 sm:gap-2 min-w-0 pr-2 sm:pr-4 lg:pr-6">
           <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary hover:bg-primary/5 h-9 w-9 shrink-0">
             <Bell className="h-4 w-4" />
           </Button>
