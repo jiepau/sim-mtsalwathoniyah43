@@ -300,7 +300,7 @@ const AbsensiGtk = () => {
 
       {/* Absensi Table */}
       {gtkList.length > 0 && !holidayInfo.isLibur ? (
-        <Card>
+        <Card id="absensi-harian-section">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">
