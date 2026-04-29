@@ -317,6 +317,10 @@ export default function GtkPtkPage() {
         tempat_lahir: formData.tempat_lahir || null,
         tanggal_lahir: formData.tanggal_lahir ? format(formData.tanggal_lahir, 'yyyy-MM-dd') : null,
         jenis_kelamin: formData.jenis_kelamin || null,
+        status_kepegawaian: formData.status_kepegawaian || null,
+        sertifikasi: formData.sertifikasi,
+        nomor_sertifikasi: formData.nomor_sertifikasi || null,
+        status_aktif: formData.status_aktif || 'aktif',
       };
 
       if (editingGtk) {
