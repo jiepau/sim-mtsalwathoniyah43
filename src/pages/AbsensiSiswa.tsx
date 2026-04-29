@@ -10,9 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useHariLibur } from '@/hooks/useHariLibur';
-import { ClipboardCheck, Save, Calendar, Users, CheckCircle, XCircle, AlertCircle, Clock, CalendarOff } from 'lucide-react';
+import { ClipboardCheck, Save, Calendar, Users, CheckCircle, XCircle, AlertCircle, Clock, CalendarOff, ChevronDown, CalendarDays, UserCog, BarChart3 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Link } from 'react-router-dom';
+import { InputAbsensiSiswaBulananDialog } from '@/components/absensi/InputAbsensiSiswaBulananDialog';
+import { InputAbsensiPerSiswaDialog } from '@/components/absensi/InputAbsensiPerSiswaDialog';
 
 interface Siswa {
   id: string;
@@ -62,6 +66,8 @@ const AbsensiSiswa = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [existingIds, setExistingIds] = useState<Record<string, string>>({});
+  const [bulananOpen, setBulananOpen] = useState(false);
+  const [perSiswaOpen, setPerSiswaOpen] = useState(false);
 
   // Fetch kelas & tahun ajaran
   useEffect(() => {
@@ -235,6 +241,52 @@ const AbsensiSiswa = () => {
         title="Absensi Siswa"
         description="Rekap presensi harian siswa per kelas"
         icon={<ClipboardCheck className="h-6 w-6" />}
+        actions={
+          <>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button>
+                  <ClipboardCheck className="h-4 w-4 mr-2" />
+                  Input Presensi
+                  <ChevronDown className="h-4 w-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => {
+                  document.getElementById('absensi-harian-section')?.scrollIntoView({ behavior: 'smooth' });
+                }}>
+                  <Users className="h-4 w-4 mr-2" />
+                  Input Massal (Per Hari)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setBulananOpen(true)}>
+                  <CalendarDays className="h-4 w-4 mr-2" />
+                  Input Absensi Per Bulan
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPerSiswaOpen(true)}>
+                  <UserCog className="h-4 w-4 mr-2" />
+                  Input Per Siswa
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" asChild>
+              <Link to="/rekap-absensi">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Rekap Bulanan
+              </Link>
+            </Button>
+          </>
+        }
+      />
+
+      <InputAbsensiSiswaBulananDialog
+        open={bulananOpen}
+        onOpenChange={setBulananOpen}
+        onSaved={() => setSelectedDate(d => d)}
+      />
+      <InputAbsensiPerSiswaDialog
+        open={perSiswaOpen}
+        onOpenChange={setPerSiswaOpen}
+        onSaved={() => setSelectedDate(d => d)}
       />
 
       {/* Filters */}
@@ -305,7 +357,7 @@ const AbsensiSiswa = () => {
       {/* Absensi Table */}
       {selectedKelas && selectedTA && !holidayInfo.isLibur ? (
         siswaList.length > 0 ? (
-          <Card>
+          <Card id="absensi-harian-section">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">
