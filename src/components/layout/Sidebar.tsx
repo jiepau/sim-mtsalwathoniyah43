@@ -338,59 +338,7 @@ export function Sidebar() {
 
   const sidebarContent = (
     <>
-      {/* Header — Nuansa Kemenag (transparan agar menyatu dengan gradasi sidebar) */}
-      <div className={cn(
-        "border-b-2 border-primary/30 bg-white/40 backdrop-blur-sm",
-        collapsed ? "p-2" : "p-4"
-      )}>
-        {collapsed ? (
-          // COLLAPSED: 2 logo bertumpuk vertikal, center
-          <div className="flex flex-col items-center gap-1.5">
-            <img
-              src="/logo-kemenag.png"
-              alt="Logo Kementerian Agama RI"
-              loading="lazy"
-              className="h-9 w-9 object-contain"
-            />
-            <div className="h-px w-6 bg-sidebar-border/60" />
-            <img
-              src="/logo-alwathoniyah.png"
-              alt="Logo MTs Al Wathoniyah 43"
-              loading="lazy"
-              className="h-9 w-9 rounded-md object-contain"
-            />
-          </div>
-        ) : (
-          // EXPANDED: 2 logo sejajar + teks brand
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <img
-                src="/logo-kemenag.png"
-                alt="Logo Kementerian Agama RI"
-                loading="lazy"
-                className="h-11 w-11 object-contain drop-shadow-sm"
-              />
-              <img
-                src="/logo-alwathoniyah.png"
-                alt="Logo MTs Al Wathoniyah 43"
-                loading="lazy"
-                className="h-11 w-11 rounded-md object-contain drop-shadow-sm"
-              />
-            </div>
-            <div className="flex-1 min-w-0 border-l-2 border-primary/30 pl-3">
-              <p className="text-[9px] uppercase tracking-[0.12em] text-primary font-bold leading-tight">
-                Kementerian Agama RI
-              </p>
-              <h1 className="font-bold text-foreground truncate text-[13px] leading-snug mt-0.5">
-                MTs Al Wathoniyah 43
-              </h1>
-              <p className="text-[10px] text-muted-foreground truncate leading-tight">
-                Sistem Informasi Madrasah
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Header dipindahkan ke TopBar agar menyatu */}
 
       {/* Navigation */}
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto scrollbar-thin">
