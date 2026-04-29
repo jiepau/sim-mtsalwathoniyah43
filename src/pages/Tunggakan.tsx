@@ -19,7 +19,10 @@ interface TunggakanItem {
   jenis_tagihan: string;
   bulan: number | null;
   tahun: number | null;
+  nominal: number;
+  nominal_bayar: number;
   sisa: number;
+  status: string;
   ta_id: string | null;
   ta_label: string;
   is_warisan: boolean;
