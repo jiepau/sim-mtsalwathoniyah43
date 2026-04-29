@@ -585,6 +585,14 @@ export default function PembayaranPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <InputTunggakanLamaDialog
+        open={tunggakanLamaOpen}
+        onOpenChange={setTunggakanLamaOpen}
+        siswa={siswa}
+        jenisTagihan={jenisTagihan}
+        onSaved={fetchData}
+      />
     </div>
   );
 }
