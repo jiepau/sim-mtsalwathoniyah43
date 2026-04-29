@@ -248,91 +248,99 @@ export default function Dashboard() {
         }
       />
 
-      {/* Stats Grid - Role-based visibility */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-        <StatsCard
-          title="Total Siswa"
-          value={stats.totalSiswa}
-          icon={<Users className="h-5 w-5 sm:h-6 sm:w-6" />}
-          variant="default"
-        />
-        <StatsCard
-          title="Siswa Laki-laki"
-          value={stats.siswaLaki}
-          icon={<Users className="h-5 w-5 sm:h-6 sm:w-6" />}
-          variant="info"
-        />
-        <StatsCard
-          title="Siswa Perempuan"
-          value={stats.siswaPerempuan}
-          icon={<Users className="h-5 w-5 sm:h-6 sm:w-6" />}
-          variant="warning"
-        />
-        {(isAdmin || isOperator) && (
+      {/* ============ GRUP 1: SISWA & KELAS ============ */}
+      <div className="mb-6 sm:mb-8">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+          <Users className="h-3.5 w-3.5" />
+          Data Siswa & Kelas
+        </h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <StatsCard
-            title="Jumlah Kelas"
-            value={stats.totalKelas}
-            icon={<School className="h-5 w-5 sm:h-6 sm:w-6" />}
-            variant="info"
-          />
-        )}
-        {(isAdmin || isOperator) && (
-          <StatsCard
-            title="GTK/PTK"
-            value={stats.totalGtk}
-            icon={<UserCog className="h-5 w-5 sm:h-6 sm:w-6" />}
-            variant="success"
-          />
-        )}
-        {(isAdmin || isBendahara) && (
-          <StatsCard
-            title="Tunggakan"
-            value={formatCurrency(stats.totalTunggakan)}
-            icon={<AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6" />}
-            variant="danger"
-          />
-        )}
-      </div>
-
-      {/* GTK Stats - Only for Admin and Bendahara */}
-      {(isAdmin || isBendahara) && (
-        <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
-          <StatsCard
-            title="Total GTK/PTK"
-            value={stats.totalGtk}
-            icon={<UserCog className="h-5 w-5 sm:h-6 sm:w-6" />}
+            title="Total Siswa"
+            value={stats.totalSiswa}
+            icon={<Users className="h-5 w-5 sm:h-6 sm:w-6" />}
             variant="default"
           />
           <StatsCard
-            title="GTK Laki-laki"
-            value={stats.gtkLaki}
-            icon={<UserCog className="h-5 w-5 sm:h-6 sm:w-6" />}
+            title="Siswa Laki-laki"
+            value={stats.siswaLaki}
+            icon={<Users className="h-5 w-5 sm:h-6 sm:w-6" />}
             variant="info"
           />
           <StatsCard
-            title="GTK Perempuan"
-            value={stats.gtkPerempuan}
-            icon={<UserCog className="h-5 w-5 sm:h-6 sm:w-6" />}
+            title="Siswa Perempuan"
+            value={stats.siswaPerempuan}
+            icon={<Users className="h-5 w-5 sm:h-6 sm:w-6" />}
             variant="warning"
           />
+          {(isAdmin || isOperator) && (
+            <StatsCard
+              title="Jumlah Kelas"
+              value={stats.totalKelas}
+              icon={<School className="h-5 w-5 sm:h-6 sm:w-6" />}
+              variant="info"
+            />
+          )}
+        </div>
+      </div>
+
+      {/* ============ GRUP 2: GTK/PTK (tanpa duplikasi) ============ */}
+      {(isAdmin || isOperator || isBendahara) && (
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+            <UserCog className="h-3.5 w-3.5" />
+            Data GTK/PTK
+          </h2>
+          <div className="grid grid-cols-3 gap-3 sm:gap-4">
+            <StatsCard
+              title="Total GTK/PTK"
+              value={stats.totalGtk}
+              icon={<UserCog className="h-5 w-5 sm:h-6 sm:w-6" />}
+              variant="success"
+            />
+            <StatsCard
+              title="GTK Laki-laki"
+              value={stats.gtkLaki}
+              icon={<UserCog className="h-5 w-5 sm:h-6 sm:w-6" />}
+              variant="info"
+            />
+            <StatsCard
+              title="GTK Perempuan"
+              value={stats.gtkPerempuan}
+              icon={<UserCog className="h-5 w-5 sm:h-6 sm:w-6" />}
+              variant="warning"
+            />
+          </div>
         </div>
       )}
 
-      {/* Financial Stats - Only for Admin and Bendahara */}
+      {/* ============ GRUP 3: KEUANGAN (Pemasukan, Pengeluaran, Tunggakan satu baris) ============ */}
       {(isAdmin || isBendahara) && (
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
-          <StatsCard
-            title="Pemasukan"
-            value={formatCurrency(stats.totalPemasukan)}
-            icon={<TrendingUp className="h-5 w-5 sm:h-6 sm:w-6" />}
-            variant="success"
-          />
-          <StatsCard
-            title="Pengeluaran"
-            value={formatCurrency(stats.totalPengeluaran)}
-            icon={<TrendingDown className="h-5 w-5 sm:h-6 sm:w-6" />}
-            variant="warning"
-          />
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+            <TrendingUp className="h-3.5 w-3.5" />
+            Ringkasan Keuangan
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <StatsCard
+              title="Pemasukan"
+              value={formatCurrency(stats.totalPemasukan)}
+              icon={<TrendingUp className="h-5 w-5 sm:h-6 sm:w-6" />}
+              variant="success"
+            />
+            <StatsCard
+              title="Pengeluaran"
+              value={formatCurrency(stats.totalPengeluaran)}
+              icon={<TrendingDown className="h-5 w-5 sm:h-6 sm:w-6" />}
+              variant="warning"
+            />
+            <StatsCard
+              title="Tunggakan"
+              value={formatCurrency(stats.totalTunggakan)}
+              icon={<AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6" />}
+              variant="danger"
+            />
+          </div>
         </div>
       )}
 
