@@ -66,6 +66,10 @@ export default function TunggakanPage() {
   const [activeTaId, setActiveTaId] = useState<string | null>(null);
   const [filterTa, setFilterTa] = useState<string>('all');
   const [filterKelas, setFilterKelas] = useState<string>('all');
+  const [confirmReminderOpen, setConfirmReminderOpen] = useState(false);
+  const [sendingReminder, setSendingReminder] = useState(false);
+  const [kartuSppOpen, setKartuSppOpen] = useState(false);
+  const [selectedKartuSiswa, setSelectedKartuSiswa] = useState<SiswaTunggakan | null>(null);
 
   useEffect(() => {
     fetchData();
