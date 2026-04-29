@@ -239,15 +239,17 @@ export function KartuSppPrintDialog({ open, onOpenChange, siswaId, siswaNama, si
               </div>
             </div>
           </div>
+          </PrintPreviewFrame>
         )}
 
         <style>{`
           @media print {
             body * { visibility: hidden; }
             .kartu-spp-print, .kartu-spp-print * { visibility: visible; }
-            .kartu-spp-print { position: absolute; left: 0; top: 0; width: 100%; border: none !important; }
+            .kartu-spp-print { position: absolute; left: 0; top: 0; width: 100%; border: none !important; padding: 0 !important; }
             .no-print { display: none !important; }
-            @page { size: A4 landscape; margin: 1cm; }
+            .print-preview-backdrop { padding: 0 !important; background: white !important; }
+            .print-preview-page { box-shadow: none !important; padding: 0 !important; width: auto !important; min-height: 0 !important; }
           }
         `}</style>
       </DialogContent>
