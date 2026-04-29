@@ -70,6 +70,7 @@ const allMenuItems: MenuItem[] = [
       { title: 'Absensi Siswa', icon: ClipboardCheck, path: '/absensi-siswa' },
       { title: 'Absensi GTK', icon: ClipboardList, path: '/absensi-gtk' },
       { title: 'Rekap Bulanan', icon: BarChart3, path: '/rekap-absensi' },
+      { title: 'Rapor Kehadiran', icon: ClipboardList, path: '/rapor-kehadiran' },
       { title: 'Kalender Akademik', icon: CalendarDays, path: '/kalender-akademik' },
     ],
     roles: ['admin', 'operator', 'guru']
