@@ -120,6 +120,7 @@ const allMenuItems: MenuItem[] = [
       { title: 'Pemasukan', icon: TrendingUp, path: '/pemasukan' },
       { title: 'Pengeluaran', icon: TrendingDown, path: '/pengeluaran' },
       { title: 'Tunggakan', icon: AlertTriangle, path: '/tunggakan' },
+      { title: 'Laporan Keuangan', icon: FileText, path: '/laporan-keuangan' },
     ],
     roles: ['admin', 'bendahara']
   },
@@ -206,7 +207,7 @@ export function Sidebar() {
     const path = location.pathname;
     const expanded: string[] = [];
     
-    if (['/jenis-tagihan', '/pembayaran', '/pemasukan', '/pengeluaran', '/tunggakan'].includes(path)) {
+    if (['/jenis-tagihan', '/pembayaran', '/pemasukan', '/pengeluaran', '/tunggakan', '/laporan-keuangan'].includes(path)) {
       expanded.push('Keuangan');
     }
     if (['/prota', '/promes', '/generator-rpp', '/atp', '/kktp', '/cp-templates', '/panduan-kurikulum'].includes(path)) {

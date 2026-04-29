@@ -1,9 +1,10 @@
 import { useEffect, useState, useMemo } from 'react';
-import { AlertTriangle, Search, Phone, History as HistoryIcon } from 'lucide-react';
+import { AlertTriangle, Search, Phone, History as HistoryIcon, Send, Loader2, Printer } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -12,7 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { KartuSppPrintDialog } from '@/components/pembayaran/KartuSppPrintDialog';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/supabase-helpers';
 
 interface TunggakanItem {
@@ -59,6 +66,10 @@ export default function TunggakanPage() {
   const [activeTaId, setActiveTaId] = useState<string | null>(null);
   const [filterTa, setFilterTa] = useState<string>('all');
   const [filterKelas, setFilterKelas] = useState<string>('all');
+  const [confirmReminderOpen, setConfirmReminderOpen] = useState(false);
+  const [sendingReminder, setSendingReminder] = useState(false);
+  const [kartuSppOpen, setKartuSppOpen] = useState(false);
+  const [selectedKartuSiswa, setSelectedKartuSiswa] = useState<SiswaTunggakan | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -300,21 +311,73 @@ export default function TunggakanPage() {
       )
     },
     {
-      header: 'WA',
-      cell: (item: SiswaTunggakan) => item.wa_ortu && (
-        <a
-          href={getWhatsAppUrl(item)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
-        >
-          <Phone className="h-4 w-4" />
-          Kirim
-        </a>
+      header: 'Aksi',
+      cell: (item: SiswaTunggakan) => (
+        <div className="flex flex-col gap-1.5">
+          {item.wa_ortu && (
+            <a
+              href={getWhatsAppUrl(item)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
+            >
+              <Phone className="h-3 w-3" />
+              WA Wali
+            </a>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs"
+            onClick={() => { setSelectedKartuSiswa(item); setKartuSppOpen(true); }}
+          >
+            <Printer className="h-3 w-3 mr-1" />
+            Kartu SPP
+          </Button>
+        </div>
       ),
-      className: 'w-28'
+      className: 'w-32'
     },
   ];
+
+  // Send mass WA reminder
+  const sendMassReminder = async () => {
+    setSendingReminder(true);
+    try {
+      const siswaIds = filteredData
+        .filter(s => s.wa_ortu && s.total_tunggakan > 0)
+        .map(s => s.siswa_id);
+
+      if (siswaIds.length === 0) {
+        toast.error('Tidak ada siswa dengan WA wali untuk dikirimi reminder');
+        return;
+      }
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
+      const res = await fetch(
+        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/send-tunggakan-reminder`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ siswa_ids: siswaIds }),
+        }
+      );
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Gagal');
+
+      toast.success(`Reminder terkirim: ${result.sent}/${result.total} wali murid`);
+      setConfirmReminderOpen(false);
+    } catch (err) {
+      toast.error('Gagal kirim reminder: ' + (err instanceof Error ? err.message : 'Unknown'));
+    } finally {
+      setSendingReminder(false);
+    }
+  };
 
   return (
     <div className="animate-fadeIn">
@@ -322,6 +385,17 @@ export default function TunggakanPage() {
         title="Tunggakan"
         description="Daftar siswa dengan tunggakan pembayaran (dikelompokkan per Tahun Ajaran)"
         icon={<AlertTriangle className="h-6 w-6" />}
+        actions={
+          <Button
+            onClick={() => setConfirmReminderOpen(true)}
+            disabled={sendingReminder}
+            size="sm"
+            className="h-9 bg-green-600 hover:bg-green-700 text-white"
+          >
+            {sendingReminder ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Send className="h-4 w-4 mr-1.5" />}
+            Kirim Reminder WA Massal
+          </Button>
+        }
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -397,6 +471,37 @@ export default function TunggakanPage() {
         loading={loading}
         emptyMessage="Tidak ada tunggakan sesuai filter"
       />
+
+      <AlertDialog open={confirmReminderOpen} onOpenChange={setConfirmReminderOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Kirim Reminder WA Massal?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Reminder akan dikirim ke <strong>{filteredData.filter(s => s.wa_ortu).length}</strong> wali murid yang memiliki nomor WA dan tunggakan pada filter saat ini.
+              <br /><br />
+              Pastikan template pesan sudah benar di menu <strong>Notifikasi WA</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={sendingReminder}>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={(e) => { e.preventDefault(); sendMassReminder(); }} disabled={sendingReminder}>
+              {sendingReminder ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+              Kirim Sekarang
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {selectedKartuSiswa && (
+        <KartuSppPrintDialog
+          open={kartuSppOpen}
+          onOpenChange={(o) => { setKartuSppOpen(o); if (!o) setSelectedKartuSiswa(null); }}
+          siswaId={selectedKartuSiswa.siswa_id}
+          siswaNama={selectedKartuSiswa.nama}
+          siswaNis={selectedKartuSiswa.nis}
+          kelasNama={selectedKartuSiswa.kelas}
+        />
+      )}
     </div>
   );
 }

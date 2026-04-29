@@ -25,6 +25,7 @@ const Pembayaran = lazy(() => import("@/pages/Pembayaran"));
 const Pemasukan = lazy(() => import("@/pages/Pemasukan"));
 const Pengeluaran = lazy(() => import("@/pages/Pengeluaran"));
 const Tunggakan = lazy(() => import("@/pages/Tunggakan"));
+const LaporanKeuangan = lazy(() => import("@/pages/LaporanKeuangan"));
 const NaikKelas = lazy(() => import("@/pages/NaikKelas"));
 const Alumni = lazy(() => import("@/pages/Alumni"));
 const UserManagement = lazy(() => import("@/pages/UserManagement"));
@@ -114,6 +115,7 @@ const App = () => {
                   <Route path="/pemasukan" element={<Pemasukan />} />
                   <Route path="/pengeluaran" element={<Pengeluaran />} />
                   <Route path="/tunggakan" element={<Tunggakan />} />
+                  <Route path="/laporan-keuangan" element={<LaporanKeuangan />} />
                   <Route path="/naik-kelas" element={<NaikKelas />} />
                   <Route path="/alumni" element={<Alumni />} />
                   <Route path="/atp" element={<ATP />} />
