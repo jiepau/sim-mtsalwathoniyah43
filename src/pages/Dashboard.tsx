@@ -7,7 +7,10 @@ import {
   TrendingDown,
   AlertTriangle,
   Calendar,
-  Sparkles
+  Sparkles,
+  Award,
+  Briefcase,
+  HandCoins
 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { StatsCard } from '@/components/ui/stats-card';
@@ -31,6 +34,9 @@ interface DashboardStats {
   totalGtk: number;
   gtkLaki: number;
   gtkPerempuan: number;
+  gtkPns: number;
+  gtkHonor: number;
+  gtkSertifikasi: number;
   totalTunggakan: number;
   totalPemasukan: number;
   totalPengeluaran: number;
