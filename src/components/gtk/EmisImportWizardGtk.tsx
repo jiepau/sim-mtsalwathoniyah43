@@ -267,23 +267,24 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
     setProgress(5);
     setResult(null);
     const errors: string[] = [];
-    let created = 0, updated = 0, failed = 0;
+    let created = 0, updated = 0, skipped = 0, failed = 0;
 
     try {
-      // Pre-fetch existing GTK by NUPTK or NIK or nama
+      // Pre-fetch existing GTK by NUPTK / NIP / NIK
       const nuptkList = rows.map(r => r.nuptk).filter(Boolean);
+      const nipList = rows.map(r => r.nip).filter(Boolean);
       const nikList = rows.map(r => r.nik).filter(Boolean);
 
-      const { data: existingByNuptk } = nuptkList.length
-        ? await supabase.from('gtk_ptk').select('id, nuptk, nik, nama').in('nuptk', nuptkList)
-        : { data: [] };
-      const { data: existingByNik } = nikList.length
-        ? await supabase.from('gtk_ptk').select('id, nuptk, nik, nama').in('nik', nikList)
-        : { data: [] };
+      const [byNuptk, byNip, byNik] = await Promise.all([
+        nuptkList.length ? supabase.from('gtk_ptk').select('id, nuptk, nip, nik, nama').in('nuptk', nuptkList) : Promise.resolve({ data: [] as any[] }),
+        nipList.length ? supabase.from('gtk_ptk').select('id, nuptk, nip, nik, nama').in('nip', nipList) : Promise.resolve({ data: [] as any[] }),
+        nikList.length ? supabase.from('gtk_ptk').select('id, nuptk, nip, nik, nama').in('nik', nikList) : Promise.resolve({ data: [] as any[] }),
+      ]);
 
       const existingMap = new Map<string, any>();
-      [...(existingByNuptk || []), ...(existingByNik || [])].forEach(g => {
+      [...(byNuptk.data || []), ...(byNip.data || []), ...(byNik.data || [])].forEach((g: any) => {
         if (g.nuptk) existingMap.set(`nuptk:${g.nuptk}`, g);
+        if (g.nip) existingMap.set(`nip:${g.nip}`, g);
         if (g.nik) existingMap.set(`nik:${g.nik}`, g);
       });
 
@@ -317,16 +318,25 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
         try {
           let existing = null;
           if (r.nuptk) existing = existingMap.get(`nuptk:${r.nuptk}`);
+          if (!existing && r.nip) existing = existingMap.get(`nip:${r.nip}`);
           if (!existing && r.nik) existing = existingMap.get(`nik:${r.nik}`);
 
           if (existing) {
-            const { error } = await supabase.from('gtk_ptk').update(payload).eq('id', existing.id);
-            if (error) throw error;
-            updated++;
+            if (importMode === 'insert_only') {
+              skipped++;
+            } else {
+              const { error } = await supabase.from('gtk_ptk').update(payload).eq('id', existing.id);
+              if (error) throw error;
+              updated++;
+            }
           } else {
-            const { error } = await supabase.from('gtk_ptk').insert(payload);
-            if (error) throw error;
-            created++;
+            if (importMode === 'update_only') {
+              skipped++;
+            } else {
+              const { error } = await supabase.from('gtk_ptk').insert(payload);
+              if (error) throw error;
+              created++;
+            }
           }
         } catch (err: any) {
           failed++;
@@ -337,10 +347,12 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
       }
 
       setProgress(100);
-      setResult({ created, updated, failed, errors });
+      setResult({ created, updated, skipped, failed, errors });
       if (created + updated > 0) {
-        toast.success(`Import selesai: ${created} baru, ${updated} diperbarui`);
+        toast.success(`Import selesai: ${created} baru, ${updated} diperbarui${skipped ? `, ${skipped} dilewati` : ''}`);
         onSuccess();
+      } else if (skipped > 0) {
+        toast.info(`${skipped} baris dilewati sesuai mode import`);
       }
     } catch (err: any) {
       toast.error('Import gagal: ' + err.message);
