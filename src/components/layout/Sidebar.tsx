@@ -315,33 +315,57 @@ export function Sidebar() {
   const sidebarContent = (
     <>
       {/* Header — Nuansa Kemenag */}
-      <div className="p-4 border-b border-sidebar-border bg-gradient-to-br from-primary/10 to-transparent">
-        <div className="flex items-center gap-2">
-          {/* Logo Kemenag */}
-          <img
-            src="/logo-kemenag.png"
-            alt="Logo Kementerian Agama RI"
-            loading="lazy"
-            className="h-10 w-10 object-contain flex-shrink-0"
-          />
-          {/* Logo Madrasah */}
-          <img
-            src="/logo-alwathoniyah.png"
-            alt="Logo MTs Al Wathoniyah 43"
-            loading="lazy"
-            className="h-10 w-10 rounded-lg object-contain flex-shrink-0"
-          />
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60 font-semibold">
+      <div className={cn(
+        "border-b border-sidebar-border bg-gradient-to-br from-primary/15 via-sidebar-accent/30 to-transparent",
+        collapsed ? "p-2" : "p-4"
+      )}>
+        {collapsed ? (
+          // COLLAPSED: 2 logo bertumpuk vertikal, center
+          <div className="flex flex-col items-center gap-1.5">
+            <img
+              src="/logo-kemenag.png"
+              alt="Logo Kementerian Agama RI"
+              loading="lazy"
+              className="h-9 w-9 object-contain"
+            />
+            <div className="h-px w-6 bg-sidebar-border/60" />
+            <img
+              src="/logo-alwathoniyah.png"
+              alt="Logo MTs Al Wathoniyah 43"
+              loading="lazy"
+              className="h-9 w-9 rounded-md object-contain"
+            />
+          </div>
+        ) : (
+          // EXPANDED: 2 logo sejajar + teks brand
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <img
+                src="/logo-kemenag.png"
+                alt="Logo Kementerian Agama RI"
+                loading="lazy"
+                className="h-11 w-11 object-contain drop-shadow-sm"
+              />
+              <img
+                src="/logo-alwathoniyah.png"
+                alt="Logo MTs Al Wathoniyah 43"
+                loading="lazy"
+                className="h-11 w-11 rounded-md object-contain drop-shadow-sm"
+              />
+            </div>
+            <div className="flex-1 min-w-0 border-l border-sidebar-border/40 pl-3">
+              <p className="text-[9px] uppercase tracking-[0.12em] text-sidebar-foreground/70 font-bold leading-tight">
                 Kementerian Agama RI
               </p>
-              <h1 className="font-bold text-sidebar-foreground truncate text-sm leading-tight">
+              <h1 className="font-bold text-sidebar-foreground truncate text-[13px] leading-snug mt-0.5">
                 MTs Al Wathoniyah 43
               </h1>
+              <p className="text-[10px] text-sidebar-foreground/50 truncate leading-tight">
+                Sistem Informasi Madrasah
+              </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
