@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CreditCard, Search, Check, Clock, History, Pencil } from 'lucide-react';
+import { CreditCard, Search, Check, Clock, History, Pencil, AlertCircle } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { PaymentHistoryDialog } from '@/components/pembayaran/PaymentHistoryDialog';
 import { PaymentFormDialog } from '@/components/pembayaran/PaymentFormDialog';
+import { InputTunggakanLamaDialog } from '@/components/pembayaran/InputTunggakanLamaDialog';
 import {
   Dialog,
   DialogContent,
