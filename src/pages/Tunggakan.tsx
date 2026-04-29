@@ -385,6 +385,17 @@ export default function TunggakanPage() {
         title="Tunggakan"
         description="Daftar siswa dengan tunggakan pembayaran (dikelompokkan per Tahun Ajaran)"
         icon={<AlertTriangle className="h-6 w-6" />}
+        actions={
+          <Button
+            onClick={() => setConfirmReminderOpen(true)}
+            disabled={sendingReminder}
+            size="sm"
+            className="h-9 bg-green-600 hover:bg-green-700 text-white"
+          >
+            {sendingReminder ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Send className="h-4 w-4 mr-1.5" />}
+            Kirim Reminder WA Massal
+          </Button>
+        }
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
