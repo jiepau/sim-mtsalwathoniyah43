@@ -42,6 +42,8 @@ import { ImportDialog, ImportResult } from '@/components/import/ImportDialog';
 import { ExportButton } from '@/components/export/ExportButton';
 import { GtkDetailDialog } from '@/components/gtk/GtkDetailDialog';
 import { GtkKtaPrint } from '@/components/gtk/GtkKtaPrint';
+import { EmisImportWizardGtk } from '@/components/gtk/EmisImportWizardGtk';
+import { Sparkles, Award } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
@@ -63,6 +65,10 @@ interface GtkPtk {
   tanggal_lahir: string | null;
   jenis_kelamin: string | null;
   foto_path: string | null;
+  status_kepegawaian: string | null;
+  sertifikasi: boolean | null;
+  nomor_sertifikasi: string | null;
+  status_aktif: string | null;
 }
 
 export default function GtkPtkPage() {
@@ -71,6 +77,7 @@ export default function GtkPtkPage() {
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [emisImportOpen, setEmisImportOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [ktaPrintOpen, setKtaPrintOpen] = useState(false);
   const [ktaPrintList, setKtaPrintList] = useState<GtkPtk[]>([]);
@@ -97,6 +104,10 @@ export default function GtkPtkPage() {
     tempat_lahir: '',
     tanggal_lahir: undefined as Date | undefined,
     jenis_kelamin: '',
+    status_kepegawaian: '',
+    sertifikasi: false,
+    nomor_sertifikasi: '',
+    status_aktif: 'aktif',
   });
 
   const JABATAN_UTAMA_OPTIONS = ['Kepala Madrasah', 'Guru', 'Tenaga Kependidikan'];
@@ -268,6 +279,10 @@ export default function GtkPtkPage() {
         tempat_lahir: gtk.tempat_lahir || '',
         tanggal_lahir: gtk.tanggal_lahir ? new Date(gtk.tanggal_lahir) : undefined,
         jenis_kelamin: gtk.jenis_kelamin || '',
+        status_kepegawaian: gtk.status_kepegawaian || '',
+        sertifikasi: !!gtk.sertifikasi,
+        nomor_sertifikasi: gtk.nomor_sertifikasi || '',
+        status_aktif: gtk.status_aktif || 'aktif',
       });
     } else {
       setEditingGtk(null);
@@ -275,7 +290,8 @@ export default function GtkPtkPage() {
       setFormData({ 
         nip: '', nama: '', jabatan_utama: '', jabatan_tambahan: [], no_hp: '', alamat: '', 
         nuptk: '', nik: '', lulusan: '', pendidikan: '', email: '', mapel: '',
-        tempat_lahir: '', tanggal_lahir: undefined, jenis_kelamin: ''
+        tempat_lahir: '', tanggal_lahir: undefined, jenis_kelamin: '',
+        status_kepegawaian: '', sertifikasi: false, nomor_sertifikasi: '', status_aktif: 'aktif',
       });
     }
     setDialogOpen(true);
@@ -301,6 +317,10 @@ export default function GtkPtkPage() {
         tempat_lahir: formData.tempat_lahir || null,
         tanggal_lahir: formData.tanggal_lahir ? format(formData.tanggal_lahir, 'yyyy-MM-dd') : null,
         jenis_kelamin: formData.jenis_kelamin || null,
+        status_kepegawaian: formData.status_kepegawaian || null,
+        sertifikasi: formData.sertifikasi,
+        nomor_sertifikasi: formData.nomor_sertifikasi || null,
+        status_aktif: formData.status_aktif || 'aktif',
       };
 
       if (editingGtk) {
@@ -385,7 +405,15 @@ export default function GtkPtkPage() {
     const tendik = gtkPtk.filter(g => parseJabatan(g.jabatan).utama === 'Tenaga Kependidikan').length;
     const belumDiisi = gtkPtk.filter(g => !g.jabatan?.trim()).length;
 
-    return { laki, perempuan, lulusanMap, kepalaMadrasah, guru, tendik, belumDiisi };
+    // Status kepegawaian breakdown
+    const pns = gtkPtk.filter(g => g.status_kepegawaian === 'PNS' || g.status_kepegawaian === 'PPPK').length;
+    const honor = gtkPtk.filter(g => {
+      const s = g.status_kepegawaian;
+      return s === 'Honorer' || s === 'GTT' || s === 'GTY';
+    }).length;
+    const sertifikasi = gtkPtk.filter(g => g.sertifikasi === true).length;
+
+    return { laki, perempuan, lulusanMap, kepalaMadrasah, guru, tendik, belumDiisi, pns, honor, sertifikasi };
   }, [gtkPtk]);
 
   const toggleSelectAll = () => {
@@ -566,6 +594,10 @@ export default function GtkPtkPage() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52">
                 <DropdownMenuLabel>Import Data</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setEmisImportOpen(true)}>
+                  <Sparkles className="h-4 w-4 mr-2 text-primary" />
+                  Import dari EMIS
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
                   <Upload className="h-4 w-4 mr-2" />
                   Import CSV
@@ -899,6 +931,52 @@ export default function GtkPtkPage() {
                 placeholder="Contoh: Matematika, IPA"
               />
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Status Kepegawaian</Label>
+                <Select value={formData.status_kepegawaian || 'none'} onValueChange={(v) => setFormData({ ...formData, status_kepegawaian: v === 'none' ? '' : v })}>
+                  <SelectTrigger><SelectValue placeholder="Pilih status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">-- Pilih --</SelectItem>
+                    <SelectItem value="PNS">PNS</SelectItem>
+                    <SelectItem value="PPPK">PPPK</SelectItem>
+                    <SelectItem value="GTY">GTY (Guru Tetap Yayasan)</SelectItem>
+                    <SelectItem value="GTT">GTT (Guru Tidak Tetap)</SelectItem>
+                    <SelectItem value="Honorer">Honorer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Status Aktif</Label>
+                <Select value={formData.status_aktif} onValueChange={(v) => setFormData({ ...formData, status_aktif: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="aktif">Aktif</SelectItem>
+                    <SelectItem value="tidak_aktif">Tidak Aktif</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2 border rounded-md p-3 bg-muted/30">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <Checkbox
+                  checked={formData.sertifikasi}
+                  onCheckedChange={(checked) => setFormData({ ...formData, sertifikasi: !!checked })}
+                />
+                <span className="text-sm font-medium flex items-center gap-1.5">
+                  <Award className="h-4 w-4 text-primary" />
+                  Sudah Sertifikasi Pendidik
+                </span>
+              </label>
+              {formData.sertifikasi && (
+                <Input
+                  placeholder="Nomor sertifikat (opsional)"
+                  value={formData.nomor_sertifikasi}
+                  onChange={(e) => setFormData({ ...formData, nomor_sertifikasi: e.target.value })}
+                  className="mt-2"
+                />
+              )}
+            </div>
             <div className="space-y-2">
               <Label htmlFor="alamat">Alamat</Label>
               <Input
@@ -943,6 +1021,13 @@ export default function GtkPtkPage() {
         open={ktaPrintOpen}
         onOpenChange={setKtaPrintOpen}
         gtkList={ktaPrintList}
+      />
+
+      {/* EMIS Import Wizard */}
+      <EmisImportWizardGtk
+        open={emisImportOpen}
+        onOpenChange={setEmisImportOpen}
+        onSuccess={fetchData}
       />
     </div>
   );

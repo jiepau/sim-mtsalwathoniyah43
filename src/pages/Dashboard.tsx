@@ -7,7 +7,10 @@ import {
   TrendingDown,
   AlertTriangle,
   Calendar,
-  Sparkles
+  Sparkles,
+  Award,
+  Briefcase,
+  HandCoins
 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { StatsCard } from '@/components/ui/stats-card';
@@ -31,6 +34,9 @@ interface DashboardStats {
   totalGtk: number;
   gtkLaki: number;
   gtkPerempuan: number;
+  gtkPns: number;
+  gtkHonor: number;
+  gtkSertifikasi: number;
   totalTunggakan: number;
   totalPemasukan: number;
   totalPengeluaran: number;
@@ -51,6 +57,9 @@ export default function Dashboard() {
     totalGtk: 0,
     gtkLaki: 0,
     gtkPerempuan: 0,
+    gtkPns: 0,
+    gtkHonor: 0,
+    gtkSertifikasi: 0,
     totalTunggakan: 0,
     totalPemasukan: 0,
     totalPengeluaran: 0,
@@ -160,11 +169,14 @@ export default function Dashboard() {
       
       // Fetch GTK/PTK - visible to admin, operator, and bendahara
       const gtkRes = (isAdmin || isOperator || isBendahara)
-        ? await supabase.from('gtk_ptk').select('id, jenis_kelamin', { count: 'exact' })
+        ? await supabase.from('gtk_ptk').select('id, jenis_kelamin, status_kepegawaian, sertifikasi', { count: 'exact' })
         : { data: [], count: 0 };
       const gtkData = gtkRes.data || [];
       const gtkLaki = gtkData.filter((g: any) => g.jenis_kelamin === 'L' || g.jenis_kelamin === 'Laki-laki').length;
       const gtkPerempuan = gtkData.filter((g: any) => g.jenis_kelamin === 'P' || g.jenis_kelamin === 'Perempuan').length;
+      const gtkPns = gtkData.filter((g: any) => g.status_kepegawaian === 'PNS' || g.status_kepegawaian === 'PPPK').length;
+      const gtkHonor = gtkData.filter((g: any) => ['Honorer', 'GTT', 'GTY'].includes(g.status_kepegawaian)).length;
+      const gtkSertifikasi = gtkData.filter((g: any) => g.sertifikasi === true).length;
       
       // Fetch pembayaran & pengeluaran - only visible to admin and bendahara
       const pembayaranRes = (isAdmin || isBendahara)
@@ -215,6 +227,9 @@ export default function Dashboard() {
         totalGtk: gtkRes.count || 0,
         gtkLaki,
         gtkPerempuan,
+        gtkPns,
+        gtkHonor,
+        gtkSertifikasi,
         totalTunggakan: tunggakan,
         totalPemasukan: pemasukan,
         totalPengeluaran: pengeluaran,
@@ -291,7 +306,7 @@ export default function Dashboard() {
             <UserCog className="h-3.5 w-3.5" />
             Data GTK/PTK
           </h2>
-          <div className="grid grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             <StatsCard
               title="Total GTK/PTK"
               value={stats.totalGtk}
@@ -309,6 +324,24 @@ export default function Dashboard() {
               value={stats.gtkPerempuan}
               icon={<UserCog className="h-5 w-5 sm:h-6 sm:w-6" />}
               variant="warning"
+            />
+            <StatsCard
+              title="PNS / PPPK"
+              value={stats.gtkPns}
+              icon={<Briefcase className="h-5 w-5 sm:h-6 sm:w-6" />}
+              variant="info"
+            />
+            <StatsCard
+              title="Honor / GTY"
+              value={stats.gtkHonor}
+              icon={<HandCoins className="h-5 w-5 sm:h-6 sm:w-6" />}
+              variant="warning"
+            />
+            <StatsCard
+              title="Sertifikasi"
+              value={stats.gtkSertifikasi}
+              icon={<Award className="h-5 w-5 sm:h-6 sm:w-6" />}
+              variant="success"
             />
           </div>
         </div>
