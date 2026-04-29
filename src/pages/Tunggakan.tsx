@@ -311,21 +311,73 @@ export default function TunggakanPage() {
       )
     },
     {
-      header: 'WA',
-      cell: (item: SiswaTunggakan) => item.wa_ortu && (
-        <a
-          href={getWhatsAppUrl(item)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
-        >
-          <Phone className="h-4 w-4" />
-          Kirim
-        </a>
+      header: 'Aksi',
+      cell: (item: SiswaTunggakan) => (
+        <div className="flex flex-col gap-1.5">
+          {item.wa_ortu && (
+            <a
+              href={getWhatsAppUrl(item)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
+            >
+              <Phone className="h-3 w-3" />
+              WA Wali
+            </a>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs"
+            onClick={() => { setSelectedKartuSiswa(item); setKartuSppOpen(true); }}
+          >
+            <Printer className="h-3 w-3 mr-1" />
+            Kartu SPP
+          </Button>
+        </div>
       ),
-      className: 'w-28'
+      className: 'w-32'
     },
   ];
+
+  // Send mass WA reminder
+  const sendMassReminder = async () => {
+    setSendingReminder(true);
+    try {
+      const siswaIds = filteredData
+        .filter(s => s.wa_ortu && s.total_tunggakan > 0)
+        .map(s => s.siswa_id);
+
+      if (siswaIds.length === 0) {
+        toast.error('Tidak ada siswa dengan WA wali untuk dikirimi reminder');
+        return;
+      }
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
+      const res = await fetch(
+        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/send-tunggakan-reminder`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ siswa_ids: siswaIds }),
+        }
+      );
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Gagal');
+
+      toast.success(`Reminder terkirim: ${result.sent}/${result.total} wali murid`);
+      setConfirmReminderOpen(false);
+    } catch (err) {
+      toast.error('Gagal kirim reminder: ' + (err instanceof Error ? err.message : 'Unknown'));
+    } finally {
+      setSendingReminder(false);
+    }
+  };
 
   return (
     <div className="animate-fadeIn">
