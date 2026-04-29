@@ -405,7 +405,15 @@ export default function GtkPtkPage() {
     const tendik = gtkPtk.filter(g => parseJabatan(g.jabatan).utama === 'Tenaga Kependidikan').length;
     const belumDiisi = gtkPtk.filter(g => !g.jabatan?.trim()).length;
 
-    return { laki, perempuan, lulusanMap, kepalaMadrasah, guru, tendik, belumDiisi };
+    // Status kepegawaian breakdown
+    const pns = gtkPtk.filter(g => g.status_kepegawaian === 'PNS' || g.status_kepegawaian === 'PPPK').length;
+    const honor = gtkPtk.filter(g => {
+      const s = g.status_kepegawaian;
+      return s === 'Honorer' || s === 'GTT' || s === 'GTY';
+    }).length;
+    const sertifikasi = gtkPtk.filter(g => g.sertifikasi === true).length;
+
+    return { laki, perempuan, lulusanMap, kepalaMadrasah, guru, tendik, belumDiisi, pns, honor, sertifikasi };
   }, [gtkPtk]);
 
   const toggleSelectAll = () => {
