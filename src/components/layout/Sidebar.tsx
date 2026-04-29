@@ -314,9 +314,9 @@ export function Sidebar() {
 
   const sidebarContent = (
     <>
-      {/* Header — Nuansa Kemenag */}
+      {/* Header — Nuansa Kemenag (background putih dengan accent hijau) */}
       <div className={cn(
-        "border-b border-sidebar-border bg-gradient-to-br from-primary/15 via-sidebar-accent/30 to-transparent",
+        "border-b-4 border-primary bg-white shadow-sm",
         collapsed ? "p-2" : "p-4"
       )}>
         {collapsed ? (
@@ -353,14 +353,14 @@ export function Sidebar() {
                 className="h-11 w-11 rounded-md object-contain drop-shadow-sm"
               />
             </div>
-            <div className="flex-1 min-w-0 border-l border-sidebar-border/40 pl-3">
-              <p className="text-[9px] uppercase tracking-[0.12em] text-sidebar-foreground/70 font-bold leading-tight">
+            <div className="flex-1 min-w-0 border-l-2 border-primary/30 pl-3">
+              <p className="text-[9px] uppercase tracking-[0.12em] text-primary font-bold leading-tight">
                 Kementerian Agama RI
               </p>
-              <h1 className="font-bold text-sidebar-foreground truncate text-[13px] leading-snug mt-0.5">
+              <h1 className="font-bold text-foreground truncate text-[13px] leading-snug mt-0.5">
                 MTs Al Wathoniyah 43
               </h1>
-              <p className="text-[10px] text-sidebar-foreground/50 truncate leading-tight">
+              <p className="text-[10px] text-muted-foreground truncate leading-tight">
                 Sistem Informasi Madrasah
               </p>
             </div>
