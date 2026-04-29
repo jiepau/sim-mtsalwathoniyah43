@@ -1,8 +1,8 @@
 // Centralized version configuration
 // Update this file when releasing new versions
 
-export const APP_VERSION = "1.5.0";
-export const APP_BUILD_DATE = "2026-04-04";
+export const APP_VERSION = "3.0.0";
+export const APP_BUILD_DATE = "2026-04-29";
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,77 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "3.0.0",
+    date: "2026-04-29",
+    changes: [
+      "Pratinjau Cetak A4: lihat tampilan halaman persis seperti hasil cetak sebelum klik Cetak / PDF",
+      "Toggle orientasi Portrait / Landscape langsung di halaman cetak (Laporan Keuangan, Rapor Kehadiran, Kartu SPP)",
+      "Konsolidasi semua kontrol cetak ke dalam satu komponen toolbar reusable agar konsisten",
+      "Penyempurnaan kerangka cetak — tampilan layar dan hasil cetak kini benar-benar identik",
+    ],
+  },
+  {
+    version: "2.5.0",
+    date: "2026-04-26",
+    changes: [
+      "Kartu SPP siswa: matriks 12 bulan (Juli–Juni) dengan status Lunas / Cicil / Belum Bayar berwarna",
+      "Reminder WhatsApp tunggakan massal — kirim ke seluruh wali murid sesuai filter aktif via Fonnte",
+      "Aggregasi tunggakan per siswa menjadi satu pesan ringkas (mengurangi spam WA)",
+      "Tombol cepat 'Kartu SPP' di setiap baris tabel Tunggakan",
+    ],
+  },
+  {
+    version: "2.4.0",
+    date: "2026-04-22",
+    changes: [
+      "Laporan Keuangan bulanan & tahunan dengan tampilan siap cetak A4 + tanda tangan Kepala Madrasah",
+      "Ringkasan pemasukan vs pengeluaran beserta saldo (surplus/defisit) otomatis",
+      "Lampiran detail transaksi pengeluaran lengkap dengan tanggal, kategori, dan deskripsi",
+      "Menu baru 'Laporan Keuangan' di sidebar untuk Admin & Bendahara",
+    ],
+  },
+  {
+    version: "2.3.0",
+    date: "2026-04-18",
+    changes: [
+      "Grafik Tren Ketidakhadiran: visualisasi bulanan absensi siswa & GTK menggunakan recharts",
+      "Top 10 siswa & GTK dengan tingkat ketidakhadiran tertinggi",
+      "Tab baru 'Tren Absensi' di halaman Rekap Absensi",
+      "Membantu Kepala Madrasah memantau pola kehadiran sepanjang semester",
+    ],
+  },
+  {
+    version: "2.2.0",
+    date: "2026-04-14",
+    changes: [
+      "Rapor Kehadiran Semester: rekap H/S/I/A per bulan untuk dilampirkan ke rapor siswa",
+      "Perhitungan otomatis hari efektif (mengecualikan akhir pekan & hari libur)",
+      "Persentase kehadiran per siswa dengan kode warna (≥80% hijau, 60-79% kuning, <60% merah)",
+      "Halaman cetak A4 landscape lengkap dengan kop madrasah dan kolom tanda tangan",
+    ],
+  },
+  {
+    version: "2.1.0",
+    date: "2026-04-10",
+    changes: [
+      "Notifikasi WhatsApp otomatis ke wali murid saat siswa Alfa, Sakit, atau Izin",
+      "Tombol 'Kirim Notif Wali' di halaman Absensi Siswa untuk pengiriman manual",
+      "Kategori notifikasi baru 'absensi_siswa_alfa' dengan template pesan custom",
+      "Edge function notify-absensi-siswa terintegrasi dengan Fonnte",
+    ],
+  },
+  {
+    version: "2.0.0",
+    date: "2026-04-06",
+    changes: [
+      "Input Absensi Massal: Per Hari (semua sekaligus), Per Bulan (kalender), atau Per GTK/Siswa (riwayat)",
+      "Dialog input absensi bulanan untuk mengisi 1 bulan penuh dalam satu form",
+      "Dialog input per orang untuk koreksi cepat absensi individual",
+      "UI Absensi GTK & Siswa diseragamkan dengan 3 mode input yang konsisten",
+      "Peningkatan signifikan kecepatan input absensi harian sekolah",
+    ],
+  },
   {
     version: "1.5.0",
     date: "2026-04-04",
