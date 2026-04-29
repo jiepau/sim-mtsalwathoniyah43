@@ -153,6 +153,18 @@
     @apply border-border;
   }
 
+  /* Skala UI lebih ringkas — semua rem mengecil proporsional.
+     Default browser 16px → 14px. Override per breakpoint untuk responsive. */
+  html {
+    font-size: 14px;
+  }
+
+  @media (min-width: 1536px) {
+    html {
+      font-size: 15px;
+    }
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
