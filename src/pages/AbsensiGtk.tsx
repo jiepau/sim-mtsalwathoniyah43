@@ -211,6 +211,52 @@ const AbsensiGtk = () => {
         title={isGuru && !canManageAll ? "Absensi Saya" : "Absensi GTK/PTK"}
         description={isGuru && !canManageAll ? "Isi presensi harian Anda" : "Rekap presensi harian guru dan tenaga kependidikan"}
         icon={<ClipboardList className="h-6 w-6" />}
+        actions={canManageAll ? (
+          <>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button>
+                  <ClipboardList className="h-4 w-4 mr-2" />
+                  Input Presensi
+                  <ChevronDown className="h-4 w-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => {
+                  document.getElementById('absensi-harian-section')?.scrollIntoView({ behavior: 'smooth' });
+                }}>
+                  <Users className="h-4 w-4 mr-2" />
+                  Input Massal (Per Hari)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setBulananOpen(true)}>
+                  <CalendarDays className="h-4 w-4 mr-2" />
+                  Input Absensi Per Bulan
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPerPtkOpen(true)}>
+                  <UserCog className="h-4 w-4 mr-2" />
+                  Input Per GTK/PTK
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" asChild>
+              <Link to="/rekap-absensi">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Rekap Bulanan
+              </Link>
+            </Button>
+          </>
+        ) : undefined}
+      />
+
+      <InputPresensiBulananDialog
+        open={bulananOpen}
+        onOpenChange={setBulananOpen}
+        onSaved={() => setSelectedDate(d => d)}
+      />
+      <InputPresensiPerPtkDialog
+        open={perPtkOpen}
+        onOpenChange={setPerPtkOpen}
+        onSaved={() => setSelectedDate(d => d)}
       />
 
       {/* Date Filter */}
