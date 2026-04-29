@@ -314,9 +314,9 @@ export function Sidebar() {
 
   const sidebarContent = (
     <>
-      {/* Header — Nuansa Kemenag */}
+      {/* Header — Nuansa Kemenag (background putih dengan accent hijau) */}
       <div className={cn(
-        "border-b border-sidebar-border bg-gradient-to-br from-primary/15 via-sidebar-accent/30 to-transparent",
+        "border-b-4 border-primary bg-white shadow-sm",
         collapsed ? "p-2" : "p-4"
       )}>
         {collapsed ? (
