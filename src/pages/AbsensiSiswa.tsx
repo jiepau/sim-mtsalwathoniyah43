@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useHariLibur } from '@/hooks/useHariLibur';
-import { ClipboardCheck, Save, Calendar, Users, CheckCircle, XCircle, AlertCircle, Clock, CalendarOff, ChevronDown, CalendarDays, UserCog, BarChart3 } from 'lucide-react';
+import { ClipboardCheck, Save, Calendar, Users, CheckCircle, XCircle, AlertCircle, Clock, CalendarOff, ChevronDown, CalendarDays, UserCog, BarChart3, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -68,6 +68,31 @@ const AbsensiSiswa = () => {
   const [existingIds, setExistingIds] = useState<Record<string, string>>({});
   const [bulananOpen, setBulananOpen] = useState(false);
   const [perSiswaOpen, setPerSiswaOpen] = useState(false);
+  const [sendingWa, setSendingWa] = useState(false);
+
+  const handleSendWaNotif = async () => {
+    if (!confirm(`Kirim notifikasi WhatsApp ke wali siswa Alfa/Sakit/Izin pada tanggal ${selectedDate}?`)) return;
+    setSendingWa(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      const res = await fetch(
+        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/notify-absensi-siswa`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ tanggal: selectedDate, type: 'manual' }),
+        }
+      );
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Gagal');
+      toast({ title: `Notifikasi terkirim`, description: `${result.sent}/${result.total} pesan berhasil dikirim ke wali murid.` });
+    } catch (err: any) {
+      toast({ title: 'Gagal mengirim notifikasi', description: err.message, variant: 'destructive' });
+    } finally {
+      setSendingWa(false);
+    }
+  };
 
   // Fetch kelas & tahun ajaran
   useEffect(() => {
