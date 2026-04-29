@@ -306,7 +306,7 @@ export default function Dashboard() {
             <UserCog className="h-3.5 w-3.5" />
             Data GTK/PTK
           </h2>
-          <div className="grid grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             <StatsCard
               title="Total GTK/PTK"
               value={stats.totalGtk}
@@ -324,6 +324,24 @@ export default function Dashboard() {
               value={stats.gtkPerempuan}
               icon={<UserCog className="h-5 w-5 sm:h-6 sm:w-6" />}
               variant="warning"
+            />
+            <StatsCard
+              title="PNS / PPPK"
+              value={stats.gtkPns}
+              icon={<Briefcase className="h-5 w-5 sm:h-6 sm:w-6" />}
+              variant="info"
+            />
+            <StatsCard
+              title="Honor / GTY"
+              value={stats.gtkHonor}
+              icon={<HandCoins className="h-5 w-5 sm:h-6 sm:w-6" />}
+              variant="warning"
+            />
+            <StatsCard
+              title="Sertifikasi"
+              value={stats.gtkSertifikasi}
+              icon={<Award className="h-5 w-5 sm:h-6 sm:w-6" />}
+              variant="success"
             />
           </div>
         </div>
