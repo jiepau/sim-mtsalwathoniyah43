@@ -314,20 +314,31 @@ export function Sidebar() {
 
   const sidebarContent = (
     <>
-      {/* Header */}
-      <div className="p-4 border-b border-sidebar-border">
-        <div className="flex items-center gap-3">
-          <img 
-            src="/logo-alwathoniyah.png" 
-            alt="Logo MTs Al Wathoniyah 43" 
-            className="h-10 w-10 rounded-lg object-contain"
+      {/* Header — Nuansa Kemenag */}
+      <div className="p-4 border-b border-sidebar-border bg-gradient-to-br from-primary/10 to-transparent">
+        <div className="flex items-center gap-2">
+          {/* Logo Kemenag */}
+          <img
+            src="/logo-kemenag.png"
+            alt="Logo Kementerian Agama RI"
+            loading="lazy"
+            className="h-10 w-10 object-contain flex-shrink-0"
+          />
+          {/* Logo Madrasah */}
+          <img
+            src="/logo-alwathoniyah.png"
+            alt="Logo MTs Al Wathoniyah 43"
+            loading="lazy"
+            className="h-10 w-10 rounded-lg object-contain flex-shrink-0"
           />
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <h1 className="font-bold text-sidebar-foreground truncate text-sm">
+              <p className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60 font-semibold">
+                Kementerian Agama RI
+              </p>
+              <h1 className="font-bold text-sidebar-foreground truncate text-sm leading-tight">
                 MTs Al Wathoniyah 43
               </h1>
-              <p className="text-xs text-sidebar-foreground/60">Sistem Informasi</p>
             </div>
           )}
         </div>
