@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useHariLibur } from '@/hooks/useHariLibur';
-import { ClipboardList, Printer, Users, FileText } from 'lucide-react';
+import { ClipboardList, Users, FileText } from 'lucide-react';
+import { PrintPreviewToolbar, PrintPreviewFrame, type PrintOrientation } from '@/components/print/PrintPreviewToolbar';
 import { getDaysInMonth } from 'date-fns';
 
 interface Kelas { id: string; nama_kelas: string; tingkat: number; }
@@ -38,6 +39,8 @@ const RaporKehadiran = () => {
   const [tahunBase, setTahunBase] = useState(String(new Date().getFullYear()));
   const [loading, setLoading] = useState(true);
   const [fetching, setFetching] = useState(false);
+  const [preview, setPreview] = useState(false);
+  const [orientation, setOrientation] = useState<PrintOrientation>('landscape');
 
   useEffect(() => {
     const init = async () => {
@@ -183,12 +186,18 @@ const RaporKehadiran = () => {
           title="Rapor Kehadiran Semester"
           description="Rekap H/S/I/A per bulan dalam satu semester — siap dilampirkan ke rapor"
           icon={<ClipboardList className="h-6 w-6" />}
-          actions={
-            <Button onClick={() => window.print()} disabled={rekap.length === 0}>
-              <Printer className="h-4 w-4 mr-2" />
-              Cetak / PDF
-            </Button>
-          }
+        />
+      </div>
+
+      <div className="print:hidden">
+        <PrintPreviewToolbar
+          preview={preview}
+          onTogglePreview={setPreview}
+          orientation={orientation}
+          onOrientationChange={setOrientation}
+          onPrint={() => window.print()}
+          disabled={rekap.length === 0}
+          hint="Untuk rekap dengan banyak bulan, gunakan landscape agar kolom muat dalam satu halaman."
         />
       </div>
 
