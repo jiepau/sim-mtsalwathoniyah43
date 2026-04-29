@@ -23,12 +23,19 @@ const roleLabels: Record<AppRole, string> = {
 };
 
 export function TopBar() {
-  const { user, signOut } = useAuth();
+  const { user, session, signOut } = useAuth();
   const [role, setRole] = useState<AppRole | null>(null);
   const [taActive, setTaActive] = useState<string>('');
+  const [isOnline, setIsOnline] = useState<boolean>(
+    typeof navigator !== 'undefined' ? navigator.onLine : true
+  );
 
+  // Reactive: reset role saat user berubah/logout supaya indikator instan sinkron
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setRole(null);
+      return;
+    }
     (async () => {
       const [{ data: roles }, { data: ta }] = await Promise.all([
         supabase.from('user_roles').select('role').eq('user_id', user.id).limit(1).maybeSingle(),
@@ -38,6 +45,22 @@ export function TopBar() {
       if (ta) setTaActive(`${ta.nama_ta}${ta.semester ? ' · ' + ta.semester : ''}`);
     })();
   }, [user]);
+
+  // Listener network status — auto-update tanpa reload
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // Status: butuh user (sesi aktif) DAN koneksi internet
+  const sessionActive = !!user && !!session && isOnline;
+  const statusLabel = !isOnline ? 'No Internet' : user ? 'Online' : 'Offline';
 
   const fullName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Pengguna';
   const initial = fullName.charAt(0).toUpperCase();
