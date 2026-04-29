@@ -46,7 +46,7 @@ export function TopBar() {
     <header className="sticky top-0 z-40 h-14 bg-white border-b-2 border-primary/20 shadow-sm">
       <div className="h-full flex items-center gap-2 sm:gap-4">
         {/* Brand area — sejajar dengan kolom sidebar (lebar 256px), nempel ke kiri */}
-        <div className="hidden lg:flex items-center gap-2 h-full pl-4 pr-3 w-64 border-r-2 border-primary/20 bg-gradient-to-r from-emerald-200/70 to-emerald-50/40 shrink-0">
+        <div className="hidden lg:flex items-center gap-2 h-full pl-4 pr-3 w-64 border-r border-slate-200 bg-white shrink-0">
           <img src="/logo-kemenag.png" alt="Logo Kemenag" className="h-8 w-8 object-contain shrink-0" />
           <img src="/logo-alwathoniyah.png" alt="Logo Madrasah" className="h-8 w-8 object-contain shrink-0" />
           <div className="min-w-0 leading-tight">
