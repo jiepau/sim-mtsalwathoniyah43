@@ -405,6 +405,10 @@ const AbsensiSiswa = () => {
                     filename={exportFilename}
                     disabled={siswaList.length === 0}
                   />
+                  <Button variant="outline" onClick={handleSendWaNotif} disabled={sendingWa || !hasData}>
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    {sendingWa ? 'Mengirim...' : 'Kirim Notif Wali'}
+                  </Button>
                   <Button onClick={handleSave} disabled={saving}>
                     <Save className="h-4 w-4 mr-2" />
                     {saving ? 'Menyimpan...' : 'Simpan Absensi'}
