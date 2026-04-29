@@ -66,6 +66,8 @@ export default function PembayaranPage() {
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [tunggakanLamaOpen, setTunggakanLamaOpen] = useState(false);
+  const [activeTaId, setActiveTaId] = useState<string | null>(null);
   const [selectedPembayaran, setSelectedPembayaran] = useState<Pembayaran | null>(null);
   const [selectedSiswa, setSelectedSiswa] = useState<{ id: string; nama: string; nis: string } | null>(null);
   const [editFormData, setEditFormData] = useState({
