@@ -404,7 +404,8 @@ export function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'sidebar-aside fixed top-0 left-0 z-40 h-screen flex flex-col shadow-md',
+          'sidebar-aside fixed left-0 z-30 flex flex-col shadow-md',
+          'top-0 h-screen lg:top-14 lg:h-[calc(100vh-3.5rem)]',
           gradientClass,
           'border-r-2 border-primary/30',
           collapsed ? 'w-20' : 'w-64',
