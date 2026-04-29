@@ -37,6 +37,7 @@ import {
   BarChart3,
   MessageSquare,
   History,
+  Palette,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -137,6 +138,29 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [pendingApprovalCount, setPendingApprovalCount] = useState(0);
+  const [gradientIntensity, setGradientIntensity] = useState<'kuat' | 'sedang' | 'netral'>(() => {
+    if (typeof window === 'undefined') return 'kuat';
+    return (localStorage.getItem('sidebar-gradient') as 'kuat' | 'sedang' | 'netral') || 'kuat';
+  });
+
+  const cycleGradient = () => {
+    const order: Array<'kuat' | 'sedang' | 'netral'> = ['kuat', 'sedang', 'netral'];
+    const next = order[(order.indexOf(gradientIntensity) + 1) % order.length];
+    setGradientIntensity(next);
+    localStorage.setItem('sidebar-gradient', next);
+  };
+
+  const gradientClass = {
+    kuat: 'bg-gradient-to-b from-emerald-300/80 via-emerald-200/70 to-emerald-100/60',
+    sedang: 'bg-gradient-to-b from-emerald-200/70 via-emerald-100/60 to-emerald-50/50',
+    netral: 'bg-gradient-to-b from-emerald-100/60 via-white to-emerald-50/40',
+  }[gradientIntensity];
+
+  const gradientLabel = {
+    kuat: 'Lebih Hijau',
+    sedang: 'Sedang',
+    netral: 'Netral',
+  }[gradientIntensity];
 
   // Fetch pending approval count for admin
   useEffect(() => {
