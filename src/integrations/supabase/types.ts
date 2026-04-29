@@ -647,8 +647,12 @@ export type Database = {
           nik: string | null
           nip: string | null
           no_hp: string | null
+          nomor_sertifikasi: string | null
           nuptk: string | null
           pendidikan: string | null
+          sertifikasi: boolean
+          status_aktif: string
+          status_kepegawaian: string | null
           tanggal_lahir: string | null
           tempat_lahir: string | null
           updated_at: string
@@ -668,8 +672,12 @@ export type Database = {
           nik?: string | null
           nip?: string | null
           no_hp?: string | null
+          nomor_sertifikasi?: string | null
           nuptk?: string | null
           pendidikan?: string | null
+          sertifikasi?: boolean
+          status_aktif?: string
+          status_kepegawaian?: string | null
           tanggal_lahir?: string | null
           tempat_lahir?: string | null
           updated_at?: string
@@ -689,8 +697,12 @@ export type Database = {
           nik?: string | null
           nip?: string | null
           no_hp?: string | null
+          nomor_sertifikasi?: string | null
           nuptk?: string | null
           pendidikan?: string | null
+          sertifikasi?: boolean
+          status_aktif?: string
+          status_kepegawaian?: string | null
           tanggal_lahir?: string | null
           tempat_lahir?: string | null
           updated_at?: string
