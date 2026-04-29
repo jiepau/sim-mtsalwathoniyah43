@@ -517,18 +517,6 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
               )}
             </div>
 
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="text-xs">
-                GTK yang sudah ada (NUPTK atau NIK sama) akan <b>diperbarui</b>, yang baru akan <b>ditambahkan</b>.
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
-
-        {/* STEP 3: Import */}
-        {step === 3 && (
-          <div className="space-y-3">
             <div className="space-y-2">
               <p className="text-sm font-medium">Mode Import</p>
               <div className="grid gap-2">
