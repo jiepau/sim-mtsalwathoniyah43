@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
-import { FileBarChart, Printer, Loader2, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { FileBarChart, Loader2, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/supabase-helpers';
+import { PrintPreviewToolbar, PrintPreviewFrame, type PrintOrientation } from '@/components/print/PrintPreviewToolbar';
 
 interface MadrasahSettings {
   nama_madrasah: string;
@@ -46,6 +46,8 @@ export default function LaporanKeuangan() {
   const [pemasukan, setPemasukan] = useState<PembayaranRow[]>([]);
   const [pengeluaran, setPengeluaran] = useState<PengeluaranRow[]>([]);
   const [madrasah, setMadrasah] = useState<MadrasahSettings | null>(null);
+  const [preview, setPreview] = useState(false);
+  const [orientation, setOrientation] = useState<PrintOrientation>('portrait');
 
   useEffect(() => {
     supabase.from('madrasah_settings').select('*').maybeSingle()
@@ -126,14 +128,18 @@ export default function LaporanKeuangan() {
           title="Laporan Keuangan"
           description="Laporan pemasukan vs pengeluaran (bulanan / tahunan)"
           icon={<FileBarChart className="h-6 w-6" />}
-          actions={
-            <Button onClick={handlePrint} disabled={loading}>
-              <Printer className="h-4 w-4 mr-2" />
-              Cetak / PDF
-            </Button>
-          }
         />
       </div>
+
+      <PrintPreviewToolbar
+        preview={preview}
+        onTogglePreview={setPreview}
+        orientation={orientation}
+        onOrientationChange={setOrientation}
+        onPrint={handlePrint}
+        disabled={loading}
+        hint="Tampilan di pratinjau mengikuti ukuran kertas A4 sesuai orientasi yang dipilih."
+      />
 
       {/* Filter */}
       <Card className="no-print">
@@ -229,7 +235,8 @@ export default function LaporanKeuangan() {
       )}
 
       {/* PRINT AREA */}
-      <div className="print-area bg-white text-black p-6 rounded-lg border">
+      <PrintPreviewFrame preview={preview} orientation={orientation}>
+      <div className={`print-area ${preview ? '' : 'bg-white text-black p-6 rounded-lg border'}`}>
         {/* Header Madrasah */}
         <div className="text-center border-b-2 border-black pb-3 mb-4">
           <h1 className="text-lg font-bold uppercase">{madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43'}</h1>
@@ -356,13 +363,13 @@ export default function LaporanKeuangan() {
           </div>
         </div>
       </div>
+      </PrintPreviewFrame>
 
       <style>{`
         @media print {
           body { background: white !important; }
           .no-print, .sidebar-aside, header, nav, footer { display: none !important; }
           .print-area { border: none !important; padding: 0 !important; }
-          @page { size: A4; margin: 1.5cm; }
         }
       `}</style>
     </div>

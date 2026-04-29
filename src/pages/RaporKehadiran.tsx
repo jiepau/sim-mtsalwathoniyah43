@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useHariLibur } from '@/hooks/useHariLibur';
-import { ClipboardList, Printer, Users, FileText } from 'lucide-react';
+import { ClipboardList, Users, FileText } from 'lucide-react';
+import { PrintPreviewToolbar, PrintPreviewFrame, type PrintOrientation } from '@/components/print/PrintPreviewToolbar';
 import { getDaysInMonth } from 'date-fns';
 
 interface Kelas { id: string; nama_kelas: string; tingkat: number; }
@@ -38,6 +39,8 @@ const RaporKehadiran = () => {
   const [tahunBase, setTahunBase] = useState(String(new Date().getFullYear()));
   const [loading, setLoading] = useState(true);
   const [fetching, setFetching] = useState(false);
+  const [preview, setPreview] = useState(false);
+  const [orientation, setOrientation] = useState<PrintOrientation>('landscape');
 
   useEffect(() => {
     const init = async () => {
@@ -183,12 +186,18 @@ const RaporKehadiran = () => {
           title="Rapor Kehadiran Semester"
           description="Rekap H/S/I/A per bulan dalam satu semester — siap dilampirkan ke rapor"
           icon={<ClipboardList className="h-6 w-6" />}
-          actions={
-            <Button onClick={() => window.print()} disabled={rekap.length === 0}>
-              <Printer className="h-4 w-4 mr-2" />
-              Cetak / PDF
-            </Button>
-          }
+        />
+      </div>
+
+      <div className="print:hidden">
+        <PrintPreviewToolbar
+          preview={preview}
+          onTogglePreview={setPreview}
+          orientation={orientation}
+          onOrientationChange={setOrientation}
+          onPrint={() => window.print()}
+          disabled={rekap.length === 0}
+          hint="Untuk rekap dengan banyak bulan, gunakan landscape agar kolom muat dalam satu halaman."
         />
       </div>
 
@@ -254,9 +263,10 @@ const RaporKehadiran = () => {
           </CardContent>
         </Card>
       ) : (
-        <Card className="print:shadow-none print:border-0">
-          {/* Print header */}
-          <div className="hidden print:block px-6 pt-6 text-center">
+        <PrintPreviewFrame preview={preview} orientation={orientation}>
+        <Card className={`print:shadow-none print:border-0 ${preview ? 'shadow-none border-0' : ''}`}>
+          {/* Print header — also visible in preview mode */}
+          <div className={`${preview ? 'block' : 'hidden'} print:block px-6 pt-6 text-center`}>
             <h1 className="text-lg font-bold uppercase">{madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43'}</h1>
             {madrasah?.alamat && <p className="text-xs">{madrasah.alamat}</p>}
             {(madrasah?.nsm || madrasah?.npsn) && (
@@ -271,7 +281,7 @@ const RaporKehadiran = () => {
             <p className="text-sm">Kelas: <strong>{kelasName}</strong></p>
           </div>
 
-          <CardHeader className="pb-3 print:hidden">
+          <CardHeader className={`pb-3 print:hidden ${preview ? 'hidden' : ''}`}>
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -348,8 +358,8 @@ const RaporKehadiran = () => {
               </table>
             </div>
 
-            {/* Print signature */}
-            <div className="hidden print:grid grid-cols-2 gap-8 mt-8 px-6">
+            {/* Print signature — visible in preview too */}
+            <div className={`${preview ? 'grid' : 'hidden'} print:grid grid-cols-2 gap-8 mt-8 px-6`}>
               <div className="text-center text-xs">
                 <p>Mengetahui,</p>
                 <p>Kepala Madrasah</p>
@@ -366,11 +376,11 @@ const RaporKehadiran = () => {
             </div>
           </CardContent>
         </Card>
+        </PrintPreviewFrame>
       )}
 
       <style>{`
         @media print {
-          @page { size: A4 landscape; margin: 12mm; }
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
       `}</style>

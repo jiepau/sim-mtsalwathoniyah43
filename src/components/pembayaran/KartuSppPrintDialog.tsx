@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Printer, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/supabase-helpers';
+import { PrintPreviewToolbar, PrintPreviewFrame, type PrintOrientation } from '@/components/print/PrintPreviewToolbar';
 
 interface KartuSppDialogProps {
   open: boolean;
@@ -41,6 +41,8 @@ export function KartuSppPrintDialog({ open, onOpenChange, siswaId, siswaNama, si
   const [madrasah, setMadrasah] = useState<Madrasah | null>(null);
   const [taList, setTaList] = useState<TaOption[]>([]);
   const [selectedTaId, setSelectedTaId] = useState<string>('');
+  const [preview, setPreview] = useState(false);
+  const [orientation, setOrientation] = useState<PrintOrientation>('landscape');
 
   useEffect(() => {
     if (!open) return;
@@ -90,13 +92,13 @@ export function KartuSppPrintDialog({ open, onOpenChange, siswaId, siswaNama, si
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Cetak Kartu SPP — {siswaNama}</DialogTitle>
         </DialogHeader>
 
-        <div className="no-print flex items-end gap-3 mb-4">
-          <div className="space-y-2 flex-1">
+        <div className="no-print space-y-3 mb-4">
+          <div className="space-y-2">
             <Label>Tahun Ajaran</Label>
             <Select value={selectedTaId} onValueChange={setSelectedTaId}>
               <SelectTrigger><SelectValue placeholder="Pilih TA" /></SelectTrigger>
@@ -109,10 +111,15 @@ export function KartuSppPrintDialog({ open, onOpenChange, siswaId, siswaNama, si
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={handlePrint} disabled={loading || sppTagihan.length === 0}>
-            <Printer className="h-4 w-4 mr-2" />
-            Cetak
-          </Button>
+          <PrintPreviewToolbar
+            preview={preview}
+            onTogglePreview={setPreview}
+            orientation={orientation}
+            onOrientationChange={setOrientation}
+            onPrint={handlePrint}
+            disabled={loading || sppTagihan.length === 0}
+            hint="Kartu SPP biasanya pas di landscape. Aktifkan pratinjau untuk melihat hasil sebelum cetak."
+          />
         </div>
 
         {loading ? (
@@ -120,7 +127,8 @@ export function KartuSppPrintDialog({ open, onOpenChange, siswaId, siswaNama, si
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="kartu-spp-print bg-white text-black p-6 border rounded-lg">
+          <PrintPreviewFrame preview={preview} orientation={orientation}>
+          <div className={`kartu-spp-print ${preview ? '' : 'bg-white text-black p-6 border rounded-lg'}`}>
             {/* Header */}
             <div className="text-center border-b-2 border-black pb-2 mb-3">
               <h1 className="text-base font-bold uppercase">{madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43'}</h1>
@@ -231,15 +239,17 @@ export function KartuSppPrintDialog({ open, onOpenChange, siswaId, siswaNama, si
               </div>
             </div>
           </div>
+          </PrintPreviewFrame>
         )}
 
         <style>{`
           @media print {
             body * { visibility: hidden; }
             .kartu-spp-print, .kartu-spp-print * { visibility: visible; }
-            .kartu-spp-print { position: absolute; left: 0; top: 0; width: 100%; border: none !important; }
+            .kartu-spp-print { position: absolute; left: 0; top: 0; width: 100%; border: none !important; padding: 0 !important; }
             .no-print { display: none !important; }
-            @page { size: A4 landscape; margin: 1cm; }
+            .print-preview-backdrop { padding: 0 !important; background: white !important; }
+            .print-preview-page { box-shadow: none !important; padding: 0 !important; width: auto !important; min-height: 0 !important; }
           }
         `}</style>
       </DialogContent>
