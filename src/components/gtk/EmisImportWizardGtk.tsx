@@ -585,7 +585,8 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
                 <Alert className="border-green-600 bg-green-50 dark:bg-green-950/30">
                   <CheckCircle2 className="h-4 w-4 text-green-600" />
                   <AlertDescription className="text-green-800 dark:text-green-200">
-                    <strong>{result.created}</strong> GTK baru ditambahkan, <strong>{result.updated}</strong> diperbarui.
+                    <strong>{result.created}</strong> GTK baru ditambahkan, <strong>{result.updated}</strong> diperbarui
+                    {result.skipped > 0 && <>, <strong>{result.skipped}</strong> dilewati</>}.
                   </AlertDescription>
                 </Alert>
                 {result.failed > 0 && (
