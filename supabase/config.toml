@@ -12,5 +12,8 @@ verify_jwt = false
 [functions.send-absensi-reminder]
 verify_jwt = false
 
+[functions.send-tunggakan-reminder]
+verify_jwt = false
+
 [functions.generate-kktp]
 verify_jwt = false
