@@ -594,6 +594,10 @@ export default function GtkPtkPage() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52">
                 <DropdownMenuLabel>Import Data</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setEmisImportOpen(true)}>
+                  <Sparkles className="h-4 w-4 mr-2 text-primary" />
+                  Import dari EMIS
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
                   <Upload className="h-4 w-4 mr-2" />
                   Import CSV
