@@ -385,19 +385,8 @@ export function Sidebar() {
         {menuItems.map(item => renderMenuItem(item))}
       </nav>
 
-      {/* Footer with user info — transparan agar gradasi mengalir mulus */}
-      <div className="p-3 border-t border-primary/15 space-y-2 bg-white/30 backdrop-blur-sm">
-        {/* User Role Badge */}
-        {!collapsed && roleDisplayName && (
-          <div className="px-4 py-2 rounded-lg bg-primary/5 border border-primary/15">
-            <p className="text-[10px] uppercase tracking-wider text-primary/70 font-bold">Login sebagai</p>
-            <p className="text-sm font-semibold text-foreground truncate">
-              {user?.user_metadata?.full_name || user?.email || roleDisplayName}
-            </p>
-            <p className="text-[11px] text-primary font-medium">{roleDisplayName}</p>
-          </div>
-        )}
-        {/* Toggle intensitas gradasi */}
+      {/* Footer — hanya toggle intensitas gradasi (info user & logout sudah ada di TopBar) */}
+      <div className="p-3 border-t border-primary/15 bg-white/30 backdrop-blur-sm">
         <button
           onClick={cycleGradient}
           title={`Intensitas hijau: ${gradientLabel} (klik untuk ubah)`}
@@ -409,13 +398,6 @@ export function Sidebar() {
               Hijau: <span className="font-bold">{gradientLabel}</span>
             </span>
           )}
-        </button>
-        <button
-          onClick={signOut}
-          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
-        >
-          <LogOut className="h-5 w-5" />
-          {!collapsed && <span className="text-sm font-medium">Keluar</span>}
         </button>
       </div>
     </>
