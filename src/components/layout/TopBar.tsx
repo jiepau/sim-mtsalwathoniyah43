@@ -44,44 +44,44 @@ export function TopBar() {
 
   return (
     <header className="sticky top-0 z-30 h-14 bg-white border-b-2 border-primary/20 shadow-sm">
-      <div className="h-full px-4 lg:px-6 flex items-center justify-between gap-4">
+      <div className="h-full px-2 sm:px-4 lg:px-6 flex items-center justify-between gap-2 sm:gap-4 pl-12 lg:pl-6">
         {/* Left: TA aktif (hanya tampil di desktop) */}
-        <div className="hidden md:flex items-center gap-2 pl-12 lg:pl-0">
+        <div className="hidden md:flex items-center gap-2 min-w-0">
           {taActive && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary/5 border border-primary/20">
-              <span className="text-[10px] uppercase tracking-wider font-bold text-primary/70">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary/5 border border-primary/20 min-w-0">
+              <span className="text-[10px] uppercase tracking-wider font-bold text-primary/70 whitespace-nowrap">
                 Tahun Ajaran Aktif
               </span>
-              <span className="text-xs font-bold text-primary">{taActive}</span>
+              <span className="text-xs font-bold text-primary truncate">{taActive}</span>
             </div>
           )}
         </div>
 
         {/* Right: notification + user */}
-        <div className="ml-auto flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
+        <div className="ml-auto flex items-center gap-1 sm:gap-2 min-w-0">
+          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary hover:bg-primary/5 h-9 w-9 shrink-0">
             <Bell className="h-4 w-4" />
           </Button>
 
-          <div className="h-6 w-px bg-border" />
+          <div className="h-6 w-px bg-border hidden sm:block" />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-primary/5 transition-colors">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center font-bold text-sm shadow-sm">
+              <button className="flex items-center gap-2 px-1.5 sm:px-2 py-1.5 rounded-md hover:bg-primary/5 transition-colors min-w-0 max-w-[180px] sm:max-w-[240px]">
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
                   {initial}
                 </div>
-                <div className="hidden sm:flex flex-col items-start leading-tight">
+                <div className="hidden sm:flex flex-col items-start leading-tight min-w-0">
                   <span className="text-xs font-semibold text-foreground truncate max-w-[140px]">
                     {fullName}
                   </span>
                   {roleLabel && (
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">
                       {roleLabel}
                     </span>
                   )}
                 </div>
-                <ChevronDown className="h-3 w-3 text-muted-foreground hidden sm:block" />
+                <ChevronDown className="h-3 w-3 text-muted-foreground hidden sm:block shrink-0" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
