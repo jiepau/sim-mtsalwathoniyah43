@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Users, Plus, Search, Upload, Pencil, Trash2, Phone, X, Eye, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, IdCard, Camera } from 'lucide-react';
+import { Users, Plus, Search, Upload, Pencil, Trash2, Phone, X, Eye, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, IdCard, Camera, MoreHorizontal, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
@@ -35,6 +35,14 @@ import { EmisImportWizard } from '@/components/siswa/EmisImportWizard';
 import { ExportButton } from '@/components/export/ExportButton';
 import { SiswaDetailDialog } from '@/components/siswa/SiswaDetailDialog';
 import { KartuPelajarPrint } from '@/components/siswa/KartuPelajarPrint';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
@@ -654,37 +662,69 @@ export default function SiswaPage() {
         description={`Total ${siswa.length} siswa terdaftar`}
         icon={<Users className="h-6 w-6" />}
         actions={
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-              onClick={handleDeleteAll}
-              disabled={siswa.length === 0}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Hapus Semua
-            </Button>
-            <ExportButton 
-              data={filteredSiswa} 
-              columns={exportColumns} 
-              filename="data_siswa"
-            />
-            <Button variant="outline" onClick={handlePrintBatch}>
-              <IdCard className="h-4 w-4 mr-2" />
-              Cetak Kartu
-            </Button>
-            <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
-              <Upload className="h-4 w-4 mr-2" />
-              Import CSV
-            </Button>
-            <Button onClick={() => setEmisImportOpen(true)} className="bg-gradient-to-r from-primary to-primary/80">
-              <Upload className="h-4 w-4 mr-2" />
-              Import EMIS
-            </Button>
-            <Button onClick={() => handleOpenDialog()}>
-              <Plus className="h-4 w-4 mr-2" />
+          <div className="flex gap-2 items-center">
+            {/* Hidden ExportButton — di-trigger dari dropdown */}
+            <div className="hidden">
+              <ExportButton 
+                data={filteredSiswa} 
+                columns={exportColumns} 
+                filename="data_siswa"
+              />
+            </div>
+
+            {/* Aksi utama */}
+            <Button onClick={() => handleOpenDialog()} size="sm" className="h-9">
+              <Plus className="h-4 w-4 mr-1.5" />
               Tambah Siswa
             </Button>
+
+            {/* Aksi sekunder dikelompokkan */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-9">
+                  <MoreHorizontal className="h-4 w-4 mr-1.5" />
+                  Aksi Lainnya
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuLabel>Import Data</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setEmisImportOpen(true)}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import EMIS
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import CSV
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Ekspor & Cetak</DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={() => {
+                    const btn = document.querySelector<HTMLButtonElement>(
+                      '[data-export-trigger="data_siswa"]'
+                    );
+                    btn?.click();
+                  }}
+                  disabled={filteredSiswa.length === 0}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download Excel
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handlePrintBatch} disabled={siswa.length === 0}>
+                  <IdCard className="h-4 w-4 mr-2" />
+                  Cetak Kartu
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleDeleteAll}
+                  disabled={siswa.length === 0}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Hapus Semua
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         }
       />

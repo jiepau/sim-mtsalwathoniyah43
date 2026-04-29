@@ -43,7 +43,12 @@ export function ExportButton<T>({ data, columns, filename, disabled }: ExportBut
   };
 
   return (
-    <Button variant="outline" onClick={handleExport} disabled={disabled || data.length === 0}>
+    <Button
+      variant="outline"
+      onClick={handleExport}
+      disabled={disabled || data.length === 0}
+      data-export-trigger={filename}
+    >
       <Download className="h-4 w-4 mr-2" />
       Download Excel
     </Button>
