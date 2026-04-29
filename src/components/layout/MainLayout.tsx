@@ -5,16 +5,14 @@ import { TopBar } from './TopBar';
 
 export function MainLayout() {
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background">
+      <TopBar />
       <Sidebar />
-      <main className="lg:pl-64 flex-1 flex flex-col min-w-0">
-        <TopBar />
+      <main className="lg:pl-64 flex flex-col min-h-[calc(100vh-3.5rem)]">
         <div className="p-3 sm:p-4 lg:p-8 flex-1 min-w-0 w-full max-w-full overflow-x-hidden">
           <Outlet />
         </div>
-        <div className="lg:pl-0">
-          <Footer />
-        </div>
+        <Footer />
       </main>
     </div>
   );
