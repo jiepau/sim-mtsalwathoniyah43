@@ -152,6 +152,7 @@ export default function PembayaranPage() {
       const payload = {
         siswa_id: formData.siswa_id,
         jenis_tagihan_id: formData.jenis_tagihan_id,
+        ta_id: activeTaId,
         bulan: parseInt(formData.bulan) || null,
         tahun: parseInt(formData.tahun) || null,
         nominal: tagihan.nominal,
