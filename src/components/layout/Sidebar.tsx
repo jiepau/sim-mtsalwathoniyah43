@@ -138,10 +138,23 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [pendingApprovalCount, setPendingApprovalCount] = useState(0);
+  const [taActive, setTaActive] = useState<{ nama_ta: string; semester: string } | null>(null);
   const [gradientIntensity, setGradientIntensity] = useState<'kuat' | 'sedang' | 'netral'>(() => {
     if (typeof window === 'undefined') return 'kuat';
     return (localStorage.getItem('sidebar-gradient') as 'kuat' | 'sedang' | 'netral') || 'kuat';
   });
+
+  // Fetch TA aktif
+  useEffect(() => {
+    supabase
+      .from('tahun_ajaran')
+      .select('nama_ta, semester')
+      .eq('is_active', true)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setTaActive({ nama_ta: data.nama_ta, semester: data.semester });
+      });
+  }, []);
 
   const cycleGradient = () => {
     const order: Array<'kuat' | 'sedang' | 'netral'> = ['kuat', 'sedang', 'netral'];
