@@ -23,12 +23,19 @@ const roleLabels: Record<AppRole, string> = {
 };
 
 export function TopBar() {
-  const { user, signOut } = useAuth();
+  const { user, session, signOut } = useAuth();
   const [role, setRole] = useState<AppRole | null>(null);
   const [taActive, setTaActive] = useState<string>('');
+  const [isOnline, setIsOnline] = useState<boolean>(
+    typeof navigator !== 'undefined' ? navigator.onLine : true
+  );
 
+  // Reactive: reset role saat user berubah/logout supaya indikator instan sinkron
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setRole(null);
+      return;
+    }
     (async () => {
       const [{ data: roles }, { data: ta }] = await Promise.all([
         supabase.from('user_roles').select('role').eq('user_id', user.id).limit(1).maybeSingle(),
@@ -38,6 +45,22 @@ export function TopBar() {
       if (ta) setTaActive(`${ta.nama_ta}${ta.semester ? ' · ' + ta.semester : ''}`);
     })();
   }, [user]);
+
+  // Listener network status — auto-update tanpa reload
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // Status: butuh user (sesi aktif) DAN koneksi internet
+  const sessionActive = !!user && !!session && isOnline;
+  const statusLabel = !isOnline ? 'No Internet' : user ? 'Online' : 'Offline';
 
   const fullName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Pengguna';
   const initial = fullName.charAt(0).toUpperCase();
@@ -65,21 +88,34 @@ export function TopBar() {
 
         {/* Right: status + notification + user */}
         <div className="ml-auto flex items-center gap-1 sm:gap-2 min-w-0 pr-2 sm:pr-4 lg:pr-6">
-          {/* Indikator status sesi */}
+          {/* Indikator status sesi — auto-update via onAuthStateChange + network listener */}
           <div
-            className={`hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${
-              user
+            className={`hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider border transition-colors ${
+              sessionActive
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                : !isOnline
+                ? 'bg-red-50 text-red-700 border-red-200'
                 : 'bg-slate-100 text-slate-500 border-slate-200'
             }`}
-            title={user ? 'Sesi aktif' : 'Belum login'}
+            title={
+              !isOnline
+                ? 'Koneksi internet terputus'
+                : user
+                ? `Sesi aktif: ${user.email}`
+                : 'Belum login'
+            }
+            aria-live="polite"
           >
             <span
               className={`h-2 w-2 rounded-full ${
-                user ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'
+                sessionActive
+                  ? 'bg-emerald-500 animate-pulse'
+                  : !isOnline
+                  ? 'bg-red-500 animate-pulse'
+                  : 'bg-slate-400'
               }`}
             />
-            {user ? 'Online' : 'Offline'}
+            {statusLabel}
           </div>
 
           {user ? (
