@@ -566,31 +566,70 @@ export function EmisImportWizard({ open, onOpenChange, kelasList, taList, onSucc
         )}
 
         {/* STEP 3: Select TA */}
-        {step === 3 && (
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Pilih Tahun Ajaran tempat data siswa ini akan dicatat (riwayat kelas).
-            </p>
-            <Select value={selectedTaId} onValueChange={setSelectedTaId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih Tahun Ajaran" />
-              </SelectTrigger>
-              <SelectContent>
-                {taList.map(t => (
-                  <SelectItem key={t.id} value={t.id}>
-                    {t.nama_ta} {t.semester ? `- ${t.semester}` : ''} {t.is_active ? '(Aktif)' : ''}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="text-xs">
-                Setiap siswa otomatis mendapat entri di <strong>riwayat kelas</strong> untuk TA ini. Jika siswa sudah ada (NISN sama), datanya akan diperbarui.
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
+        {step === 3 && (() => {
+          const activeTa = taList.find(t => t.is_active);
+          const selectedTa = taList.find(t => t.id === selectedTaId);
+          const isNonActive = selectedTa && !selectedTa.is_active;
+          return (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Pilih Tahun Ajaran tempat data siswa ini akan dicatat (riwayat kelas).
+                <br />
+                <span className="text-xs">💡 Disarankan menggunakan <b>TA Aktif</b> agar tagihan & absensi langsung berjalan.</span>
+              </p>
+
+              <Select value={selectedTaId} onValueChange={setSelectedTaId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih Tahun Ajaran" />
+                </SelectTrigger>
+                <SelectContent>
+                  {taList.map(t => (
+                    <SelectItem key={t.id} value={t.id}>
+                      <span className="flex items-center gap-2">
+                        {t.nama_ta} {t.semester ? `- ${t.semester}` : ''}
+                        {t.is_active && (
+                          <Badge variant="outline" className="bg-primary/15 text-primary border-primary/40 text-[10px] px-1.5 py-0">
+                            ✓ Aktif · Disarankan
+                          </Badge>
+                        )}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {activeTa && selectedTaId !== activeTa.id && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full border-primary/30 text-primary hover:bg-primary/10"
+                  onClick={() => setSelectedTaId(activeTa.id)}
+                >
+                  ✨ Gunakan TA Aktif: {activeTa.nama_ta} {activeTa.semester ? `- ${activeTa.semester}` : ''}
+                </Button>
+              )}
+
+              {isNonActive && (
+                <Alert variant="destructive" className="border-warning/40 bg-warning/10 text-warning-foreground">
+                  <AlertCircle className="h-4 w-4 text-warning" />
+                  <AlertDescription className="text-xs">
+                    <b className="text-warning">⚠️ Peringatan:</b> Anda memilih TA <b>non-aktif</b> ({selectedTa?.nama_ta}).
+                    Siswa akan tercatat di riwayat TA tersebut, tapi <b>tidak akan muncul di daftar aktif</b> sampai TA itu diaktifkan.
+                    Cocok hanya untuk import data historis (mis. siswa lama yang terlewat).
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-xs">
+                  Setiap siswa otomatis mendapat entri di <strong>riwayat kelas</strong> untuk TA ini. Jika siswa sudah ada (NISN sama), datanya akan diperbarui.
+                </AlertDescription>
+              </Alert>
+            </div>
+          );
+        })()}
 
         {/* STEP 4: Preview & Import */}
         {step === 4 && (
