@@ -1,9 +1,10 @@
 import { useEffect, useState, useMemo } from 'react';
-import { AlertTriangle, Search, Phone, History as HistoryIcon } from 'lucide-react';
+import { AlertTriangle, Search, Phone, History as HistoryIcon, Send, Loader2, Printer } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -12,7 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { KartuSppPrintDialog } from '@/components/pembayaran/KartuSppPrintDialog';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/supabase-helpers';
 
 interface TunggakanItem {
