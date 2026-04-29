@@ -235,7 +235,8 @@ export default function LaporanKeuangan() {
       )}
 
       {/* PRINT AREA */}
-      <div className="print-area bg-white text-black p-6 rounded-lg border">
+      <PrintPreviewFrame preview={preview} orientation={orientation}>
+      <div className={`print-area ${preview ? '' : 'bg-white text-black p-6 rounded-lg border'}`}>
         {/* Header Madrasah */}
         <div className="text-center border-b-2 border-black pb-3 mb-4">
           <h1 className="text-lg font-bold uppercase">{madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43'}</h1>
@@ -362,13 +363,13 @@ export default function LaporanKeuangan() {
           </div>
         </div>
       </div>
+      </PrintPreviewFrame>
 
       <style>{`
         @media print {
           body { background: white !important; }
           .no-print, .sidebar-aside, header, nav, footer { display: none !important; }
           .print-area { border: none !important; padding: 0 !important; }
-          @page { size: A4; margin: 1.5cm; }
         }
       `}</style>
     </div>
