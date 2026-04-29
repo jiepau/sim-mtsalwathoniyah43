@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CreditCard, Search, Check, Clock, History, Pencil } from 'lucide-react';
+import { CreditCard, Search, Check, Clock, History, Pencil, AlertCircle } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { PaymentHistoryDialog } from '@/components/pembayaran/PaymentHistoryDialog';
 import { PaymentFormDialog } from '@/components/pembayaran/PaymentFormDialog';
+import { InputTunggakanLamaDialog } from '@/components/pembayaran/InputTunggakanLamaDialog';
 import {
   Dialog,
   DialogContent,
@@ -65,6 +66,8 @@ export default function PembayaranPage() {
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [tunggakanLamaOpen, setTunggakanLamaOpen] = useState(false);
+  const [activeTaId, setActiveTaId] = useState<string | null>(null);
   const [selectedPembayaran, setSelectedPembayaran] = useState<Pembayaran | null>(null);
   const [selectedSiswa, setSelectedSiswa] = useState<{ id: string; nama: string; nis: string } | null>(null);
   const [editFormData, setEditFormData] = useState({
@@ -90,18 +93,20 @@ export default function PembayaranPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [pembayaranRes, siswaRes, tagihanRes] = await Promise.all([
+      const [pembayaranRes, siswaRes, tagihanRes, taRes] = await Promise.all([
         supabase
           .from('pembayaran')
           .select(`*, siswa(nama, nis), jenis_tagihan(nama_tagihan)`)
           .order('created_at', { ascending: false }),
         supabase.from('siswa').select('id, nama, nis').order('nama'),
         supabase.from('jenis_tagihan').select('*').eq('is_active', true),
+        supabase.from('tahun_ajaran').select('id').eq('is_active', true).maybeSingle(),
       ]);
 
       if (pembayaranRes.data) setPembayaran(pembayaranRes.data);
       if (siswaRes.data) setSiswa(siswaRes.data);
       if (tagihanRes.data) setJenisTagihan(tagihanRes.data);
+      if (taRes.data) setActiveTaId(taRes.data.id);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Gagal memuat data');
@@ -147,6 +152,7 @@ export default function PembayaranPage() {
       const payload = {
         siswa_id: formData.siswa_id,
         jenis_tagihan_id: formData.jenis_tagihan_id,
+        ta_id: activeTaId,
         bulan: parseInt(formData.bulan) || null,
         tahun: parseInt(formData.tahun) || null,
         nominal: tagihan.nominal,
@@ -376,10 +382,16 @@ export default function PembayaranPage() {
         description="Kelola pembayaran tagihan siswa"
         icon={<CreditCard className="h-6 w-6" />}
         actions={
-          <Button onClick={handleOpenDialog}>
-            <CreditCard className="h-4 w-4 mr-2" />
-            Proses Pembayaran
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setTunggakanLamaOpen(true)}>
+              <AlertCircle className="h-4 w-4 mr-2" />
+              Input Tunggakan Lama
+            </Button>
+            <Button onClick={handleOpenDialog}>
+              <CreditCard className="h-4 w-4 mr-2" />
+              Proses Pembayaran
+            </Button>
+          </div>
         }
       />
 
@@ -573,6 +585,14 @@ export default function PembayaranPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <InputTunggakanLamaDialog
+        open={tunggakanLamaOpen}
+        onOpenChange={setTunggakanLamaOpen}
+        siswa={siswa}
+        jenisTagihan={jenisTagihan}
+        onSaved={fetchData}
+      />
     </div>
   );
 }
