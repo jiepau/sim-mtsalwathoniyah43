@@ -139,7 +139,8 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
 
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState<{ created: number; updated: number; failed: number; errors: string[] } | null>(null);
+  const [importMode, setImportMode] = useState<'upsert' | 'insert_only' | 'update_only'>('upsert');
+  const [result, setResult] = useState<{ created: number; updated: number; skipped: number; failed: number; errors: string[] } | null>(null);
 
   const stats = useMemo(() => {
     const pns = rows.filter(r => r.status_kepegawaian === 'PNS' || r.status_kepegawaian === 'PPPK').length;
@@ -266,23 +267,24 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
     setProgress(5);
     setResult(null);
     const errors: string[] = [];
-    let created = 0, updated = 0, failed = 0;
+    let created = 0, updated = 0, skipped = 0, failed = 0;
 
     try {
-      // Pre-fetch existing GTK by NUPTK or NIK or nama
+      // Pre-fetch existing GTK by NUPTK / NIP / NIK
       const nuptkList = rows.map(r => r.nuptk).filter(Boolean);
+      const nipList = rows.map(r => r.nip).filter(Boolean);
       const nikList = rows.map(r => r.nik).filter(Boolean);
 
-      const { data: existingByNuptk } = nuptkList.length
-        ? await supabase.from('gtk_ptk').select('id, nuptk, nik, nama').in('nuptk', nuptkList)
-        : { data: [] };
-      const { data: existingByNik } = nikList.length
-        ? await supabase.from('gtk_ptk').select('id, nuptk, nik, nama').in('nik', nikList)
-        : { data: [] };
+      const [byNuptk, byNip, byNik] = await Promise.all([
+        nuptkList.length ? supabase.from('gtk_ptk').select('id, nuptk, nip, nik, nama').in('nuptk', nuptkList) : Promise.resolve({ data: [] as any[] }),
+        nipList.length ? supabase.from('gtk_ptk').select('id, nuptk, nip, nik, nama').in('nip', nipList) : Promise.resolve({ data: [] as any[] }),
+        nikList.length ? supabase.from('gtk_ptk').select('id, nuptk, nip, nik, nama').in('nik', nikList) : Promise.resolve({ data: [] as any[] }),
+      ]);
 
       const existingMap = new Map<string, any>();
-      [...(existingByNuptk || []), ...(existingByNik || [])].forEach(g => {
+      [...(byNuptk.data || []), ...(byNip.data || []), ...(byNik.data || [])].forEach((g: any) => {
         if (g.nuptk) existingMap.set(`nuptk:${g.nuptk}`, g);
+        if (g.nip) existingMap.set(`nip:${g.nip}`, g);
         if (g.nik) existingMap.set(`nik:${g.nik}`, g);
       });
 
@@ -316,16 +318,25 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
         try {
           let existing = null;
           if (r.nuptk) existing = existingMap.get(`nuptk:${r.nuptk}`);
+          if (!existing && r.nip) existing = existingMap.get(`nip:${r.nip}`);
           if (!existing && r.nik) existing = existingMap.get(`nik:${r.nik}`);
 
           if (existing) {
-            const { error } = await supabase.from('gtk_ptk').update(payload).eq('id', existing.id);
-            if (error) throw error;
-            updated++;
+            if (importMode === 'insert_only') {
+              skipped++;
+            } else {
+              const { error } = await supabase.from('gtk_ptk').update(payload).eq('id', existing.id);
+              if (error) throw error;
+              updated++;
+            }
           } else {
-            const { error } = await supabase.from('gtk_ptk').insert(payload);
-            if (error) throw error;
-            created++;
+            if (importMode === 'update_only') {
+              skipped++;
+            } else {
+              const { error } = await supabase.from('gtk_ptk').insert(payload);
+              if (error) throw error;
+              created++;
+            }
           }
         } catch (err: any) {
           failed++;
@@ -336,10 +347,12 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
       }
 
       setProgress(100);
-      setResult({ created, updated, failed, errors });
+      setResult({ created, updated, skipped, failed, errors });
       if (created + updated > 0) {
-        toast.success(`Import selesai: ${created} baru, ${updated} diperbarui`);
+        toast.success(`Import selesai: ${created} baru, ${updated} diperbarui${skipped ? `, ${skipped} dilewati` : ''}`);
         onSuccess();
+      } else if (skipped > 0) {
+        toast.info(`${skipped} baris dilewati sesuai mode import`);
       }
     } catch (err: any) {
       toast.error('Import gagal: ' + err.message);
@@ -504,10 +517,39 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
               )}
             </div>
 
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Mode Import</p>
+              <div className="grid gap-2">
+                {[
+                  { v: 'upsert', t: 'Tambah baru & perbarui yang sudah ada', d: 'Default. GTK baru ditambahkan, yang cocok NUPTK/NIP/NIK akan diperbarui.' },
+                  { v: 'insert_only', t: 'Hanya tambah data baru', d: 'GTK yang NUPTK/NIP/NIK-nya sudah ada akan dilewati (tidak duplikat, tidak ditimpa).' },
+                  { v: 'update_only', t: 'Hanya perbarui yang sudah ada', d: 'Tidak menambah GTK baru. Hanya update data yang cocok NUPTK/NIP/NIK.' },
+                ].map((opt) => (
+                  <label
+                    key={opt.v}
+                    className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${importMode === opt.v ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}
+                  >
+                    <input
+                      type="radio"
+                      name="importMode"
+                      value={opt.v}
+                      checked={importMode === opt.v}
+                      onChange={() => setImportMode(opt.v as any)}
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
+                      <div className="text-sm font-medium">{opt.t}</div>
+                      <div className="text-xs text-muted-foreground">{opt.d}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription className="text-xs">
-                GTK yang sudah ada (NUPTK atau NIK sama) akan <b>diperbarui</b>, yang baru akan <b>ditambahkan</b>.
+                Pencocokan data existing menggunakan <b>NUPTK/PegID</b>, <b>NIP</b>, atau <b>NIK</b> (prioritas berurutan).
               </AlertDescription>
             </Alert>
           </div>
@@ -520,7 +562,13 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
               <Alert>
                 <UserCog className="h-4 w-4" />
                 <AlertDescription>
-                  Siap mengimport <b>{rows.length} GTK</b>. Klik tombol <b>Import Sekarang</b> untuk memulai.
+                  Siap mengimport <b>{rows.length} GTK</b> dengan mode{' '}
+                  <b>
+                    {importMode === 'upsert' && 'Tambah baru & perbarui'}
+                    {importMode === 'insert_only' && 'Hanya tambah baru'}
+                    {importMode === 'update_only' && 'Hanya perbarui'}
+                  </b>
+                  . Klik <b>Import Sekarang</b> untuk memulai.
                 </AlertDescription>
               </Alert>
             )}
@@ -537,7 +585,8 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
                 <Alert className="border-green-600 bg-green-50 dark:bg-green-950/30">
                   <CheckCircle2 className="h-4 w-4 text-green-600" />
                   <AlertDescription className="text-green-800 dark:text-green-200">
-                    <strong>{result.created}</strong> GTK baru ditambahkan, <strong>{result.updated}</strong> diperbarui.
+                    <strong>{result.created}</strong> GTK baru ditambahkan, <strong>{result.updated}</strong> diperbarui
+                    {result.skipped > 0 && <>, <strong>{result.skipped}</strong> dilewati</>}.
                   </AlertDescription>
                 </Alert>
                 {result.failed > 0 && (
