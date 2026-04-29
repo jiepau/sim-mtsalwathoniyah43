@@ -44,19 +44,11 @@ export function TopBar() {
 
   return (
     <header className="sticky top-0 z-40 h-14 bg-white border-b-2 border-primary/20 shadow-sm">
-      <div className="h-full pl-12 lg:pl-0 pr-2 sm:pr-4 lg:pr-6 flex items-center gap-2 sm:gap-4">
-        {/* Brand area — menyatu dengan kolom sidebar (lebar 256px = w-64) */}
-        <div className="hidden lg:flex items-center gap-2 h-full px-3 w-64 border-r-2 border-primary/20 bg-gradient-to-r from-emerald-100/60 to-white shrink-0">
-          <img
-            src="/logo-kemenag.png"
-            alt="Logo Kemenag"
-            className="h-8 w-8 object-contain shrink-0"
-          />
-          <img
-            src="/logo-alwathoniyah.png"
-            alt="Logo Madrasah"
-            className="h-8 w-8 object-contain shrink-0"
-          />
+      <div className="h-full flex items-center gap-2 sm:gap-4">
+        {/* Brand area — sejajar dengan kolom sidebar (lebar 256px), nempel ke kiri */}
+        <div className="hidden lg:flex items-center gap-2 h-full pl-4 pr-3 w-64 border-r-2 border-primary/20 bg-gradient-to-r from-emerald-200/70 to-emerald-50/40 shrink-0">
+          <img src="/logo-kemenag.png" alt="Logo Kemenag" className="h-8 w-8 object-contain shrink-0" />
+          <img src="/logo-alwathoniyah.png" alt="Logo Madrasah" className="h-8 w-8 object-contain shrink-0" />
           <div className="min-w-0 leading-tight">
             <p className="text-[8px] uppercase tracking-wider text-primary font-bold truncate">
               Kementerian Agama RI
@@ -67,8 +59,8 @@ export function TopBar() {
           </div>
         </div>
 
-        {/* Left: TA aktif (hanya tampil di desktop) */}
-        <div className="hidden md:flex items-center gap-2 min-w-0 pl-2">
+        {/* TA aktif */}
+        <div className="hidden md:flex items-center gap-2 min-w-0 pl-12 lg:pl-2">
           {taActive && (
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary/5 border border-primary/20 min-w-0">
               <span className="text-[10px] uppercase tracking-wider font-bold text-primary/70 whitespace-nowrap">
@@ -79,8 +71,11 @@ export function TopBar() {
           )}
         </div>
 
+        {/* Spacer untuk mobile (tempat tombol toggle sidebar) */}
+        <div className="md:hidden pl-12" />
+
         {/* Right: notification + user */}
-        <div className="ml-auto flex items-center gap-1 sm:gap-2 min-w-0">
+        <div className="ml-auto flex items-center gap-1 sm:gap-2 min-w-0 pr-2 sm:pr-4 lg:pr-6">
           <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary hover:bg-primary/5 h-9 w-9 shrink-0">
             <Bell className="h-4 w-4" />
           </Button>
