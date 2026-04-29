@@ -314,9 +314,9 @@ export function Sidebar() {
 
   const sidebarContent = (
     <>
-      {/* Header — Nuansa Kemenag (background putih dengan accent hijau) */}
+      {/* Header — Nuansa Kemenag (transparan agar menyatu dengan gradasi sidebar) */}
       <div className={cn(
-        "border-b-4 border-primary bg-white shadow-sm",
+        "border-b-2 border-primary/30 bg-white/40 backdrop-blur-sm",
         collapsed ? "p-2" : "p-4"
       )}>
         {collapsed ? (
@@ -373,8 +373,8 @@ export function Sidebar() {
         {menuItems.map(item => renderMenuItem(item))}
       </nav>
 
-      {/* Footer with user info */}
-      <div className="p-3 border-t border-slate-200 space-y-2 bg-slate-50/50">
+      {/* Footer with user info — transparan agar gradasi mengalir mulus */}
+      <div className="p-3 border-t border-primary/15 space-y-2 bg-white/30 backdrop-blur-sm">
         {/* User Role Badge */}
         {!collapsed && roleDisplayName && (
           <div className="px-4 py-2 rounded-lg bg-primary/5 border border-primary/15">
@@ -419,8 +419,8 @@ export function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 z-40 h-screen flex flex-col transition-all duration-300 shadow-md',
-          'bg-gradient-to-b from-emerald-50 via-white to-emerald-50/40',
+          'sidebar-aside fixed top-0 left-0 z-40 h-screen flex flex-col shadow-md',
+          'bg-gradient-to-b from-emerald-100/80 via-white to-emerald-50/60',
           'border-r-2 border-primary/20',
           collapsed ? 'w-20' : 'w-64',
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
