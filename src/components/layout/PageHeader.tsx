@@ -34,7 +34,7 @@ export function PageHeader({ title, description, icon, actions, breadcrumbs }: P
   })();
 
   return (
-    <div className="mb-6 space-y-3">
+    <div className="mb-4 space-y-2">
       {/* Breadcrumb — gaya EMIS */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Link
@@ -58,25 +58,25 @@ export function PageHeader({ title, description, icon, actions, breadcrumbs }: P
         ))}
       </nav>
 
-      {/* Header utama — formal, ada accent bar kiri */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b-2 border-primary/20">
-        <div className="flex items-center gap-3">
+      {/* Header utama — compact, single-line title */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b-2 border-primary/20">
+        <div className="flex items-center gap-3 min-w-0">
           {icon && (
-            <div className="h-12 w-12 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-sm">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-sm shrink-0">
               {icon}
             </div>
           )}
-          {!icon && <div className="w-1 h-12 rounded-full bg-primary" />}
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight uppercase">
+          {!icon && <div className="w-1 h-10 rounded-full bg-primary shrink-0" />}
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold text-foreground tracking-tight uppercase whitespace-nowrap truncate">
               {title}
             </h1>
             {description && (
-              <p className="text-muted-foreground text-sm mt-0.5">{description}</p>
+              <p className="text-muted-foreground text-xs mt-0.5 truncate">{description}</p>
             )}
           </div>
         </div>
-        {actions && <div className="flex items-center gap-2 flex-wrap">{actions}</div>}
+        {actions && <div className="flex items-center gap-2 flex-wrap shrink-0">{actions}</div>}
       </div>
     </div>
   );
