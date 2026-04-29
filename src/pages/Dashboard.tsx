@@ -169,11 +169,14 @@ export default function Dashboard() {
       
       // Fetch GTK/PTK - visible to admin, operator, and bendahara
       const gtkRes = (isAdmin || isOperator || isBendahara)
-        ? await supabase.from('gtk_ptk').select('id, jenis_kelamin', { count: 'exact' })
+        ? await supabase.from('gtk_ptk').select('id, jenis_kelamin, status_kepegawaian, sertifikasi', { count: 'exact' })
         : { data: [], count: 0 };
       const gtkData = gtkRes.data || [];
       const gtkLaki = gtkData.filter((g: any) => g.jenis_kelamin === 'L' || g.jenis_kelamin === 'Laki-laki').length;
       const gtkPerempuan = gtkData.filter((g: any) => g.jenis_kelamin === 'P' || g.jenis_kelamin === 'Perempuan').length;
+      const gtkPns = gtkData.filter((g: any) => g.status_kepegawaian === 'PNS' || g.status_kepegawaian === 'PPPK').length;
+      const gtkHonor = gtkData.filter((g: any) => ['Honorer', 'GTT', 'GTY'].includes(g.status_kepegawaian)).length;
+      const gtkSertifikasi = gtkData.filter((g: any) => g.sertifikasi === true).length;
       
       // Fetch pembayaran & pengeluaran - only visible to admin and bendahara
       const pembayaranRes = (isAdmin || isBendahara)
@@ -224,6 +227,9 @@ export default function Dashboard() {
         totalGtk: gtkRes.count || 0,
         gtkLaki,
         gtkPerempuan,
+        gtkPns,
+        gtkHonor,
+        gtkSertifikasi,
         totalTunggakan: tunggakan,
         totalPemasukan: pemasukan,
         totalPengeluaran: pengeluaran,
