@@ -353,8 +353,35 @@ export function Sidebar() {
     <>
       {/* Header dipindahkan ke TopBar agar menyatu */}
 
+      {/* TA Aktif — di atas menu, ala EMIS */}
+      {taActive && !collapsed && (
+        <div className="px-3 pt-3 pb-2 space-y-1.5">
+          <div className="px-4 py-2 rounded-md bg-white/70 border border-primary/25 shadow-sm">
+            <p className="text-[13px] text-foreground">
+              <span className="font-semibold">Tahun:</span> <span className="font-bold text-primary">{taActive.nama_ta}</span>
+            </p>
+          </div>
+          <div className="px-4 py-2 rounded-md bg-white/70 border border-primary/25 shadow-sm">
+            <p className="text-[13px] text-foreground">
+              <span className="font-semibold">Semester:</span> <span className="font-bold text-primary">{taActive.semester}</span>
+            </p>
+          </div>
+        </div>
+      )}
+      {taActive && collapsed && (
+        <div className="px-2 pt-3 pb-2">
+          <div
+            title={`Tahun ${taActive.nama_ta} · Semester ${taActive.semester}`}
+            className="px-2 py-1.5 rounded-md bg-white/70 border border-primary/25 text-center"
+          >
+            <p className="text-[10px] font-bold text-primary leading-tight">{taActive.nama_ta.split('/')[0]}</p>
+            <p className="text-[9px] text-foreground/70 leading-tight">Sem {taActive.semester?.charAt(0)}</p>
+          </div>
+        </div>
+      )}
+
       {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto scrollbar-thin">
+      <nav className="flex-1 px-3 pb-3 space-y-1 overflow-y-auto scrollbar-thin">
         {menuItems.map(item => renderMenuItem(item))}
       </nav>
 
