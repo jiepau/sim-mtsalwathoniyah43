@@ -54,6 +54,8 @@ const AbsensiGtk = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [existingIds, setExistingIds] = useState<Record<string, string>>({});
+  const [bulananOpen, setBulananOpen] = useState(false);
+  const [perPtkOpen, setPerPtkOpen] = useState(false);
 
   // Fetch GTK list - Guru only sees themselves
   useEffect(() => {
