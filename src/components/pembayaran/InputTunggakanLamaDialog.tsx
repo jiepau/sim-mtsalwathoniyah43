@@ -198,6 +198,19 @@ export function InputTunggakanLamaDialog({
           </AlertDescription>
         </Alert>
 
+        <div className="rounded-md border border-primary/20 bg-primary/5 p-3">
+          <p className="text-xs font-semibold text-primary mb-2">📋 Panduan Pengisian (urut dari atas ke bawah):</p>
+          <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
+            <li><b>Siswa</b> — pilih siswa yang punya hutang</li>
+            <li><b>Tahun Ajaran Asal Hutang</b> — TA dimana tunggakan ini muncul (mis. 2024/2025)</li>
+            <li><b>Jenis Tagihan</b> — kategori tagihan (SPP, Seragam, dll)</li>
+            <li><b>Bulan & Tahun</b> — periode tagihan (opsional, untuk SPP bulanan)</li>
+            <li><b>Nominal Tagihan</b> — total tagihan asli</li>
+            <li><b>Sudah Dibayar</b> — bila sebagian sudah dicicil (kosongkan = 0)</li>
+            <li>Sistem hitung otomatis <b>Sisa</b> & set status <b>Cicil/Belum Lunas</b></li>
+          </ol>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label>Siswa *</Label>
