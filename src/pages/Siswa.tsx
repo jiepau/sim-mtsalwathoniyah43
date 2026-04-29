@@ -35,6 +35,14 @@ import { EmisImportWizard } from '@/components/siswa/EmisImportWizard';
 import { ExportButton } from '@/components/export/ExportButton';
 import { SiswaDetailDialog } from '@/components/siswa/SiswaDetailDialog';
 import { KartuPelajarPrint } from '@/components/siswa/KartuPelajarPrint';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
