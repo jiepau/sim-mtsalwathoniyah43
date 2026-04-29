@@ -627,6 +627,30 @@ export function EmisImportWizard({ open, onOpenChange, kelasList, taList, onSucc
                   Setiap siswa otomatis mendapat entri di <strong>riwayat kelas</strong> untuk TA ini. Jika siswa sudah ada (NISN sama), datanya akan diperbarui.
                 </AlertDescription>
               </Alert>
+
+              {/* Info Box: Penjelasan Skenario "Siswa sudah naik kelas" */}
+              <Alert className="border-primary/30 bg-primary/5">
+                <AlertCircle className="h-4 w-4 text-primary" />
+                <AlertDescription className="text-xs space-y-2">
+                  <p className="font-semibold text-primary">💡 Bingung pilih TA yang mana?</p>
+                  <p>
+                    <b>Contoh kasus:</b> Anda mau import siswa yang <b>sekarang sudah kelas 9</b>, padahal mereka masuk MTs sejak kelas 7 (TA 2023/2024).
+                  </p>
+                  <div className="pl-3 border-l-2 border-primary/40 space-y-1.5">
+                    <p>
+                      <b className="text-primary">✅ Cara Cepat (disarankan):</b><br />
+                      Pilih <b>TA Aktif sekarang</b> → di Step 2, arahkan langsung ke <b>kelas 9</b>. Selesai, langsung bisa ditagih SPP & diabsen.
+                    </p>
+                    <p>
+                      <b className="text-muted-foreground">📚 Cara Riwayat Lengkap:</b><br />
+                      Import ke TA 2023/2024 sebagai kelas 7 → lalu pakai menu <b>Naik Kelas</b> 2x (ke kelas 8, lalu kelas 9). Lebih lama tapi punya jejak lengkap.
+                    </p>
+                  </div>
+                  <p className="pt-1 border-t border-primary/20">
+                    <b className="text-warning">⚠️ Penting untuk Keuangan:</b> Tagihan SPP <b>hanya bisa dibuat untuk siswa di TA aktif</b>. Jika import ke TA lama tanpa naik kelas, bendahara <b>tidak bisa menagih</b> mereka di TA sekarang.
+                  </p>
+                </AlertDescription>
+              </Alert>
             </div>
           );
         })()}
