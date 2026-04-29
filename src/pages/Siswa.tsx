@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Users, Plus, Search, Upload, Pencil, Trash2, Phone, X, Eye, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, IdCard, Camera } from 'lucide-react';
+import { Users, Plus, Search, Upload, Pencil, Trash2, Phone, X, Eye, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, IdCard, Camera, MoreHorizontal, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
