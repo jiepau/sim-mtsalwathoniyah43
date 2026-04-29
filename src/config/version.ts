@@ -15,6 +15,17 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: "3.0.0",
     date: "2026-04-29",
     changes: [
+      "🎨 Pembaruan UI menyeluruh — tampilan baru bertema Hijau Islami yang lebih bersih, modern, dan kontras tinggi",
+      "Sidebar, header, dan kartu didesain ulang agar lebih ringkas dan mudah dibaca di layar kecil maupun besar",
+      "Penyempurnaan tipografi, spasi, dan ikon di seluruh halaman untuk pengalaman yang lebih konsisten",
+      "Penyesuaian semantic color tokens — siap untuk dukungan tema gelap di rilis mendatang",
+      "Animasi halus saat berpindah halaman dan membuka dialog",
+    ],
+  },
+  {
+    version: "2.6.0",
+    date: "2026-04-28",
+    changes: [
       "Pratinjau Cetak A4: lihat tampilan halaman persis seperti hasil cetak sebelum klik Cetak / PDF",
       "Toggle orientasi Portrait / Landscape langsung di halaman cetak (Laporan Keuangan, Rapor Kehadiran, Kartu SPP)",
       "Konsolidasi semua kontrol cetak ke dalam satu komponen toolbar reusable agar konsisten",
