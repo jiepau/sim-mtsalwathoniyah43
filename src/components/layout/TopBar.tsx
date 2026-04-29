@@ -59,20 +59,8 @@ export function TopBar() {
           </div>
         </div>
 
-        {/* TA aktif */}
-        <div className="hidden md:flex items-center gap-2 min-w-0 pl-12 lg:pl-2">
-          {taActive && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary/5 border border-primary/20 min-w-0">
-              <span className="text-[10px] uppercase tracking-wider font-bold text-primary/70 whitespace-nowrap">
-                Tahun Ajaran Aktif
-              </span>
-              <span className="text-xs font-bold text-primary truncate">{taActive}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Spacer untuk mobile (tempat tombol toggle sidebar) */}
-        <div className="md:hidden pl-12" />
+        {/* Spacer mobile (tempat tombol toggle sidebar) */}
+        <div className="lg:hidden pl-12" />
 
         {/* Right: notification + user */}
         <div className="ml-auto flex items-center gap-1 sm:gap-2 min-w-0 pr-2 sm:pr-4 lg:pr-6">
