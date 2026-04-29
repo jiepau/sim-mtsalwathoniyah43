@@ -37,6 +37,7 @@ import {
   BarChart3,
   MessageSquare,
   History,
+  Palette,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -137,6 +138,29 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [pendingApprovalCount, setPendingApprovalCount] = useState(0);
+  const [gradientIntensity, setGradientIntensity] = useState<'kuat' | 'sedang' | 'netral'>(() => {
+    if (typeof window === 'undefined') return 'kuat';
+    return (localStorage.getItem('sidebar-gradient') as 'kuat' | 'sedang' | 'netral') || 'kuat';
+  });
+
+  const cycleGradient = () => {
+    const order: Array<'kuat' | 'sedang' | 'netral'> = ['kuat', 'sedang', 'netral'];
+    const next = order[(order.indexOf(gradientIntensity) + 1) % order.length];
+    setGradientIntensity(next);
+    localStorage.setItem('sidebar-gradient', next);
+  };
+
+  const gradientClass = {
+    kuat: 'bg-gradient-to-b from-emerald-300/80 via-emerald-200/70 to-emerald-100/60',
+    sedang: 'bg-gradient-to-b from-emerald-200/70 via-emerald-100/60 to-emerald-50/50',
+    netral: 'bg-gradient-to-b from-emerald-100/60 via-white to-emerald-50/40',
+  }[gradientIntensity];
+
+  const gradientLabel = {
+    kuat: 'Lebih Hijau',
+    sedang: 'Sedang',
+    netral: 'Netral',
+  }[gradientIntensity];
 
   // Fetch pending approval count for admin
   useEffect(() => {
@@ -385,6 +409,19 @@ export function Sidebar() {
             <p className="text-[11px] text-primary font-medium">{roleDisplayName}</p>
           </div>
         )}
+        {/* Toggle intensitas gradasi */}
+        <button
+          onClick={cycleGradient}
+          title={`Intensitas hijau: ${gradientLabel} (klik untuk ubah)`}
+          className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-primary hover:bg-primary/10 transition-colors border border-primary/20"
+        >
+          <Palette className="h-4 w-4 flex-shrink-0" />
+          {!collapsed && (
+            <span className="text-xs font-medium flex-1 text-left">
+              Hijau: <span className="font-bold">{gradientLabel}</span>
+            </span>
+          )}
+        </button>
         <button
           onClick={signOut}
           className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
@@ -420,7 +457,7 @@ export function Sidebar() {
       <aside
         className={cn(
           'sidebar-aside fixed top-0 left-0 z-40 h-screen flex flex-col shadow-md',
-          'bg-gradient-to-b from-emerald-200/70 via-emerald-100/60 to-emerald-50/50',
+          gradientClass,
           'border-r-2 border-primary/30',
           collapsed ? 'w-20' : 'w-64',
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
