@@ -43,10 +43,32 @@ export function TopBar() {
   const roleLabel = role ? roleLabels[role] : '';
 
   return (
-    <header className="sticky top-0 z-30 h-14 bg-white border-b-2 border-primary/20 shadow-sm">
-      <div className="h-full px-2 sm:px-4 lg:px-6 flex items-center justify-between gap-2 sm:gap-4 pl-12 lg:pl-6">
+    <header className="sticky top-0 z-40 h-14 bg-white border-b-2 border-primary/20 shadow-sm">
+      <div className="h-full pl-12 lg:pl-0 pr-2 sm:pr-4 lg:pr-6 flex items-center gap-2 sm:gap-4">
+        {/* Brand area — menyatu dengan kolom sidebar (lebar 256px = w-64) */}
+        <div className="hidden lg:flex items-center gap-2 h-full px-3 w-64 border-r-2 border-primary/20 bg-gradient-to-r from-emerald-100/60 to-white shrink-0">
+          <img
+            src="/logo-kemenag.png"
+            alt="Logo Kemenag"
+            className="h-8 w-8 object-contain shrink-0"
+          />
+          <img
+            src="/logo-alwathoniyah.png"
+            alt="Logo Madrasah"
+            className="h-8 w-8 object-contain shrink-0"
+          />
+          <div className="min-w-0 leading-tight">
+            <p className="text-[8px] uppercase tracking-wider text-primary font-bold truncate">
+              Kementerian Agama RI
+            </p>
+            <p className="text-[12px] font-bold text-foreground truncate">
+              MTs Al Wathoniyah 43
+            </p>
+          </div>
+        </div>
+
         {/* Left: TA aktif (hanya tampil di desktop) */}
-        <div className="hidden md:flex items-center gap-2 min-w-0">
+        <div className="hidden md:flex items-center gap-2 min-w-0 pl-2">
           {taActive && (
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary/5 border border-primary/20 min-w-0">
               <span className="text-[10px] uppercase tracking-wider font-bold text-primary/70 whitespace-nowrap">
