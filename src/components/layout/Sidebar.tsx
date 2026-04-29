@@ -457,7 +457,7 @@ export function Sidebar() {
       <aside
         className={cn(
           'sidebar-aside fixed top-0 left-0 z-40 h-screen flex flex-col shadow-md',
-          'bg-gradient-to-b from-emerald-200/70 via-emerald-100/60 to-emerald-50/50',
+          gradientClass,
           'border-r-2 border-primary/30',
           collapsed ? 'w-20' : 'w-64',
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
