@@ -93,18 +93,20 @@ export default function PembayaranPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [pembayaranRes, siswaRes, tagihanRes] = await Promise.all([
+      const [pembayaranRes, siswaRes, tagihanRes, taRes] = await Promise.all([
         supabase
           .from('pembayaran')
           .select(`*, siswa(nama, nis), jenis_tagihan(nama_tagihan)`)
           .order('created_at', { ascending: false }),
         supabase.from('siswa').select('id, nama, nis').order('nama'),
         supabase.from('jenis_tagihan').select('*').eq('is_active', true),
+        supabase.from('tahun_ajaran').select('id').eq('is_active', true).maybeSingle(),
       ]);
 
       if (pembayaranRes.data) setPembayaran(pembayaranRes.data);
       if (siswaRes.data) setSiswa(siswaRes.data);
       if (tagihanRes.data) setJenisTagihan(tagihanRes.data);
+      if (taRes.data) setActiveTaId(taRes.data.id);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Gagal memuat data');
