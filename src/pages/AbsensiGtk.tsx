@@ -9,9 +9,13 @@ import { ExportButton } from '@/components/export/ExportButton';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useHariLibur } from '@/hooks/useHariLibur';
-import { ClipboardList, Save, Calendar, CheckCircle, XCircle, AlertCircle, Clock, Briefcase, PalmtreeIcon, CalendarOff } from 'lucide-react';
+import { ClipboardList, Save, Calendar, CheckCircle, XCircle, AlertCircle, Clock, Briefcase, PalmtreeIcon, CalendarOff, ChevronDown, Users, CalendarDays, UserCog, BarChart3 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Link } from 'react-router-dom';
+import { InputPresensiBulananDialog } from '@/components/absensi/InputPresensiBulananDialog';
+import { InputPresensiPerPtkDialog } from '@/components/absensi/InputPresensiPerPtkDialog';
 
 interface GtkPtk {
   id: string;
@@ -50,6 +54,8 @@ const AbsensiGtk = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [existingIds, setExistingIds] = useState<Record<string, string>>({});
+  const [bulananOpen, setBulananOpen] = useState(false);
+  const [perPtkOpen, setPerPtkOpen] = useState(false);
 
   // Fetch GTK list - Guru only sees themselves
   useEffect(() => {
@@ -205,6 +211,52 @@ const AbsensiGtk = () => {
         title={isGuru && !canManageAll ? "Absensi Saya" : "Absensi GTK/PTK"}
         description={isGuru && !canManageAll ? "Isi presensi harian Anda" : "Rekap presensi harian guru dan tenaga kependidikan"}
         icon={<ClipboardList className="h-6 w-6" />}
+        actions={canManageAll ? (
+          <>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button>
+                  <ClipboardList className="h-4 w-4 mr-2" />
+                  Input Presensi
+                  <ChevronDown className="h-4 w-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => {
+                  document.getElementById('absensi-harian-section')?.scrollIntoView({ behavior: 'smooth' });
+                }}>
+                  <Users className="h-4 w-4 mr-2" />
+                  Input Massal (Per Hari)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setBulananOpen(true)}>
+                  <CalendarDays className="h-4 w-4 mr-2" />
+                  Input Absensi Per Bulan
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPerPtkOpen(true)}>
+                  <UserCog className="h-4 w-4 mr-2" />
+                  Input Per GTK/PTK
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" asChild>
+              <Link to="/rekap-absensi">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Rekap Bulanan
+              </Link>
+            </Button>
+          </>
+        ) : undefined}
+      />
+
+      <InputPresensiBulananDialog
+        open={bulananOpen}
+        onOpenChange={setBulananOpen}
+        onSaved={() => setSelectedDate(d => d)}
+      />
+      <InputPresensiPerPtkDialog
+        open={perPtkOpen}
+        onOpenChange={setPerPtkOpen}
+        onSaved={() => setSelectedDate(d => d)}
       />
 
       {/* Date Filter */}
@@ -248,7 +300,7 @@ const AbsensiGtk = () => {
 
       {/* Absensi Table */}
       {gtkList.length > 0 && !holidayInfo.isLibur ? (
-        <Card>
+        <Card id="absensi-harian-section">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">
