@@ -471,6 +471,37 @@ export default function TunggakanPage() {
         loading={loading}
         emptyMessage="Tidak ada tunggakan sesuai filter"
       />
+
+      <AlertDialog open={confirmReminderOpen} onOpenChange={setConfirmReminderOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Kirim Reminder WA Massal?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Reminder akan dikirim ke <strong>{filteredData.filter(s => s.wa_ortu).length}</strong> wali murid yang memiliki nomor WA dan tunggakan pada filter saat ini.
+              <br /><br />
+              Pastikan template pesan sudah benar di menu <strong>Notifikasi WA</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={sendingReminder}>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={(e) => { e.preventDefault(); sendMassReminder(); }} disabled={sendingReminder}>
+              {sendingReminder ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+              Kirim Sekarang
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {selectedKartuSiswa && (
+        <KartuSppPrintDialog
+          open={kartuSppOpen}
+          onOpenChange={(o) => { setKartuSppOpen(o); if (!o) setSelectedKartuSiswa(null); }}
+          siswaId={selectedKartuSiswa.siswa_id}
+          siswaNama={selectedKartuSiswa.nama}
+          siswaNis={selectedKartuSiswa.nis}
+          kelasNama={selectedKartuSiswa.kelas}
+        />
+      )}
     </div>
   );
 }
