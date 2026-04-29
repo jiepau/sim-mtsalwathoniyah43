@@ -231,24 +231,57 @@ export default function TunggakanPage() {
           <div className="space-y-2">
             {groups.map((g, idx) => (
               <div key={idx} className={`p-2 rounded border ${g.is_warisan ? 'border-warning/30 bg-warning/5' : 'border-border'}`}>
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-semibold flex items-center gap-1">
                     {g.is_warisan && <HistoryIcon className="h-3 w-3 text-warning" />}
                     {g.ta_label}
                     {g.is_warisan && <Badge variant="outline" className="bg-warning/15 text-warning border-warning/40 text-[9px] px-1 py-0">Warisan</Badge>}
                   </span>
-                  <span className="text-xs font-bold text-destructive">{formatCurrency(g.total)}</span>
+                  <span className="text-xs font-bold text-destructive">Subtotal: {formatCurrency(g.total)}</span>
                 </div>
-                {g.items.slice(0, 3).map((t, i) => (
-                  <div key={i} className="text-xs text-muted-foreground pl-2">
-                    • {t.jenis_tagihan}
-                    {t.bulan && t.tahun && ` (${bulanOptions[t.bulan - 1]} ${t.tahun})`}
-                    <span className="text-destructive ml-1">{formatCurrency(t.sisa)}</span>
-                  </div>
-                ))}
-                {g.items.length > 3 && (
-                  <p className="text-[10px] text-muted-foreground pl-2 italic">+{g.items.length - 3} lainnya</p>
-                )}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-[11px] border-collapse">
+                    <thead>
+                      <tr className="bg-muted/40 text-muted-foreground">
+                        <th className="text-left px-1.5 py-1 font-medium">Jenis / Periode</th>
+                        <th className="text-right px-1.5 py-1 font-medium">Tagihan</th>
+                        <th className="text-right px-1.5 py-1 font-medium">Dibayar</th>
+                        <th className="text-right px-1.5 py-1 font-medium">Sisa</th>
+                        <th className="text-center px-1.5 py-1 font-medium">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {g.items.slice(0, 5).map((t, i) => {
+                        const isCicil = t.status === 'cicil' || t.nominal_bayar > 0;
+                        return (
+                          <tr key={i} className="border-t border-border/40">
+                            <td className="px-1.5 py-1">
+                              <div className="font-medium">{t.jenis_tagihan}</div>
+                              {t.bulan && t.tahun && (
+                                <div className="text-[10px] text-muted-foreground">{bulanOptions[t.bulan - 1]} {t.tahun}</div>
+                              )}
+                            </td>
+                            <td className="text-right px-1.5 py-1 tabular-nums">{formatCurrency(t.nominal)}</td>
+                            <td className="text-right px-1.5 py-1 tabular-nums text-success">{formatCurrency(t.nominal_bayar)}</td>
+                            <td className="text-right px-1.5 py-1 tabular-nums font-bold text-destructive">{formatCurrency(t.sisa)}</td>
+                            <td className="text-center px-1.5 py-1">
+                              {t.is_warisan ? (
+                                <Badge variant="outline" className="bg-warning/15 text-warning border-warning/40 text-[9px] px-1.5 py-0">Warisan</Badge>
+                              ) : isCicil ? (
+                                <Badge variant="outline" className="bg-blue-500/15 text-blue-600 border-blue-500/40 text-[9px] px-1.5 py-0">Cicil</Badge>
+                              ) : (
+                                <Badge variant="outline" className="bg-destructive/15 text-destructive border-destructive/40 text-[9px] px-1.5 py-0">Belum Lunas</Badge>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  {g.items.length > 5 && (
+                    <p className="text-[10px] text-muted-foreground italic mt-1">+{g.items.length - 5} tagihan lainnya</p>
+                  )}
+                </div>
               </div>
             ))}
           </div>
