@@ -931,6 +931,52 @@ export default function GtkPtkPage() {
                 placeholder="Contoh: Matematika, IPA"
               />
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Status Kepegawaian</Label>
+                <Select value={formData.status_kepegawaian || 'none'} onValueChange={(v) => setFormData({ ...formData, status_kepegawaian: v === 'none' ? '' : v })}>
+                  <SelectTrigger><SelectValue placeholder="Pilih status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">-- Pilih --</SelectItem>
+                    <SelectItem value="PNS">PNS</SelectItem>
+                    <SelectItem value="PPPK">PPPK</SelectItem>
+                    <SelectItem value="GTY">GTY (Guru Tetap Yayasan)</SelectItem>
+                    <SelectItem value="GTT">GTT (Guru Tidak Tetap)</SelectItem>
+                    <SelectItem value="Honorer">Honorer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Status Aktif</Label>
+                <Select value={formData.status_aktif} onValueChange={(v) => setFormData({ ...formData, status_aktif: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="aktif">Aktif</SelectItem>
+                    <SelectItem value="tidak_aktif">Tidak Aktif</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2 border rounded-md p-3 bg-muted/30">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <Checkbox
+                  checked={formData.sertifikasi}
+                  onCheckedChange={(checked) => setFormData({ ...formData, sertifikasi: !!checked })}
+                />
+                <span className="text-sm font-medium flex items-center gap-1.5">
+                  <Award className="h-4 w-4 text-primary" />
+                  Sudah Sertifikasi Pendidik
+                </span>
+              </label>
+              {formData.sertifikasi && (
+                <Input
+                  placeholder="Nomor sertifikat (opsional)"
+                  value={formData.nomor_sertifikasi}
+                  onChange={(e) => setFormData({ ...formData, nomor_sertifikasi: e.target.value })}
+                  className="mt-2"
+                />
+              )}
+            </div>
             <div className="space-y-2">
               <Label htmlFor="alamat">Alamat</Label>
               <Input
@@ -975,6 +1021,13 @@ export default function GtkPtkPage() {
         open={ktaPrintOpen}
         onOpenChange={setKtaPrintOpen}
         gtkList={ktaPrintList}
+      />
+
+      {/* EMIS Import Wizard */}
+      <EmisImportWizardGtk
+        open={emisImportOpen}
+        onOpenChange={setEmisImportOpen}
+        onSuccess={fetchData}
       />
     </div>
   );
