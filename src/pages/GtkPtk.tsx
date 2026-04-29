@@ -42,6 +42,8 @@ import { ImportDialog, ImportResult } from '@/components/import/ImportDialog';
 import { ExportButton } from '@/components/export/ExportButton';
 import { GtkDetailDialog } from '@/components/gtk/GtkDetailDialog';
 import { GtkKtaPrint } from '@/components/gtk/GtkKtaPrint';
+import { EmisImportWizardGtk } from '@/components/gtk/EmisImportWizardGtk';
+import { Sparkles, Award } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
@@ -63,6 +65,10 @@ interface GtkPtk {
   tanggal_lahir: string | null;
   jenis_kelamin: string | null;
   foto_path: string | null;
+  status_kepegawaian: string | null;
+  sertifikasi: boolean | null;
+  nomor_sertifikasi: string | null;
+  status_aktif: string | null;
 }
 
 export default function GtkPtkPage() {
