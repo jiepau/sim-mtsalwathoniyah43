@@ -120,6 +120,7 @@ const allMenuItems: MenuItem[] = [
       { title: 'Pemasukan', icon: TrendingUp, path: '/pemasukan' },
       { title: 'Pengeluaran', icon: TrendingDown, path: '/pengeluaran' },
       { title: 'Tunggakan', icon: AlertTriangle, path: '/tunggakan' },
+      { title: 'Laporan Keuangan', icon: FileText, path: '/laporan-keuangan' },
     ],
     roles: ['admin', 'bendahara']
   },
