@@ -6,7 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useHariLibur } from '@/hooks/useHariLibur';
 import { RekapSiswaTab } from '@/components/rekap/RekapSiswaTab';
 import { RekapGtkTab } from '@/components/rekap/RekapGtkTab';
-import { BarChart3, Users, UserCog } from 'lucide-react';
+import { TrenKetidakhadiranTab } from '@/components/rekap/TrenKetidakhadiranTab';
+import { BarChart3, Users, UserCog, TrendingDown } from 'lucide-react';
 import { getDaysInMonth } from 'date-fns';
 
 interface Kelas { id: string; nama_kelas: string; tingkat: number; }
@@ -146,6 +147,10 @@ const RekapAbsensi = () => {
             <UserCog className="h-4 w-4" />
             Rekap GTK
           </TabsTrigger>
+          <TabsTrigger value="tren" className="gap-1.5">
+            <TrendingDown className="h-4 w-4" />
+            Tren Ketidakhadiran
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="siswa" className="mt-4">
           <RekapSiswaTab
@@ -165,6 +170,9 @@ const RekapAbsensi = () => {
             hariEfektif={hariEfektif}
             bulanLabel={bulanLabel}
           />
+        </TabsContent>
+        <TabsContent value="tren" className="mt-4">
+          <TrenKetidakhadiranTab selectedTA={selectedTA} />
         </TabsContent>
       </Tabs>
     </div>

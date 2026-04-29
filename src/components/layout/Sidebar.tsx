@@ -70,6 +70,7 @@ const allMenuItems: MenuItem[] = [
       { title: 'Absensi Siswa', icon: ClipboardCheck, path: '/absensi-siswa' },
       { title: 'Absensi GTK', icon: ClipboardList, path: '/absensi-gtk' },
       { title: 'Rekap Bulanan', icon: BarChart3, path: '/rekap-absensi' },
+      { title: 'Rapor Kehadiran', icon: ClipboardList, path: '/rapor-kehadiran' },
       { title: 'Kalender Akademik', icon: CalendarDays, path: '/kalender-akademik' },
     ],
     roles: ['admin', 'operator', 'guru']
@@ -214,7 +215,7 @@ export function Sidebar() {
     if (['/surat-masuk', '/surat-keluar'].includes(path)) {
       expanded.push('Surat Menyurat');
     }
-    if (['/absensi-siswa', '/absensi-gtk', '/rekap-absensi', '/kalender-akademik'].includes(path)) {
+    if (['/absensi-siswa', '/absensi-gtk', '/rekap-absensi', '/rapor-kehadiran', '/kalender-akademik'].includes(path)) {
       expanded.push('Absensi');
     }
     if (path.startsWith('/e-learning/')) {

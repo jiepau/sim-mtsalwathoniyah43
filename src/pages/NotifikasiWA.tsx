@@ -31,9 +31,17 @@ const HARI_LABELS: Record<number, string> = {
 };
 
 const JENIS_LABELS: Record<string, string> = {
-  absensi_pagi: 'Pengingat Absensi Pagi',
-  absensi_siang: 'Pengingat Absensi Siang',
+  absensi_pagi: 'Pengingat Absensi Pagi (GTK)',
+  absensi_siang: 'Pengingat Absensi Siang (GTK)',
+  absensi_siswa_alfa: 'Notifikasi Wali — Siswa Alfa/Sakit/Izin',
   tunggakan: 'Pengingat Tunggakan',
+};
+
+const JENIS_DESCRIPTIONS: Record<string, string> = {
+  absensi_pagi: 'Pengingat pagi sebelum guru mulai mengajar',
+  absensi_siang: 'Pengingat siang untuk guru yang belum absen',
+  absensi_siswa_alfa: 'Kirim ke wali siswa setiap hari setelah absensi diisi. Variabel: {nama_siswa}, {kelas}, {tanggal}, {status_label}, {keterangan}',
+  tunggakan: 'Pengingat tunggakan SPP ke wali murid',
 };
 
 export default function NotifikasiWA() {
@@ -192,9 +200,7 @@ export default function NotifikasiWA() {
                   {JENIS_LABELS[setting.jenis] || setting.jenis}
                 </CardTitle>
                 <CardDescription>
-                  {setting.jenis === 'absensi_pagi'
-                    ? 'Pengingat pagi sebelum guru mulai mengajar'
-                    : 'Pengingat siang untuk guru yang belum absen'}
+                  {JENIS_DESCRIPTIONS[setting.jenis] || ''}
                 </CardDescription>
               </div>
               <div className="flex items-center gap-2">

@@ -44,6 +44,7 @@ const AbsensiSiswa = lazy(() => import("@/pages/AbsensiSiswa"));
 const AbsensiGtk = lazy(() => import("@/pages/AbsensiGtk"));
 const KalenderAkademik = lazy(() => import("@/pages/KalenderAkademik"));
 const RekapAbsensi = lazy(() => import("@/pages/RekapAbsensi"));
+const RaporKehadiran = lazy(() => import("@/pages/RaporKehadiran"));
 const NotifikasiWA = lazy(() => import("@/pages/NotifikasiWA"));
 const Changelog = lazy(() => import("@/pages/Changelog"));
 const MateriGuru = lazy(() => import("@/pages/elearning/MateriGuru"));
@@ -132,6 +133,7 @@ const App = () => {
                   <Route path="/absensi-gtk" element={<AbsensiGtk />} />
                   <Route path="/kalender-akademik" element={<KalenderAkademik />} />
                   <Route path="/rekap-absensi" element={<RekapAbsensi />} />
+                  <Route path="/rapor-kehadiran" element={<RaporKehadiran />} />
                   <Route path="/notifikasi-wa" element={<NotifikasiWA />} />
                   <Route path="/changelog" element={<Changelog />} />
                   <Route path="/e-learning/materi-guru" element={<MateriGuru />} />
