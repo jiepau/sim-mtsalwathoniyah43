@@ -492,6 +492,32 @@ export default function GtkPtkPage() {
         <Badge variant="outline">{item.jabatan}</Badge>
       ) : '-'
     },
+    {
+      header: 'Status',
+      cell: (item: GtkPtk) => {
+        const sk = item.status_kepegawaian;
+        const isPns = sk === 'PNS' || sk === 'PPPK';
+        const isHonor = sk && ['Honorer', 'GTT', 'GTY', 'Honor'].includes(sk);
+        return (
+          <div className="flex flex-col gap-1">
+            {sk ? (
+              <Badge variant={isPns ? 'default' : isHonor ? 'secondary' : 'outline'} className="w-fit">
+                {sk}
+              </Badge>
+            ) : (
+              <span className="text-xs text-muted-foreground">-</span>
+            )}
+            {item.sertifikasi && (
+              <Badge variant="outline" className="w-fit border-primary text-primary gap-1">
+                <Award className="h-3 w-3" />
+                Sertifikasi
+              </Badge>
+            )}
+          </div>
+        );
+      },
+      className: 'w-32'
+    },
     { 
       header: 'Lulusan', 
       cell: (item: GtkPtk) => {
