@@ -409,6 +409,19 @@ export function Sidebar() {
             <p className="text-[11px] text-primary font-medium">{roleDisplayName}</p>
           </div>
         )}
+        {/* Toggle intensitas gradasi */}
+        <button
+          onClick={cycleGradient}
+          title={`Intensitas hijau: ${gradientLabel} (klik untuk ubah)`}
+          className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-primary hover:bg-primary/10 transition-colors border border-primary/20"
+        >
+          <Palette className="h-4 w-4 flex-shrink-0" />
+          {!collapsed && (
+            <span className="text-xs font-medium flex-1 text-left">
+              Hijau: <span className="font-bold">{gradientLabel}</span>
+            </span>
+          )}
+        </button>
         <button
           onClick={signOut}
           className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
