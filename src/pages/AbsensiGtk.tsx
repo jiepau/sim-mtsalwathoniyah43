@@ -9,9 +9,13 @@ import { ExportButton } from '@/components/export/ExportButton';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useHariLibur } from '@/hooks/useHariLibur';
-import { ClipboardList, Save, Calendar, CheckCircle, XCircle, AlertCircle, Clock, Briefcase, PalmtreeIcon, CalendarOff } from 'lucide-react';
+import { ClipboardList, Save, Calendar, CheckCircle, XCircle, AlertCircle, Clock, Briefcase, PalmtreeIcon, CalendarOff, ChevronDown, Users, CalendarDays, UserCog, BarChart3 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Link } from 'react-router-dom';
+import { InputPresensiBulananDialog } from '@/components/absensi/InputPresensiBulananDialog';
+import { InputPresensiPerPtkDialog } from '@/components/absensi/InputPresensiPerPtkDialog';
 
 interface GtkPtk {
   id: string;
