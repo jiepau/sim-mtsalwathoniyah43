@@ -139,7 +139,8 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
 
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState<{ created: number; updated: number; failed: number; errors: string[] } | null>(null);
+  const [importMode, setImportMode] = useState<'upsert' | 'insert_only' | 'update_only'>('upsert');
+  const [result, setResult] = useState<{ created: number; updated: number; skipped: number; failed: number; errors: string[] } | null>(null);
 
   const stats = useMemo(() => {
     const pns = rows.filter(r => r.status_kepegawaian === 'PNS' || r.status_kepegawaian === 'PPPK').length;
