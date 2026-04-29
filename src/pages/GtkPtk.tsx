@@ -77,6 +77,7 @@ export default function GtkPtkPage() {
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [emisImportOpen, setEmisImportOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [ktaPrintOpen, setKtaPrintOpen] = useState(false);
   const [ktaPrintList, setKtaPrintList] = useState<GtkPtk[]>([]);
