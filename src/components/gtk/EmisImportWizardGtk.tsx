@@ -529,11 +529,58 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
         {/* STEP 3: Import */}
         {step === 3 && (
           <div className="space-y-3">
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Mode Import</p>
+              <div className="grid gap-2">
+                {[
+                  { v: 'upsert', t: 'Tambah baru & perbarui yang sudah ada', d: 'Default. GTK baru ditambahkan, yang cocok NUPTK/NIP/NIK akan diperbarui.' },
+                  { v: 'insert_only', t: 'Hanya tambah data baru', d: 'GTK yang NUPTK/NIP/NIK-nya sudah ada akan dilewati (tidak duplikat, tidak ditimpa).' },
+                  { v: 'update_only', t: 'Hanya perbarui yang sudah ada', d: 'Tidak menambah GTK baru. Hanya update data yang cocok NUPTK/NIP/NIK.' },
+                ].map((opt) => (
+                  <label
+                    key={opt.v}
+                    className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${importMode === opt.v ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}
+                  >
+                    <input
+                      type="radio"
+                      name="importMode"
+                      value={opt.v}
+                      checked={importMode === opt.v}
+                      onChange={() => setImportMode(opt.v as any)}
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
+                      <div className="text-sm font-medium">{opt.t}</div>
+                      <div className="text-xs text-muted-foreground">{opt.d}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-xs">
+                Pencocokan data existing menggunakan <b>NUPTK/PegID</b>, <b>NIP</b>, atau <b>NIK</b> (prioritas berurutan).
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+
+        {/* STEP 3: Import */}
+        {step === 3 && (
+          <div className="space-y-3">
             {!result && !importing && (
               <Alert>
                 <UserCog className="h-4 w-4" />
                 <AlertDescription>
-                  Siap mengimport <b>{rows.length} GTK</b>. Klik tombol <b>Import Sekarang</b> untuk memulai.
+                  Siap mengimport <b>{rows.length} GTK</b> dengan mode{' '}
+                  <b>
+                    {importMode === 'upsert' && 'Tambah baru & perbarui'}
+                    {importMode === 'insert_only' && 'Hanya tambah baru'}
+                    {importMode === 'update_only' && 'Hanya perbarui'}
+                  </b>
+                  . Klik <b>Import Sekarang</b> untuk memulai.
                 </AlertDescription>
               </Alert>
             )}
