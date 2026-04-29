@@ -1,5 +1,13 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
-import { UserCog, Plus, Search, Upload, Pencil, Trash2, Phone, Mail, CalendarIcon, Eye, Users, GraduationCap, Briefcase, Printer, CreditCard, Camera, X } from 'lucide-react';
+import { UserCog, Plus, Search, Upload, Pencil, Trash2, Phone, Mail, CalendarIcon, Eye, Users, GraduationCap, Briefcase, Printer, CreditCard, Camera, X, MoreHorizontal } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
@@ -530,26 +538,54 @@ export default function GtkPtkPage() {
         description={`Total ${gtkPtk.length} GTK/PTK terdaftar`}
         icon={<UserCog className="h-6 w-6" />}
         actions={
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 items-center flex-wrap">
             {selectedIds.size > 0 && (
-              <Button variant="outline" onClick={handlePrintKtaBulk}>
-                <Printer className="h-4 w-4 mr-2" />
-                Cetak Kartu GTK ({selectedIds.size})
+              <Button variant="outline" size="sm" className="h-9" onClick={handlePrintKtaBulk}>
+                <Printer className="h-4 w-4 mr-1.5" />
+                Cetak KTA ({selectedIds.size})
               </Button>
             )}
-            <ExportButton 
-              data={filteredData} 
-              columns={exportColumns} 
-              filename="data_gtk_ptk"
-            />
-            <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
-              <Upload className="h-4 w-4 mr-2" />
-              Import
-            </Button>
-            <Button onClick={() => handleOpenDialog()}>
-              <Plus className="h-4 w-4 mr-2" />
+            {/* Hidden ExportButton */}
+            <div className="hidden">
+              <ExportButton
+                data={filteredData}
+                columns={exportColumns}
+                filename="data_gtk_ptk"
+              />
+            </div>
+            <Button onClick={() => handleOpenDialog()} size="sm" className="h-9">
+              <Plus className="h-4 w-4 mr-1.5" />
               Tambah GTK/PTK
             </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-9">
+                  <MoreHorizontal className="h-4 w-4 mr-1.5" />
+                  Aksi Lainnya
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuLabel>Import Data</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import CSV
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Ekspor</DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={() => {
+                    const btn = document.querySelector<HTMLButtonElement>(
+                      '[data-export-trigger="data_gtk_ptk"]'
+                    );
+                    btn?.click();
+                  }}
+                  disabled={filteredData.length === 0}
+                >
+                  <Upload className="h-4 w-4 mr-2 rotate-180" />
+                  Download Excel
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         }
       />

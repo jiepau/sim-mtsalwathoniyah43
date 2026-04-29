@@ -382,14 +382,14 @@ export default function PembayaranPage() {
         description="Kelola pembayaran tagihan siswa"
         icon={<CreditCard className="h-6 w-6" />}
         actions={
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setTunggakanLamaOpen(true)}>
-              <AlertCircle className="h-4 w-4 mr-2" />
-              Input Tunggakan Lama
-            </Button>
-            <Button onClick={handleOpenDialog}>
-              <CreditCard className="h-4 w-4 mr-2" />
+          <div className="flex gap-2 items-center">
+            <Button onClick={handleOpenDialog} size="sm" className="h-9">
+              <CreditCard className="h-4 w-4 mr-1.5" />
               Proses Pembayaran
+            </Button>
+            <Button variant="outline" size="sm" className="h-9" onClick={() => setTunggakanLamaOpen(true)}>
+              <AlertCircle className="h-4 w-4 mr-1.5" />
+              Tunggakan Lama
             </Button>
           </div>
         }
