@@ -419,7 +419,9 @@ export function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 z-40 h-screen bg-white border-r border-slate-200 flex flex-col transition-all duration-300 shadow-sm',
+          'fixed top-0 left-0 z-40 h-screen flex flex-col transition-all duration-300 shadow-md',
+          'bg-gradient-to-b from-emerald-50 via-white to-emerald-50/40',
+          'border-r-2 border-primary/20',
           collapsed ? 'w-20' : 'w-64',
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
