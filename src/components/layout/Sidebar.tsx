@@ -251,13 +251,13 @@ export function Sidebar() {
           <button
             onClick={() => toggleExpand(item.title)}
             className={cn(
-              'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
-              'text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent',
-              active && 'bg-sidebar-accent text-sidebar-foreground',
+              'w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200',
+              'text-slate-600 hover:text-primary hover:bg-primary/5',
+              active && 'bg-primary/10 text-primary font-semibold',
               level > 0 && 'pl-12'
             )}
           >
-            <item.icon className="h-5 w-5 flex-shrink-0" />
+            <item.icon className={cn("h-5 w-5 flex-shrink-0", active && "text-primary")} />
             {!collapsed && (
               <>
                 <span className="flex-1 text-left text-sm font-medium">{item.title}</span>
@@ -274,10 +274,10 @@ export function Sidebar() {
             to={item.path || '#'}
             onClick={() => setMobileOpen(false)}
             className={cn(
-              'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 relative',
-              'text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent',
-              active && 'bg-sidebar-accent text-sidebar-foreground font-medium',
-              level > 0 && 'pl-12 py-2'
+              'flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 relative',
+              'text-slate-600 hover:text-primary hover:bg-primary/5',
+              active && 'bg-primary text-primary-foreground font-semibold shadow-sm hover:bg-primary hover:text-primary-foreground',
+              level > 0 && 'pl-12 py-2 text-[13px]'
             )}
           >
             <item.icon className={cn('flex-shrink-0', level > 0 ? 'h-4 w-4' : 'h-5 w-5')} />
@@ -374,20 +374,20 @@ export function Sidebar() {
       </nav>
 
       {/* Footer with user info */}
-      <div className="p-3 border-t border-sidebar-border space-y-2">
+      <div className="p-3 border-t border-slate-200 space-y-2 bg-slate-50/50">
         {/* User Role Badge */}
         {!collapsed && roleDisplayName && (
-          <div className="px-4 py-2 rounded-lg bg-sidebar-accent/50">
-            <p className="text-xs text-sidebar-foreground/60">Login sebagai</p>
-            <p className="text-sm font-semibold text-sidebar-foreground">
+          <div className="px-4 py-2 rounded-lg bg-primary/5 border border-primary/15">
+            <p className="text-[10px] uppercase tracking-wider text-primary/70 font-bold">Login sebagai</p>
+            <p className="text-sm font-semibold text-foreground truncate">
               {user?.user_metadata?.full_name || user?.email || roleDisplayName}
             </p>
-            <p className="text-xs text-sidebar-foreground/50">{roleDisplayName}</p>
+            <p className="text-[11px] text-primary font-medium">{roleDisplayName}</p>
           </div>
         )}
         <button
           onClick={signOut}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
+          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
         >
           <LogOut className="h-5 w-5" />
           {!collapsed && <span className="text-sm font-medium">Keluar</span>}
@@ -419,7 +419,7 @@ export function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 z-40 h-screen bg-sidebar sidebar-gradient islamic-pattern flex flex-col transition-all duration-300',
+          'fixed top-0 left-0 z-40 h-screen bg-white border-r border-slate-200 flex flex-col transition-all duration-300 shadow-sm',
           collapsed ? 'w-20' : 'w-64',
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
