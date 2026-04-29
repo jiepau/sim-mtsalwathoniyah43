@@ -104,6 +104,10 @@ export default function GtkPtkPage() {
     tempat_lahir: '',
     tanggal_lahir: undefined as Date | undefined,
     jenis_kelamin: '',
+    status_kepegawaian: '',
+    sertifikasi: false,
+    nomor_sertifikasi: '',
+    status_aktif: 'aktif',
   });
 
   const JABATAN_UTAMA_OPTIONS = ['Kepala Madrasah', 'Guru', 'Tenaga Kependidikan'];
