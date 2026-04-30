@@ -399,11 +399,11 @@ export function Sidebar() {
 
       {/* Footer — quick logout & info ringkas */}
       {user && (
-        <div className="p-3 border-t border-primary/15 bg-white/40 backdrop-blur-sm space-y-2">
+        <div className="px-3 py-3 border-t border-primary/15 bg-white/40 backdrop-blur-sm space-y-1">
           {!collapsed ? (
             <>
-              <div className="flex items-center gap-2 px-2">
-                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
+              <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg">
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
                   {(user.user_metadata?.full_name || user.email || 'U').charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0 leading-tight flex-1">
@@ -419,19 +419,19 @@ export function Sidebar() {
               </div>
               <button
                 onClick={() => signOut()}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors border border-destructive/20 text-xs font-semibold"
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-destructive hover:bg-destructive/10 transition-all duration-200 text-sm font-medium"
               >
-                <LogOut className="h-3.5 w-3.5" />
-                Keluar
+                <LogOut className="h-5 w-5 flex-shrink-0" />
+                <span>Keluar</span>
               </button>
             </>
           ) : (
             <button
               onClick={() => signOut()}
               title="Keluar"
-              className="w-full flex items-center justify-center px-2 py-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors border border-destructive/20"
+              className="w-full flex items-center justify-center px-4 py-2.5 rounded-lg text-destructive hover:bg-destructive/10 transition-all duration-200"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-5 w-5" />
             </button>
           )}
         </div>
