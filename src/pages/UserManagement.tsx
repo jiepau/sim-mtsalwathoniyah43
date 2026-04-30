@@ -701,6 +701,10 @@ export default function UserManagement() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 bg-popover">
+                <DropdownMenuItem onClick={() => setListGtkDialogOpen(true)}>
+                  <List className="h-4 w-4 mr-2" />
+                  Lihat Daftar Akun GTK
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleGenerateGtkAccounts} disabled={generateGtkLoading}>
                   <Users className="h-4 w-4 mr-2" />
                   {generateGtkLoading ? "Generating..." : "Generate Akun GTK"}
