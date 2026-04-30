@@ -882,7 +882,8 @@ export default function SiswaPage() {
         )}
       </div>
 
-      {/* Gender Statistics */}
+      {/* Gender Statistics — hanya muncul di mode Tabel (di mode Per Kelas sudah ada badge L/P per accordion) */}
+      {viewMode === 'table' && (
       <div className="mb-4 grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-card rounded-lg border p-3 flex items-center gap-3">
           <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -921,6 +922,7 @@ export default function SiswaPage() {
           </div>
         </div>
       </div>
+      )}
 
       {/* View mode toggle + counter */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
