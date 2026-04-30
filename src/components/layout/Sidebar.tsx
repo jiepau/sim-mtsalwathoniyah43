@@ -158,6 +158,16 @@ export function Sidebar() {
       });
   }, []);
 
+  // Sync gradient saat diubah dari TopBar
+  useEffect(() => {
+    const handler = () => {
+      const v = (localStorage.getItem('sidebar-gradient') as 'kuat' | 'sedang' | 'netral') || 'kuat';
+      setGradientIntensity(v);
+    };
+    window.addEventListener('storage', handler);
+    return () => window.removeEventListener('storage', handler);
+  }, []);
+
   const cycleGradient = () => {
     const order: Array<'kuat' | 'sedang' | 'netral'> = ['kuat', 'sedang', 'netral'];
     const next = order[(order.indexOf(gradientIntensity) + 1) % order.length];
@@ -387,21 +397,45 @@ export function Sidebar() {
         {menuItems.map(item => renderMenuItem(item))}
       </nav>
 
-      {/* Footer — hanya toggle intensitas gradasi (info user & logout sudah ada di TopBar) */}
-      <div className="p-3 border-t border-primary/15 bg-white/30 backdrop-blur-sm">
-        <button
-          onClick={cycleGradient}
-          title={`Intensitas hijau: ${gradientLabel} (klik untuk ubah)`}
-          className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-primary hover:bg-primary/10 transition-colors border border-primary/20"
-        >
-          <Palette className="h-4 w-4 flex-shrink-0" />
-          {!collapsed && (
-            <span className="text-xs font-medium flex-1 text-left">
-              Hijau: <span className="font-bold">{gradientLabel}</span>
-            </span>
+      {/* Footer — quick logout & info ringkas */}
+      {user && (
+        <div className="p-3 border-t border-primary/15 bg-white/40 backdrop-blur-sm space-y-2">
+          {!collapsed ? (
+            <>
+              <div className="flex items-center gap-2 px-2">
+                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
+                  {(user.user_metadata?.full_name || user.email || 'U').charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0 leading-tight flex-1">
+                  <p className="text-xs font-semibold text-foreground truncate">
+                    {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                  </p>
+                  {roleDisplayName && (
+                    <p className="text-[10px] text-primary uppercase tracking-wider font-medium truncate">
+                      {roleDisplayName}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => signOut()}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors border border-destructive/20 text-xs font-semibold"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                Keluar
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => signOut()}
+              title="Keluar"
+              className="w-full flex items-center justify-center px-2 py-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors border border-destructive/20"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
           )}
-        </button>
-      </div>
+        </div>
+      )}
     </>
   );
 

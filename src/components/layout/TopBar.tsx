@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Bell, ChevronDown, LogIn, LogOut, User as UserIcon } from 'lucide-react';
+import { Bell, ChevronDown, LogIn, LogOut, Palette, User as UserIcon } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +29,25 @@ export function TopBar() {
   const [isOnline, setIsOnline] = useState<boolean>(
     typeof navigator !== 'undefined' ? navigator.onLine : true
   );
+  const [gradientIntensity, setGradientIntensity] = useState<'kuat' | 'sedang' | 'netral'>(() => {
+    if (typeof window === 'undefined') return 'kuat';
+    return (localStorage.getItem('sidebar-gradient') as 'kuat' | 'sedang' | 'netral') || 'kuat';
+  });
+
+  const cycleGradient = () => {
+    const order: Array<'kuat' | 'sedang' | 'netral'> = ['kuat', 'sedang', 'netral'];
+    const next = order[(order.indexOf(gradientIntensity) + 1) % order.length];
+    setGradientIntensity(next);
+    localStorage.setItem('sidebar-gradient', next);
+    // Trigger reload supaya Sidebar re-read localStorage
+    window.dispatchEvent(new Event('storage'));
+  };
+
+  const gradientLabel = {
+    kuat: 'Kuat',
+    sedang: 'Sedang',
+    netral: 'Netral',
+  }[gradientIntensity];
 
   // Reactive: reset role saat user berubah/logout supaya indikator instan sinkron
   useEffect(() => {
@@ -120,6 +139,16 @@ export function TopBar() {
 
           {user ? (
             <>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={cycleGradient}
+                title={`Tema hijau: ${gradientLabel} (klik untuk ubah)`}
+                className="text-muted-foreground hover:text-primary hover:bg-primary/5 h-9 w-9 shrink-0"
+              >
+                <Palette className="h-4 w-4" />
+              </Button>
+
               <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary hover:bg-primary/5 h-9 w-9 shrink-0">
                 <Bell className="h-4 w-4" />
               </Button>
