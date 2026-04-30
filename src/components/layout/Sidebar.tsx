@@ -145,6 +145,10 @@ export function Sidebar() {
     if (typeof window === 'undefined') return 'kuat';
     return (localStorage.getItem('sidebar-gradient') as 'kuat' | 'sedang' | 'netral') || 'kuat';
   });
+  const [themeColor, setThemeColor] = useState<'hijau' | 'tosca'>(() => {
+    if (typeof window === 'undefined') return 'hijau';
+    return (localStorage.getItem('sidebar-theme') as 'hijau' | 'tosca') || 'hijau';
+  });
 
   // Fetch TA aktif
   useEffect(() => {
@@ -158,11 +162,13 @@ export function Sidebar() {
       });
   }, []);
 
-  // Sync gradient saat diubah dari TopBar
+  // Sync gradient & theme saat diubah dari TopBar
   useEffect(() => {
     const handler = () => {
       const v = (localStorage.getItem('sidebar-gradient') as 'kuat' | 'sedang' | 'netral') || 'kuat';
+      const t = (localStorage.getItem('sidebar-theme') as 'hijau' | 'tosca') || 'hijau';
       setGradientIntensity(v);
+      setThemeColor(t);
     };
     window.addEventListener('storage', handler);
     return () => window.removeEventListener('storage', handler);
@@ -175,11 +181,19 @@ export function Sidebar() {
     localStorage.setItem('sidebar-gradient', next);
   };
 
-  const gradientClass = {
-    kuat: 'bg-gradient-to-b from-emerald-300/80 via-emerald-200/70 to-emerald-100/60',
-    sedang: 'bg-gradient-to-b from-emerald-200/70 via-emerald-100/60 to-emerald-50/50',
-    netral: 'bg-gradient-to-b from-emerald-100/60 via-white to-emerald-50/40',
-  }[gradientIntensity];
+  const gradientMap = {
+    hijau: {
+      kuat: 'bg-gradient-to-b from-emerald-300/80 via-emerald-200/70 to-emerald-100/60',
+      sedang: 'bg-gradient-to-b from-emerald-200/70 via-emerald-100/60 to-emerald-50/50',
+      netral: 'bg-gradient-to-b from-emerald-100/60 via-white to-emerald-50/40',
+    },
+    tosca: {
+      kuat: 'bg-gradient-to-b from-cyan-300/80 via-teal-200/70 to-cyan-100/60',
+      sedang: 'bg-gradient-to-b from-cyan-200/70 via-teal-100/60 to-cyan-50/50',
+      netral: 'bg-gradient-to-b from-cyan-100/60 via-white to-teal-50/40',
+    },
+  };
+  const gradientClass = gradientMap[themeColor][gradientIntensity];
 
   const gradientLabel = {
     kuat: 'Lebih Hijau',
