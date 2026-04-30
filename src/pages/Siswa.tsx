@@ -103,6 +103,14 @@ export default function SiswaPage() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  // View mode: 'group' (per kelas accordion) | 'table' (paginated table)
+  const [viewMode, setViewMode] = useState<'group' | 'table'>(() => {
+    return (localStorage.getItem('siswa_view_mode') as 'group' | 'table') || 'group';
+  });
+  useEffect(() => {
+    localStorage.setItem('siswa_view_mode', viewMode);
+  }, [viewMode]);
   
   const [formData, setFormData] = useState({
     nis: '',
