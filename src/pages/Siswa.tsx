@@ -565,9 +565,24 @@ export default function SiswaPage() {
   const endIndex = Math.min(startIndex + pageSize, totalItems);
   const paginatedSiswa = filteredSiswa.slice(startIndex, endIndex);
 
-  // Group siswa by kelas (sorted by tingkat then nama_kelas; siswa sorted by nama)
+  // Group siswa by kelas. Include ALL kelas (even empty ones) when no kelas filter is active,
+  // so admin can see kelas kosong + ajakan tambah siswa.
   const groupedSiswa = (() => {
     const groups = new Map<string, { kelasId: string | null; namaKelas: string; tingkat: number; siswa: Siswa[] }>();
+
+    // Seed dari master kelas (hanya jika tidak ada filter kelas)
+    if (!kelasFilter) {
+      for (const k of kelas) {
+        groups.set(k.id, {
+          kelasId: k.id,
+          namaKelas: k.nama_kelas,
+          tingkat: k.tingkat ?? 99,
+          siswa: [],
+        });
+      }
+    }
+
+    // Isi siswa
     for (const s of filteredSiswa) {
       const key = s.kelas_id || '__no_kelas__';
       if (!groups.has(key)) {
@@ -581,6 +596,7 @@ export default function SiswaPage() {
       }
       groups.get(key)!.siswa.push(s);
     }
+
     // sort siswa within each group by nama
     for (const g of groups.values()) {
       g.siswa.sort((a, b) => a.nama.localeCompare(b.nama, 'id'));
@@ -590,6 +606,20 @@ export default function SiswaPage() {
       return a.namaKelas.localeCompare(b.namaKelas, 'id', { numeric: true });
     });
   })();
+
+  // Inisialisasi accordion: jika belum ada state tersimpan, buka semua kelas yang ada siswanya
+  useEffect(() => {
+    if (!accordionInitialized && !loading && groupedSiswa.length > 0) {
+      const stored = localStorage.getItem('siswa_open_accordions');
+      if (!stored) {
+        const initialOpen = groupedSiswa
+          .filter(g => g.siswa.length > 0)
+          .map(g => g.kelasId || '__no_kelas__');
+        setOpenAccordions(initialOpen);
+      }
+      setAccordionInitialized(true);
+    }
+  }, [loading, groupedSiswa, accordionInitialized]);
 
   // Reset to page 1 when search or filter changes
   useEffect(() => {
