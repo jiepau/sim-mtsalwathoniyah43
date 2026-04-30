@@ -428,11 +428,22 @@ export function Sidebar() {
             </>
           ) : (
             <button
-              onClick={() => signOut()}
+              onClick={async () => { setLoggingOut(true); await signOut(); setLoggingOut(false); }}
+              disabled={loggingOut}
               title="Keluar"
-              className="w-full flex items-center justify-center px-4 py-2.5 rounded-lg bg-red-500/20 text-red-500 hover:bg-red-500/40 hover:text-red-300 border border-red-400/30 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-700"
+              className={cn(
+                "w-full flex items-center justify-center px-4 py-2.5 rounded-lg border transition-all duration-200",
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-700",
+                loggingOut
+                  ? "bg-red-500/30 text-red-300 border-red-400/40 cursor-wait opacity-80"
+                  : "bg-red-500/20 text-red-500 border-red-400/30 hover:bg-red-600/50 hover:text-white hover:border-red-400/60 hover:shadow-md hover:shadow-red-900/20 active:scale-[0.97]"
+              )}
             >
-              <LogOut className="h-5 w-5" />
+              {loggingOut ? (
+                <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" /><path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="opacity-75" /></svg>
+              ) : (
+                <LogOut className="h-5 w-5" />
+              )}
             </button>
           )}
         </div>
