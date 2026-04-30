@@ -30,26 +30,7 @@ export function TopBar() {
   const [isOnline, setIsOnline] = useState<boolean>(
     typeof navigator !== 'undefined' ? navigator.onLine : true
   );
-  const [gradientIntensity, setGradientIntensity] = useState<'kuat' | 'sedang' | 'netral'>(() => {
-    if (typeof window === 'undefined') return 'kuat';
-    return (localStorage.getItem('sidebar-gradient') as 'kuat' | 'sedang' | 'netral') || 'kuat';
-  });
-  const [themeColor, setThemeColor] = useState<'hijau' | 'tosca'>(() => {
-    if (typeof window === 'undefined') return 'hijau';
-    return (localStorage.getItem('sidebar-theme') as 'hijau' | 'tosca') || 'hijau';
-  });
-
-  const setIntensity = (v: 'kuat' | 'sedang' | 'netral') => {
-    setGradientIntensity(v);
-    localStorage.setItem('sidebar-gradient', v);
-    window.dispatchEvent(new Event('storage'));
-  };
-
-  const setTheme = (v: 'hijau' | 'tosca') => {
-    setThemeColor(v);
-    localStorage.setItem('sidebar-theme', v);
-    window.dispatchEvent(new Event('storage'));
-  };
+  const { themeColor, intensity: gradientIntensity, setTheme, setIntensity } = useSidebarTheme();
 
 
   // Reactive: reset role saat user berubah/logout supaya indikator instan sinkron
