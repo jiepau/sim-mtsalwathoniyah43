@@ -418,6 +418,7 @@ export default function UserManagement() {
       if (response.error) throw new Error(response.error.message);
       if (response.data?.error) throw new Error(response.data.error);
       
+      setGenerateMode("siswa");
       setGenerateResults(response.data);
       setGenerateDialogOpen(true);
       
@@ -432,6 +433,34 @@ export default function UserManagement() {
       toast.error(mapDatabaseError(error));
     } finally {
       setGenerateLoading(false);
+    }
+  };
+
+  const handleGenerateGtkAccounts = async () => {
+    if (!confirm("Generate akun untuk semua GTK aktif yang belum memiliki akun?\n\n• Email: pakai email asli (jika ada), fallback ke NUPTK/NIP@gtk.mts\n• Password: Gtk + NUPTK/NIP\n• Role: Guru → 'guru', selain itu → 'operator'")) return;
+
+    setGenerateGtkLoading(true);
+    try {
+      const response = await supabase.functions.invoke("generate-gtk-accounts");
+      if (response.error) throw new Error(response.error.message);
+      if (response.data?.error) throw new Error(response.data.error);
+
+      setGenerateMode("gtk");
+      setGenerateResults(response.data);
+      setGenerateDialogOpen(true);
+
+      if (response.data.created > 0) {
+        toast.success(`${response.data.created} akun GTK berhasil dibuat`);
+        fetchUsers();
+        fetchGtkList();
+      } else {
+        toast.info(response.data.message || "Tidak ada akun GTK baru yang dibuat");
+      }
+    } catch (error: any) {
+      console.error("Error generating GTK accounts:", error);
+      toast.error(mapDatabaseError(error));
+    } finally {
+      setGenerateGtkLoading(false);
     }
   };
   const handleDeleteAllStudentAccounts = async () => {
