@@ -548,6 +548,8 @@ export default function SiswaPage() {
   const totalPages = Math.ceil(totalItems / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedSiswa = filteredSiswa.slice(startIndex, endIndex);
+
   // Group siswa by kelas (sorted by tingkat then nama_kelas; siswa sorted by nama)
   const groupedSiswa = (() => {
     const groups = new Map<string, { kelasId: string | null; namaKelas: string; tingkat: number; siswa: Siswa[] }>();
