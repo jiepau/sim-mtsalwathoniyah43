@@ -363,11 +363,31 @@
     100% { width: 100%; }
   }
 
+  @keyframes shimmer-slide {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(250%); }
+  }
+
+  @keyframes splash-progress {
+    0% { width: 0%; }
+    40% { width: 55%; }
+    75% { width: 82%; }
+    100% { width: 100%; }
+  }
+
   .animate-scale-in {
     animation: scale-in 0.6s ease-out forwards;
   }
 
   .animate-loading-bar {
     animation: loading-bar 2s ease-in-out forwards;
+  }
+
+  .animate-splash-progress {
+    animation: splash-progress 2.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .animate-shimmer-slide {
+    animation: shimmer-slide 1.6s ease-in-out infinite;
   }
 }
