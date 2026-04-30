@@ -288,6 +288,43 @@
     background-attachment: local;
   }
 
+  /* === Mode Ekstra Kontras: latar lebih gelap → teks & border perlu lebih terang === */
+  .sidebar-aside[data-intensity="kontras"] {
+    /* Teks default jadi putih untuk readability di atas gradasi pekat */
+    color: #ffffff;
+  }
+  .sidebar-aside[data-intensity="kontras"] nav button,
+  .sidebar-aside[data-intensity="kontras"] nav a {
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  }
+  .sidebar-aside[data-intensity="kontras"] nav a:hover,
+  .sidebar-aside[data-intensity="kontras"] nav button:hover {
+    background-color: rgba(255, 255, 255, 0.18) !important;
+    color: #ffffff !important;
+  }
+  /* Item aktif: pakai latar putih solid → teks jadi primary */
+  .sidebar-aside[data-intensity="kontras"] nav a.bg-primary {
+    background-color: #ffffff !important;
+    color: hsl(var(--primary)) !important;
+    text-shadow: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+  /* Border separator dipertegas */
+  .sidebar-aside[data-intensity="kontras"] .border-primary\/15,
+  .sidebar-aside[data-intensity="kontras"] .border-primary\/20,
+  .sidebar-aside[data-intensity="kontras"] .border-primary\/25 {
+    border-color: rgba(255, 255, 255, 0.4) !important;
+  }
+  /* Card TA aktif: latar putih semi-transparan jadi lebih opaque */
+  .sidebar-aside[data-intensity="kontras"] .bg-white\/70,
+  .sidebar-aside[data-intensity="kontras"] .bg-white\/40,
+  .sidebar-aside[data-intensity="kontras"] .bg-white\/30 {
+    background-color: rgba(255, 255, 255, 0.92) !important;
+    color: hsl(var(--foreground));
+  }
+
   /* Respect prefers-reduced-motion */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
