@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { normalizeGender, genderLabel } from "@/lib/supabase-helpers";
 import logoMadrasah from "@/assets/logo-mts.svg";
 
 export interface BukuIndukSiswa {
