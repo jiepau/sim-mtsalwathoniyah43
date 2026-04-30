@@ -68,6 +68,7 @@ export default function BukuInduk() {
   const [selectedKelas, setSelectedKelas] = useState<string>("all");
   const [selectedTa, setSelectedTa] = useState<string>("all");
   const [selectedSiswa, setSelectedSiswa] = useState<Siswa | null>(null);
+  const [printMode, setPrintMode] = useState<"rekap" | "detail" | null>(null);
 
   useEffect(() => {
     fetchData();
