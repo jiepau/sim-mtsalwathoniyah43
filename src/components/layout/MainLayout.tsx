@@ -9,11 +9,11 @@ export function MainLayout() {
       <TopBar />
       <Sidebar />
       <main className="lg:pl-64 flex flex-col min-h-[calc(100vh-3.5rem)]">
-        <div className="p-3 sm:p-4 lg:p-8 flex-1 min-w-0 w-full max-w-full overflow-x-hidden">
+        <div className="p-3 sm:p-4 lg:p-8 pb-16 lg:pb-20 flex-1 min-w-0 w-full max-w-full overflow-x-hidden">
           <Outlet />
         </div>
-        <Footer />
       </main>
+      <Footer />
     </div>
   );
 }

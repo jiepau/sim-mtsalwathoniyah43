@@ -17,10 +17,10 @@ export function SplashScreen({ onFinish }: { onFinish: () => void }) {
     return () => mq.removeEventListener?.('change', update);
   }, []);
 
-  // Timing: lebih cepat & subtle untuk reduced motion
+  // Timing: lebih lama agar tidak terasa terburu-buru
   useEffect(() => {
-    const showMs = reducedMotion ? 1400 : 2400;
-    const exitMs = reducedMotion ? 250 : 850;
+    const showMs = reducedMotion ? 2200 : 3800;
+    const exitMs = reducedMotion ? 300 : 1000;
     const startExit = setTimeout(() => setExiting(true), showMs);
     const finish = setTimeout(onFinish, showMs + exitMs);
     return () => { clearTimeout(startExit); clearTimeout(finish); };
@@ -91,8 +91,8 @@ export function SplashScreen({ onFinish }: { onFinish: () => void }) {
       )}
 
       <div className={`relative flex flex-col items-center gap-3 ${reducedMotion ? '' : 'animate-fade-in'}`}>
-        {/* Label kecil di atas — kontras dinaikkan dari /70 ke /85 */}
-        <span className="text-[11px] font-semibold tracking-[0.4em] text-primary-foreground/85 uppercase">
+        {/* Label di atas — diperbesar agar lebih terbaca */}
+        <span className="text-base sm:text-lg font-bold tracking-[0.5em] text-primary-foreground/90 uppercase">
           SIM
         </span>
 
@@ -136,15 +136,11 @@ export function SplashScreen({ onFinish }: { onFinish: () => void }) {
         </span>
       </div>
 
-      {/* Footer: versi & brand kecil — kontras dinaikkan */}
+      {/* Footer: versi & brand kecil — tanpa Build date */}
       <div className="absolute bottom-6 left-0 right-0 flex flex-col items-center gap-1 text-primary-foreground/85">
-        <div className="flex items-center gap-2 text-[11px] font-semibold tracking-wider">
-          <span className="px-2 py-0.5 rounded-full bg-primary-foreground/15 ring-1 ring-primary-foreground/30">
-            v{APP_VERSION}
-          </span>
-          <span className="text-primary-foreground/60" aria-hidden="true">•</span>
-          <span className="uppercase tracking-[0.25em] text-[10px]">Build {APP_BUILD_DATE}</span>
-        </div>
+        <span className="px-2.5 py-0.5 rounded-full bg-primary-foreground/15 ring-1 ring-primary-foreground/30 text-[11px] font-semibold tracking-wider">
+          v{APP_VERSION}
+        </span>
         <p className="text-[10px] text-primary-foreground/70 tracking-wide">
           © {buildYear} MTs Al Wathoniyah 43
         </p>
