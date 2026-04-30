@@ -392,15 +392,15 @@ export function Sidebar() {
           {!collapsed ? (
             <>
               <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
+                <div className="h-8 w-8 rounded-full bg-white/20 text-white flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
                   {(user.user_metadata?.full_name || user.email || 'U').charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0 leading-tight flex-1">
-                  <p className="text-xs font-semibold text-foreground truncate">
+                  <p className="text-xs font-semibold text-white truncate">
                     {user.user_metadata?.full_name || user.email?.split('@')[0]}
                   </p>
                   {roleDisplayName && (
-                    <p className="text-[10px] text-primary uppercase tracking-wider font-medium truncate">
+                    <p className="text-[10px] text-white/70 uppercase tracking-wider font-medium truncate">
                       {roleDisplayName}
                     </p>
                   )}
@@ -408,7 +408,7 @@ export function Sidebar() {
               </div>
               <button
                 onClick={() => signOut()}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-destructive hover:bg-destructive/10 transition-all duration-200 text-sm font-medium"
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/15 transition-all duration-200 text-sm font-medium"
               >
                 <LogOut className="h-5 w-5 flex-shrink-0" />
                 <span>Keluar</span>
