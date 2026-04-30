@@ -117,6 +117,21 @@ export default function SiswaPage() {
   useEffect(() => {
     localStorage.setItem('siswa_view_mode', viewMode);
   }, [viewMode]);
+
+  // Accordion open state per kelas (persisted)
+  const [openAccordions, setOpenAccordions] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem('siswa_open_accordions');
+      if (raw) return JSON.parse(raw);
+    } catch { /* ignore */ }
+    return [];
+  });
+  const [accordionInitialized, setAccordionInitialized] = useState(false);
+  useEffect(() => {
+    if (accordionInitialized) {
+      localStorage.setItem('siswa_open_accordions', JSON.stringify(openAccordions));
+    }
+  }, [openAccordions, accordionInitialized]);
   
   const [formData, setFormData] = useState({
     nis: '',
