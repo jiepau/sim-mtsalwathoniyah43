@@ -139,6 +139,16 @@ export function TopBar() {
 
           {user ? (
             <>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={cycleGradient}
+                title={`Tema hijau: ${gradientLabel} (klik untuk ubah)`}
+                className="text-muted-foreground hover:text-primary hover:bg-primary/5 h-9 w-9 shrink-0"
+              >
+                <Palette className="h-4 w-4" />
+              </Button>
+
               <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary hover:bg-primary/5 h-9 w-9 shrink-0">
                 <Bell className="h-4 w-4" />
               </Button>
