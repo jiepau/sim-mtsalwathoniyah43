@@ -141,15 +141,39 @@ export function TopBar() {
 
           {user ? (
             <>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={cycleGradient}
-                title={`Tema hijau: ${gradientLabel} (klik untuk ubah)`}
-                className="text-muted-foreground hover:text-primary hover:bg-primary/5 h-9 w-9 shrink-0"
-              >
-                <Palette className="h-4 w-4" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Tema sidebar"
+                    className="text-muted-foreground hover:text-primary hover:bg-primary/5 h-9 w-9 shrink-0"
+                  >
+                    <Palette className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  <DropdownMenuLabel className="text-xs">Warna Tema</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => setTheme('hijau')} className="cursor-pointer">
+                    <span className="h-4 w-4 rounded-full mr-2 bg-gradient-to-br from-emerald-300 to-emerald-500 border border-emerald-600/30" />
+                    <span className="flex-1">Hijau Islami</span>
+                    {themeColor === 'hijau' && <Check className="h-3.5 w-3.5" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('tosca')} className="cursor-pointer">
+                    <span className="h-4 w-4 rounded-full mr-2 bg-gradient-to-br from-cyan-300 to-teal-500 border border-teal-600/30" />
+                    <span className="flex-1">Tosca / Cyan</span>
+                    {themeColor === 'tosca' && <Check className="h-3.5 w-3.5" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-xs">Intensitas</DropdownMenuLabel>
+                  {(['kuat', 'sedang', 'netral'] as const).map((i) => (
+                    <DropdownMenuItem key={i} onClick={() => setIntensity(i)} className="cursor-pointer capitalize">
+                      <span className="flex-1">{i}</span>
+                      {gradientIntensity === i && <Check className="h-3.5 w-3.5" />}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary hover:bg-primary/5 h-9 w-9 shrink-0">
                 <Bell className="h-4 w-4" />
