@@ -35,6 +35,7 @@ import { EmisImportWizard } from '@/components/siswa/EmisImportWizard';
 import { ExportButton } from '@/components/export/ExportButton';
 import { SiswaDetailDialog } from '@/components/siswa/SiswaDetailDialog';
 import { KartuPelajarPrint } from '@/components/siswa/KartuPelajarPrint';
+import { WaOrtuInlineEdit } from '@/components/siswa/WaOrtuInlineEdit';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -606,26 +607,15 @@ export default function SiswaPage() {
     },
     { 
       header: 'WA Ortu', 
-      cell: (item: Siswa) => {
-        if (!item.wa_ortu) return '-';
-        let phone = item.wa_ortu.replace(/[^0-9]/g, '');
-        if (phone.startsWith('0')) {
-          phone = '62' + phone.substring(1);
-        } else if (!phone.startsWith('62')) {
-          phone = '62' + phone;
-        }
-        return (
-          <a 
-            href={`https://wa.me/${phone}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-green-600 hover:text-green-700 hover:underline"
-          >
-            <Phone className="h-3 w-3" />
-            {item.wa_ortu}
-          </a>
-        );
-      }
+      cell: (item: Siswa) => (
+        <WaOrtuInlineEdit
+          siswaId={item.id}
+          value={item.wa_ortu}
+          onSaved={(newVal) => {
+            setSiswa((prev) => prev.map((s) => (s.id === item.id ? { ...s, wa_ortu: newVal } : s)));
+          }}
+        />
+      )
     },
     { 
       header: 'Aksi', 
