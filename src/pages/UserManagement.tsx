@@ -700,6 +700,19 @@ export default function UserManagement() {
                   <Users className="h-4 w-4 mr-2" />
                   {generateGtkLoading ? "Generating..." : "Generate Akun GTK"}
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportGtkAccounts}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Akun GTK
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleDeleteAllGtkAccounts}
+                  disabled={deleteGtkLoading}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <UserMinus className="h-4 w-4 mr-2" />
+                  {deleteGtkLoading ? "Menghapus..." : "Hapus Semua Akun GTK"}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
