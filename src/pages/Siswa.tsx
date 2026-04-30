@@ -1089,28 +1089,32 @@ export default function SiswaPage() {
                           Belum ada siswa di {group.namaKelas}
                         </p>
                         <p className="text-xs text-muted-foreground mb-4">
-                          Tambahkan siswa baru atau import dari EMIS untuk mengisi kelas ini.
+                          {canMutate
+                            ? `Tambahkan siswa baru atau import dari EMIS untuk mengisi kelas ini.`
+                            : `Belum ada data siswa pada kelas ini.`}
                         </p>
-                        <div className="flex items-center justify-center gap-2 flex-wrap">
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setFormData(prev => ({ ...prev, kelas_id: group.kelasId || '' }));
-                              handleOpenDialog();
-                            }}
-                          >
-                            <Plus className="h-4 w-4 mr-1.5" />
-                            Tambah Siswa ke {group.namaKelas}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setEmisImportOpen(true)}
-                          >
-                            <Upload className="h-4 w-4 mr-1.5" />
-                            Import EMIS
-                          </Button>
-                        </div>
+                        {canMutate && (
+                          <div className="flex items-center justify-center gap-2 flex-wrap">
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setFormData(prev => ({ ...prev, kelas_id: group.kelasId || '' }));
+                                handleOpenDialog();
+                              }}
+                            >
+                              <Plus className="h-4 w-4 mr-1.5" />
+                              Tambah Siswa ke {group.namaKelas}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setEmisImportOpen(true)}
+                            >
+                              <Upload className="h-4 w-4 mr-1.5" />
+                              Import EMIS
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <DataTable 
