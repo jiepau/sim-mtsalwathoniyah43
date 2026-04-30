@@ -158,6 +158,16 @@ export function Sidebar() {
       });
   }, []);
 
+  // Sync gradient saat diubah dari TopBar
+  useEffect(() => {
+    const handler = () => {
+      const v = (localStorage.getItem('sidebar-gradient') as 'kuat' | 'sedang' | 'netral') || 'kuat';
+      setGradientIntensity(v);
+    };
+    window.addEventListener('storage', handler);
+    return () => window.removeEventListener('storage', handler);
+  }, []);
+
   const cycleGradient = () => {
     const order: Array<'kuat' | 'sedang' | 'netral'> = ['kuat', 'sedang', 'netral'];
     const next = order[(order.indexOf(gradientIntensity) + 1) % order.length];
