@@ -111,7 +111,19 @@ export default function GtkPtkPage() {
   });
 
   const JABATAN_UTAMA_OPTIONS = ['Kepala Madrasah', 'Guru', 'Tenaga Kependidikan'];
-  const JABATAN_TAMBAHAN_OPTIONS = ['Wakil Kurikulum', 'Wakil Kesiswaan', 'Mengajar'];
+  const JABATAN_TAMBAHAN_OPTIONS = [
+    'Wakil Kurikulum',
+    'Wakil Kesiswaan',
+    'Wakil Sarpras',
+    'Wakil Humas',
+    'Mengajar',
+    'Wali Kelas',
+    'Bendahara',
+    'Operator Madrasah',
+    'Pembina Ekstrakurikuler',
+    'Pembina OSIS',
+    'Staf TU',
+  ];
 
   // Helper: parse jabatan string into utama + tambahan[]
   const parseJabatan = (jabatan: string | null): { utama: string; tambahan: string[] } => {
