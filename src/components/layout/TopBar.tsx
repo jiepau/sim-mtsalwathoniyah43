@@ -112,7 +112,7 @@ export function TopBar() {
             <span
               className={`h-2 w-2 rounded-full ${
                 sessionActive
-                  ? 'bg-emerald-500 animate-pulse'
+                  ? 'bg-green-500 animate-pulse'
                   : !isOnline
                   ? 'bg-red-500 animate-pulse'
                   : 'bg-slate-400'
