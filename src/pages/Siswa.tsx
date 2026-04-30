@@ -548,7 +548,31 @@ export default function SiswaPage() {
   const totalPages = Math.ceil(totalItems / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalItems);
-  const paginatedSiswa = filteredSiswa.slice(startIndex, endIndex);
+  // Group siswa by kelas (sorted by tingkat then nama_kelas; siswa sorted by nama)
+  const groupedSiswa = (() => {
+    const groups = new Map<string, { kelasId: string | null; namaKelas: string; tingkat: number; siswa: Siswa[] }>();
+    for (const s of filteredSiswa) {
+      const key = s.kelas_id || '__no_kelas__';
+      if (!groups.has(key)) {
+        const k = kelas.find(k => k.id === s.kelas_id);
+        groups.set(key, {
+          kelasId: s.kelas_id,
+          namaKelas: k?.nama_kelas || s.kelas?.nama_kelas || 'Belum Ada Kelas',
+          tingkat: k?.tingkat ?? 99,
+          siswa: [],
+        });
+      }
+      groups.get(key)!.siswa.push(s);
+    }
+    // sort siswa within each group by nama
+    for (const g of groups.values()) {
+      g.siswa.sort((a, b) => a.nama.localeCompare(b.nama, 'id'));
+    }
+    return Array.from(groups.values()).sort((a, b) => {
+      if (a.tingkat !== b.tingkat) return a.tingkat - b.tingkat;
+      return a.namaKelas.localeCompare(b.namaKelas, 'id', { numeric: true });
+    });
+  })();
 
   // Reset to page 1 when search or filter changes
   useEffect(() => {
