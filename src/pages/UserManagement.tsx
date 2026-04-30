@@ -49,6 +49,9 @@ interface GtkData {
   id: string;
   nama: string;
   nip: string | null;
+  nuptk: string | null;
+  email: string | null;
+  jabatan: string | null;
   user_id: string | null;
 }
 
