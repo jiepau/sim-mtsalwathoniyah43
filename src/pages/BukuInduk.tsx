@@ -19,7 +19,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { formatDate } from "@/lib/supabase-helpers";
+import { formatDate, normalizeGender, genderLabel } from "@/lib/supabase-helpers";
 import { BukuIndukPrint, BukuIndukSiswa } from "@/components/siswa/BukuIndukPrint";
 
 interface Siswa {
@@ -119,11 +119,7 @@ export default function BukuInduk() {
     return matchSearch && matchKelas && matchTa;
   });
 
-  const getGenderLabel = (gender: string | null) => {
-    if (gender === "L") return "Laki-laki";
-    if (gender === "P") return "Perempuan";
-    return "-";
-  };
+  const getGenderLabel = (gender: string | null) => genderLabel(gender);
 
   if (loading) {
     return (
