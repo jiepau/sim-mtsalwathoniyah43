@@ -502,9 +502,36 @@ export default function GtkPtkPage() {
     },
     { 
       header: 'Jabatan', 
-      cell: (item: GtkPtk) => item.jabatan ? (
-        <Badge variant="outline">{item.jabatan}</Badge>
-      ) : '-'
+      cell: (item: GtkPtk) => {
+        if (!item.jabatan) return '-';
+        const { utama, tambahan } = parseJabatan(item.jabatan);
+        // Singkatan agar badge tetap ringkas
+        const shorten = (s: string) => s
+          .replace(/^Tenaga Kependidikan$/i, 'Tendik')
+          .replace(/^Kepala Madrasah$/i, 'Kamad')
+          .replace(/^Wakil /i, 'Wk. ')
+          .replace(/^Operator Madrasah$/i, 'Operator')
+          .replace(/^Pembina Ekstrakurikuler$/i, 'Pembina Ekskul')
+          .replace(/^Kepala Perpustakaan$/i, 'Ka. Perpus');
+        const utamaLabel = utama ? shorten(utama) : item.jabatan;
+        return (
+          <div className="flex flex-col gap-1 max-w-[180px]">
+            <Badge variant="default" className="w-fit whitespace-nowrap text-xs">
+              {utamaLabel}
+            </Badge>
+            {tambahan.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {tambahan.map((t) => (
+                  <Badge key={t} variant="outline" className="w-fit whitespace-nowrap text-[10px] font-normal py-0 px-1.5">
+                    {shorten(t)}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      },
+      className: 'min-w-[180px]'
     },
     {
       header: 'Status',
