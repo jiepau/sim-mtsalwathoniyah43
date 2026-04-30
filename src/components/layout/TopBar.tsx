@@ -137,13 +137,13 @@ export function TopBar() {
                 <DropdownMenuContent align="end" className="w-52">
                   <DropdownMenuLabel className="text-xs">Warna Tema</DropdownMenuLabel>
                   <DropdownMenuItem onClick={() => setTheme('hijau')} className="cursor-pointer">
-                    <span className="h-4 w-4 rounded-full mr-2 bg-gradient-to-br from-emerald-300 to-emerald-500 border border-emerald-600/30" />
-                    <span className="flex-1">Hijau Islami</span>
+                    <span className="h-4 w-4 rounded-full mr-2 bg-gradient-to-br from-blue-300 to-blue-500 border border-blue-600/30" />
+                    <span className="flex-1">Biru Profesional</span>
                     {themeColor === 'hijau' && <Check className="h-3.5 w-3.5" />}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setTheme('tosca')} className="cursor-pointer">
-                    <span className="h-4 w-4 rounded-full mr-2 bg-gradient-to-br from-cyan-300 to-teal-500 border border-teal-600/30" />
-                    <span className="flex-1">Tosca / Cyan</span>
+                    <span className="h-4 w-4 rounded-full mr-2 bg-gradient-to-br from-sky-300 to-blue-400 border border-blue-500/30" />
+                    <span className="flex-1">Biru Muda / Sky</span>
                     {themeColor === 'tosca' && <Check className="h-3.5 w-3.5" />}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
