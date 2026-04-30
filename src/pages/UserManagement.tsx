@@ -1245,12 +1245,13 @@ export default function UserManagement() {
                         <th className="text-left p-3 font-medium">Role</th>
                         <th className="text-left p-3 font-medium">Status</th>
                         <th className="text-left p-3 font-medium">Akun Dibuat</th>
+                        <th className="text-left p-3 font-medium">Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filtered.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                          <td colSpan={7} className="p-8 text-center text-muted-foreground">
                             Tidak ada data sesuai filter
                           </td>
                         </tr>
@@ -1285,6 +1286,21 @@ export default function UserManagement() {
                           </td>
                           <td className="p-3 text-muted-foreground text-xs">
                             {r.createdAt ? formatDateTime(r.createdAt) : "-"}
+                          </td>
+                          <td className="p-3">
+                            {r.userId ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={resetPwLoading === r.userId}
+                                onClick={() => handleResetGtkPassword(r.gtk, r.userId!)}
+                                title="Reset password tanpa mengubah email"
+                              >
+                                {resetPwLoading === r.userId ? "..." : "Reset Password"}
+                              </Button>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">-</span>
+                            )}
                           </td>
                         </tr>
                       ))}
