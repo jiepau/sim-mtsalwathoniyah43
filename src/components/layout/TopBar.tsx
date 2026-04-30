@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { AppRole } from '@/lib/supabase-helpers';
+import { useSidebarTheme } from '@/hooks/useSidebarTheme';
 
 const roleLabels: Record<AppRole, string> = {
   admin: 'Administrator',
