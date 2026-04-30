@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 
 export type ThemeColor = 'hijau' | 'tosca';
-export type GradientIntensity = 'kuat' | 'sedang' | 'netral';
+export type GradientIntensity = 'kuat' | 'sedang' | 'netral' | 'kontras';
 
 const THEME_KEY = 'sidebar-theme';
 const GRADIENT_KEY = 'sidebar-gradient';
