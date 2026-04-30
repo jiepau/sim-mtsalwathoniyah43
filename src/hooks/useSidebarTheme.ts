@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -29,7 +29,11 @@ export function useSidebarTheme() {
   const { user } = useAuth();
   const [themeColor, setThemeColorState] = useState<ThemeColor>(readTheme);
   const [intensity, setIntensityState] = useState<GradientIntensity>(readIntensity);
+  const userRef = useRef(user);
   const lastUserId = useRef<string | null>(null);
+
+  // Keep ref in sync (no hook count change)
+  userRef.current = user;
 
   // Sync from storage / custom event (cross-tab + same-tab)
   useEffect(() => {
@@ -47,7 +51,11 @@ export function useSidebarTheme() {
 
   // On login: fetch preferences from profiles → apply to local
   useEffect(() => {
-    if (!user || lastUserId.current === user.id) return;
+    if (!user) {
+      lastUserId.current = null;
+      return;
+    }
+    if (lastUserId.current === user.id) return;
     lastUserId.current = user.id;
 
     (async () => {
@@ -67,38 +75,28 @@ export function useSidebarTheme() {
     })();
   }, [user]);
 
-  // Reset tracker on logout
-  useEffect(() => {
-    if (!user) lastUserId.current = null;
-  }, [user]);
+  const persistRemote = (patch: {
+    sidebar_theme?: ThemeColor;
+    sidebar_intensity?: GradientIntensity;
+  }) => {
+    const u = userRef.current;
+    if (!u) return;
+    void supabase.from('profiles').update(patch).eq('user_id', u.id);
+  };
 
-  const persistRemote = useCallback(
-    async (patch: { sidebar_theme?: ThemeColor; sidebar_intensity?: GradientIntensity }) => {
-      if (!user) return;
-      await supabase.from('profiles').update(patch).eq('user_id', user.id);
-    },
-    [user]
-  );
+  const setTheme = (v: ThemeColor) => {
+    localStorage.setItem(THEME_KEY, v);
+    setThemeColorState(v);
+    window.dispatchEvent(new Event(EVENT_NAME));
+    persistRemote({ sidebar_theme: v });
+  };
 
-  const setTheme = useCallback(
-    (v: ThemeColor) => {
-      localStorage.setItem(THEME_KEY, v);
-      setThemeColorState(v);
-      window.dispatchEvent(new Event(EVENT_NAME));
-      persistRemote({ sidebar_theme: v });
-    },
-    [persistRemote]
-  );
-
-  const setIntensity = useCallback(
-    (v: GradientIntensity) => {
-      localStorage.setItem(GRADIENT_KEY, v);
-      setIntensityState(v);
-      window.dispatchEvent(new Event(EVENT_NAME));
-      persistRemote({ sidebar_intensity: v });
-    },
-    [persistRemote]
-  );
+  const setIntensity = (v: GradientIntensity) => {
+    localStorage.setItem(GRADIENT_KEY, v);
+    setIntensityState(v);
+    window.dispatchEvent(new Event(EVENT_NAME));
+    persistRemote({ sidebar_intensity: v });
+  };
 
   return { themeColor, intensity, setTheme, setIntensity };
 }
