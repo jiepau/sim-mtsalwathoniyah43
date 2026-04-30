@@ -877,104 +877,144 @@ export default function SiswaPage() {
         </div>
       </div>
 
-      {/* Pagination Controls - Top */}
+      {/* View mode toggle + counter */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Tampilkan</span>
-          <Select value={pageSize.toString()} onValueChange={(v) => setPageSize(Number(v))}>
-            <SelectTrigger className="w-20 h-9">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="25">25</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-              <SelectItem value="100">100</SelectItem>
-            </SelectContent>
-          </Select>
-          <span className="text-sm text-muted-foreground">data</span>
+          {viewMode === 'table' && (
+            <>
+              <span className="text-sm text-muted-foreground">Tampilkan</span>
+              <Select value={pageSize.toString()} onValueChange={(v) => setPageSize(Number(v))}>
+                <SelectTrigger className="w-20 h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="25">25</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="text-sm text-muted-foreground">data</span>
+            </>
+          )}
         </div>
-        <div className="text-sm text-muted-foreground">
-          Menampilkan {totalItems > 0 ? startIndex + 1 : 0} - {endIndex} dari {totalItems} data
+        <div className="flex items-center gap-3">
+          <div className="text-sm text-muted-foreground">
+            {viewMode === 'table'
+              ? `Menampilkan ${totalItems > 0 ? startIndex + 1 : 0} - ${endIndex} dari ${totalItems} data`
+              : `Total ${totalItems} siswa di ${groupedSiswa.length} kelas`}
+          </div>
+          {/* Toggle view */}
+          <div className="inline-flex rounded-md border bg-background p-0.5">
+            <Button
+              size="sm"
+              variant={viewMode === 'group' ? 'default' : 'ghost'}
+              className="h-8 px-2.5"
+              onClick={() => setViewMode('group')}
+              title="Tampilan per Kelas"
+            >
+              <LayoutList className="h-4 w-4 mr-1.5" />
+              Per Kelas
+            </Button>
+            <Button
+              size="sm"
+              variant={viewMode === 'table' ? 'default' : 'ghost'}
+              className="h-8 px-2.5"
+              onClick={() => setViewMode('table')}
+              title="Tampilan Tabel"
+            >
+              <TableIcon className="h-4 w-4 mr-1.5" />
+              Tabel
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Table */}
-      <DataTable 
-        data={paginatedSiswa} 
-        columns={columns} 
-        loading={loading}
-        emptyMessage="Belum ada data siswa"
-      />
+      {/* Content */}
+      {viewMode === 'table' ? (
+        <>
+          <DataTable 
+            data={paginatedSiswa} 
+            columns={columns} 
+            loading={loading}
+            emptyMessage="Belum ada data siswa"
+          />
 
-      {/* Pagination Controls - Bottom */}
-      {totalPages > 1 && (
-        <div className="mt-4 flex items-center justify-center gap-1">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setCurrentPage(1)} 
-            disabled={currentPage === 1}
-            title="Halaman Pertama"
+          {totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-center gap-1">
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(1)} disabled={currentPage === 1} title="Halaman Pertama">
+                <ChevronsLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} title="Sebelumnya">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex items-center gap-1 mx-2">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum: number;
+                  if (totalPages <= 5) pageNum = i + 1;
+                  else if (currentPage <= 3) pageNum = i + 1;
+                  else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+                  else pageNum = currentPage - 2 + i;
+                  return (
+                    <Button key={pageNum} variant={currentPage === pageNum ? "default" : "outline"} size="sm" className="w-9 h-9" onClick={() => setCurrentPage(pageNum)}>
+                      {pageNum}
+                    </Button>
+                  );
+                })}
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} title="Selanjutnya">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} title="Halaman Terakhir">
+                <ChevronsRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </>
+      ) : (
+        // Group by Kelas (accordion)
+        loading ? (
+          <div className="text-center py-12 text-muted-foreground">Memuat data...</div>
+        ) : groupedSiswa.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground border rounded-md">Belum ada data siswa</div>
+        ) : (
+          <Accordion 
+            type="multiple" 
+            defaultValue={groupedSiswa.map(g => g.kelasId || '__no_kelas__')}
+            className="space-y-2"
           >
-            <ChevronsLeft className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
-            disabled={currentPage === 1}
-            title="Sebelumnya"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          
-          {/* Page numbers */}
-          <div className="flex items-center gap-1 mx-2">
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum: number;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
+            {groupedSiswa.map((group) => {
+              const lakiCount = group.siswa.filter(s => s.jenis_kelamin === 'L' || s.jenis_kelamin === 'Laki-laki').length;
+              const perempuanCount = group.siswa.filter(s => s.jenis_kelamin === 'P' || s.jenis_kelamin === 'Perempuan').length;
               return (
-                <Button
-                  key={pageNum}
-                  variant={currentPage === pageNum ? "default" : "outline"}
-                  size="sm"
-                  className="w-9 h-9"
-                  onClick={() => setCurrentPage(pageNum)}
+                <AccordionItem 
+                  key={group.kelasId || '__no_kelas__'} 
+                  value={group.kelasId || '__no_kelas__'}
+                  className="border rounded-md overflow-hidden bg-card"
                 >
-                  {pageNum}
-                </Button>
+                  <AccordionTrigger className="px-4 py-3 hover:bg-muted/50 hover:no-underline">
+                    <div className="flex items-center gap-3 flex-1">
+                      <Badge variant="default" className="text-sm">{group.namaKelas}</Badge>
+                      <span className="text-sm font-semibold text-foreground">{group.siswa.length} siswa</span>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span className="inline-flex items-center gap-1"><Badge variant="outline" className="h-5 px-1.5 text-[10px]">L</Badge>{lakiCount}</span>
+                        <span className="inline-flex items-center gap-1"><Badge variant="outline" className="h-5 px-1.5 text-[10px]">P</Badge>{perempuanCount}</span>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-0 pb-0">
+                    <DataTable 
+                      data={group.siswa}
+                      columns={columns}
+                      loading={false}
+                      emptyMessage="Tidak ada siswa di kelas ini"
+                    />
+                  </AccordionContent>
+                </AccordionItem>
               );
             })}
-          </div>
-
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} 
-            disabled={currentPage === totalPages}
-            title="Selanjutnya"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setCurrentPage(totalPages)} 
-            disabled={currentPage === totalPages}
-            title="Halaman Terakhir"
-          >
-            <ChevronsRight className="h-4 w-4" />
-          </Button>
-        </div>
+          </Accordion>
+        )
       )}
 
       {/* Dialog Form */}
