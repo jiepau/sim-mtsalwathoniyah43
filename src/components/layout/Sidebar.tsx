@@ -141,14 +141,7 @@ export function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [pendingApprovalCount, setPendingApprovalCount] = useState(0);
   const [taActive, setTaActive] = useState<{ nama_ta: string; semester: string } | null>(null);
-  const [gradientIntensity, setGradientIntensity] = useState<'kuat' | 'sedang' | 'netral'>(() => {
-    if (typeof window === 'undefined') return 'kuat';
-    return (localStorage.getItem('sidebar-gradient') as 'kuat' | 'sedang' | 'netral') || 'kuat';
-  });
-  const [themeColor, setThemeColor] = useState<'hijau' | 'tosca'>(() => {
-    if (typeof window === 'undefined') return 'hijau';
-    return (localStorage.getItem('sidebar-theme') as 'hijau' | 'tosca') || 'hijau';
-  });
+  const { themeColor, intensity: gradientIntensity } = useSidebarTheme();
 
   // Fetch TA aktif
   useEffect(() => {
@@ -161,25 +154,6 @@ export function Sidebar() {
         if (data) setTaActive({ nama_ta: data.nama_ta, semester: data.semester });
       });
   }, []);
-
-  // Sync gradient & theme saat diubah dari TopBar
-  useEffect(() => {
-    const handler = () => {
-      const v = (localStorage.getItem('sidebar-gradient') as 'kuat' | 'sedang' | 'netral') || 'kuat';
-      const t = (localStorage.getItem('sidebar-theme') as 'hijau' | 'tosca') || 'hijau';
-      setGradientIntensity(v);
-      setThemeColor(t);
-    };
-    window.addEventListener('storage', handler);
-    return () => window.removeEventListener('storage', handler);
-  }, []);
-
-  const cycleGradient = () => {
-    const order: Array<'kuat' | 'sedang' | 'netral'> = ['kuat', 'sedang', 'netral'];
-    const next = order[(order.indexOf(gradientIntensity) + 1) % order.length];
-    setGradientIntensity(next);
-    localStorage.setItem('sidebar-gradient', next);
-  };
 
   const gradientMap = {
     hijau: {
@@ -194,12 +168,6 @@ export function Sidebar() {
     },
   };
   const gradientClass = gradientMap[themeColor][gradientIntensity];
-
-  const gradientLabel = {
-    kuat: 'Lebih Hijau',
-    sedang: 'Sedang',
-    netral: 'Netral',
-  }[gradientIntensity];
 
   // Fetch pending approval count for admin
   useEffect(() => {
