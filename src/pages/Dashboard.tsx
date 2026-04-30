@@ -48,7 +48,10 @@ interface MadrasahInfo {
   akreditasi: string;
 }
 
-const COLORS = ['hsl(170, 60%, 32%)', 'hsl(45, 90%, 50%)', 'hsl(0, 72%, 51%)'];
+const KELAS_COLORS = ['hsl(170, 60%, 32%)', 'hsl(199, 89%, 48%)', 'hsl(45, 90%, 50%)', 'hsl(280, 60%, 50%)', 'hsl(340, 70%, 50%)', 'hsl(120, 50%, 40%)', 'hsl(30, 80%, 50%)', 'hsl(210, 70%, 55%)'];
+const GENDER_COLORS = ['hsl(199, 89%, 48%)', 'hsl(340, 70%, 55%)'];
+const KEPEG_COLORS = ['hsl(170, 60%, 32%)', 'hsl(199, 89%, 48%)', 'hsl(30, 80%, 50%)'];
+const KEUANGAN_COLORS = ['hsl(170, 60%, 32%)', 'hsl(45, 90%, 50%)', 'hsl(0, 72%, 51%)'];
 
 export default function Dashboard() {
   const { isAdmin, isBendahara, hasRole } = useAuth();
