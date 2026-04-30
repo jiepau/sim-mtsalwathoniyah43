@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import logoMadrasah from "@/assets/logo-alwathoniyah.png";
+import logoMadrasah from "@/assets/logo-mts.svg";
 
 export interface BukuIndukSiswa {
   id: string;
