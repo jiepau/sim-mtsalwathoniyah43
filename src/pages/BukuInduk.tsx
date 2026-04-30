@@ -19,8 +19,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { formatDate } from "@/lib/supabase-helpers";
+import { formatDate, normalizeGender, genderLabel } from "@/lib/supabase-helpers";
 import { BukuIndukPrint, BukuIndukSiswa } from "@/components/siswa/BukuIndukPrint";
+import { BukuIndukArsipDialog } from "@/components/siswa/BukuIndukArsipDialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { Archive } from "lucide-react";
 
 interface Siswa {
   id: string;
@@ -61,6 +64,7 @@ interface TahunAjaran {
 }
 
 export default function BukuInduk() {
+  const { user } = useAuth();
   const [siswa, setSiswa] = useState<Siswa[]>([]);
   const [kelasList, setKelasList] = useState<Kelas[]>([]);
   const [taList, setTaList] = useState<TahunAjaran[]>([]);
@@ -70,6 +74,53 @@ export default function BukuInduk() {
   const [selectedTa, setSelectedTa] = useState<string>("all");
   const [selectedSiswa, setSelectedSiswa] = useState<Siswa | null>(null);
   const [printMode, setPrintMode] = useState<"rekap" | "detail" | null>(null);
+  const [arsipOpen, setArsipOpen] = useState(false);
+
+  // Helper: simpan snapshot ke arsip lalu mulai cetak
+  const triggerPrint = async (mode: "rekap" | "detail") => {
+    if (filteredSiswa.length === 0) {
+      toast.error("Tidak ada data siswa untuk dicetak");
+      return;
+    }
+    if (mode === "detail" && filteredSiswa.length > 50) {
+      if (!confirm(`Akan mencetak ${filteredSiswa.length} halaman (1 siswa per halaman). Lanjutkan?`)) return;
+    }
+
+    const kelasNama = selectedKelas === "all"
+      ? "Semua Kelas"
+      : kelasList.find(k => k.id === selectedKelas)?.nama_kelas || "-";
+    const taNama = selectedTa === "all"
+      ? "Semua TA"
+      : taList.find(t => t.id === selectedTa)?.nama_ta || "-";
+
+    // Simpan snapshot ke arsip (best-effort, tidak blok cetak jika gagal)
+    try {
+      const judul = `Buku Induk ${mode === "detail" ? "Detail" : "Rekap"} — ${kelasNama} (${taNama})`;
+      let dicetakOlehNama: string | null = null;
+      if (user) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        dicetakOlehNama = prof?.full_name || user.email || null;
+      }
+      await supabase.from("buku_induk_arsip").insert({
+        judul,
+        mode,
+        filter_kelas: kelasNama,
+        filter_ta: taNama,
+        jumlah_siswa: filteredSiswa.length,
+        daftar_siswa: filteredSiswa as any,
+        dicetak_oleh: user?.id ?? null,
+        dicetak_oleh_nama: dicetakOlehNama,
+      });
+    } catch (err) {
+      console.warn("Gagal menyimpan arsip cetak:", err);
+    }
+
+    setPrintMode(mode);
+  };
 
   useEffect(() => {
     fetchData();
@@ -119,11 +170,7 @@ export default function BukuInduk() {
     return matchSearch && matchKelas && matchTa;
   });
 
-  const getGenderLabel = (gender: string | null) => {
-    if (gender === "L") return "Laki-laki";
-    if (gender === "P") return "Perempuan";
-    return "-";
-  };
+  const getGenderLabel = (gender: string | null) => genderLabel(gender);
 
   if (loading) {
     return (
@@ -165,53 +212,42 @@ export default function BukuInduk() {
         description="Rekap data lengkap siswa untuk keperluan administrasi"
         icon={<BookMarked className="h-6 w-6" />}
         actions={
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm" className="h-9">
-                <Printer className="h-4 w-4 mr-1.5" />
-                Cetak Buku Induk
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64">
-              <DropdownMenuLabel>Pilih Format Cetak</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => {
-                  if (filteredSiswa.length === 0) {
-                    toast.error("Tidak ada data siswa untuk dicetak");
-                    return;
-                  }
-                  setPrintMode("rekap");
-                }}
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                <div className="flex flex-col">
-                  <span>Rekap Tabel</span>
-                  <span className="text-xs text-muted-foreground">Daftar siswa dalam bentuk tabel</span>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  if (filteredSiswa.length === 0) {
-                    toast.error("Tidak ada data siswa untuk dicetak");
-                    return;
-                  }
-                  if (filteredSiswa.length > 50) {
-                    if (!confirm(`Akan mencetak ${filteredSiswa.length} halaman (1 siswa per halaman). Lanjutkan?`)) return;
-                  }
-                  setPrintMode("detail");
-                }}
-              >
-                <BookMarked className="h-4 w-4 mr-2" />
-                <div className="flex flex-col">
-                  <span>Detail Per Siswa</span>
-                  <span className="text-xs text-muted-foreground">1 halaman penuh per siswa (untuk arsip)</span>
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" className="h-9" onClick={() => setArsipOpen(true)}>
+              <Archive className="h-4 w-4 mr-1.5" />
+              Arsip Cetak
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" className="h-9">
+                  <Printer className="h-4 w-4 mr-1.5" />
+                  Cetak Buku Induk
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel>Pilih Format Cetak</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => triggerPrint("rekap")}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  <div className="flex flex-col">
+                    <span>Rekap Tabel</span>
+                    <span className="text-xs text-muted-foreground">Daftar siswa dalam bentuk tabel</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => triggerPrint("detail")}>
+                  <BookMarked className="h-4 w-4 mr-2" />
+                  <div className="flex flex-col">
+                    <span>Detail Per Siswa</span>
+                    <span className="text-xs text-muted-foreground">1 halaman penuh per siswa (untuk arsip)</span>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         }
       />
+
+      <BukuIndukArsipDialog open={arsipOpen} onOpenChange={setArsipOpen} />
 
       {/* Filters */}
       <Card className="mb-6">
@@ -269,7 +305,7 @@ export default function BukuInduk() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-primary">
-              {filteredSiswa.filter(s => s.jenis_kelamin === "L").length}
+              {filteredSiswa.filter(s => normalizeGender(s.jenis_kelamin) === "L").length}
             </div>
             <p className="text-sm text-muted-foreground">Laki-laki</p>
           </CardContent>
@@ -277,7 +313,7 @@ export default function BukuInduk() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-primary">
-              {filteredSiswa.filter(s => s.jenis_kelamin === "P").length}
+              {filteredSiswa.filter(s => normalizeGender(s.jenis_kelamin) === "P").length}
             </div>
             <p className="text-sm text-muted-foreground">Perempuan</p>
           </CardContent>
@@ -326,7 +362,7 @@ export default function BukuInduk() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant={s.jenis_kelamin === "L" ? "default" : "secondary"}>
+                        <Badge variant={normalizeGender(s.jenis_kelamin) === "L" ? "default" : "secondary"}>
                           {getGenderLabel(s.jenis_kelamin)}
                         </Badge>
                         {s.kelas && (

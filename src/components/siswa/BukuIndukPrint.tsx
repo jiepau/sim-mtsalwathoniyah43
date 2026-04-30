@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { normalizeGender, genderLabel } from "@/lib/supabase-helpers";
 import logoMadrasah from "@/assets/logo-mts.svg";
 
 export interface BukuIndukSiswa {
@@ -58,7 +59,7 @@ const formatTTL = (s: BukuIndukSiswa): string => {
   return t || tg || "-";
 };
 
-const getGender = (g: string | null) => (g === "L" ? "Laki-laki" : g === "P" ? "Perempuan" : "-");
+const getGender = (g: string | null) => genderLabel(g);
 
 export function BukuIndukPrint({ siswaList, mode, onClose, filterInfo }: Props) {
   const [madrasah, setMadrasah] = useState<MadrasahInfo | null>(null);
@@ -266,7 +267,7 @@ export function BukuIndukPrint({ siswaList, mode, onClose, filterInfo }: Props) 
                     <td>{s.nis}</td>
                     <td>{s.nisn || "-"}</td>
                     <td>{s.nama}</td>
-                    <td className="center">{s.jenis_kelamin || "-"}</td>
+                    <td className="center">{normalizeGender(s.jenis_kelamin) || "-"}</td>
                     <td>{formatTTL(s)}</td>
                     <td>{s.nama_ayah_kandung || "-"}</td>
                     <td>{s.nama_ibu_kandung || "-"}</td>

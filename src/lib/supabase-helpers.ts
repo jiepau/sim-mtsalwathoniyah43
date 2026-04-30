@@ -63,3 +63,22 @@ export function formatDateTime(date: string | Date): string {
     minute: '2-digit',
   }).format(new Date(date));
 }
+
+/**
+ * Normalize jenis_kelamin value to single char: 'L' | 'P' | null.
+ * Handles legacy values like 'Laki-laki', 'Perempuan', mixed case.
+ */
+export function normalizeGender(g: string | null | undefined): 'L' | 'P' | null {
+  if (!g) return null;
+  const s = g.trim().toLowerCase();
+  if (s === 'l' || s.startsWith('laki')) return 'L';
+  if (s === 'p' || s.startsWith('perem')) return 'P';
+  return null;
+}
+
+export function genderLabel(g: string | null | undefined): string {
+  const n = normalizeGender(g);
+  if (n === 'L') return 'Laki-laki';
+  if (n === 'P') return 'Perempuan';
+  return '-';
+}
