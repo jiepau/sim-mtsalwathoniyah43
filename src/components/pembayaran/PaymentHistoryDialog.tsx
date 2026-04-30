@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { History, Calendar, CreditCard, Check, Clock, X, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { KwitansiPrintDialog } from './KwitansiPrintDialog';
 import {
   Dialog,
@@ -63,7 +64,8 @@ export function PaymentHistoryDialog({
 }: PaymentHistoryDialogProps) {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(false);
-  const [kwitansiPayment, setKwitansiPayment] = useState<PaymentRecord | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [kwitansiPayments, setKwitansiPayments] = useState<PaymentRecord[]>([]);
 
   useEffect(() => {
     if (open && siswaId) {
