@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CreditCard, Search, Check, Clock, History, Pencil, AlertCircle } from 'lucide-react';
+import { CreditCard, Search, Check, Clock, History, Pencil, AlertCircle, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
