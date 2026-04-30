@@ -29,6 +29,25 @@ export function TopBar() {
   const [isOnline, setIsOnline] = useState<boolean>(
     typeof navigator !== 'undefined' ? navigator.onLine : true
   );
+  const [gradientIntensity, setGradientIntensity] = useState<'kuat' | 'sedang' | 'netral'>(() => {
+    if (typeof window === 'undefined') return 'kuat';
+    return (localStorage.getItem('sidebar-gradient') as 'kuat' | 'sedang' | 'netral') || 'kuat';
+  });
+
+  const cycleGradient = () => {
+    const order: Array<'kuat' | 'sedang' | 'netral'> = ['kuat', 'sedang', 'netral'];
+    const next = order[(order.indexOf(gradientIntensity) + 1) % order.length];
+    setGradientIntensity(next);
+    localStorage.setItem('sidebar-gradient', next);
+    // Trigger reload supaya Sidebar re-read localStorage
+    window.dispatchEvent(new Event('storage'));
+  };
+
+  const gradientLabel = {
+    kuat: 'Kuat',
+    sedang: 'Sedang',
+    netral: 'Netral',
+  }[gradientIntensity];
 
   // Reactive: reset role saat user berubah/logout supaya indikator instan sinkron
   useEffect(() => {
