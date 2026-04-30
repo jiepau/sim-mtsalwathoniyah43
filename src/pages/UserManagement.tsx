@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { Shield, Plus, Pencil, Trash2, UserPlus, Eye, EyeOff, Link2, Download, CheckCircle, Users, UserMinus } from "lucide-react";
+import { Shield, Plus, Pencil, Trash2, UserPlus, Eye, EyeOff, Link2, Download, CheckCircle, Users, UserMinus, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
