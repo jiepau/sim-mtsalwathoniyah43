@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { History, Calendar, CreditCard, Check, Clock, X, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { KwitansiPrintDialog } from './KwitansiPrintDialog';
 import {
   Dialog,
@@ -63,7 +64,8 @@ export function PaymentHistoryDialog({
 }: PaymentHistoryDialogProps) {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(false);
-  const [kwitansiPayment, setKwitansiPayment] = useState<PaymentRecord | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [kwitansiPayments, setKwitansiPayments] = useState<PaymentRecord[]>([]);
 
   useEffect(() => {
     if (open && siswaId) {
@@ -73,8 +75,9 @@ export function PaymentHistoryDialog({
 
   const fetchPaymentHistory = async () => {
     if (!siswaId) return;
-    
+
     setLoading(true);
+    setSelectedIds(new Set());
     try {
       const { data, error } = await supabase
         .from('pembayaran')
@@ -90,6 +93,24 @@ export function PaymentHistoryDialog({
       setLoading(false);
     }
   };
+
+  const printablePayments = payments.filter(p => Number(p.nominal_bayar) > 0);
+  const allSelected = printablePayments.length > 0 && selectedIds.size === printablePayments.length;
+  const toggleOne = (id: string, checked: boolean) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (checked) next.add(id); else next.delete(id);
+      return next;
+    });
+  };
+  const toggleAll = (checked: boolean) => {
+    setSelectedIds(checked ? new Set(printablePayments.map(p => p.id)) : new Set());
+  };
+  const handlePrintSelected = () => {
+    const selected = payments.filter(p => selectedIds.has(p.id));
+    if (selected.length) setKwitansiPayments(selected);
+  };
+
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -164,6 +185,27 @@ export function PaymentHistoryDialog({
 
         <Separator />
 
+        {/* Bulk action toolbar */}
+        {printablePayments.length > 0 && (
+          <div className="flex items-center justify-between gap-2 py-2 px-1">
+            <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+              <Checkbox
+                checked={allSelected}
+                onCheckedChange={(c) => toggleAll(!!c)}
+              />
+              Pilih semua transaksi yang sudah dibayar ({printablePayments.length})
+            </label>
+            <Button
+              size="sm"
+              onClick={handlePrintSelected}
+              disabled={selectedIds.size === 0}
+            >
+              <Printer className="h-4 w-4 mr-2" />
+              Cetak {selectedIds.size > 0 ? `${selectedIds.size} ` : ''}Kwitansi
+            </Button>
+          </div>
+        )}
+
         {/* Payment List */}
         <ScrollArea className="h-[300px] pr-4">
           {loading ? (
@@ -178,25 +220,35 @@ export function PaymentHistoryDialog({
             <div className="space-y-3">
               {payments.map((payment) => {
                 const sisa = Number(payment.nominal) - Number(payment.nominal_bayar);
+                const canPrint = Number(payment.nominal_bayar) > 0;
                 return (
-                  <div 
-                    key={payment.id} 
+                  <div
+                    key={payment.id}
                     className="border rounded-lg p-4 hover:bg-muted/30 transition-colors"
                   >
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <p className="font-medium">{payment.jenis_tagihan?.nama_tagihan}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Periode: {getPeriode(payment.bulan, payment.tahun)}
-                        </p>
+                    <div className="flex justify-between items-start mb-2 gap-2">
+                      <div className="flex items-start gap-3 flex-1">
+                        {canPrint && (
+                          <Checkbox
+                            className="mt-1"
+                            checked={selectedIds.has(payment.id)}
+                            onCheckedChange={(c) => toggleOne(payment.id, !!c)}
+                          />
+                        )}
+                        <div>
+                          <p className="font-medium">{payment.jenis_tagihan?.nama_tagihan}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Periode: {getPeriode(payment.bulan, payment.tahun)}
+                          </p>
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {Number(payment.nominal_bayar) > 0 && (
+                        {canPrint && (
                           <Button
                             size="sm"
                             variant="outline"
                             className="h-7 px-2"
-                            onClick={() => setKwitansiPayment(payment)}
+                            onClick={() => setKwitansiPayments([payment])}
                             title="Cetak Kwitansi"
                           >
                             <Printer className="h-3.5 w-3.5" />
@@ -205,7 +257,7 @@ export function PaymentHistoryDialog({
                         {getStatusBadge(payment.status)}
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-3 gap-2 text-sm mt-3">
                       <div>
                         <p className="text-muted-foreground">Tagihan</p>
@@ -244,9 +296,9 @@ export function PaymentHistoryDialog({
       </DialogContent>
 
       <KwitansiPrintDialog
-        open={!!kwitansiPayment}
-        onOpenChange={(o) => !o && setKwitansiPayment(null)}
-        payment={kwitansiPayment}
+        open={kwitansiPayments.length > 0}
+        onOpenChange={(o) => !o && setKwitansiPayments([])}
+        payments={kwitansiPayments}
         siswaInfo={siswaInfo}
       />
     </Dialog>
