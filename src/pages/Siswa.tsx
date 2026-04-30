@@ -819,7 +819,7 @@ export default function SiswaPage() {
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Laki-laki</p>
-            <p className="text-lg font-bold text-foreground">{filteredSiswa.filter(s => s.jenis_kelamin === 'Laki-laki').length}</p>
+            <p className="text-lg font-bold text-foreground">{filteredSiswa.filter(s => s.jenis_kelamin === 'L' || s.jenis_kelamin === 'Laki-laki').length}</p>
           </div>
         </div>
         <div className="bg-card rounded-lg border p-3 flex items-center gap-3">
@@ -828,7 +828,7 @@ export default function SiswaPage() {
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Perempuan</p>
-            <p className="text-lg font-bold text-foreground">{filteredSiswa.filter(s => s.jenis_kelamin === 'Perempuan').length}</p>
+            <p className="text-lg font-bold text-foreground">{filteredSiswa.filter(s => s.jenis_kelamin === 'P' || s.jenis_kelamin === 'Perempuan').length}</p>
           </div>
         </div>
         <div className="bg-card rounded-lg border p-3 flex items-center gap-3">
