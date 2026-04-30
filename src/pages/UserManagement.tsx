@@ -116,6 +116,11 @@ export default function UserManagement() {
   // Delete all GTK accounts
   const [deleteGtkLoading, setDeleteGtkLoading] = useState(false);
 
+  // List GTK accounts dialog
+  const [listGtkDialogOpen, setListGtkDialogOpen] = useState(false);
+  const [listGtkSearch, setListGtkSearch] = useState("");
+  const [listGtkStatusFilter, setListGtkStatusFilter] = useState<"all" | "aktif" | "menunggu" | "belum">("all");
+
   useEffect(() => {
     fetchUsers();
     fetchGtkList();
