@@ -399,7 +399,7 @@ export function Sidebar() {
 
       {/* Footer — quick logout & info ringkas */}
       {user && (
-        <div className="px-3 py-3 border-t border-primary/15 bg-white/40 backdrop-blur-sm space-y-1">
+        <div className="px-3 pt-2 pb-3 space-y-1">
           {!collapsed ? (
             <>
               <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg">
