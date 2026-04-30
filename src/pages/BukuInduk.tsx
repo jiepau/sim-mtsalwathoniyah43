@@ -44,6 +44,7 @@ interface Siswa {
     id: string;
     nama_ta: string;
   } | null;
+  foto_path?: string | null;
   created_at: string;
 }
 
