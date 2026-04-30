@@ -279,7 +279,24 @@ export default function PembayaranPage() {
     }
   };
 
-  const filteredData = pembayaran.filter(p => 
+  const handleDelete = async (item: Pembayaran) => {
+    const label = `${item.siswa?.nama || 'Siswa'} - ${item.jenis_tagihan?.nama_tagihan || 'Tagihan'}${item.bulan && item.tahun ? ` (${bulanOptions.find(b => b.value === String(item.bulan))?.label} ${item.tahun})` : ''}`;
+    const isPaid = item.nominal_bayar > 0;
+    const warning = isPaid
+      ? `\n\n⚠️ PERHATIAN: Tagihan ini sudah dibayar ${formatCurrency(item.nominal_bayar)}. Menghapus akan menghilangkan riwayat pembayaran ini.`
+      : '';
+    if (!confirm(`Hapus tagihan berikut?\n\n${label}${warning}\n\nTindakan ini tidak dapat dibatalkan.`)) return;
+
+    try {
+      const { error } = await supabase.from('pembayaran').delete().eq('id', item.id);
+      if (error) throw error;
+      toast.success('Data pembayaran berhasil dihapus');
+      fetchData();
+    } catch (error: any) {
+      toast.error(mapDatabaseError(error));
+    }
+  };
+
     p.siswa?.nama.toLowerCase().includes(search.toLowerCase()) ||
     p.siswa?.nis.toLowerCase().includes(search.toLowerCase())
   );
