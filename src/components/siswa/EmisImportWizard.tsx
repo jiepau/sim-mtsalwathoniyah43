@@ -188,64 +188,99 @@ export function EmisImportWizard({ open, onOpenChange, kelasList, taList, onSucc
     try {
       const buf = await f.arrayBuffer();
       const wb = XLSX.read(buf, { type: 'array', cellDates: false });
-      const sheet = wb.Sheets[wb.SheetNames[0]];
-      const arr: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true, defval: '' });
-      if (!arr.length) throw new Error('File kosong');
-
-      const headerIdx = findHeaderRow(arr);
-      const headers = (arr[headerIdx] || []).map((h: any) => String(h || ''));
-
-      const idx = {
-        nama: colIndex(headers, 'nama', 'lengkap'),
-        nisn: colIndex(headers, 'nisn'),
-        nik: colIndex(headers, 'nik'),
-        tempat: colIndex(headers, 'tempat', 'lahir'),
-        tanggal: colIndex(headers, 'tanggal', 'lahir'),
-        kelas: colIndex(headers, 'tingkat'),
-        status: colIndex(headers, 'status'),
-        jk: colIndex(headers, 'kelamin'),
-        alamat: colIndex(headers, 'alamat'),
-        telp: colIndex(headers, 'telepon'),
-        ayah: colIndex(headers, 'ayah'),
-        ibu: colIndex(headers, 'ibu'),
-      };
-
-      if (idx.nama < 0 || idx.nisn < 0) {
-        throw new Error('Kolom "Nama Lengkap" atau "NISN" tidak ditemukan. Pastikan file ini hasil unduhan EMIS.');
-      }
-      // Fallback for class column
-      if (idx.kelas < 0) {
-        const k2 = colIndex(headers, 'rombel');
-        if (k2 >= 0) idx.kelas = k2;
-      }
+      if (!wb.SheetNames.length) throw new Error('File kosong');
 
       const parsed: EmisRow[] = [];
-      for (let i = headerIdx + 1; i < arr.length; i++) {
-        const r = arr[i];
-        if (!r || r.every((c: any) => !cleanText(c))) continue;
-        const nama = cleanText(r[idx.nama]);
-        const nisn = cleanText(r[idx.nisn]);
-        if (!nama || !nisn) continue;
-        const { tingkat, rombel } = idx.kelas >= 0 ? parseTingkatRombel(cleanText(r[idx.kelas])) : { tingkat: null, rombel: '' };
-        parsed.push({
-          nama,
-          nisn,
-          nik: idx.nik >= 0 ? cleanText(r[idx.nik]) : '',
-          tempat_lahir: idx.tempat >= 0 ? cleanText(r[idx.tempat]) : '',
-          tanggal_lahir: idx.tanggal >= 0 ? parseTanggal(r[idx.tanggal]) : null,
-          tingkat,
-          rombel,
-          kelas_label: idx.kelas >= 0 ? cleanText(r[idx.kelas]) : '',
-          jenis_kelamin: idx.jk >= 0 ? normalizeJK(cleanText(r[idx.jk])) : '',
-          alamat: idx.alamat >= 0 ? cleanText(r[idx.alamat]) : '',
-          no_telepon: idx.telp >= 0 ? normalizeWa(r[idx.telp]) : '',
-          nama_ayah: idx.ayah >= 0 ? cleanText(r[idx.ayah]) : '',
-          nama_ibu: idx.ibu >= 0 ? cleanText(r[idx.ibu]) : '',
-          status: idx.status >= 0 ? cleanText(r[idx.status]) : 'Aktif',
-        });
+      const sheetStats: { name: string; count: number }[] = [];
+      const sheetErrors: string[] = [];
+      const seenNisn = new Set<string>();
+
+      // Loop ALL sheets — EMIS sering pisah per kelas/rombel
+      for (const sheetName of wb.SheetNames) {
+        const sheet = wb.Sheets[sheetName];
+        const arr: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true, defval: '' });
+        if (!arr.length) continue;
+
+        let headerIdx: number;
+        try {
+          headerIdx = findHeaderRow(arr);
+        } catch {
+          // Sheet ini tidak punya header EMIS — skip diam-diam
+          continue;
+        }
+        const headers = (arr[headerIdx] || []).map((h: any) => String(h || ''));
+
+        const idx = {
+          nama: colIndex(headers, 'nama', 'lengkap'),
+          nisn: colIndex(headers, 'nisn'),
+          nik: colIndex(headers, 'nik'),
+          tempat: colIndex(headers, 'tempat', 'lahir'),
+          tanggal: colIndex(headers, 'tanggal', 'lahir'),
+          kelas: colIndex(headers, 'tingkat'),
+          status: colIndex(headers, 'status'),
+          jk: colIndex(headers, 'kelamin'),
+          alamat: colIndex(headers, 'alamat'),
+          telp: colIndex(headers, 'telepon'),
+          ayah: colIndex(headers, 'ayah'),
+          ibu: colIndex(headers, 'ibu'),
+        };
+
+        if (idx.nama < 0 || idx.nisn < 0) {
+          sheetErrors.push(`Sheet "${sheetName}": kolom Nama/NISN tidak ditemukan, dilewati.`);
+          continue;
+        }
+        if (idx.kelas < 0) {
+          const k2 = colIndex(headers, 'rombel');
+          if (k2 >= 0) idx.kelas = k2;
+        }
+
+        let countThisSheet = 0;
+        for (let i = headerIdx + 1; i < arr.length; i++) {
+          const r = arr[i];
+          if (!r || r.every((c: any) => !cleanText(c))) continue;
+          const nama = cleanText(r[idx.nama]);
+          const nisn = cleanText(r[idx.nisn]);
+          if (!nama || !nisn) continue;
+          if (seenNisn.has(nisn)) continue; // dedupe antar-sheet
+          seenNisn.add(nisn);
+
+          const { tingkat, rombel } = idx.kelas >= 0 ? parseTingkatRombel(cleanText(r[idx.kelas])) : { tingkat: null, rombel: '' };
+          parsed.push({
+            nama,
+            nisn,
+            nik: idx.nik >= 0 ? cleanText(r[idx.nik]) : '',
+            tempat_lahir: idx.tempat >= 0 ? cleanText(r[idx.tempat]) : '',
+            tanggal_lahir: idx.tanggal >= 0 ? parseTanggal(r[idx.tanggal]) : null,
+            tingkat,
+            rombel,
+            kelas_label: idx.kelas >= 0 ? cleanText(r[idx.kelas]) : '',
+            jenis_kelamin: idx.jk >= 0 ? normalizeJK(cleanText(r[idx.jk])) : '',
+            alamat: idx.alamat >= 0 ? cleanText(r[idx.alamat]) : '',
+            no_telepon: idx.telp >= 0 ? normalizeWa(r[idx.telp]) : '',
+            nama_ayah: idx.ayah >= 0 ? cleanText(r[idx.ayah]) : '',
+            nama_ibu: idx.ibu >= 0 ? cleanText(r[idx.ibu]) : '',
+            status: idx.status >= 0 ? cleanText(r[idx.status]) : 'Aktif',
+          });
+          countThisSheet++;
+        }
+        if (countThisSheet > 0) sheetStats.push({ name: sheetName, count: countThisSheet });
       }
 
-      if (!parsed.length) throw new Error('Tidak ada baris siswa yang valid ditemukan.');
+      if (!parsed.length) {
+        const detail = sheetErrors.length ? ` (${sheetErrors.join(' ')})` : '';
+        throw new Error('Tidak ada baris siswa yang valid ditemukan.' + detail);
+      }
+
+      // Notifikasi multi-sheet
+      if (sheetStats.length > 1) {
+        toast.success(
+          `Terbaca ${sheetStats.length} sheet: ${sheetStats.map(s => `${s.name} (${s.count})`).join(', ')}`
+        );
+      }
+      if (sheetErrors.length) {
+        sheetErrors.forEach(msg => toast.warning(msg));
+      }
+
       setRows(parsed);
 
       // Auto-suggest class mapping
