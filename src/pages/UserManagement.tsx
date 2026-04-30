@@ -95,6 +95,10 @@ export default function UserManagement() {
   const [generateLoading, setGenerateLoading] = useState(false);
   const [generateResults, setGenerateResults] = useState<any>(null);
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
+  const [generateMode, setGenerateMode] = useState<"siswa" | "gtk">("siswa");
+
+  // Generate GTK accounts
+  const [generateGtkLoading, setGenerateGtkLoading] = useState(false);
 
   // Delete all student accounts
   const [deleteStudentsLoading, setDeleteStudentsLoading] = useState(false);
