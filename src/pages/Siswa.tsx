@@ -117,6 +117,21 @@ export default function SiswaPage() {
   useEffect(() => {
     localStorage.setItem('siswa_view_mode', viewMode);
   }, [viewMode]);
+
+  // Accordion open state per kelas (persisted)
+  const [openAccordions, setOpenAccordions] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem('siswa_open_accordions');
+      if (raw) return JSON.parse(raw);
+    } catch { /* ignore */ }
+    return [];
+  });
+  const [accordionInitialized, setAccordionInitialized] = useState(false);
+  useEffect(() => {
+    if (accordionInitialized) {
+      localStorage.setItem('siswa_open_accordions', JSON.stringify(openAccordions));
+    }
+  }, [openAccordions, accordionInitialized]);
   
   const [formData, setFormData] = useState({
     nis: '',
@@ -550,9 +565,24 @@ export default function SiswaPage() {
   const endIndex = Math.min(startIndex + pageSize, totalItems);
   const paginatedSiswa = filteredSiswa.slice(startIndex, endIndex);
 
-  // Group siswa by kelas (sorted by tingkat then nama_kelas; siswa sorted by nama)
+  // Group siswa by kelas. Include ALL kelas (even empty ones) when no kelas filter is active,
+  // so admin can see kelas kosong + ajakan tambah siswa.
   const groupedSiswa = (() => {
     const groups = new Map<string, { kelasId: string | null; namaKelas: string; tingkat: number; siswa: Siswa[] }>();
+
+    // Seed dari master kelas (hanya jika tidak ada filter kelas)
+    if (!kelasFilter) {
+      for (const k of kelas) {
+        groups.set(k.id, {
+          kelasId: k.id,
+          namaKelas: k.nama_kelas,
+          tingkat: k.tingkat ?? 99,
+          siswa: [],
+        });
+      }
+    }
+
+    // Isi siswa
     for (const s of filteredSiswa) {
       const key = s.kelas_id || '__no_kelas__';
       if (!groups.has(key)) {
@@ -566,6 +596,7 @@ export default function SiswaPage() {
       }
       groups.get(key)!.siswa.push(s);
     }
+
     // sort siswa within each group by nama
     for (const g of groups.values()) {
       g.siswa.sort((a, b) => a.nama.localeCompare(b.nama, 'id'));
@@ -575,6 +606,20 @@ export default function SiswaPage() {
       return a.namaKelas.localeCompare(b.namaKelas, 'id', { numeric: true });
     });
   })();
+
+  // Inisialisasi accordion: jika belum ada state tersimpan, buka semua kelas yang ada siswanya
+  useEffect(() => {
+    if (!accordionInitialized && !loading && groupedSiswa.length > 0) {
+      const stored = localStorage.getItem('siswa_open_accordions');
+      if (!stored) {
+        const initialOpen = groupedSiswa
+          .filter(g => g.siswa.length > 0)
+          .map(g => g.kelasId || '__no_kelas__');
+        setOpenAccordions(initialOpen);
+      }
+      setAccordionInitialized(true);
+    }
+  }, [loading, groupedSiswa, accordionInitialized]);
 
   // Reset to page 1 when search or filter changes
   useEffect(() => {
@@ -980,35 +1025,82 @@ export default function SiswaPage() {
         ) : (
           <Accordion 
             type="multiple" 
-            defaultValue={groupedSiswa.map(g => g.kelasId || '__no_kelas__')}
+            value={openAccordions}
+            onValueChange={setOpenAccordions}
             className="space-y-2"
           >
             {groupedSiswa.map((group) => {
               const lakiCount = group.siswa.filter(s => s.jenis_kelamin === 'L' || s.jenis_kelamin === 'Laki-laki').length;
               const perempuanCount = group.siswa.filter(s => s.jenis_kelamin === 'P' || s.jenis_kelamin === 'Perempuan').length;
+              const isEmpty = group.siswa.length === 0;
               return (
                 <AccordionItem 
                   key={group.kelasId || '__no_kelas__'} 
                   value={group.kelasId || '__no_kelas__'}
-                  className="border rounded-md overflow-hidden bg-card"
+                  className={cn(
+                    "border rounded-md overflow-hidden bg-card",
+                    isEmpty && "border-dashed opacity-90"
+                  )}
                 >
                   <AccordionTrigger className="px-4 py-3 hover:bg-muted/50 hover:no-underline">
                     <div className="flex items-center gap-3 flex-1">
-                      <Badge variant="default" className="text-sm">{group.namaKelas}</Badge>
-                      <span className="text-sm font-semibold text-foreground">{group.siswa.length} siswa</span>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span className="inline-flex items-center gap-1"><Badge variant="outline" className="h-5 px-1.5 text-[10px]">L</Badge>{lakiCount}</span>
-                        <span className="inline-flex items-center gap-1"><Badge variant="outline" className="h-5 px-1.5 text-[10px]">P</Badge>{perempuanCount}</span>
-                      </div>
+                      <Badge variant={isEmpty ? "outline" : "default"} className="text-sm">{group.namaKelas}</Badge>
+                      <span className={cn(
+                        "text-sm font-semibold",
+                        isEmpty ? "text-muted-foreground" : "text-foreground"
+                      )}>
+                        {group.siswa.length} siswa
+                      </span>
+                      {!isEmpty && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="inline-flex items-center gap-1"><Badge variant="outline" className="h-5 px-1.5 text-[10px]">L</Badge>{lakiCount}</span>
+                          <span className="inline-flex items-center gap-1"><Badge variant="outline" className="h-5 px-1.5 text-[10px]">P</Badge>{perempuanCount}</span>
+                        </div>
+                      )}
+                      {isEmpty && (
+                        <Badge variant="secondary" className="text-[10px] font-normal">Kosong</Badge>
+                      )}
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-0 pb-0">
-                    <DataTable 
-                      data={group.siswa}
-                      columns={columns}
-                      loading={false}
-                      emptyMessage="Tidak ada siswa di kelas ini"
-                    />
+                    {isEmpty ? (
+                      <div className="px-6 py-8 text-center border-t bg-muted/20">
+                        <Users className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
+                        <p className="text-sm font-medium text-foreground mb-1">
+                          Belum ada siswa di {group.namaKelas}
+                        </p>
+                        <p className="text-xs text-muted-foreground mb-4">
+                          Tambahkan siswa baru atau import dari EMIS untuk mengisi kelas ini.
+                        </p>
+                        <div className="flex items-center justify-center gap-2 flex-wrap">
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, kelas_id: group.kelasId || '' }));
+                              handleOpenDialog();
+                            }}
+                          >
+                            <Plus className="h-4 w-4 mr-1.5" />
+                            Tambah Siswa ke {group.namaKelas}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEmisImportOpen(true)}
+                          >
+                            <Upload className="h-4 w-4 mr-1.5" />
+                            Import EMIS
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <DataTable 
+                        data={group.siswa}
+                        columns={columns}
+                        loading={false}
+                        emptyMessage="Tidak ada siswa di kelas ini"
+                      />
+                    )}
                   </AccordionContent>
                 </AccordionItem>
               );
