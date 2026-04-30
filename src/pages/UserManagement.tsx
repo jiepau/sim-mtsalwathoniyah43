@@ -450,7 +450,7 @@ export default function UserManagement() {
   };
 
   const handleGenerateGtkAccounts = async () => {
-    if (!confirm("Generate akun untuk semua GTK aktif yang belum memiliki akun?\n\n• Email: pakai email asli (jika ada), fallback ke NUPTK/NIP@gtk.mts\n• Password: Gtk + NUPTK/NIP\n• Role: Guru → 'guru', selain itu → 'operator'")) return;
+    if (!confirm("Generate akun untuk semua GTK aktif yang belum memiliki akun?\n\n• Email: pakai email asli (jika ada), fallback ke NUPTK/NIP@gtk.mts\n• Password: Gtk + NUPTK/NIP\n• Role otomatis berdasarkan jabatan:\n   - Kepala/Wakil Kepala Madrasah → admin\n   - Bendahara → bendahara\n   - Guru (apapun) → guru\n   - TU/Tendik/lainnya → operator")) return;
 
     setGenerateGtkLoading(true);
     try {
