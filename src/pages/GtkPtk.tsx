@@ -123,6 +123,8 @@ export default function GtkPtkPage() {
     'Pembina Ekstrakurikuler',
     'Pembina OSIS',
     'Staf TU',
+    'Kepala Perpustakaan',
+    'Pustakawan',
   ];
 
   // Helper: parse jabatan string into utama + tambahan[]
