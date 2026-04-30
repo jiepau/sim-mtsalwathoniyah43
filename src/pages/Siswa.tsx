@@ -90,6 +90,8 @@ export default function SiswaPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const kelasFilter = searchParams.get('kelas');
   const taFilter = searchParams.get('ta');
+  const { hasRole } = useAuth();
+  const canMutate = hasRole('admin') || hasRole('operator');
   
   const [siswa, setSiswa] = useState<Siswa[]>([]);
   const [kelas, setKelas] = useState<Kelas[]>([]);
