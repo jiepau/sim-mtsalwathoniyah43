@@ -142,6 +142,7 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [pendingApprovalCount, setPendingApprovalCount] = useState(0);
+  const [loggingOut, setLoggingOut] = useState(false);
   const [taActive, setTaActive] = useState<{ nama_ta: string; semester: string } | null>(null);
   const { themeColor, intensity: gradientIntensity } = useSidebarTheme();
 
