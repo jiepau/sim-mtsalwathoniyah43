@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { History, Calendar, CreditCard, Check, Clock, X } from 'lucide-react';
+import { History, Calendar, CreditCard, Check, Clock, X, Printer } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { KwitansiPrintDialog } from './KwitansiPrintDialog';
 import {
   Dialog,
   DialogContent,
