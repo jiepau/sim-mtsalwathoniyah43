@@ -1143,6 +1143,8 @@ export type Database = {
           full_name: string
           id: string
           initial_password: string | null
+          sidebar_intensity: string | null
+          sidebar_theme: string | null
           updated_at: string
           user_id: string
         }
@@ -1152,6 +1154,8 @@ export type Database = {
           full_name: string
           id?: string
           initial_password?: string | null
+          sidebar_intensity?: string | null
+          sidebar_theme?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1161,6 +1165,8 @@ export type Database = {
           full_name?: string
           id?: string
           initial_password?: string | null
+          sidebar_intensity?: string | null
+          sidebar_theme?: string | null
           updated_at?: string
           user_id?: string
         }
