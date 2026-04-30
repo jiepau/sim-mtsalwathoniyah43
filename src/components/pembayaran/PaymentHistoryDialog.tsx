@@ -63,6 +63,7 @@ export function PaymentHistoryDialog({
 }: PaymentHistoryDialogProps) {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(false);
+  const [kwitansiPayment, setKwitansiPayment] = useState<PaymentRecord | null>(null);
 
   useEffect(() => {
     if (open && siswaId) {
