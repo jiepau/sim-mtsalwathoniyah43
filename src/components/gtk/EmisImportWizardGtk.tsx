@@ -84,14 +84,27 @@ const normalizeHp = (v: any): string => {
 };
 
 // Normalisasi status kepegawaian dari berbagai variasi EMIS
+// PENTING: cek "non pns" SEBELUM "pns" agar tidak salah klasifikasi.
 const normalizeStatusKepegawaian = (v: string): string => {
   const s = cleanText(v).toLowerCase();
   if (!s) return '';
-  if (s.includes('pns')) return 'PNS';
   if (s.includes('pppk') || s.includes('p3k')) return 'PPPK';
   if (s.includes('gty') || s.includes('tetap yayasan')) return 'GTY';
   if (s.includes('gtt') || s.includes('tidak tetap')) return 'GTT';
   if (s.includes('honor')) return 'Honorer';
+  // Non PNS / Bukan PNS → kategorikan sebagai Honorer (default non-ASN)
+  if (s.includes('non pns') || s.includes('non-pns') || s.includes('bukan pns')) return 'Honorer';
+  if (s.includes('pns')) return 'PNS';
+  return cleanText(v);
+};
+
+// Normalisasi Jenis PTK (Guru / Tendik / Kepala) → selaras dgn jabatan_utama
+const normalizeJenisPtk = (v: string): string => {
+  const s = cleanText(v).toLowerCase();
+  if (!s) return '';
+  if (s.includes('kepala')) return 'Kepala Madrasah';
+  if (s.includes('tendik') || s.includes('tenaga kependidikan') || s.includes('tata usaha') || s === 'tu') return 'Tenaga Kependidikan';
+  if (s.includes('guru')) return 'Guru';
   return cleanText(v);
 };
 
