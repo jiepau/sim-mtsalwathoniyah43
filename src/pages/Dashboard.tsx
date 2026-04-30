@@ -411,7 +411,7 @@ export default function Dashboard() {
       {/* Activity Log - Admin only */}
       {isAdmin && <ActivityLog />}
 
-      {/* Donut Charts — EMIS style with center label */}
+      {/* Donut Charts — EMIS style, interactive legend */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
         {/* Distribusi Siswa per Kelas */}
         <Card className="shadow-card overflow-hidden">
@@ -421,19 +421,11 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent className="px-2 sm:px-6">
             {kelasData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
-                  <Pie data={kelasData} cx="50%" cy="45%" innerRadius={55} outerRadius={80} paddingAngle={3} dataKey="jumlah" nameKey="name">
-                    {kelasData.map((_, i) => (
-                      <Cell key={i} fill={KELAS_COLORS[i % KELAS_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <text x="50%" y="42%" textAnchor="middle" dominantBaseline="middle" className="fill-muted-foreground" style={{ fontSize: 11 }}>Total</text>
-                  <text x="50%" y="52%" textAnchor="middle" dominantBaseline="middle" className="fill-foreground" style={{ fontSize: 20, fontWeight: 700 }}>{stats.totalSiswa}</text>
-                  <RechartsTooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} />
-                  <Legend wrapperStyle={{ fontSize: '11px' }} />
-                </PieChart>
-              </ResponsiveContainer>
+              <InteractiveDonut
+                data={kelasData.map(d => ({ name: d.name, value: d.jumlah }))}
+                colors={KELAS_COLORS}
+                centerValue={stats.totalSiswa}
+              />
             ) : (
               <div className="h-[220px] flex items-center justify-center text-muted-foreground text-sm">Belum ada data kelas</div>
             )}
@@ -447,19 +439,11 @@ export default function Dashboard() {
             <p className="text-xs text-muted-foreground">Berdasarkan jenis kelamin</p>
           </CardHeader>
           <CardContent className="px-2 sm:px-6">
-            <ResponsiveContainer width="100%" height={220}>
-              <PieChart>
-                <Pie data={siswaGenderData} cx="50%" cy="45%" innerRadius={55} outerRadius={80} paddingAngle={3} dataKey="value">
-                  {siswaGenderData.map((_, i) => (
-                    <Cell key={i} fill={GENDER_COLORS[i]} />
-                  ))}
-                </Pie>
-                <text x="50%" y="42%" textAnchor="middle" dominantBaseline="middle" className="fill-muted-foreground" style={{ fontSize: 11 }}>Total</text>
-                <text x="50%" y="52%" textAnchor="middle" dominantBaseline="middle" className="fill-foreground" style={{ fontSize: 20, fontWeight: 700 }}>{stats.totalSiswa}</text>
-                <RechartsTooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} />
-                <Legend wrapperStyle={{ fontSize: '11px' }} />
-              </PieChart>
-            </ResponsiveContainer>
+            <InteractiveDonut
+              data={siswaGenderData}
+              colors={GENDER_COLORS}
+              centerValue={stats.totalSiswa}
+            />
           </CardContent>
         </Card>
 
@@ -471,19 +455,11 @@ export default function Dashboard() {
             <p className="text-xs text-muted-foreground">Distribusi berdasarkan status</p>
           </CardHeader>
           <CardContent className="px-2 sm:px-6">
-            <ResponsiveContainer width="100%" height={220}>
-              <PieChart>
-                <Pie data={kepegawaianData} cx="50%" cy="45%" innerRadius={55} outerRadius={80} paddingAngle={3} dataKey="value">
-                  {kepegawaianData.map((_, i) => (
-                    <Cell key={i} fill={KEPEG_COLORS[i]} />
-                  ))}
-                </Pie>
-                <text x="50%" y="42%" textAnchor="middle" dominantBaseline="middle" className="fill-muted-foreground" style={{ fontSize: 11 }}>Total</text>
-                <text x="50%" y="52%" textAnchor="middle" dominantBaseline="middle" className="fill-foreground" style={{ fontSize: 20, fontWeight: 700 }}>{stats.totalGtk}</text>
-                <RechartsTooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} />
-                <Legend wrapperStyle={{ fontSize: '11px' }} />
-              </PieChart>
-            </ResponsiveContainer>
+            <InteractiveDonut
+              data={kepegawaianData}
+              colors={KEPEG_COLORS}
+              centerValue={stats.totalGtk}
+            />
           </CardContent>
         </Card>
         )}
@@ -497,17 +473,11 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent className="px-2 sm:px-6">
             {stats.totalPemasukan > 0 || stats.totalPengeluaran > 0 || stats.totalTunggakan > 0 ? (
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
-                  <Pie data={keuanganData} cx="50%" cy="45%" innerRadius={55} outerRadius={80} paddingAngle={3} dataKey="value">
-                    {keuanganData.map((_, i) => (
-                      <Cell key={i} fill={KEUANGAN_COLORS[i]} />
-                    ))}
-                  </Pie>
-                  <RechartsTooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} />
-                  <Legend wrapperStyle={{ fontSize: '11px' }} />
-                </PieChart>
-              </ResponsiveContainer>
+              <InteractiveDonut
+                data={keuanganData}
+                colors={KEUANGAN_COLORS}
+                tooltipFormatter={(v) => formatCurrency(v)}
+              />
             ) : (
               <div className="h-[220px] flex items-center justify-center text-muted-foreground text-sm">Belum ada data keuangan</div>
             )}
