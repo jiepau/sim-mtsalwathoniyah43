@@ -582,6 +582,8 @@ export default function UserManagement() {
       setDeleteGtkLoading(false);
     }
   };
+
+  const columns = [
     {
       header: "Nama",
       cell: (item: UserWithRoles) => (
