@@ -723,12 +723,16 @@ export default function SiswaPage() {
           <Button size="sm" variant="ghost" onClick={() => handlePrintKartu(item)} title="Cetak Kartu Pelajar">
             <IdCard className="h-4 w-4" />
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => handleOpenDialog(item)} title="Edit">
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleDelete(item.id)} title="Hapus">
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {canMutate && (
+            <>
+              <Button size="sm" variant="ghost" onClick={() => handleOpenDialog(item)} title="Edit">
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleDelete(item.id)} title="Hapus">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </>
+          )}
         </div>
       ),
       className: 'w-40'
