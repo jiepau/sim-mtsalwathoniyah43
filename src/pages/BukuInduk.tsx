@@ -21,6 +21,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatDate, normalizeGender, genderLabel } from "@/lib/supabase-helpers";
 import { BukuIndukPrint, BukuIndukSiswa } from "@/components/siswa/BukuIndukPrint";
+import { BukuIndukArsipDialog } from "@/components/siswa/BukuIndukArsipDialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { Archive } from "lucide-react";
 
 interface Siswa {
   id: string;
