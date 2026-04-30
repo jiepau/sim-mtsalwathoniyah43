@@ -241,6 +241,17 @@ export default function Dashboard() {
     { name: 'Tunggakan', value: stats.totalTunggakan },
   ];
 
+  const siswaGenderData = [
+    { name: 'Laki-laki', value: stats.siswaLaki },
+    { name: 'Perempuan', value: stats.siswaPerempuan },
+  ];
+
+  const kepegawaianData = [
+    { name: 'PNS/PPPK', value: stats.gtkPns },
+    { name: 'Honor/GTY', value: stats.gtkHonor },
+    { name: 'Lainnya', value: Math.max(0, stats.totalGtk - stats.gtkPns - stats.gtkHonor) },
+  ].filter(d => d.value > 0);
+
   return (
     <div className="animate-fadeIn space-y-6">
       <SetupWizardDialog open={wizardOpen} onOpenChange={handleWizardClose} />
