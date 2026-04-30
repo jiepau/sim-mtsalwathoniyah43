@@ -1161,6 +1161,8 @@ export default function UserManagement() {
               const emailLogin = g.email || (g.nuptk || g.nip ? `${g.nuptk || g.nip}@gtk.mts` : "-");
               return {
                 id: g.id,
+                gtk: g,
+                userId: g.user_id,
                 nama: g.nama,
                 jabatan: g.jabatan || "-",
                 emailLogin,
