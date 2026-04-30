@@ -113,6 +113,9 @@ export default function UserManagement() {
   // Delete all student accounts
   const [deleteStudentsLoading, setDeleteStudentsLoading] = useState(false);
 
+  // Delete all GTK accounts
+  const [deleteGtkLoading, setDeleteGtkLoading] = useState(false);
+
   useEffect(() => {
     fetchUsers();
     fetchGtkList();
