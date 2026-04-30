@@ -2,14 +2,16 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, LogOut } from 'lucide-react';
+import { Clock, LogOut, ShieldAlert } from 'lucide-react';
+import type { AppRole } from '@/contexts/AuthContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  allowedRoles?: AppRole[];
 }
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, roles, loading, signOut } = useAuth();
+export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
+  const { user, roles, loading, signOut, hasRole } = useAuth();
 
   if (loading) {
     return (
@@ -39,7 +41,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-muted-foreground text-sm">
-              Akun Anda telah terdaftar, namun belum memiliki akses ke sistem. 
+              Akun Anda telah terdaftar, namun belum memiliki akses ke sistem.
               Silakan hubungi Admin untuk mendapatkan role dan hak akses.
             </p>
             <p className="text-xs text-muted-foreground">
@@ -53,6 +55,36 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
         </Card>
       </div>
     );
+  }
+
+  // Role-based access check
+  if (allowedRoles && allowedRoles.length > 0) {
+    const allowed = allowedRoles.some((r) => hasRole(r));
+    if (!allowed) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+          <Card className="max-w-md w-full text-center">
+            <CardHeader>
+              <div className="mx-auto mb-2 h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                <ShieldAlert className="h-6 w-6 text-destructive" />
+              </div>
+              <CardTitle className="text-xl">Akses Ditolak</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground text-sm">
+                Anda tidak memiliki izin untuk mengakses halaman ini. Silakan kembali ke dashboard.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Role Anda: <span className="font-medium">{roles.join(', ')}</span>
+              </p>
+              <Button onClick={() => window.history.back()} className="w-full">
+                Kembali
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
   }
 
   return <>{children}</>;
