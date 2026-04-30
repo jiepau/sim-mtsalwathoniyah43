@@ -159,18 +159,18 @@ export function Sidebar() {
 
   const gradientMap = {
     hijau: {
-      super: 'bg-gradient-to-b from-teal-400/95 via-teal-300/90 to-teal-200/80',
-      kuat: 'bg-gradient-to-b from-teal-300/80 via-teal-200/70 to-teal-100/60',
-      sedang: 'bg-gradient-to-b from-teal-200/70 via-teal-100/60 to-teal-50/50',
-      netral: 'bg-gradient-to-b from-teal-100/60 via-white to-teal-50/40',
-      kontras: 'bg-gradient-to-b from-teal-500/95 via-teal-400/90 to-teal-300/85',
+      super: 'bg-gradient-to-b from-teal-700 via-teal-600 to-teal-500',
+      kuat: 'bg-gradient-to-b from-teal-700 via-teal-600 to-teal-500/95',
+      sedang: 'bg-gradient-to-b from-teal-600 via-teal-500 to-teal-400',
+      netral: 'bg-gradient-to-b from-teal-600 via-teal-500 to-teal-400/90',
+      kontras: 'bg-gradient-to-b from-teal-800 via-teal-700 to-teal-600',
     },
     tosca: {
-      super: 'bg-gradient-to-b from-cyan-400/95 via-teal-300/90 to-cyan-200/80',
-      kuat: 'bg-gradient-to-b from-cyan-300/80 via-teal-200/70 to-cyan-100/60',
-      sedang: 'bg-gradient-to-b from-cyan-200/70 via-teal-100/60 to-cyan-50/50',
-      netral: 'bg-gradient-to-b from-cyan-100/60 via-white to-teal-50/40',
-      kontras: 'bg-gradient-to-b from-cyan-500/95 via-teal-500/90 to-cyan-400/85',
+      super: 'bg-gradient-to-b from-teal-700 via-cyan-600 to-teal-500',
+      kuat: 'bg-gradient-to-b from-teal-700 via-cyan-600 to-teal-500/95',
+      sedang: 'bg-gradient-to-b from-teal-600 via-cyan-500 to-teal-400',
+      netral: 'bg-gradient-to-b from-teal-600 via-cyan-500 to-teal-400/90',
+      kontras: 'bg-gradient-to-b from-teal-800 via-cyan-700 to-teal-600',
     },
   };
   const gradientClass = gradientMap[themeColor][gradientIntensity];
