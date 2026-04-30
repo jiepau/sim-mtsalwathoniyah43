@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { Shield, Plus, Pencil, Trash2, UserPlus, Eye, EyeOff, Link2, Download, CheckCircle, Users, UserMinus } from "lucide-react";
+import { Shield, Plus, Pencil, Trash2, UserPlus, Eye, EyeOff, Link2, Download, CheckCircle, Users, UserMinus, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
@@ -570,25 +577,54 @@ export default function UserManagement() {
         icon={<Shield className="h-6 w-6" />}
         actions={
            <div className="flex flex-wrap gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Users className="h-4 w-4 mr-2" />
+                  Akun Siswa
+                  <ChevronDown className="h-4 w-4 ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 bg-popover">
+                <DropdownMenuItem onClick={handleGenerateStudentAccounts} disabled={generateLoading}>
+                  <Users className="h-4 w-4 mr-2" />
+                  {generateLoading ? "Generating..." : "Generate Akun Siswa"}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportStudentAccounts}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Akun Siswa
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleDeleteAllStudentAccounts}
+                  disabled={deleteStudentsLoading}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <UserMinus className="h-4 w-4 mr-2" />
+                  {deleteStudentsLoading ? "Menghapus..." : "Hapus Semua Akun Siswa"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Users className="h-4 w-4 mr-2" />
+                  Akun GTK
+                  <ChevronDown className="h-4 w-4 ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 bg-popover">
+                <DropdownMenuItem onClick={handleGenerateGtkAccounts} disabled={generateGtkLoading}>
+                  <Users className="h-4 w-4 mr-2" />
+                  {generateGtkLoading ? "Generating..." : "Generate Akun GTK"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <Button variant="outline" onClick={handleExportCSV}>
               <Download className="h-4 w-4 mr-2" />
-              Export CSV
-            </Button>
-            <Button variant="outline" onClick={handleExportStudentAccounts}>
-              <Download className="h-4 w-4 mr-2" />
-              Export Akun Siswa
-            </Button>
-            <Button variant="outline" onClick={handleGenerateStudentAccounts} disabled={generateLoading}>
-              <Users className="h-4 w-4 mr-2" />
-              {generateLoading ? "Generating..." : "Generate Akun Siswa"}
-            </Button>
-            <Button variant="outline" onClick={handleGenerateGtkAccounts} disabled={generateGtkLoading}>
-              <Users className="h-4 w-4 mr-2" />
-              {generateGtkLoading ? "Generating..." : "Generate Akun GTK"}
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteAllStudentAccounts} disabled={deleteStudentsLoading}>
-              <UserMinus className="h-4 w-4 mr-2" />
-              {deleteStudentsLoading ? "Menghapus..." : "Hapus Semua Akun Siswa"}
+              Export Semua
             </Button>
             <Button onClick={() => setCreateDialogOpen(true)}>
               <UserPlus className="h-4 w-4 mr-2" />
