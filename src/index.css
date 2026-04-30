@@ -6,35 +6,35 @@
 @tailwind utilities;
 
 /* Design System - Sistem Informasi Madrasah */
-/* Tema: Hijau Islami - Elegan & Profesional */
+/* Tema: Biru Profesional */
 
 @layer base {
   :root {
-    /* Primary - Hijau Islami */
-    --primary: 161 93% 30%;
-    --primary-foreground: 151 80% 95%;
+    /* Primary - Biru Profesional */
+    --primary: 217 91% 40%;
+    --primary-foreground: 210 40% 98%;
 
     /* Background & Surfaces */
-    --background: 0 0% 96%;
-    --foreground: 0 0% 9%;
+    --background: 210 20% 96%;
+    --foreground: 222 47% 11%;
 
-    --card: 0 0% 98%;
-    --card-foreground: 0 0% 9%;
+    --card: 210 20% 98%;
+    --card-foreground: 222 47% 11%;
 
-    --popover: 0 0% 89%;
-    --popover-foreground: 0 0% 9%;
+    --popover: 210 15% 89%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Secondary - Hijau Terang */
-    --secondary: 0 0% 32%;
-    --secondary-foreground: 0 0% 98%;
+    /* Secondary */
+    --secondary: 215 20% 32%;
+    --secondary-foreground: 210 40% 98%;
 
-    /* Muted - Abu Kehijauan */
-    --muted: 0 0% 63%;
-    --muted-foreground: 0 0% 9%;
+    /* Muted */
+    --muted: 215 16% 63%;
+    --muted-foreground: 222 47% 11%;
 
-    /* Accent - Emas */
-    --accent: 166 76% 96%;
-    --accent-foreground: 173 80% 40%;
+    /* Accent */
+    --accent: 214 76% 96%;
+    --accent-foreground: 217 91% 40%;
 
     /* Destructive */
     --destructive: 0 72% 50%;
@@ -53,30 +53,30 @@
     --info-foreground: 0 0% 100%;
 
     /* Border & Input */
-    --border: 0 0% 83%;
-    --input: 0 0% 83%;
-    --ring: 161 93% 30%;
+    --border: 214 20% 83%;
+    --input: 214 20% 83%;
+    --ring: 217 91% 40%;
 
     --radius: 0.75rem;
 
-    /* Sidebar - Hijau Gelap */
-    --sidebar-background: 152 65% 22%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 161 93% 30%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 152 50% 30%;
+    /* Sidebar - Biru Gelap */
+    --sidebar-background: 217 55% 22%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217 91% 40%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 217 50% 30%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 152 40% 35%;
-    --sidebar-ring: 161 93% 30%;
+    --sidebar-border: 217 40% 35%;
+    --sidebar-ring: 217 91% 40%;
 
     /* Custom Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(152, 65%, 22%) 0%, hsl(152, 55%, 35%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(217, 55%, 22%) 0%, hsl(217, 50%, 35%) 100%);
     --gradient-accent: linear-gradient(135deg, hsl(45, 90%, 55%) 0%, hsl(38, 92%, 50%) 100%);
-    --gradient-hero: linear-gradient(180deg, hsl(152, 65%, 22%) 0%, hsl(152, 50%, 30%) 50%, hsl(145, 40%, 40%) 100%);
-    --chart-1: 158 64% 51%;
-    --chart-2: 141 69% 58%;
-    --chart-3: 172 66% 50%;
-    --chart-4: 82 77% 55%;
+    --gradient-hero: linear-gradient(180deg, hsl(217, 55%, 22%) 0%, hsl(217, 50%, 30%) 50%, hsl(220, 45%, 40%) 100%);
+    --chart-1: 217 64% 51%;
+    --chart-2: 199 69% 58%;
+    --chart-3: 230 50% 55%;
+    --chart-4: 190 77% 55%;
     --chart-5: 0 0% 45%;
     --sidebar: 0 0% 98%;
     --font-sans: 'Work Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
@@ -95,48 +95,48 @@
   }
 
   .dark {
-    --primary: 158 64% 51%;
-    --primary-foreground: 165 91% 9%;
+    --primary: 217 72% 56%;
+    --primary-foreground: 222 47% 11%;
 
-    --background: 0 0% 9%;
-    --foreground: 0 0% 98%;
+    --background: 222 47% 9%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 14%;
-    --card-foreground: 0 0% 98%;
+    --card: 222 40% 14%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 0 0% 25%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 222 35% 25%;
+    --popover-foreground: 210 40% 98%;
 
-    --secondary: 0 0% 45%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 215 20% 45%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 0 0% 45%;
-    --muted-foreground: 0 0% 98%;
+    --muted: 215 20% 45%;
+    --muted-foreground: 210 40% 98%;
 
-    --accent: 178 84% 10%;
-    --accent-foreground: 172 66% 50%;
+    --accent: 217 40% 15%;
+    --accent-foreground: 217 72% 56%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 85% 97%;
 
-    --border: 0 0% 32%;
-    --input: 0 0% 32%;
-    --ring: 158 64% 51%;
+    --border: 215 20% 32%;
+    --input: 215 20% 32%;
+    --ring: 217 72% 56%;
 
-    --sidebar-background: 150 25% 10%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 158 64% 51%;
-    --sidebar-primary-foreground: 165 91% 9%;
-    --sidebar-accent: 172 66% 50%;
-    --sidebar-accent-foreground: 178 84% 10%;
-    --sidebar-border: 0 0% 32%;
-    --sidebar-ring: 158 64% 51%;
-    --chart-1: 156 71% 66%;
-    --chart-2: 141 76% 73%;
-    --chart-3: 170 76% 64%;
-    --chart-4: 81 84% 67%;
+    --sidebar-background: 217 30% 12%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217 72% 56%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 217 50% 40%;
+    --sidebar-accent-foreground: 217 40% 15%;
+    --sidebar-border: 215 20% 32%;
+    --sidebar-ring: 217 72% 56%;
+    --chart-1: 217 64% 60%;
+    --chart-2: 199 69% 65%;
+    --chart-3: 230 55% 60%;
+    --chart-4: 190 70% 60%;
     --chart-5: 0 0% 45%;
-    --sidebar: 0 0% 14%;
+    --sidebar: 222 40% 14%;
     --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
     --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
     --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
