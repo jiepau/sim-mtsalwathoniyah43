@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CreditCard, Search, Check, Clock, History, Pencil, AlertCircle } from 'lucide-react';
+import { CreditCard, Search, Check, Clock, History, Pencil, AlertCircle, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -279,7 +279,25 @@ export default function PembayaranPage() {
     }
   };
 
-  const filteredData = pembayaran.filter(p => 
+  const handleDelete = async (item: Pembayaran) => {
+    const label = `${item.siswa?.nama || 'Siswa'} - ${item.jenis_tagihan?.nama_tagihan || 'Tagihan'}${item.bulan && item.tahun ? ` (${bulanOptions.find(b => b.value === String(item.bulan))?.label} ${item.tahun})` : ''}`;
+    const isPaid = item.nominal_bayar > 0;
+    const warning = isPaid
+      ? `\n\n⚠️ PERHATIAN: Tagihan ini sudah dibayar ${formatCurrency(item.nominal_bayar)}. Menghapus akan menghilangkan riwayat pembayaran ini.`
+      : '';
+    if (!confirm(`Hapus tagihan berikut?\n\n${label}${warning}\n\nTindakan ini tidak dapat dibatalkan.`)) return;
+
+    try {
+      const { error } = await supabase.from('pembayaran').delete().eq('id', item.id);
+      if (error) throw error;
+      toast.success('Data pembayaran berhasil dihapus');
+      fetchData();
+    } catch (error: any) {
+      toast.error(mapDatabaseError(error));
+    }
+  };
+
+  const filteredData = pembayaran.filter(p =>
     p.siswa?.nama.toLowerCase().includes(search.toLowerCase()) ||
     p.siswa?.nis.toLowerCase().includes(search.toLowerCase())
   );
@@ -369,9 +387,18 @@ export default function PembayaranPage() {
               Bayar
             </Button>
           )}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => handleDelete(item)}
+            title="Hapus Pembayaran"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       ),
-      className: 'w-32'
+      className: 'w-40'
     },
   ];
 
