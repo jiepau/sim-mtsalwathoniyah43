@@ -408,7 +408,7 @@ export function Sidebar() {
               </div>
               <button
                 onClick={() => signOut()}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg bg-red-500/20 text-red-500 hover:bg-red-500/40 hover:text-red-300 border border-red-400/30 transition-all duration-200 text-sm font-semibold"
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg bg-red-500/20 text-red-500 hover:bg-red-500/40 hover:text-red-300 border border-red-400/30 transition-all duration-200 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-700"
               >
                 <LogOut className="h-5 w-5 flex-shrink-0" />
                 <span>Keluar</span>
@@ -418,7 +418,7 @@ export function Sidebar() {
             <button
               onClick={() => signOut()}
               title="Keluar"
-              className="w-full flex items-center justify-center px-4 py-2.5 rounded-lg bg-red-500/20 text-red-500 hover:bg-red-500/40 hover:text-red-300 border border-red-400/30 transition-all duration-200"
+              className="w-full flex items-center justify-center px-4 py-2.5 rounded-lg bg-red-500/20 text-red-500 hover:bg-red-500/40 hover:text-red-300 border border-red-400/30 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-700"
             >
               <LogOut className="h-5 w-5" />
             </button>
