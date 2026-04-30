@@ -297,6 +297,7 @@ export default function PembayaranPage() {
     }
   };
 
+  const filteredData = pembayaran.filter(p =>
     p.siswa?.nama.toLowerCase().includes(search.toLowerCase()) ||
     p.siswa?.nis.toLowerCase().includes(search.toLowerCase())
   );
