@@ -1100,6 +1100,170 @@ export default function UserManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* List GTK Accounts Dialog */}
+      <Dialog open={listGtkDialogOpen} onOpenChange={setListGtkDialogOpen}>
+        <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Daftar Akun GTK</DialogTitle>
+            <DialogDescription>
+              Status akun untuk semua GTK aktif. Total {gtkList.length} GTK.
+            </DialogDescription>
+          </DialogHeader>
+
+          {(() => {
+            // Build list with status
+            const rows = gtkList.map((g) => {
+              const linkedUser = g.user_id ? users.find((u) => u.id === g.user_id) : null;
+              const hasUser = !!g.user_id;
+              const hasRole = linkedUser && linkedUser.roles.length > 0;
+              const status: "aktif" | "menunggu" | "belum" = hasUser
+                ? hasRole ? "aktif" : "menunggu"
+                : "belum";
+              const emailLogin = g.email || (g.nuptk || g.nip ? `${g.nuptk || g.nip}@gtk.mts` : "-");
+              return {
+                id: g.id,
+                nama: g.nama,
+                jabatan: g.jabatan || "-",
+                emailLogin,
+                roles: linkedUser?.roles || [],
+                createdAt: linkedUser?.created_at || null,
+                status,
+              };
+            });
+
+            const filtered = rows.filter((r) => {
+              if (listGtkStatusFilter !== "all" && r.status !== listGtkStatusFilter) return false;
+              if (listGtkSearch) {
+                const q = listGtkSearch.toLowerCase();
+                return r.nama.toLowerCase().includes(q) || r.emailLogin.toLowerCase().includes(q) || (r.jabatan || "").toLowerCase().includes(q);
+              }
+              return true;
+            });
+
+            const counts = {
+              all: rows.length,
+              aktif: rows.filter((r) => r.status === "aktif").length,
+              menunggu: rows.filter((r) => r.status === "menunggu").length,
+              belum: rows.filter((r) => r.status === "belum").length,
+            };
+
+            return (
+              <div className="space-y-4">
+                {/* Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  <div className="rounded-lg border p-3 bg-card">
+                    <p className="text-xs text-muted-foreground">Total GTK</p>
+                    <p className="text-lg font-bold">{counts.all}</p>
+                  </div>
+                  <div className="rounded-lg border p-3 bg-green-500/5 border-green-500/30">
+                    <p className="text-xs text-muted-foreground">Aktif</p>
+                    <p className="text-lg font-bold text-green-600">{counts.aktif}</p>
+                  </div>
+                  <div className="rounded-lg border p-3 bg-amber-500/5 border-amber-500/30">
+                    <p className="text-xs text-muted-foreground">Menunggu Approval</p>
+                    <p className="text-lg font-bold text-amber-600">{counts.menunggu}</p>
+                  </div>
+                  <div className="rounded-lg border p-3 bg-muted/50">
+                    <p className="text-xs text-muted-foreground">Belum Punya Akun</p>
+                    <p className="text-lg font-bold text-muted-foreground">{counts.belum}</p>
+                  </div>
+                </div>
+
+                {/* Filters */}
+                <div className="flex flex-wrap gap-2">
+                  <div className="relative flex-1 min-w-[200px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Cari nama, email, atau jabatan..."
+                      value={listGtkSearch}
+                      onChange={(e) => setListGtkSearch(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  <Select value={listGtkStatusFilter} onValueChange={(v: any) => setListGtkStatusFilter(v)}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Semua Status</SelectItem>
+                      <SelectItem value="aktif">Aktif</SelectItem>
+                      <SelectItem value="menunggu">Menunggu Approval</SelectItem>
+                      <SelectItem value="belum">Belum Punya Akun</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Table */}
+                <div className="border rounded-lg overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/50">
+                      <tr>
+                        <th className="text-left p-3 font-medium">Nama</th>
+                        <th className="text-left p-3 font-medium">Jabatan</th>
+                        <th className="text-left p-3 font-medium">Email Login</th>
+                        <th className="text-left p-3 font-medium">Role</th>
+                        <th className="text-left p-3 font-medium">Status</th>
+                        <th className="text-left p-3 font-medium">Akun Dibuat</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                            Tidak ada data sesuai filter
+                          </td>
+                        </tr>
+                      ) : filtered.map((r) => (
+                        <tr key={r.id} className="border-t hover:bg-muted/30">
+                          <td className="p-3 font-medium">{r.nama}</td>
+                          <td className="p-3 text-muted-foreground">{r.jabatan}</td>
+                          <td className="p-3 font-mono text-xs">{r.emailLogin}</td>
+                          <td className="p-3">
+                            {r.roles.length === 0 ? (
+                              <span className="text-muted-foreground text-xs">-</span>
+                            ) : (
+                              <div className="flex flex-wrap gap-1">
+                                {r.roles.map((role) => (
+                                  <Badge key={role} variant={ROLE_COLORS[role]} className="text-xs">
+                                    {ROLE_LABELS[role]}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                          </td>
+                          <td className="p-3">
+                            {r.status === "aktif" && (
+                              <Badge className="bg-green-500/15 text-green-700 hover:bg-green-500/20 border-green-500/30">Aktif</Badge>
+                            )}
+                            {r.status === "menunggu" && (
+                              <Badge className="bg-amber-500/15 text-amber-700 hover:bg-amber-500/20 border-amber-500/30">Menunggu Approval</Badge>
+                            )}
+                            {r.status === "belum" && (
+                              <Badge variant="outline" className="text-muted-foreground">Belum Punya Akun</Badge>
+                            )}
+                          </td>
+                          <td className="p-3 text-muted-foreground text-xs">
+                            {r.createdAt ? formatDateTime(r.createdAt) : "-"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <p className="text-xs text-muted-foreground">
+                  Menampilkan {filtered.length} dari {rows.length} GTK
+                </p>
+              </div>
+            );
+          })()}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setListGtkDialogOpen(false)}>Tutup</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
