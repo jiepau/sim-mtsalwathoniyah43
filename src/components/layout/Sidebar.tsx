@@ -44,6 +44,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { AppRole } from '@/lib/supabase-helpers';
+import { useSidebarTheme } from '@/hooks/useSidebarTheme';
 import { useUpdateChecker } from '@/hooks/useUpdateChecker';
 
 interface MenuItem {
