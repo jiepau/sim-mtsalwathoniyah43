@@ -576,11 +576,16 @@ export default function SiswaPage() {
     { header: 'Nama Siswa', accessorKey: 'nama' as keyof Siswa },
     { 
       header: 'L/P', 
-      cell: (item: Siswa) => item.jenis_kelamin ? (
-        <Badge variant={item.jenis_kelamin === 'Laki-laki' ? 'default' : 'secondary'}>
-          {item.jenis_kelamin === 'Laki-laki' ? 'L' : 'P'}
-        </Badge>
-      ) : '-',
+      cell: (item: Siswa) => {
+        const jk = item.jenis_kelamin;
+        if (!jk) return '-';
+        const isLaki = jk === 'L' || jk === 'Laki-laki';
+        return (
+          <Badge variant={isLaki ? 'default' : 'secondary'}>
+            {isLaki ? 'L' : 'P'}
+          </Badge>
+        );
+      },
       className: 'w-16'
     },
     { 
