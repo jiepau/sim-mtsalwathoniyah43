@@ -95,6 +95,10 @@ export default function UserManagement() {
   const [generateLoading, setGenerateLoading] = useState(false);
   const [generateResults, setGenerateResults] = useState<any>(null);
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
+  const [generateMode, setGenerateMode] = useState<"siswa" | "gtk">("siswa");
+
+  // Generate GTK accounts
+  const [generateGtkLoading, setGenerateGtkLoading] = useState(false);
 
   // Delete all student accounts
   const [deleteStudentsLoading, setDeleteStudentsLoading] = useState(false);
@@ -414,6 +418,7 @@ export default function UserManagement() {
       if (response.error) throw new Error(response.error.message);
       if (response.data?.error) throw new Error(response.data.error);
       
+      setGenerateMode("siswa");
       setGenerateResults(response.data);
       setGenerateDialogOpen(true);
       
@@ -428,6 +433,34 @@ export default function UserManagement() {
       toast.error(mapDatabaseError(error));
     } finally {
       setGenerateLoading(false);
+    }
+  };
+
+  const handleGenerateGtkAccounts = async () => {
+    if (!confirm("Generate akun untuk semua GTK aktif yang belum memiliki akun?\n\n• Email: pakai email asli (jika ada), fallback ke NUPTK/NIP@gtk.mts\n• Password: Gtk + NUPTK/NIP\n• Role: Guru → 'guru', selain itu → 'operator'")) return;
+
+    setGenerateGtkLoading(true);
+    try {
+      const response = await supabase.functions.invoke("generate-gtk-accounts");
+      if (response.error) throw new Error(response.error.message);
+      if (response.data?.error) throw new Error(response.data.error);
+
+      setGenerateMode("gtk");
+      setGenerateResults(response.data);
+      setGenerateDialogOpen(true);
+
+      if (response.data.created > 0) {
+        toast.success(`${response.data.created} akun GTK berhasil dibuat`);
+        fetchUsers();
+        fetchGtkList();
+      } else {
+        toast.info(response.data.message || "Tidak ada akun GTK baru yang dibuat");
+      }
+    } catch (error: any) {
+      console.error("Error generating GTK accounts:", error);
+      toast.error(mapDatabaseError(error));
+    } finally {
+      setGenerateGtkLoading(false);
     }
   };
   const handleDeleteAllStudentAccounts = async () => {
@@ -548,6 +581,10 @@ export default function UserManagement() {
             <Button variant="outline" onClick={handleGenerateStudentAccounts} disabled={generateLoading}>
               <Users className="h-4 w-4 mr-2" />
               {generateLoading ? "Generating..." : "Generate Akun Siswa"}
+            </Button>
+            <Button variant="outline" onClick={handleGenerateGtkAccounts} disabled={generateGtkLoading}>
+              <Users className="h-4 w-4 mr-2" />
+              {generateGtkLoading ? "Generating..." : "Generate Akun GTK"}
             </Button>
             <Button variant="destructive" onClick={handleDeleteAllStudentAccounts} disabled={deleteStudentsLoading}>
               <UserMinus className="h-4 w-4 mr-2" />
@@ -849,15 +886,19 @@ export default function UserManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* Generate Student Accounts Results Dialog */}
+      {/* Generate Accounts Results Dialog (Siswa / GTK) */}
       <Dialog open={generateDialogOpen} onOpenChange={setGenerateDialogOpen}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Hasil Generate Akun Siswa</DialogTitle>
+            <DialogTitle>
+              {generateMode === "gtk" ? "Hasil Generate Akun GTK" : "Hasil Generate Akun Siswa"}
+            </DialogTitle>
             <DialogDescription>
-              {generateResults && (generateResults.total 
+              {generateResults && (generateResults.total
                 ? `${generateResults.created} dari ${generateResults.total} akun berhasil dibuat`
-                : generateResults.message || "Semua siswa aktif sudah memiliki akun")}
+                : generateResults.message || (generateMode === "gtk"
+                    ? "Semua GTK aktif sudah memiliki akun"
+                    : "Semua siswa aktif sudah memiliki akun"))}
             </DialogDescription>
           </DialogHeader>
 
@@ -865,9 +906,16 @@ export default function UserManagement() {
             <div className="space-y-2">
               {generateResults.results.map((r: any, i: number) => (
                 <div key={i} className={`p-3 rounded-lg border text-sm ${r.success ? 'bg-muted/30' : 'bg-destructive/10 border-destructive/30'}`}>
-                  <div className="font-medium">{r.nama} ({r.nis})</div>
+                  <div className="font-medium">
+                    {r.nama} {generateMode === "gtk"
+                      ? (r.identifier ? `(${r.identifier})` : "")
+                      : `(${r.nis})`}
+                    {generateMode === "gtk" && r.role && (
+                      <Badge variant="outline" className="ml-2 text-xs">{r.role}</Badge>
+                    )}
+                  </div>
                   {r.success ? (
-                    <div className="text-muted-foreground font-mono text-xs mt-1">
+                    <div className="text-muted-foreground font-mono text-xs mt-1 break-all">
                       Email: {r.email} | Password: {r.password}
                     </div>
                   ) : (
@@ -886,8 +934,13 @@ export default function UserManagement() {
                 toast.info("Tidak ada akun yang berhasil dibuat untuk di-export");
                 return;
               }
-              const headers = ["Nama", "NIS", "Email", "Password"];
-              const rows = successResults.map((r: any) => [r.nama, r.nis, r.email, r.password]);
+              const isGtk = generateMode === "gtk";
+              const headers = isGtk
+                ? ["Nama", "NUPTK/NIP", "Role", "Email", "Password"]
+                : ["Nama", "NIS", "Email", "Password"];
+              const rows = successResults.map((r: any) => isGtk
+                ? [r.nama, r.identifier || "", r.role || "", r.email, r.password]
+                : [r.nama, r.nis, r.email, r.password]);
               const csvContent = [
                 headers.join(","),
                 ...rows.map((row: string[]) => row.map((cell: string) => `"${(cell || "").replace(/"/g, '""')}"`).join(",")),
@@ -896,13 +949,13 @@ export default function UserManagement() {
               const url = URL.createObjectURL(blob);
               const link = document.createElement("a");
               link.href = url;
-              link.download = `akun-siswa-${new Date().toISOString().slice(0, 10)}.csv`;
+              link.download = `akun-${isGtk ? "gtk" : "siswa"}-${new Date().toISOString().slice(0, 10)}.csv`;
               link.click();
               URL.revokeObjectURL(url);
-              toast.success("Data akun siswa berhasil di-export ke CSV");
+              toast.success(`Data akun ${isGtk ? "GTK" : "siswa"} berhasil di-export ke CSV`);
             }}>
               <Download className="h-4 w-4 mr-2" />
-              Export CSV Akun Siswa
+              Export CSV
             </Button>
             <Button variant="outline" onClick={() => setGenerateDialogOpen(false)}>Tutup</Button>
           </DialogFooter>
