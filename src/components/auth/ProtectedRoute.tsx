@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock, LogOut, ShieldAlert } from 'lucide-react';
-import type { AppRole } from '@/contexts/AuthContext';
+import type { AppRole } from '@/lib/supabase-helpers';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
