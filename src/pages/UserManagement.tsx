@@ -122,7 +122,7 @@ export default function UserManagement() {
     try {
       const { data, error } = await supabase
         .from("gtk_ptk")
-        .select("id, nama, nip, user_id")
+        .select("id, nama, nip, nuptk, email, jabatan, user_id")
         .order("nama");
 
       if (error) throw error;
