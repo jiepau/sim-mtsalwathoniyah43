@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/supabase-helpers';
 import { Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { InteractiveDonut } from '@/components/dashboard/InteractiveDonut';
 import { useSetupWizard } from '@/hooks/useSetupWizard';
 import { SetupWizardDialog } from '@/components/wizard/SetupWizardDialog';
 import { useAuth } from '@/contexts/AuthContext';
