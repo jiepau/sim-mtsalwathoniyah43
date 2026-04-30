@@ -84,14 +84,27 @@ const normalizeHp = (v: any): string => {
 };
 
 // Normalisasi status kepegawaian dari berbagai variasi EMIS
+// PENTING: cek "non pns" SEBELUM "pns" agar tidak salah klasifikasi.
 const normalizeStatusKepegawaian = (v: string): string => {
   const s = cleanText(v).toLowerCase();
   if (!s) return '';
-  if (s.includes('pns')) return 'PNS';
   if (s.includes('pppk') || s.includes('p3k')) return 'PPPK';
   if (s.includes('gty') || s.includes('tetap yayasan')) return 'GTY';
   if (s.includes('gtt') || s.includes('tidak tetap')) return 'GTT';
   if (s.includes('honor')) return 'Honorer';
+  // Non PNS / Bukan PNS → kategorikan sebagai Honorer (default non-ASN)
+  if (s.includes('non pns') || s.includes('non-pns') || s.includes('bukan pns')) return 'Honorer';
+  if (s.includes('pns')) return 'PNS';
+  return cleanText(v);
+};
+
+// Normalisasi Jenis PTK (Guru / Tendik / Kepala) → selaras dgn jabatan_utama
+const normalizeJenisPtk = (v: string): string => {
+  const s = cleanText(v).toLowerCase();
+  if (!s) return '';
+  if (s.includes('kepala')) return 'Kepala Madrasah';
+  if (s.includes('tendik') || s.includes('tenaga kependidikan') || s.includes('tata usaha') || s === 'tu') return 'Tenaga Kependidikan';
+  if (s.includes('guru')) return 'Guru';
   return cleanText(v);
 };
 
@@ -206,7 +219,11 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
           tanggal: colIndex(headers, 'tanggal', 'lahir'),
           jk: colIndex(headers, 'kelamin'),
           jabatan: colIndex(headers, 'jabatan'),
+          jenisPtk: colIndex(headers, 'jenis', 'ptk'),
+          jenisGtk: colIndex(headers, 'jenis', 'gtk'),
+          tugasUtama: colIndex(headers, 'tugas', 'utama'),
           kepeg: colIndex(headers, 'kepegawaian'),
+          statusPeg: colIndex(headers, 'status', 'peg'),
           sert: colIndex(headers, 'sertifikasi'),
           sertNo: colIndex(headers, 'nomor', 'sertifikasi'),
           pend: colIndex(headers, 'pendidikan'),
@@ -238,6 +255,20 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
           const sertData = idx.sert >= 0 ? normalizeSertifikasi(r[idx.sert]) : { sertifikasi: false, nomor: '' };
           const nomorSert = idx.sertNo >= 0 ? cleanText(r[idx.sertNo]) : sertData.nomor;
 
+          // Status kepegawaian — ambil dari kolom "Status Kepegawaian" / "Status Pegawai"
+          const statusKepegRaw = idx.kepeg >= 0 ? cleanText(r[idx.kepeg])
+            : idx.statusPeg >= 0 ? cleanText(r[idx.statusPeg]) : '';
+
+          // Jenis PTK (Guru/Tendik/Kepala) → fallback nama sheet jika tidak ada
+          const jenisPtkRaw = idx.jenisPtk >= 0 ? cleanText(r[idx.jenisPtk])
+            : idx.jenisGtk >= 0 ? cleanText(r[idx.jenisGtk])
+            : idx.tugasUtama >= 0 ? cleanText(r[idx.tugasUtama])
+            : '';
+          const jenisPtk = normalizeJenisPtk(jenisPtkRaw) || normalizeJenisPtk(sheetName);
+          const jabatanRaw = idx.jabatan >= 0 ? cleanText(r[idx.jabatan]) : '';
+          // Jika kolom Jabatan kosong, pakai Jenis PTK; jika ada Jenis PTK + Jabatan, gabungkan
+          const jabatan = jabatanRaw || jenisPtk;
+
           const row: EmisGtkRow = {
             nama,
             nuptk: nuptkCol >= 0 ? cleanText(r[nuptkCol]) : '',
@@ -246,8 +277,8 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
             tempat_lahir: idx.tempat >= 0 ? cleanText(r[idx.tempat]) : '',
             tanggal_lahir: idx.tanggal >= 0 ? parseTanggal(r[idx.tanggal]) : null,
             jenis_kelamin: idx.jk >= 0 ? normalizeJK(cleanText(r[idx.jk])) : '',
-            jabatan: idx.jabatan >= 0 ? cleanText(r[idx.jabatan]) : '',
-            status_kepegawaian: idx.kepeg >= 0 ? normalizeStatusKepegawaian(cleanText(r[idx.kepeg])) : '',
+            jabatan,
+            status_kepegawaian: normalizeStatusKepegawaian(statusKepegRaw),
             sertifikasi: sertData.sertifikasi || !!nomorSert,
             nomor_sertifikasi: nomorSert,
             pendidikan: idx.pend >= 0 ? cleanText(r[idx.pend]) : '',
