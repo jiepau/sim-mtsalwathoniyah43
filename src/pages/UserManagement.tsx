@@ -120,6 +120,44 @@ export default function UserManagement() {
   const [listGtkDialogOpen, setListGtkDialogOpen] = useState(false);
   const [listGtkSearch, setListGtkSearch] = useState("");
   const [listGtkStatusFilter, setListGtkStatusFilter] = useState<"all" | "aktif" | "menunggu" | "belum">("all");
+  const [resetPwLoading, setResetPwLoading] = useState<string | null>(null);
+
+  const handleResetGtkPassword = async (gtk: GtkData, userId: string) => {
+    // Generate default password: Gtk + (NUPTK or NIP or random)
+    const identifier = gtk.nuptk || gtk.nip || Math.random().toString(36).slice(2, 10);
+    const defaultPw = `Gtk${identifier}`;
+    const inputPw = prompt(
+      `Reset password untuk: ${gtk.nama}\nEmail: ${gtk.email || "-"}\n\nKosongkan untuk pakai password default: ${defaultPw}\n\nMin. 8 karakter, mengandung huruf & angka.`,
+      defaultPw
+    );
+    if (inputPw === null) return;
+    const newPassword = inputPw.trim() || defaultPw;
+    if (newPassword.length < 8 || !/[A-Za-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      toast.error("Password minimal 8 karakter, mengandung huruf & angka");
+      return;
+    }
+
+    setResetPwLoading(userId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const response = await supabase.functions.invoke("manage-user", {
+        body: { action: "update", user_id: userId, password: newPassword },
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+      });
+      if (response.error) throw new Error(response.error.message);
+      if (response.data?.error) throw new Error(response.data.error);
+      toast.success(`Password ${gtk.nama} berhasil direset`, {
+        description: `Password baru: ${newPassword}`,
+        duration: 10000,
+      });
+      fetchUsers();
+    } catch (error: any) {
+      console.error("Reset password error:", error);
+      toast.error(mapDatabaseError(error));
+    } finally {
+      setResetPwLoading(null);
+    }
+  };
 
   useEffect(() => {
     fetchUsers();
