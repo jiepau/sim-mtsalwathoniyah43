@@ -10,10 +10,10 @@ import {
   Sparkles,
   Award,
   Briefcase,
-  HandCoins
+  HandCoins,
+  Building2,
+  MapPin
 } from 'lucide-react';
-import { PageHeader } from '@/components/layout/PageHeader';
-import { StatsCard } from '@/components/ui/stats-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,7 +24,7 @@ import { SetupWizardDialog } from '@/components/wizard/SetupWizardDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { ActivityLog } from '@/components/dashboard/ActivityLog';
-import { logActivity } from '@/lib/activity-logger';
+import logoMts from '@/assets/logo-mts.svg';
 
 interface DashboardStats {
   totalSiswa: number;
@@ -42,13 +42,25 @@ interface DashboardStats {
   totalPengeluaran: number;
 }
 
-const COLORS = ['hsl(152, 60%, 32%)', 'hsl(45, 90%, 50%)', 'hsl(199, 89%, 48%)', 'hsl(0, 72%, 51%)'];
+interface MadrasahInfo {
+  nama_madrasah: string;
+  npsn: string;
+  nsm: string;
+  alamat: string;
+  kabupaten_kota: string;
+  provinsi: string;
+  kepala_madrasah: string;
+  akreditasi: string;
+}
+
+const COLORS = ['hsl(170, 60%, 32%)', 'hsl(45, 90%, 50%)', 'hsl(0, 72%, 51%)'];
 
 export default function Dashboard() {
   const { isAdmin, isBendahara, hasRole } = useAuth();
   const isOperator = hasRole('operator');
   const setupStatus = useSetupWizard();
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [madrasah, setMadrasah] = useState<MadrasahInfo | null>(null);
   const [stats, setStats] = useState<DashboardStats>({
     totalSiswa: 0,
     siswaLaki: 0,
@@ -67,7 +79,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [kelasData, setKelasData] = useState<{ name: string; jumlah: number }[]>([]);
 
-  // Auto-open wizard for new users
   useEffect(() => {
     if (!setupStatus.loading && !setupStatus.isComplete) {
       const dismissed = localStorage.getItem('setup-wizard-dismissed');
@@ -79,9 +90,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchStats();
+    fetchMadrasah();
   }, []);
 
-  // Realtime notification for admin when guru fills attendance
+  // Realtime notification for admin
   useEffect(() => {
     if (!isAdmin) return;
 
@@ -89,11 +101,7 @@ export default function Dashboard() {
       .channel('absensi-gtk-realtime')
       .on(
         'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'absensi_gtk',
-        },
+        { event: 'INSERT', schema: 'public', table: 'absensi_gtk' },
         async (payload) => {
           const newRecord = payload.new as any;
           const { data: gtkData } = await supabase
@@ -117,21 +125,15 @@ export default function Dashboard() {
       )
       .on(
         'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'profiles',
-        },
+        { event: 'INSERT', schema: 'public', table: 'profiles' },
         async (payload) => {
           const newProfile = payload.new as any;
-          // Check if the new user has any roles
           const { data: roles } = await supabase
             .from('user_roles')
             .select('id')
             .eq('user_id', newProfile.user_id)
             .limit(1);
           
-          // If no roles, it's a new registration waiting for approval
           if (!roles || roles.length === 0) {
             toast.warning(`User baru mendaftar: ${newProfile.full_name}`, {
               description: 'Menunggu approval di Manajemen User',
@@ -156,18 +158,20 @@ export default function Dashboard() {
     localStorage.setItem('setup-wizard-dismissed', 'true');
   };
 
+  const fetchMadrasah = async () => {
+    const { data } = await supabase.from('madrasah_settings').select('*').limit(1).single();
+    if (data) setMadrasah(data as any);
+  };
+
   const fetchStats = async () => {
     try {
-      // Fetch siswa - visible to all
       const siswaRes = await supabase.from('siswa').select('id, kelas_id, jenis_kelamin', { count: 'exact' });
       const siswaData = siswaRes.data || [];
       const siswaLaki = siswaData.filter((s: any) => s.jenis_kelamin === 'L' || s.jenis_kelamin === 'Laki-laki').length;
       const siswaPerempuan = siswaData.filter((s: any) => s.jenis_kelamin === 'P' || s.jenis_kelamin === 'Perempuan').length;
       
-      // Fetch kelas - visible to admin and operator
       const kelasRes = await supabase.from('kelas').select('id, nama_kelas', { count: 'exact' });
       
-      // Fetch GTK/PTK - visible to admin, operator, and bendahara
       const gtkRes = (isAdmin || isOperator || isBendahara)
         ? await supabase.from('gtk_ptk').select('id, jenis_kelamin, status_kepegawaian, sertifikasi', { count: 'exact' })
         : { data: [], count: 0 };
@@ -178,7 +182,6 @@ export default function Dashboard() {
       const gtkHonor = gtkData.filter((g: any) => ['Honorer', 'GTT', 'GTY'].includes(g.status_kepegawaian)).length;
       const gtkSertifikasi = gtkData.filter((g: any) => g.sertifikasi === true).length;
       
-      // Fetch pembayaran & pengeluaran - only visible to admin and bendahara
       const pembayaranRes = (isAdmin || isBendahara)
         ? await supabase.from('pembayaran').select('nominal, nominal_bayar, status')
         : { data: [] };
@@ -187,7 +190,6 @@ export default function Dashboard() {
         ? await supabase.from('pengeluaran').select('nominal')
         : { data: [] };
 
-      // Calculate tunggakan
       const pembayaranData = pembayaranRes.data as any[] || [];
       const tunggakan = pembayaranData.reduce((acc: number, p: any) => {
         if (p.status === 'belum_lunas' || p.status === 'cicil') {
@@ -195,15 +197,10 @@ export default function Dashboard() {
         }
         return acc;
       }, 0);
-
-      // Calculate pemasukan
       const pemasukan = pembayaranData.reduce((acc: number, p: any) => acc + Number(p.nominal_bayar), 0);
-
-      // Calculate pengeluaran
       const pengeluaranData = pengeluaranRes.data as any[] || [];
       const pengeluaran = pengeluaranData.reduce((acc: number, p: any) => acc + Number(p.nominal), 0);
 
-      // Calculate siswa per kelas
       const kelasMap = new Map<string, number>();
       kelasRes.data?.forEach((k: any) => kelasMap.set(k.id, 0));
       siswaRes.data?.forEach((s: any) => {
@@ -218,7 +215,6 @@ export default function Dashboard() {
       })) || [];
 
       setKelasData(kelasChartData);
-
       setStats({
         totalSiswa: siswaRes.count || 0,
         siswaLaki,
@@ -248,145 +244,165 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="animate-fadeIn">
+    <div className="animate-fadeIn space-y-6">
       <SetupWizardDialog open={wizardOpen} onOpenChange={handleWizardClose} />
       
-      <PageHeader 
-        title="Dashboard" 
-        description="Selamat datang di Sistem Informasi Madrasah"
-        icon={<Calendar className="h-6 w-6" />}
-        actions={
-          <Button variant="outline" onClick={() => setWizardOpen(true)}>
-            <Sparkles className="h-4 w-4 mr-2" />
-            Setup Wizard
-          </Button>
-        }
-      />
-
-      {/* ============ GRUP 1: SISWA & KELAS ============ */}
-      <div className="mb-6 sm:mb-8">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
-          <Users className="h-3.5 w-3.5" />
-          Data Siswa & Kelas
-        </h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <StatsCard
-            title="Total Siswa"
-            value={stats.totalSiswa}
-            icon={<Users className="h-5 w-5 sm:h-6 sm:w-6" />}
-            variant="default"
-          />
-          <StatsCard
-            title="Siswa Laki-laki"
-            value={stats.siswaLaki}
-            icon={<Users className="h-5 w-5 sm:h-6 sm:w-6" />}
-            variant="info"
-          />
-          <StatsCard
-            title="Siswa Perempuan"
-            value={stats.siswaPerempuan}
-            icon={<Users className="h-5 w-5 sm:h-6 sm:w-6" />}
-            variant="warning"
-          />
-          {(isAdmin || isOperator) && (
-            <StatsCard
-              title="Jumlah Kelas"
-              value={stats.totalKelas}
-              icon={<School className="h-5 w-5 sm:h-6 sm:w-6" />}
-              variant="info"
-            />
-          )}
+      {/* ============ BANNER MADRASAH (ala EMIS) ============ */}
+      <div className="rounded-xl bg-gradient-to-r from-primary/90 to-primary overflow-hidden shadow-lg">
+        <div className="p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
+            <img src={logoMts} alt="Logo" className="h-10 w-10 sm:h-12 sm:w-12" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold text-primary-foreground truncate">
+              {madrasah?.nama_madrasah || 'SIM MTs Al Wathoniyah 43'}
+            </h1>
+            <p className="text-primary-foreground/80 text-sm">Madrasah Tsanawiyah</p>
+            <div className="flex items-center gap-1.5 mt-1 text-primary-foreground/70 text-xs">
+              <MapPin className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">
+                {madrasah ? `${madrasah.kabupaten_kota}, ${madrasah.provinsi}` : 'DKI Jakarta'}
+              </span>
+              {madrasah?.npsn && (
+                <>
+                  <span className="mx-1">•</span>
+                  <span>NPSN: {madrasah.npsn}</span>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              className="bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30 hover:bg-primary-foreground/30"
+              onClick={() => setWizardOpen(true)}
+            >
+              <Sparkles className="h-4 w-4 mr-1.5" />
+              Setup Wizard
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* ============ GRUP 2: GTK/PTK (tanpa duplikasi) ============ */}
-      {(isAdmin || isOperator || isBendahara) && (
-        <div className="mb-6 sm:mb-8">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
-            <UserCog className="h-3.5 w-3.5" />
-            Data GTK/PTK
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            <StatsCard
-              title="Total GTK/PTK"
-              value={stats.totalGtk}
-              icon={<UserCog className="h-5 w-5 sm:h-6 sm:w-6" />}
-              variant="success"
-            />
-            <StatsCard
-              title="GTK Laki-laki"
-              value={stats.gtkLaki}
-              icon={<UserCog className="h-5 w-5 sm:h-6 sm:w-6" />}
-              variant="info"
-            />
-            <StatsCard
-              title="GTK Perempuan"
-              value={stats.gtkPerempuan}
-              icon={<UserCog className="h-5 w-5 sm:h-6 sm:w-6" />}
-              variant="warning"
-            />
-            <StatsCard
-              title="PNS / PPPK"
-              value={stats.gtkPns}
-              icon={<Briefcase className="h-5 w-5 sm:h-6 sm:w-6" />}
-              variant="info"
-            />
-            <StatsCard
-              title="Honor / GTY"
-              value={stats.gtkHonor}
-              icon={<HandCoins className="h-5 w-5 sm:h-6 sm:w-6" />}
-              variant="warning"
-            />
-            <StatsCard
-              title="Sertifikasi"
-              value={stats.gtkSertifikasi}
-              icon={<Award className="h-5 w-5 sm:h-6 sm:w-6" />}
-              variant="success"
-            />
-          </div>
-        </div>
-      )}
+      {/* ============ RINGKASAN UTAMA — 3 card besar ============ */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        
+        {/* Card: Data Siswa & Kelas */}
+        <Card className="shadow-card">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-muted-foreground">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Users className="h-4 w-4 text-primary" />
+              </div>
+              Data Siswa & Kelas
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-baseline justify-between">
+              <span className="text-3xl font-bold text-foreground">{stats.totalSiswa}</span>
+              <span className="text-xs text-muted-foreground">Total Siswa</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="bg-info/10 rounded-lg px-3 py-2">
+                <span className="text-info font-semibold">{stats.siswaLaki}</span>
+                <p className="text-xs text-muted-foreground">Laki-laki</p>
+              </div>
+              <div className="bg-warning/10 rounded-lg px-3 py-2">
+                <span className="text-warning font-semibold">{stats.siswaPerempuan}</span>
+                <p className="text-xs text-muted-foreground">Perempuan</p>
+              </div>
+            </div>
+            {(isAdmin || isOperator) && (
+              <div className="flex items-center gap-2 pt-1 border-t border-border/50 text-sm">
+                <School className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Jumlah Kelas:</span>
+                <span className="font-semibold text-foreground">{stats.totalKelas}</span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-      {/* ============ GRUP 3: KEUANGAN (Pemasukan, Pengeluaran, Tunggakan satu baris) ============ */}
-      {(isAdmin || isBendahara) && (
-        <div className="mb-6 sm:mb-8">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
-            <TrendingUp className="h-3.5 w-3.5" />
-            Ringkasan Keuangan
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-            <StatsCard
-              title="Pemasukan"
-              value={formatCurrency(stats.totalPemasukan)}
-              icon={<TrendingUp className="h-5 w-5 sm:h-6 sm:w-6" />}
-              variant="success"
-            />
-            <StatsCard
-              title="Pengeluaran"
-              value={formatCurrency(stats.totalPengeluaran)}
-              icon={<TrendingDown className="h-5 w-5 sm:h-6 sm:w-6" />}
-              variant="warning"
-            />
-            <StatsCard
-              title="Tunggakan"
-              value={formatCurrency(stats.totalTunggakan)}
-              icon={<AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6" />}
-              variant="danger"
-            />
-          </div>
-        </div>
-      )}
+        {/* Card: Data GTK/PTK */}
+        {(isAdmin || isOperator || isBendahara) && (
+          <Card className="shadow-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2 text-muted-foreground">
+                <div className="h-8 w-8 rounded-lg bg-success/10 flex items-center justify-center">
+                  <UserCog className="h-4 w-4 text-success" />
+                </div>
+                Data GTK/PTK
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-baseline justify-between">
+                <span className="text-3xl font-bold text-foreground">{stats.totalGtk}</span>
+                <span className="text-xs text-muted-foreground">Total GTK/PTK</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="bg-info/10 rounded-lg px-3 py-2">
+                  <span className="text-info font-semibold">{stats.gtkLaki}</span>
+                  <p className="text-xs text-muted-foreground">Laki-laki</p>
+                </div>
+                <div className="bg-warning/10 rounded-lg px-3 py-2">
+                  <span className="text-warning font-semibold">{stats.gtkPerempuan}</span>
+                  <p className="text-xs text-muted-foreground">Perempuan</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between pt-1 border-t border-border/50 text-xs text-muted-foreground">
+                <span>PNS/PPPK: <strong className="text-foreground">{stats.gtkPns}</strong></span>
+                <span>Honor/GTY: <strong className="text-foreground">{stats.gtkHonor}</strong></span>
+                <span>Sertifikasi: <strong className="text-foreground">{stats.gtkSertifikasi}</strong></span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Card: Keuangan */}
+        {(isAdmin || isBendahara) && (
+          <Card className="shadow-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2 text-muted-foreground">
+                <div className="h-8 w-8 rounded-lg bg-success/10 flex items-center justify-center">
+                  <TrendingUp className="h-4 w-4 text-success" />
+                </div>
+                Ringkasan Keuangan
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between bg-success/10 rounded-lg px-3 py-2.5">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-success" />
+                    <span className="text-muted-foreground">Pemasukan</span>
+                  </div>
+                  <span className="font-semibold text-success">{formatCurrency(stats.totalPemasukan)}</span>
+                </div>
+                <div className="flex items-center justify-between bg-warning/10 rounded-lg px-3 py-2.5">
+                  <div className="flex items-center gap-2">
+                    <TrendingDown className="h-4 w-4 text-warning" />
+                    <span className="text-muted-foreground">Pengeluaran</span>
+                  </div>
+                  <span className="font-semibold text-warning">{formatCurrency(stats.totalPengeluaran)}</span>
+                </div>
+                <div className="flex items-center justify-between bg-destructive/10 rounded-lg px-3 py-2.5">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-destructive" />
+                    <span className="text-muted-foreground">Tunggakan</span>
+                  </div>
+                  <span className="font-semibold text-destructive">{formatCurrency(stats.totalTunggakan)}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {/* Activity Log - Admin only */}
-      {isAdmin && (
-        <div className="mb-6 sm:mb-8">
-          <ActivityLog />
-        </div>
-      )}
+      {isAdmin && <ActivityLog />}
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Bar Chart - Siswa per Kelas - Only for Admin and Operator */}
         <Card className="shadow-card">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">Siswa per Kelas</CardTitle>
@@ -405,7 +421,7 @@ export default function Dashboard() {
                       borderRadius: '8px'
                     }}
                   />
-                  <Bar dataKey="jumlah" fill="hsl(152, 60%, 32%)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="jumlah" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -416,7 +432,6 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Pie Chart - Keuangan */}
         {(isAdmin || isBendahara) && (
         <Card className="shadow-card">
           <CardHeader>
@@ -436,7 +451,7 @@ export default function Dashboard() {
                     dataKey="value"
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
-                    {keuanganData.map((entry, index) => (
+                    {keuanganData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
