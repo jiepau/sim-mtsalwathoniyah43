@@ -759,11 +759,13 @@ export default function SiswaPage() {
               />
             </div>
 
-            {/* Aksi utama */}
-            <Button onClick={() => handleOpenDialog()} size="sm" className="h-9">
-              <Plus className="h-4 w-4 mr-1.5" />
-              Tambah Siswa
-            </Button>
+            {/* Aksi utama - hanya admin/operator */}
+            {canMutate && (
+              <Button onClick={() => handleOpenDialog()} size="sm" className="h-9">
+                <Plus className="h-4 w-4 mr-1.5" />
+                Tambah Siswa
+              </Button>
+            )}
 
             {/* Aksi sekunder dikelompokkan */}
             <DropdownMenu>
@@ -774,16 +776,20 @@ export default function SiswaPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuLabel>Import Data</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => setEmisImportOpen(true)}>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import EMIS
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import CSV
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
+                {canMutate && (
+                  <>
+                    <DropdownMenuLabel>Import Data</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => setEmisImportOpen(true)}>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Import EMIS
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Import CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuLabel>Ekspor & Cetak</DropdownMenuLabel>
                 <DropdownMenuItem
                   onClick={() => {
@@ -801,15 +807,19 @@ export default function SiswaPage() {
                   <IdCard className="h-4 w-4 mr-2" />
                   Cetak Kartu
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleDeleteAll}
-                  disabled={siswa.length === 0}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Hapus Semua
-                </DropdownMenuItem>
+                {canMutate && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleDeleteAll}
+                      disabled={siswa.length === 0}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Hapus Semua
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
