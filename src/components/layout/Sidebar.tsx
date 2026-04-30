@@ -290,8 +290,8 @@ export function Sidebar() {
             onClick={() => toggleExpand(item.title)}
             className={cn(
               'w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200',
-              'text-slate-600 hover:text-primary hover:bg-primary/5',
-              active && 'bg-primary/10 text-primary font-semibold',
+              'text-white/90 hover:text-white hover:bg-white/15',
+              active && 'bg-white text-primary font-semibold shadow-sm',
               level > 0 && 'pl-12'
             )}
           >
@@ -313,8 +313,8 @@ export function Sidebar() {
             onClick={() => setMobileOpen(false)}
             className={cn(
               'flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 relative',
-              'text-slate-600 hover:text-primary hover:bg-primary/5',
-              active && 'bg-primary text-primary-foreground font-semibold shadow-sm hover:bg-primary hover:text-primary-foreground',
+              'text-white/90 hover:text-white hover:bg-white/15',
+              active && 'bg-white text-primary font-semibold shadow-sm hover:bg-white hover:text-primary',
               level > 0 && 'pl-12 py-2 text-[13px]'
             )}
           >
