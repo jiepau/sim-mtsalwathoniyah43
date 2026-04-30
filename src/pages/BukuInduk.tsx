@@ -212,53 +212,42 @@ export default function BukuInduk() {
         description="Rekap data lengkap siswa untuk keperluan administrasi"
         icon={<BookMarked className="h-6 w-6" />}
         actions={
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm" className="h-9">
-                <Printer className="h-4 w-4 mr-1.5" />
-                Cetak Buku Induk
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64">
-              <DropdownMenuLabel>Pilih Format Cetak</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => {
-                  if (filteredSiswa.length === 0) {
-                    toast.error("Tidak ada data siswa untuk dicetak");
-                    return;
-                  }
-                  setPrintMode("rekap");
-                }}
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                <div className="flex flex-col">
-                  <span>Rekap Tabel</span>
-                  <span className="text-xs text-muted-foreground">Daftar siswa dalam bentuk tabel</span>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  if (filteredSiswa.length === 0) {
-                    toast.error("Tidak ada data siswa untuk dicetak");
-                    return;
-                  }
-                  if (filteredSiswa.length > 50) {
-                    if (!confirm(`Akan mencetak ${filteredSiswa.length} halaman (1 siswa per halaman). Lanjutkan?`)) return;
-                  }
-                  setPrintMode("detail");
-                }}
-              >
-                <BookMarked className="h-4 w-4 mr-2" />
-                <div className="flex flex-col">
-                  <span>Detail Per Siswa</span>
-                  <span className="text-xs text-muted-foreground">1 halaman penuh per siswa (untuk arsip)</span>
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" className="h-9" onClick={() => setArsipOpen(true)}>
+              <Archive className="h-4 w-4 mr-1.5" />
+              Arsip Cetak
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" className="h-9">
+                  <Printer className="h-4 w-4 mr-1.5" />
+                  Cetak Buku Induk
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel>Pilih Format Cetak</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => triggerPrint("rekap")}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  <div className="flex flex-col">
+                    <span>Rekap Tabel</span>
+                    <span className="text-xs text-muted-foreground">Daftar siswa dalam bentuk tabel</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => triggerPrint("detail")}>
+                  <BookMarked className="h-4 w-4 mr-2" />
+                  <div className="flex flex-col">
+                    <span>Detail Per Siswa</span>
+                    <span className="text-xs text-muted-foreground">1 halaman penuh per siswa (untuk arsip)</span>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         }
       />
+
+      <BukuIndukArsipDialog open={arsipOpen} onOpenChange={setArsipOpen} />
 
       {/* Filters */}
       <Card className="mb-6">
