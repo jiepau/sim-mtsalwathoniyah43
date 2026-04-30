@@ -49,6 +49,9 @@ interface GtkData {
   id: string;
   nama: string;
   nip: string | null;
+  nuptk: string | null;
+  email: string | null;
+  jabatan: string | null;
   user_id: string | null;
 }
 
@@ -110,6 +113,9 @@ export default function UserManagement() {
   // Delete all student accounts
   const [deleteStudentsLoading, setDeleteStudentsLoading] = useState(false);
 
+  // Delete all GTK accounts
+  const [deleteGtkLoading, setDeleteGtkLoading] = useState(false);
+
   useEffect(() => {
     fetchUsers();
     fetchGtkList();
@@ -119,7 +125,7 @@ export default function UserManagement() {
     try {
       const { data, error } = await supabase
         .from("gtk_ptk")
-        .select("id, nama, nip, user_id")
+        .select("id, nama, nip, nuptk, email, jabatan, user_id")
         .order("nama");
 
       if (error) throw error;
@@ -502,6 +508,81 @@ export default function UserManagement() {
     }
   };
 
+  const handleExportGtkAccounts = () => {
+    // Hanya GTK yang sudah ter-link ke akun (punya user_id)
+    const linkedGtk = gtkList.filter((g) => g.user_id);
+    if (linkedGtk.length === 0) {
+      toast.info("Belum ada akun GTK yang terdaftar");
+      return;
+    }
+    const userMap = new Map(users.map((u) => [u.id, u]));
+
+    const headers = ["Nama", "NUPTK/NIP", "Jabatan", "Role", "Email/Username", "Password Awal"];
+    const rows = linkedGtk.map((g) => {
+      const u = userMap.get(g.user_id as string);
+      const identifier = g.nuptk || g.nip || "";
+      const initial = u?.initial_password || "";
+      // Email tampilan: pakai email asli kalau ada, fallback identifier@gtk.mts
+      const emailDisplay = g.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(g.email)
+        ? g.email
+        : (identifier ? `${identifier.toLowerCase()}@gtk.mts` : "-");
+      return [
+        g.nama,
+        identifier || "-",
+        g.jabatan || "-",
+        u?.roles.map((r) => ROLE_LABELS[r]).join(", ") || "-",
+        emailDisplay,
+        initial || "-",
+      ];
+    });
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${(cell || "").replace(/"/g, '""')}"`).join(",")),
+    ].join("\n");
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `akun-gtk-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success("Data akun GTK berhasil di-export");
+  };
+
+  const handleDeleteAllGtkAccounts = async () => {
+    const gtkCount = gtkList.filter((g) => g.user_id).length;
+    if (gtkCount === 0) {
+      toast.info("Tidak ada akun GTK yang terdaftar");
+      return;
+    }
+
+    const confirmText = prompt(
+      `Anda akan menghapus ${gtkCount} akun GTK.\n\nCatatan: akun yang juga memiliki role admin akan dilewati.\n\nKetik "HAPUS AKUN GTK" untuk konfirmasi:`
+    );
+    if (confirmText !== "HAPUS AKUN GTK") {
+      if (confirmText !== null) toast.error("Teks konfirmasi tidak sesuai");
+      return;
+    }
+
+    setDeleteGtkLoading(true);
+    try {
+      const response = await supabase.functions.invoke("delete-gtk-accounts");
+      if (response.error) throw new Error(response.error.message);
+      if (response.data?.error) throw new Error(response.data.error);
+
+      const { deleted, total } = response.data;
+      toast.success(`${deleted} dari ${total} akun GTK berhasil dihapus`);
+      fetchUsers();
+      fetchGtkList();
+    } catch (error: any) {
+      console.error("Error deleting GTK accounts:", error);
+      toast.error(mapDatabaseError(error));
+    } finally {
+      setDeleteGtkLoading(false);
+    }
+  };
+
   const columns = [
     {
       header: "Nama",
@@ -618,6 +699,19 @@ export default function UserManagement() {
                 <DropdownMenuItem onClick={handleGenerateGtkAccounts} disabled={generateGtkLoading}>
                   <Users className="h-4 w-4 mr-2" />
                   {generateGtkLoading ? "Generating..." : "Generate Akun GTK"}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportGtkAccounts}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Akun GTK
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleDeleteAllGtkAccounts}
+                  disabled={deleteGtkLoading}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <UserMinus className="h-4 w-4 mr-2" />
+                  {deleteGtkLoading ? "Menghapus..." : "Hapus Semua Akun GTK"}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
