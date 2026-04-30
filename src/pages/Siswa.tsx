@@ -922,6 +922,7 @@ export default function SiswaPage() {
           </div>
         </div>
       </div>
+      )}
 
       {/* View mode toggle + counter */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
