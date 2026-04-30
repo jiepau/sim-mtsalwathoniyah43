@@ -12,10 +12,24 @@ const sanitizeLocal = (s: string) =>
 
 const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 
-// Determine role from jabatan: guru -> 'guru', else 'operator' (tendik)
-const roleFromJabatan = (jabatan: string | null): "guru" | "operator" => {
+// Determine role from jabatan dengan prioritas: admin > bendahara > guru > operator
+const roleFromJabatan = (jabatan: string | null): "admin" | "bendahara" | "guru" | "operator" => {
   const s = (jabatan || "").toLowerCase();
+  // Admin: Kepala Madrasah / Wakil Kepala / Wakamad
+  if (
+    s.includes("kepala madrasah") ||
+    s.includes("kepala sekolah") ||
+    s.includes("wakil kepala") ||
+    s.includes("wakamad") ||
+    s.includes("waka ") ||
+    s === "kepala" ||
+    s.startsWith("kepala ")
+  ) return "admin";
+  // Bendahara
+  if (s.includes("bendahara")) return "bendahara";
+  // Guru (termasuk "guru mapel", "guru kelas", "guru BK")
   if (s.includes("guru")) return "guru";
+  // Default: TU, Tendik, Operator, Staf, dll
   return "operator";
 };
 
