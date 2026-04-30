@@ -129,13 +129,18 @@ export function BukuIndukArsipDialog({ open, onOpenChange }: Props) {
                         <div className="flex items-center gap-3 flex-wrap">
                           <span className="flex items-center gap-1">
                             <User className="h-3 w-3" />
-                            {it.dicetak_oleh_nama || "-"}
+                            <span className="font-medium text-foreground/80">{it.dicetak_oleh_nama || "—"}</span>
                           </span>
                           <span className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
                             {formatDateTime(it.created_at)}
                           </span>
                         </div>
+                        {it.catatan && (
+                          <div className="mt-1.5 text-xs italic bg-muted/60 border-l-2 border-primary/50 pl-2 py-1 rounded-sm text-foreground/80">
+                            📝 {it.catatan}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">

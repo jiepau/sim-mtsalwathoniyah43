@@ -86,6 +86,9 @@ export default function BukuInduk() {
       if (!confirm(`Akan mencetak ${filteredSiswa.length} halaman (1 siswa per halaman). Lanjutkan?`)) return;
     }
 
+    // Optional catatan untuk arsip (mis. tujuan cetak / penanggung jawab)
+    const catatan = window.prompt("Catatan untuk arsip (opsional):\nMis. 'Untuk arsip TU semester genap', boleh dikosongkan.", "") || null;
+
     const kelasNama = selectedKelas === "all"
       ? "Semua Kelas"
       : kelasList.find(k => k.id === selectedKelas)?.nama_kelas || "-";
@@ -114,6 +117,7 @@ export default function BukuInduk() {
         daftar_siswa: filteredSiswa as any,
         dicetak_oleh: user?.id ?? null,
         dicetak_oleh_nama: dicetakOlehNama,
+        catatan,
       });
     } catch (err) {
       console.warn("Gagal menyimpan arsip cetak:", err);
