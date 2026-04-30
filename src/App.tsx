@@ -105,46 +105,69 @@ const App = () => {
                     </ProtectedRoute>
                   }
                 >
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/siswa" element={<Siswa />} />
-                  <Route path="/kelas" element={<Kelas />} />
-                  <Route path="/tahun-ajaran" element={<TahunAjaran />} />
-                  <Route path="/gtk-ptk" element={<GtkPtk />} />
-                  <Route path="/jenis-tagihan" element={<JenisTagihan />} />
-                  <Route path="/pembayaran" element={<Pembayaran />} />
-                  <Route path="/pemasukan" element={<Pemasukan />} />
-                  <Route path="/pengeluaran" element={<Pengeluaran />} />
-                  <Route path="/tunggakan" element={<Tunggakan />} />
-                  <Route path="/laporan-keuangan" element={<LaporanKeuangan />} />
-                  <Route path="/naik-kelas" element={<NaikKelas />} />
-                  <Route path="/alumni" element={<Alumni />} />
-                  <Route path="/atp" element={<ATP />} />
-                  <Route path="/kktp" element={<KKTP />} />
-                  <Route path="/cp-templates" element={<CPTemplates />} />
-                  <Route path="/generator-rpp" element={<GeneratorRPP />} />
-                  <Route path="/prota" element={<Prota />} />
-                  <Route path="/promes" element={<Promes />} />
-                  <Route path="/panduan-kurikulum" element={<PanduanKurikulum />} />
-                  <Route path="/pengaturan-madrasah" element={<PengaturanMadrasah />} />
-                  <Route path="/user-management" element={<UserManagement />} />
-                  <Route path="/surat-masuk" element={<SuratMasuk />} />
-                  <Route path="/surat-keluar" element={<SuratKeluar />} />
-                  <Route path="/buku-induk" element={<BukuInduk />} />
-                  <Route path="/profil-guru" element={<ProfilGuru />} />
-                  <Route path="/absensi-siswa" element={<AbsensiSiswa />} />
-                  <Route path="/absensi-gtk" element={<AbsensiGtk />} />
+                  {/* Dashboard - all roles */}
+                  <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['admin','operator','bendahara','guru']}><Dashboard /></ProtectedRoute>} />
+
+                  {/* Akademik - admin/operator (siswa read via Bendahara too) */}
+                  <Route path="/siswa" element={<ProtectedRoute allowedRoles={['admin','operator','bendahara']}><Siswa /></ProtectedRoute>} />
+                  <Route path="/kelas" element={<ProtectedRoute allowedRoles={['admin','operator']}><Kelas /></ProtectedRoute>} />
+                  <Route path="/tahun-ajaran" element={<ProtectedRoute allowedRoles={['admin','operator']}><TahunAjaran /></ProtectedRoute>} />
+                  <Route path="/gtk-ptk" element={<ProtectedRoute allowedRoles={['admin','operator']}><GtkPtk /></ProtectedRoute>} />
+                  <Route path="/naik-kelas" element={<ProtectedRoute allowedRoles={['admin','operator']}><NaikKelas /></ProtectedRoute>} />
+                  <Route path="/alumni" element={<ProtectedRoute allowedRoles={['admin','operator']}><Alumni /></ProtectedRoute>} />
+                  <Route path="/buku-induk" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><BukuInduk /></ProtectedRoute>} />
+
+                  {/* Keuangan - admin/bendahara */}
+                  <Route path="/jenis-tagihan" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><JenisTagihan /></ProtectedRoute>} />
+                  <Route path="/pembayaran" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><Pembayaran /></ProtectedRoute>} />
+                  <Route path="/pemasukan" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><Pemasukan /></ProtectedRoute>} />
+                  <Route path="/pengeluaran" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><Pengeluaran /></ProtectedRoute>} />
+                  <Route path="/tunggakan" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><Tunggakan /></ProtectedRoute>} />
+                  <Route path="/laporan-keuangan" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><LaporanKeuangan /></ProtectedRoute>} />
+
+                  {/* Kurikulum - admin/operator/guru */}
+                  <Route path="/atp" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><ATP /></ProtectedRoute>} />
+                  <Route path="/kktp" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><KKTP /></ProtectedRoute>} />
+                  <Route path="/cp-templates" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><CPTemplates /></ProtectedRoute>} />
+                  <Route path="/generator-rpp" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><GeneratorRPP /></ProtectedRoute>} />
+                  <Route path="/prota" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><Prota /></ProtectedRoute>} />
+                  <Route path="/promes" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><Promes /></ProtectedRoute>} />
+                  <Route path="/panduan-kurikulum" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><PanduanKurikulum /></ProtectedRoute>} />
+
+                  {/* Admin only */}
+                  <Route path="/pengaturan-madrasah" element={<ProtectedRoute allowedRoles={['admin']}><PengaturanMadrasah /></ProtectedRoute>} />
+                  <Route path="/user-management" element={<ProtectedRoute allowedRoles={['admin']}><UserManagement /></ProtectedRoute>} />
+                  <Route path="/notifikasi-wa" element={<ProtectedRoute allowedRoles={['admin']}><NotifikasiWA /></ProtectedRoute>} />
+
+                  {/* Surat - admin/operator */}
+                  <Route path="/surat-masuk" element={<ProtectedRoute allowedRoles={['admin','operator']}><SuratMasuk /></ProtectedRoute>} />
+                  <Route path="/surat-keluar" element={<ProtectedRoute allowedRoles={['admin','operator']}><SuratKeluar /></ProtectedRoute>} />
+
+                  {/* Profil Guru - guru/bendahara (GTK linked) */}
+                  <Route path="/profil-guru" element={<ProtectedRoute allowedRoles={['guru','bendahara','admin']}><ProfilGuru /></ProtectedRoute>} />
+
+                  {/* Absensi - admin/operator/guru */}
+                  <Route path="/absensi-siswa" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><AbsensiSiswa /></ProtectedRoute>} />
+                  <Route path="/absensi-gtk" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><AbsensiGtk /></ProtectedRoute>} />
+                  <Route path="/rekap-absensi" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><RekapAbsensi /></ProtectedRoute>} />
+                  <Route path="/rapor-kehadiran" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><RaporKehadiran /></ProtectedRoute>} />
+
+                  {/* Kalender - all roles incl. siswa */}
                   <Route path="/kalender-akademik" element={<KalenderAkademik />} />
-                  <Route path="/rekap-absensi" element={<RekapAbsensi />} />
-                  <Route path="/rapor-kehadiran" element={<RaporKehadiran />} />
-                  <Route path="/notifikasi-wa" element={<NotifikasiWA />} />
+
+                  {/* Changelog - all roles */}
                   <Route path="/changelog" element={<Changelog />} />
-                  <Route path="/e-learning/materi-guru" element={<MateriGuru />} />
-                  <Route path="/e-learning/tugas-guru" element={<TugasGuru />} />
-                  <Route path="/e-learning/forum" element={<ForumDiskusi />} />
-                  <Route path="/e-learning/dashboard" element={<DashboardSiswa />} />
-                  <Route path="/e-learning/materi-siswa" element={<MateriSiswa />} />
-                  <Route path="/e-learning/tugas-siswa" element={<TugasSiswa />} />
-                  <Route path="/e-learning/nilai" element={<NilaiSiswa />} />
+
+                  {/* E-Learning - guru side */}
+                  <Route path="/e-learning/materi-guru" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><MateriGuru /></ProtectedRoute>} />
+                  <Route path="/e-learning/tugas-guru" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><TugasGuru /></ProtectedRoute>} />
+                  <Route path="/e-learning/forum" element={<ProtectedRoute allowedRoles={['admin','operator','guru','siswa']}><ForumDiskusi /></ProtectedRoute>} />
+
+                  {/* E-Learning - siswa side */}
+                  <Route path="/e-learning/dashboard" element={<ProtectedRoute allowedRoles={['siswa']}><DashboardSiswa /></ProtectedRoute>} />
+                  <Route path="/e-learning/materi-siswa" element={<ProtectedRoute allowedRoles={['siswa']}><MateriSiswa /></ProtectedRoute>} />
+                  <Route path="/e-learning/tugas-siswa" element={<ProtectedRoute allowedRoles={['siswa']}><TugasSiswa /></ProtectedRoute>} />
+                  <Route path="/e-learning/nilai" element={<ProtectedRoute allowedRoles={['siswa']}><NilaiSiswa /></ProtectedRoute>} />
                 </Route>
                 <Route path="/" element={<RootRedirect />} />
                 <Route path="*" element={<NotFound />} />
