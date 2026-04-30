@@ -418,7 +418,7 @@ export function Sidebar() {
             <button
               onClick={() => signOut()}
               title="Keluar"
-              className="w-full flex items-center justify-center px-4 py-2.5 rounded-lg text-destructive hover:bg-destructive/10 transition-all duration-200"
+              className="w-full flex items-center justify-center px-4 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/15 transition-all duration-200"
             >
               <LogOut className="h-5 w-5" />
             </button>
