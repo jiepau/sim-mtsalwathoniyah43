@@ -263,6 +263,48 @@ export type Database = {
           },
         ]
       }
+      buku_induk_arsip: {
+        Row: {
+          catatan: string | null
+          created_at: string
+          daftar_siswa: Json
+          dicetak_oleh: string | null
+          dicetak_oleh_nama: string | null
+          filter_kelas: string | null
+          filter_ta: string | null
+          id: string
+          judul: string
+          jumlah_siswa: number
+          mode: string
+        }
+        Insert: {
+          catatan?: string | null
+          created_at?: string
+          daftar_siswa?: Json
+          dicetak_oleh?: string | null
+          dicetak_oleh_nama?: string | null
+          filter_kelas?: string | null
+          filter_ta?: string | null
+          id?: string
+          judul: string
+          jumlah_siswa?: number
+          mode: string
+        }
+        Update: {
+          catatan?: string | null
+          created_at?: string
+          daftar_siswa?: Json
+          dicetak_oleh?: string | null
+          dicetak_oleh_nama?: string | null
+          filter_kelas?: string | null
+          filter_ta?: string | null
+          id?: string
+          judul?: string
+          jumlah_siswa?: number
+          mode?: string
+        }
+        Relationships: []
+      }
       cp_templates: {
         Row: {
           capaian_pembelajaran: string
