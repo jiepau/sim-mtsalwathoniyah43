@@ -265,7 +265,7 @@ export default function BukuInduk() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-primary">
-              {filteredSiswa.filter(s => s.jenis_kelamin === "L").length}
+              {filteredSiswa.filter(s => normalizeGender(s.jenis_kelamin) === "L").length}
             </div>
             <p className="text-sm text-muted-foreground">Laki-laki</p>
           </CardContent>
@@ -273,7 +273,7 @@ export default function BukuInduk() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-primary">
-              {filteredSiswa.filter(s => s.jenis_kelamin === "P").length}
+              {filteredSiswa.filter(s => normalizeGender(s.jenis_kelamin) === "P").length}
             </div>
             <p className="text-sm text-muted-foreground">Perempuan</p>
           </CardContent>
@@ -322,7 +322,7 @@ export default function BukuInduk() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant={s.jenis_kelamin === "L" ? "default" : "secondary"}>
+                        <Badge variant={normalizeGender(s.jenis_kelamin) === "L" ? "default" : "secondary"}>
                           {getGenderLabel(s.jenis_kelamin)}
                         </Badge>
                         {s.kelas && (
