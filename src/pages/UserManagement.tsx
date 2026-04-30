@@ -582,6 +582,10 @@ export default function UserManagement() {
               <Users className="h-4 w-4 mr-2" />
               {generateLoading ? "Generating..." : "Generate Akun Siswa"}
             </Button>
+            <Button variant="outline" onClick={handleGenerateGtkAccounts} disabled={generateGtkLoading}>
+              <Users className="h-4 w-4 mr-2" />
+              {generateGtkLoading ? "Generating..." : "Generate Akun GTK"}
+            </Button>
             <Button variant="destructive" onClick={handleDeleteAllStudentAccounts} disabled={deleteStudentsLoading}>
               <UserMinus className="h-4 w-4 mr-2" />
               {deleteStudentsLoading ? "Menghapus..." : "Hapus Semua Akun Siswa"}
