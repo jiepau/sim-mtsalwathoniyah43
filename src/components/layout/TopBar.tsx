@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Bell, ChevronDown, LogIn, LogOut, Palette, User as UserIcon } from 'lucide-react';
+import { Bell, Check, ChevronDown, LogIn, LogOut, Palette, User as UserIcon } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
