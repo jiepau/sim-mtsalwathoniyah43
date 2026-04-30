@@ -19,7 +19,7 @@ import { SetupWizardDialog } from '@/components/wizard/SetupWizardDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { ActivityLog } from '@/components/dashboard/ActivityLog';
-import logoMts from '@/assets/logo-mts.svg';
+const logoMadrasah = '/logo-alwathoniyah.png';
 
 interface DashboardStats {
   totalSiswa: number;
@@ -260,7 +260,7 @@ export default function Dashboard() {
       <div className="rounded-xl bg-gradient-to-r from-primary/90 to-primary overflow-hidden shadow-lg">
         <div className="p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
-            <img src={logoMts} alt="Logo" className="h-10 w-10 sm:h-12 sm:w-12" />
+            <img src={logoMadrasah} alt="Logo Madrasah" className="h-10 w-10 sm:h-12 sm:w-12 object-contain" />
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-lg sm:text-xl font-bold text-primary-foreground truncate">
