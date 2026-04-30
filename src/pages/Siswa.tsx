@@ -53,6 +53,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Siswa {
   id: string;
