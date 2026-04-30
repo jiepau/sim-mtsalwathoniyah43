@@ -75,8 +75,9 @@ export function PaymentHistoryDialog({
 
   const fetchPaymentHistory = async () => {
     if (!siswaId) return;
-    
+
     setLoading(true);
+    setSelectedIds(new Set());
     try {
       const { data, error } = await supabase
         .from('pembayaran')
@@ -92,6 +93,24 @@ export function PaymentHistoryDialog({
       setLoading(false);
     }
   };
+
+  const printablePayments = payments.filter(p => Number(p.nominal_bayar) > 0);
+  const allSelected = printablePayments.length > 0 && selectedIds.size === printablePayments.length;
+  const toggleOne = (id: string, checked: boolean) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (checked) next.add(id); else next.delete(id);
+      return next;
+    });
+  };
+  const toggleAll = (checked: boolean) => {
+    setSelectedIds(checked ? new Set(printablePayments.map(p => p.id)) : new Set());
+  };
+  const handlePrintSelected = () => {
+    const selected = payments.filter(p => selectedIds.has(p.id));
+    if (selected.length) setKwitansiPayments(selected);
+  };
+
 
   const getStatusBadge = (status: string) => {
     switch (status) {
