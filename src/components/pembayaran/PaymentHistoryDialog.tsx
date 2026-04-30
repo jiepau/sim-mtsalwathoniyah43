@@ -242,6 +242,13 @@ export function PaymentHistoryDialog({
           )}
         </ScrollArea>
       </DialogContent>
+
+      <KwitansiPrintDialog
+        open={!!kwitansiPayment}
+        onOpenChange={(o) => !o && setKwitansiPayment(null)}
+        payment={kwitansiPayment}
+        siswaInfo={siswaInfo}
+      />
     </Dialog>
   );
 }
