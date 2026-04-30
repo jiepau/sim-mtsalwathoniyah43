@@ -64,6 +64,7 @@ interface TahunAjaran {
 }
 
 export default function BukuInduk() {
+  const { user } = useAuth();
   const [siswa, setSiswa] = useState<Siswa[]>([]);
   const [kelasList, setKelasList] = useState<Kelas[]>([]);
   const [taList, setTaList] = useState<TahunAjaran[]>([]);
@@ -73,6 +74,53 @@ export default function BukuInduk() {
   const [selectedTa, setSelectedTa] = useState<string>("all");
   const [selectedSiswa, setSelectedSiswa] = useState<Siswa | null>(null);
   const [printMode, setPrintMode] = useState<"rekap" | "detail" | null>(null);
+  const [arsipOpen, setArsipOpen] = useState(false);
+
+  // Helper: simpan snapshot ke arsip lalu mulai cetak
+  const triggerPrint = async (mode: "rekap" | "detail") => {
+    if (filteredSiswa.length === 0) {
+      toast.error("Tidak ada data siswa untuk dicetak");
+      return;
+    }
+    if (mode === "detail" && filteredSiswa.length > 50) {
+      if (!confirm(`Akan mencetak ${filteredSiswa.length} halaman (1 siswa per halaman). Lanjutkan?`)) return;
+    }
+
+    const kelasNama = selectedKelas === "all"
+      ? "Semua Kelas"
+      : kelasList.find(k => k.id === selectedKelas)?.nama_kelas || "-";
+    const taNama = selectedTa === "all"
+      ? "Semua TA"
+      : taList.find(t => t.id === selectedTa)?.nama_ta || "-";
+
+    // Simpan snapshot ke arsip (best-effort, tidak blok cetak jika gagal)
+    try {
+      const judul = `Buku Induk ${mode === "detail" ? "Detail" : "Rekap"} — ${kelasNama} (${taNama})`;
+      let dicetakOlehNama: string | null = null;
+      if (user) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        dicetakOlehNama = prof?.full_name || user.email || null;
+      }
+      await supabase.from("buku_induk_arsip").insert({
+        judul,
+        mode,
+        filter_kelas: kelasNama,
+        filter_ta: taNama,
+        jumlah_siswa: filteredSiswa.length,
+        daftar_siswa: filteredSiswa as any,
+        dicetak_oleh: user?.id ?? null,
+        dicetak_oleh_nama: dicetakOlehNama,
+      });
+    } catch (err) {
+      console.warn("Gagal menyimpan arsip cetak:", err);
+    }
+
+    setPrintMode(mode);
+  };
 
   useEffect(() => {
     fetchData();
