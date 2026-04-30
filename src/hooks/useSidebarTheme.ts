@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 export type ThemeColor = 'hijau' | 'tosca';
-export type GradientIntensity = 'kuat' | 'sedang' | 'netral' | 'kontras';
+export type GradientIntensity = 'super' | 'kuat' | 'sedang' | 'netral' | 'kontras';
 
 const THEME_KEY = 'sidebar-theme';
 const GRADIENT_KEY = 'sidebar-gradient';

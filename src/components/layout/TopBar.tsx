@@ -148,7 +148,7 @@ export function TopBar() {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel className="text-xs">Intensitas</DropdownMenuLabel>
-                  {(['kuat', 'sedang', 'netral', 'kontras'] as const).map((i) => (
+                  {(['super', 'kuat', 'sedang', 'netral', 'kontras'] as const).map((i) => (
                     <DropdownMenuItem key={i} onClick={() => setIntensity(i)} className="cursor-pointer capitalize">
                       <span className="flex-1">
                         {i}
