@@ -173,77 +173,116 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
     try {
       const buf = await f.arrayBuffer();
       const wb = XLSX.read(buf, { type: 'array', cellDates: false });
-      const sheet = wb.Sheets[wb.SheetNames[0]];
-      const arr: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true, defval: '' });
-      if (!arr.length) throw new Error('File kosong');
-
-      const headerIdx = findHeaderRow(arr);
-      const headers = (arr[headerIdx] || []).map((h: any) => String(h || ''));
-
-      const idx = {
-        nama: colIndex(headers, 'nama'),
-        nuptk: colIndex(headers, 'nuptk'),
-        peg: colIndex(headers, 'peg'),
-        nip: colIndex(headers, 'nip'),
-        nik: colIndex(headers, 'nik'),
-        tempat: colIndex(headers, 'tempat', 'lahir'),
-        tanggal: colIndex(headers, 'tanggal', 'lahir'),
-        jk: colIndex(headers, 'kelamin'),
-        jabatan: colIndex(headers, 'jabatan'),
-        kepeg: colIndex(headers, 'kepegawaian'),
-        sert: colIndex(headers, 'sertifikasi'),
-        sertNo: colIndex(headers, 'nomor', 'sertifikasi'),
-        pend: colIndex(headers, 'pendidikan'),
-        lulusan: colIndex(headers, 'lulusan'),
-        mapel: colIndex(headers, 'mapel'),
-        hp: colIndex(headers, 'hp'),
-        telp: colIndex(headers, 'telepon'),
-        email: colIndex(headers, 'email'),
-        alamat: colIndex(headers, 'alamat'),
-        status: colIndex(headers, 'status', 'aktif'),
-      };
-
-      if (idx.nama < 0) {
-        throw new Error('Kolom "Nama" tidak ditemukan. Pastikan file ini hasil unduhan EMIS GTK/PTK.');
-      }
-
-      // NUPTK fallback ke PegID
-      const nuptkCol = idx.nuptk >= 0 ? idx.nuptk : idx.peg;
-      const hpCol = idx.hp >= 0 ? idx.hp : idx.telp;
+      if (!wb.SheetNames.length) throw new Error('File kosong');
 
       const parsed: EmisGtkRow[] = [];
-      for (let i = headerIdx + 1; i < arr.length; i++) {
-        const r = arr[i];
-        if (!r || r.every((c: any) => !cleanText(c))) continue;
-        const nama = cleanText(r[idx.nama]);
-        if (!nama) continue;
+      const sheetStats: { name: string; count: number }[] = [];
+      const sheetErrors: string[] = [];
+      // Dedupe across sheets — prioritas: NUPTK > NIP > NIK > Nama+TanggalLahir
+      const seen = new Set<string>();
+      const dedupeKey = (row: EmisGtkRow): string => {
+        if (row.nuptk) return `nuptk:${row.nuptk}`;
+        if (row.nip) return `nip:${row.nip}`;
+        if (row.nik) return `nik:${row.nik}`;
+        return `nm:${row.nama.toLowerCase()}|${row.tanggal_lahir || ''}`;
+      };
 
-        const sertData = idx.sert >= 0 ? normalizeSertifikasi(r[idx.sert]) : { sertifikasi: false, nomor: '' };
-        const nomorSert = idx.sertNo >= 0 ? cleanText(r[idx.sertNo]) : sertData.nomor;
+      // Loop ALL sheets — EMIS GTK kadang pisah per kategori (Guru / Tendik / dll)
+      for (const sheetName of wb.SheetNames) {
+        const sheet = wb.Sheets[sheetName];
+        const arr: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true, defval: '' });
+        if (!arr.length) continue;
 
-        parsed.push({
-          nama,
-          nuptk: nuptkCol >= 0 ? cleanText(r[nuptkCol]) : '',
-          nip: idx.nip >= 0 ? cleanText(r[idx.nip]) : '',
-          nik: idx.nik >= 0 ? cleanText(r[idx.nik]) : '',
-          tempat_lahir: idx.tempat >= 0 ? cleanText(r[idx.tempat]) : '',
-          tanggal_lahir: idx.tanggal >= 0 ? parseTanggal(r[idx.tanggal]) : null,
-          jenis_kelamin: idx.jk >= 0 ? normalizeJK(cleanText(r[idx.jk])) : '',
-          jabatan: idx.jabatan >= 0 ? cleanText(r[idx.jabatan]) : '',
-          status_kepegawaian: idx.kepeg >= 0 ? normalizeStatusKepegawaian(cleanText(r[idx.kepeg])) : '',
-          sertifikasi: sertData.sertifikasi || !!nomorSert,
-          nomor_sertifikasi: nomorSert,
-          pendidikan: idx.pend >= 0 ? cleanText(r[idx.pend]) : '',
-          lulusan: idx.lulusan >= 0 ? cleanText(r[idx.lulusan]) : '',
-          mapel: idx.mapel >= 0 ? cleanText(r[idx.mapel]) : '',
-          no_hp: hpCol >= 0 ? normalizeHp(r[hpCol]) : '',
-          email: idx.email >= 0 ? cleanText(r[idx.email]) : '',
-          alamat: idx.alamat >= 0 ? cleanText(r[idx.alamat]) : '',
-          status_aktif: idx.status >= 0 ? cleanText(r[idx.status]) : 'aktif',
-        });
+        const headerIdx = findHeaderRow(arr);
+        const headers = (arr[headerIdx] || []).map((h: any) => String(h || ''));
+
+        const idx = {
+          nama: colIndex(headers, 'nama'),
+          nuptk: colIndex(headers, 'nuptk'),
+          peg: colIndex(headers, 'peg'),
+          nip: colIndex(headers, 'nip'),
+          nik: colIndex(headers, 'nik'),
+          tempat: colIndex(headers, 'tempat', 'lahir'),
+          tanggal: colIndex(headers, 'tanggal', 'lahir'),
+          jk: colIndex(headers, 'kelamin'),
+          jabatan: colIndex(headers, 'jabatan'),
+          kepeg: colIndex(headers, 'kepegawaian'),
+          sert: colIndex(headers, 'sertifikasi'),
+          sertNo: colIndex(headers, 'nomor', 'sertifikasi'),
+          pend: colIndex(headers, 'pendidikan'),
+          lulusan: colIndex(headers, 'lulusan'),
+          mapel: colIndex(headers, 'mapel'),
+          hp: colIndex(headers, 'hp'),
+          telp: colIndex(headers, 'telepon'),
+          email: colIndex(headers, 'email'),
+          alamat: colIndex(headers, 'alamat'),
+          status: colIndex(headers, 'status', 'aktif'),
+        };
+
+        if (idx.nama < 0) {
+          sheetErrors.push(`Sheet "${sheetName}": kolom Nama tidak ditemukan, dilewati.`);
+          continue;
+        }
+
+        // NUPTK fallback ke PegID
+        const nuptkCol = idx.nuptk >= 0 ? idx.nuptk : idx.peg;
+        const hpCol = idx.hp >= 0 ? idx.hp : idx.telp;
+
+        let countThisSheet = 0;
+        for (let i = headerIdx + 1; i < arr.length; i++) {
+          const r = arr[i];
+          if (!r || r.every((c: any) => !cleanText(c))) continue;
+          const nama = cleanText(r[idx.nama]);
+          if (!nama) continue;
+
+          const sertData = idx.sert >= 0 ? normalizeSertifikasi(r[idx.sert]) : { sertifikasi: false, nomor: '' };
+          const nomorSert = idx.sertNo >= 0 ? cleanText(r[idx.sertNo]) : sertData.nomor;
+
+          const row: EmisGtkRow = {
+            nama,
+            nuptk: nuptkCol >= 0 ? cleanText(r[nuptkCol]) : '',
+            nip: idx.nip >= 0 ? cleanText(r[idx.nip]) : '',
+            nik: idx.nik >= 0 ? cleanText(r[idx.nik]) : '',
+            tempat_lahir: idx.tempat >= 0 ? cleanText(r[idx.tempat]) : '',
+            tanggal_lahir: idx.tanggal >= 0 ? parseTanggal(r[idx.tanggal]) : null,
+            jenis_kelamin: idx.jk >= 0 ? normalizeJK(cleanText(r[idx.jk])) : '',
+            jabatan: idx.jabatan >= 0 ? cleanText(r[idx.jabatan]) : '',
+            status_kepegawaian: idx.kepeg >= 0 ? normalizeStatusKepegawaian(cleanText(r[idx.kepeg])) : '',
+            sertifikasi: sertData.sertifikasi || !!nomorSert,
+            nomor_sertifikasi: nomorSert,
+            pendidikan: idx.pend >= 0 ? cleanText(r[idx.pend]) : '',
+            lulusan: idx.lulusan >= 0 ? cleanText(r[idx.lulusan]) : '',
+            mapel: idx.mapel >= 0 ? cleanText(r[idx.mapel]) : '',
+            no_hp: hpCol >= 0 ? normalizeHp(r[hpCol]) : '',
+            email: idx.email >= 0 ? cleanText(r[idx.email]) : '',
+            alamat: idx.alamat >= 0 ? cleanText(r[idx.alamat]) : '',
+            status_aktif: idx.status >= 0 ? cleanText(r[idx.status]) : 'aktif',
+          };
+
+          const key = dedupeKey(row);
+          if (seen.has(key)) continue;
+          seen.add(key);
+          parsed.push(row);
+          countThisSheet++;
+        }
+        if (countThisSheet > 0) sheetStats.push({ name: sheetName, count: countThisSheet });
       }
 
-      if (!parsed.length) throw new Error('Tidak ada baris GTK yang valid ditemukan.');
+      if (!parsed.length) {
+        const detail = sheetErrors.length ? ` (${sheetErrors.join(' ')})` : '';
+        throw new Error('Tidak ada baris GTK yang valid ditemukan.' + detail);
+      }
+
+      // Notifikasi multi-sheet
+      if (sheetStats.length > 1) {
+        toast.success(
+          `Terbaca ${sheetStats.length} sheet: ${sheetStats.map(s => `${s.name} (${s.count})`).join(', ')}`
+        );
+      }
+      if (sheetErrors.length) {
+        sheetErrors.forEach(msg => toast.warning(msg));
+      }
+
       setRows(parsed);
     } catch (err: any) {
       setParseError(err.message || 'Gagal membaca file');
