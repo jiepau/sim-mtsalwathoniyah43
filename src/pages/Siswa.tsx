@@ -53,6 +53,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { mapDatabaseError } from '@/lib/error-mapper';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Siswa {
   id: string;
@@ -89,6 +90,8 @@ export default function SiswaPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const kelasFilter = searchParams.get('kelas');
   const taFilter = searchParams.get('ta');
+  const { hasRole } = useAuth();
+  const canMutate = hasRole('admin') || hasRole('operator');
   
   const [siswa, setSiswa] = useState<Siswa[]>([]);
   const [kelas, setKelas] = useState<Kelas[]>([]);
@@ -720,12 +723,16 @@ export default function SiswaPage() {
           <Button size="sm" variant="ghost" onClick={() => handlePrintKartu(item)} title="Cetak Kartu Pelajar">
             <IdCard className="h-4 w-4" />
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => handleOpenDialog(item)} title="Edit">
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleDelete(item.id)} title="Hapus">
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {canMutate && (
+            <>
+              <Button size="sm" variant="ghost" onClick={() => handleOpenDialog(item)} title="Edit">
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleDelete(item.id)} title="Hapus">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </>
+          )}
         </div>
       ),
       className: 'w-40'
@@ -752,11 +759,13 @@ export default function SiswaPage() {
               />
             </div>
 
-            {/* Aksi utama */}
-            <Button onClick={() => handleOpenDialog()} size="sm" className="h-9">
-              <Plus className="h-4 w-4 mr-1.5" />
-              Tambah Siswa
-            </Button>
+            {/* Aksi utama - hanya admin/operator */}
+            {canMutate && (
+              <Button onClick={() => handleOpenDialog()} size="sm" className="h-9">
+                <Plus className="h-4 w-4 mr-1.5" />
+                Tambah Siswa
+              </Button>
+            )}
 
             {/* Aksi sekunder dikelompokkan */}
             <DropdownMenu>
@@ -767,16 +776,20 @@ export default function SiswaPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuLabel>Import Data</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => setEmisImportOpen(true)}>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import EMIS
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import CSV
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
+                {canMutate && (
+                  <>
+                    <DropdownMenuLabel>Import Data</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => setEmisImportOpen(true)}>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Import EMIS
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Import CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuLabel>Ekspor & Cetak</DropdownMenuLabel>
                 <DropdownMenuItem
                   onClick={() => {
@@ -794,15 +807,19 @@ export default function SiswaPage() {
                   <IdCard className="h-4 w-4 mr-2" />
                   Cetak Kartu
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleDeleteAll}
-                  disabled={siswa.length === 0}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Hapus Semua
-                </DropdownMenuItem>
+                {canMutate && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleDeleteAll}
+                      disabled={siswa.length === 0}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Hapus Semua
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -1072,28 +1089,32 @@ export default function SiswaPage() {
                           Belum ada siswa di {group.namaKelas}
                         </p>
                         <p className="text-xs text-muted-foreground mb-4">
-                          Tambahkan siswa baru atau import dari EMIS untuk mengisi kelas ini.
+                          {canMutate
+                            ? `Tambahkan siswa baru atau import dari EMIS untuk mengisi kelas ini.`
+                            : `Belum ada data siswa pada kelas ini.`}
                         </p>
-                        <div className="flex items-center justify-center gap-2 flex-wrap">
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setFormData(prev => ({ ...prev, kelas_id: group.kelasId || '' }));
-                              handleOpenDialog();
-                            }}
-                          >
-                            <Plus className="h-4 w-4 mr-1.5" />
-                            Tambah Siswa ke {group.namaKelas}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setEmisImportOpen(true)}
-                          >
-                            <Upload className="h-4 w-4 mr-1.5" />
-                            Import EMIS
-                          </Button>
-                        </div>
+                        {canMutate && (
+                          <div className="flex items-center justify-center gap-2 flex-wrap">
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setFormData(prev => ({ ...prev, kelas_id: group.kelasId || '' }));
+                                handleOpenDialog();
+                              }}
+                            >
+                              <Plus className="h-4 w-4 mr-1.5" />
+                              Tambah Siswa ke {group.namaKelas}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setEmisImportOpen(true)}
+                            >
+                              <Upload className="h-4 w-4 mr-1.5" />
+                              Import EMIS
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <DataTable 
