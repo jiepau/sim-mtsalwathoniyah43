@@ -6,12 +6,7 @@ import {
   TrendingUp, 
   TrendingDown,
   AlertTriangle,
-  Calendar,
   Sparkles,
-  Award,
-  Briefcase,
-  HandCoins,
-  Building2,
   MapPin
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
