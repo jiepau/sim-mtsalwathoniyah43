@@ -255,6 +255,20 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
           const sertData = idx.sert >= 0 ? normalizeSertifikasi(r[idx.sert]) : { sertifikasi: false, nomor: '' };
           const nomorSert = idx.sertNo >= 0 ? cleanText(r[idx.sertNo]) : sertData.nomor;
 
+          // Status kepegawaian — ambil dari kolom "Status Kepegawaian" / "Status Pegawai"
+          const statusKepegRaw = idx.kepeg >= 0 ? cleanText(r[idx.kepeg])
+            : idx.statusPeg >= 0 ? cleanText(r[idx.statusPeg]) : '';
+
+          // Jenis PTK (Guru/Tendik/Kepala) → fallback nama sheet jika tidak ada
+          const jenisPtkRaw = idx.jenisPtk >= 0 ? cleanText(r[idx.jenisPtk])
+            : idx.jenisGtk >= 0 ? cleanText(r[idx.jenisGtk])
+            : idx.tugasUtama >= 0 ? cleanText(r[idx.tugasUtama])
+            : '';
+          const jenisPtk = normalizeJenisPtk(jenisPtkRaw) || normalizeJenisPtk(sheetName);
+          const jabatanRaw = idx.jabatan >= 0 ? cleanText(r[idx.jabatan]) : '';
+          // Jika kolom Jabatan kosong, pakai Jenis PTK; jika ada Jenis PTK + Jabatan, gabungkan
+          const jabatan = jabatanRaw || jenisPtk;
+
           const row: EmisGtkRow = {
             nama,
             nuptk: nuptkCol >= 0 ? cleanText(r[nuptkCol]) : '',
@@ -263,8 +277,8 @@ export function EmisImportWizardGtk({ open, onOpenChange, onSuccess }: Props) {
             tempat_lahir: idx.tempat >= 0 ? cleanText(r[idx.tempat]) : '',
             tanggal_lahir: idx.tanggal >= 0 ? parseTanggal(r[idx.tanggal]) : null,
             jenis_kelamin: idx.jk >= 0 ? normalizeJK(cleanText(r[idx.jk])) : '',
-            jabatan: idx.jabatan >= 0 ? cleanText(r[idx.jabatan]) : '',
-            status_kepegawaian: idx.kepeg >= 0 ? normalizeStatusKepegawaian(cleanText(r[idx.kepeg])) : '',
+            jabatan,
+            status_kepegawaian: normalizeStatusKepegawaian(statusKepegRaw),
             sertifikasi: sertData.sertifikasi || !!nomorSert,
             nomor_sertifikasi: nomorSert,
             pendidikan: idx.pend >= 0 ? cleanText(r[idx.pend]) : '',
