@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BookMarked, Search, Download, FileText, User, Calendar, MapPin, Phone } from "lucide-react";
+import { BookMarked, Search, Download, FileText, User, Calendar, MapPin, Phone, Printer } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,11 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/supabase-helpers";
+import { BukuIndukPrint, BukuIndukSiswa } from "@/components/siswa/BukuIndukPrint";
 
 interface Siswa {
   id: string;
@@ -35,6 +44,7 @@ interface Siswa {
     id: string;
     nama_ta: string;
   } | null;
+  foto_path?: string | null;
   created_at: string;
 }
 
@@ -59,6 +69,7 @@ export default function BukuInduk() {
   const [selectedKelas, setSelectedKelas] = useState<string>("all");
   const [selectedTa, setSelectedTa] = useState<string>("all");
   const [selectedSiswa, setSelectedSiswa] = useState<Siswa | null>(null);
+  const [printMode, setPrintMode] = useState<"rekap" | "detail" | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -129,12 +140,77 @@ export default function BukuInduk() {
     );
   }
 
+  // Print mode renders fullscreen overlay
+  if (printMode) {
+    const kelasNama = selectedKelas === "all"
+      ? "Semua Kelas"
+      : kelasList.find(k => k.id === selectedKelas)?.nama_kelas || "-";
+    const taNama = selectedTa === "all"
+      ? "Semua TA"
+      : taList.find(t => t.id === selectedTa)?.nama_ta || "-";
+    return (
+      <BukuIndukPrint
+        siswaList={filteredSiswa as BukuIndukSiswa[]}
+        mode={printMode}
+        filterInfo={{ kelas: kelasNama, ta: taNama }}
+        onClose={() => setPrintMode(null)}
+      />
+    );
+  }
+
   return (
     <div className="animate-fadeIn">
       <PageHeader
         title="Buku Induk Siswa"
         description="Rekap data lengkap siswa untuk keperluan administrasi"
         icon={<BookMarked className="h-6 w-6" />}
+        actions={
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" className="h-9">
+                <Printer className="h-4 w-4 mr-1.5" />
+                Cetak Buku Induk
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64">
+              <DropdownMenuLabel>Pilih Format Cetak</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => {
+                  if (filteredSiswa.length === 0) {
+                    toast.error("Tidak ada data siswa untuk dicetak");
+                    return;
+                  }
+                  setPrintMode("rekap");
+                }}
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                <div className="flex flex-col">
+                  <span>Rekap Tabel</span>
+                  <span className="text-xs text-muted-foreground">Daftar siswa dalam bentuk tabel</span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  if (filteredSiswa.length === 0) {
+                    toast.error("Tidak ada data siswa untuk dicetak");
+                    return;
+                  }
+                  if (filteredSiswa.length > 50) {
+                    if (!confirm(`Akan mencetak ${filteredSiswa.length} halaman (1 siswa per halaman). Lanjutkan?`)) return;
+                  }
+                  setPrintMode("detail");
+                }}
+              >
+                <BookMarked className="h-4 w-4 mr-2" />
+                <div className="flex flex-col">
+                  <span>Detail Per Siswa</span>
+                  <span className="text-xs text-muted-foreground">1 halaman penuh per siswa (untuk arsip)</span>
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        }
       />
 
       {/* Filters */}
