@@ -117,6 +117,7 @@ export default function BukuInduk() {
         daftar_siswa: filteredSiswa as any,
         dicetak_oleh: user?.id ?? null,
         dicetak_oleh_nama: dicetakOlehNama,
+        catatan,
       });
     } catch (err) {
       console.warn("Gagal menyimpan arsip cetak:", err);
