@@ -1025,35 +1025,82 @@ export default function SiswaPage() {
         ) : (
           <Accordion 
             type="multiple" 
-            defaultValue={groupedSiswa.map(g => g.kelasId || '__no_kelas__')}
+            value={openAccordions}
+            onValueChange={setOpenAccordions}
             className="space-y-2"
           >
             {groupedSiswa.map((group) => {
               const lakiCount = group.siswa.filter(s => s.jenis_kelamin === 'L' || s.jenis_kelamin === 'Laki-laki').length;
               const perempuanCount = group.siswa.filter(s => s.jenis_kelamin === 'P' || s.jenis_kelamin === 'Perempuan').length;
+              const isEmpty = group.siswa.length === 0;
               return (
                 <AccordionItem 
                   key={group.kelasId || '__no_kelas__'} 
                   value={group.kelasId || '__no_kelas__'}
-                  className="border rounded-md overflow-hidden bg-card"
+                  className={cn(
+                    "border rounded-md overflow-hidden bg-card",
+                    isEmpty && "border-dashed opacity-90"
+                  )}
                 >
                   <AccordionTrigger className="px-4 py-3 hover:bg-muted/50 hover:no-underline">
                     <div className="flex items-center gap-3 flex-1">
-                      <Badge variant="default" className="text-sm">{group.namaKelas}</Badge>
-                      <span className="text-sm font-semibold text-foreground">{group.siswa.length} siswa</span>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span className="inline-flex items-center gap-1"><Badge variant="outline" className="h-5 px-1.5 text-[10px]">L</Badge>{lakiCount}</span>
-                        <span className="inline-flex items-center gap-1"><Badge variant="outline" className="h-5 px-1.5 text-[10px]">P</Badge>{perempuanCount}</span>
-                      </div>
+                      <Badge variant={isEmpty ? "outline" : "default"} className="text-sm">{group.namaKelas}</Badge>
+                      <span className={cn(
+                        "text-sm font-semibold",
+                        isEmpty ? "text-muted-foreground" : "text-foreground"
+                      )}>
+                        {group.siswa.length} siswa
+                      </span>
+                      {!isEmpty && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="inline-flex items-center gap-1"><Badge variant="outline" className="h-5 px-1.5 text-[10px]">L</Badge>{lakiCount}</span>
+                          <span className="inline-flex items-center gap-1"><Badge variant="outline" className="h-5 px-1.5 text-[10px]">P</Badge>{perempuanCount}</span>
+                        </div>
+                      )}
+                      {isEmpty && (
+                        <Badge variant="secondary" className="text-[10px] font-normal">Kosong</Badge>
+                      )}
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-0 pb-0">
-                    <DataTable 
-                      data={group.siswa}
-                      columns={columns}
-                      loading={false}
-                      emptyMessage="Tidak ada siswa di kelas ini"
-                    />
+                    {isEmpty ? (
+                      <div className="px-6 py-8 text-center border-t bg-muted/20">
+                        <Users className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
+                        <p className="text-sm font-medium text-foreground mb-1">
+                          Belum ada siswa di {group.namaKelas}
+                        </p>
+                        <p className="text-xs text-muted-foreground mb-4">
+                          Tambahkan siswa baru atau import dari EMIS untuk mengisi kelas ini.
+                        </p>
+                        <div className="flex items-center justify-center gap-2 flex-wrap">
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, kelas_id: group.kelasId || '' }));
+                              handleOpenDialog();
+                            }}
+                          >
+                            <Plus className="h-4 w-4 mr-1.5" />
+                            Tambah Siswa ke {group.namaKelas}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEmisImportOpen(true)}
+                          >
+                            <Upload className="h-4 w-4 mr-1.5" />
+                            Import EMIS
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <DataTable 
+                        data={group.siswa}
+                        columns={columns}
+                        loading={false}
+                        emptyMessage="Tidak ada siswa di kelas ini"
+                      />
+                    )}
                   </AccordionContent>
                 </AccordionItem>
               );
