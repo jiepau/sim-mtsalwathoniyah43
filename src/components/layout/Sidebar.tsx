@@ -158,12 +158,14 @@ export function Sidebar() {
 
   const gradientMap = {
     hijau: {
+      super: 'bg-gradient-to-b from-emerald-400/95 via-emerald-300/90 to-emerald-200/80',
       kuat: 'bg-gradient-to-b from-emerald-300/80 via-emerald-200/70 to-emerald-100/60',
       sedang: 'bg-gradient-to-b from-emerald-200/70 via-emerald-100/60 to-emerald-50/50',
       netral: 'bg-gradient-to-b from-emerald-100/60 via-white to-emerald-50/40',
       kontras: 'bg-gradient-to-b from-emerald-500/95 via-emerald-400/90 to-emerald-300/85',
     },
     tosca: {
+      super: 'bg-gradient-to-b from-cyan-400/95 via-teal-300/90 to-cyan-200/80',
       kuat: 'bg-gradient-to-b from-cyan-300/80 via-teal-200/70 to-cyan-100/60',
       sedang: 'bg-gradient-to-b from-cyan-200/70 via-teal-100/60 to-cyan-50/50',
       netral: 'bg-gradient-to-b from-cyan-100/60 via-white to-teal-50/40',

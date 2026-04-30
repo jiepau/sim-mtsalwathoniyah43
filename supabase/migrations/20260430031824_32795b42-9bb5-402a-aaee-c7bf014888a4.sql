@@ -1,0 +1,2 @@
+ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_sidebar_intensity_check;
+ALTER TABLE public.profiles ADD CONSTRAINT profiles_sidebar_intensity_check CHECK (sidebar_intensity IN ('kuat','sedang','netral','kontras','super'));
