@@ -396,31 +396,32 @@ export default function Dashboard() {
       {/* Activity Log - Admin only */}
       {isAdmin && <ActivityLog />}
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Siswa per Kelas</CardTitle>
+      {/* Charts — responsive: stack on mobile, side-by-side on lg */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <Card className="shadow-card overflow-hidden">
+          <CardHeader className="pb-2 sm:pb-4">
+            <CardTitle className="text-sm sm:text-lg font-semibold">Siswa per Kelas</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-2 sm:px-6">
             {kelasData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={kelasData}>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={kelasData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
-                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                  <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} interval={0} angle={-30} textAnchor="end" height={50} />
+                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} width={30} />
                   <Tooltip 
                     contentStyle={{ 
                       backgroundColor: 'hsl(var(--card))', 
                       border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
+                      borderRadius: '8px',
+                      fontSize: '12px'
                     }}
                   />
                   <Bar dataKey="jumlah" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+              <div className="h-[220px] flex items-center justify-center text-muted-foreground text-sm">
                 Belum ada data kelas
               </div>
             )}
@@ -428,20 +429,20 @@ export default function Dashboard() {
         </Card>
 
         {(isAdmin || isBendahara) && (
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Ringkasan Keuangan</CardTitle>
+        <Card className="shadow-card overflow-hidden">
+          <CardHeader className="pb-2 sm:pb-4">
+            <CardTitle className="text-sm sm:text-lg font-semibold">Ringkasan Keuangan</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-2 sm:px-6">
             {stats.totalPemasukan > 0 || stats.totalPengeluaran > 0 || stats.totalTunggakan > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
                   <Pie
                     data={keuanganData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
+                    innerRadius={45}
+                    outerRadius={75}
                     paddingAngle={5}
                     dataKey="value"
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
@@ -455,14 +456,15 @@ export default function Dashboard() {
                     contentStyle={{ 
                       backgroundColor: 'hsl(var(--card))', 
                       border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
+                      borderRadius: '8px',
+                      fontSize: '12px'
                     }}
                   />
-                  <Legend />
+                  <Legend wrapperStyle={{ fontSize: '12px' }} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+              <div className="h-[220px] flex items-center justify-center text-muted-foreground text-sm">
                 Belum ada data keuangan
               </div>
             )}
