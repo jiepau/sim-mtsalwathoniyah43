@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { History, Calendar, CreditCard, Check, Clock, X } from 'lucide-react';
+import { History, Calendar, CreditCard, Check, Clock, X, Printer } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { KwitansiPrintDialog } from './KwitansiPrintDialog';
 import {
   Dialog,
   DialogContent,
@@ -61,6 +63,7 @@ export function PaymentHistoryDialog({
 }: PaymentHistoryDialogProps) {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(false);
+  const [kwitansiPayment, setKwitansiPayment] = useState<PaymentRecord | null>(null);
 
   useEffect(() => {
     if (open && siswaId) {
@@ -187,7 +190,20 @@ export function PaymentHistoryDialog({
                           Periode: {getPeriode(payment.bulan, payment.tahun)}
                         </p>
                       </div>
-                      {getStatusBadge(payment.status)}
+                      <div className="flex items-center gap-2">
+                        {Number(payment.nominal_bayar) > 0 && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-2"
+                            onClick={() => setKwitansiPayment(payment)}
+                            title="Cetak Kwitansi"
+                          >
+                            <Printer className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                        {getStatusBadge(payment.status)}
+                      </div>
                     </div>
                     
                     <div className="grid grid-cols-3 gap-2 text-sm mt-3">
@@ -226,6 +242,13 @@ export function PaymentHistoryDialog({
           )}
         </ScrollArea>
       </DialogContent>
+
+      <KwitansiPrintDialog
+        open={!!kwitansiPayment}
+        onOpenChange={(o) => !o && setKwitansiPayment(null)}
+        payment={kwitansiPayment}
+        siswaInfo={siswaInfo}
+      />
     </Dialog>
   );
 }
