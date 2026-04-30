@@ -111,7 +111,19 @@ export default function GtkPtkPage() {
   });
 
   const JABATAN_UTAMA_OPTIONS = ['Kepala Madrasah', 'Guru', 'Tenaga Kependidikan'];
-  const JABATAN_TAMBAHAN_OPTIONS = ['Wakil Kurikulum', 'Wakil Kesiswaan', 'Mengajar'];
+  const JABATAN_TAMBAHAN_OPTIONS = [
+    'Wakil Kurikulum',
+    'Wakil Kesiswaan',
+    'Wakil Sarpras',
+    'Wakil Humas',
+    'Mengajar',
+    'Wali Kelas',
+    'Bendahara',
+    'Operator Madrasah',
+    'Pembina Ekstrakurikuler',
+    'Pembina OSIS',
+    'Staf TU',
+  ];
 
   // Helper: parse jabatan string into utama + tambahan[]
   const parseJabatan = (jabatan: string | null): { utama: string; tambahan: string[] } => {
@@ -898,7 +910,7 @@ export default function GtkPtkPage() {
               </div>
               <div className="space-y-2">
                 <Label>Jabatan Tambahan <span className="text-xs text-muted-foreground">(opsional, boleh lebih dari satu)</span></Label>
-                <div className="flex flex-wrap gap-3 pt-1">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2 pt-1 max-h-48 overflow-y-auto pr-1 border rounded-md p-2 bg-muted/20">
                   {JABATAN_TAMBAHAN_OPTIONS.map(opt => (
                     <label key={opt} className="flex items-center gap-2 cursor-pointer">
                       <Checkbox
