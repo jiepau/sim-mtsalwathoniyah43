@@ -33,21 +33,23 @@ export function TopBar() {
     if (typeof window === 'undefined') return 'kuat';
     return (localStorage.getItem('sidebar-gradient') as 'kuat' | 'sedang' | 'netral') || 'kuat';
   });
+  const [themeColor, setThemeColor] = useState<'hijau' | 'tosca'>(() => {
+    if (typeof window === 'undefined') return 'hijau';
+    return (localStorage.getItem('sidebar-theme') as 'hijau' | 'tosca') || 'hijau';
+  });
 
-  const cycleGradient = () => {
-    const order: Array<'kuat' | 'sedang' | 'netral'> = ['kuat', 'sedang', 'netral'];
-    const next = order[(order.indexOf(gradientIntensity) + 1) % order.length];
-    setGradientIntensity(next);
-    localStorage.setItem('sidebar-gradient', next);
-    // Trigger reload supaya Sidebar re-read localStorage
+  const setIntensity = (v: 'kuat' | 'sedang' | 'netral') => {
+    setGradientIntensity(v);
+    localStorage.setItem('sidebar-gradient', v);
     window.dispatchEvent(new Event('storage'));
   };
 
-  const gradientLabel = {
-    kuat: 'Kuat',
-    sedang: 'Sedang',
-    netral: 'Netral',
-  }[gradientIntensity];
+  const setTheme = (v: 'hijau' | 'tosca') => {
+    setThemeColor(v);
+    localStorage.setItem('sidebar-theme', v);
+    window.dispatchEvent(new Event('storage'));
+  };
+
 
   // Reactive: reset role saat user berubah/logout supaya indikator instan sinkron
   useEffect(() => {
