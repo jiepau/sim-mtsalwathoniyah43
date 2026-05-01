@@ -655,17 +655,14 @@ export default function SiswaPage() {
     { 
       header: 'NIS / NISN', 
       cell: (item: Siswa) => (
-        <div className="flex items-center gap-1.5 font-mono text-sm">
-          <span className="font-medium">{item.nis}</span>
+        <div className="font-mono text-xs leading-snug">
+          <span className="font-semibold">{item.nis}</span>
           {item.nisn && (
-            <>
-              <span className="text-muted-foreground/40">/</span>
-              <span className="text-muted-foreground">{item.nisn}</span>
-            </>
+            <span className="text-muted-foreground block">{item.nisn}</span>
           )}
         </div>
       ),
-      className: 'min-w-[200px]'
+      className: 'w-28'
     },
     { header: 'Nama Siswa', accessorKey: 'nama' as keyof Siswa },
     { 
