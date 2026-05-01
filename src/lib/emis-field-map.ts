@@ -31,6 +31,8 @@ export const EMIS_FIELD_MAP: EmisFieldMapping[] = [
   { db: 'no_hp', emis: 'NO. HANDPHONE', section: 'siswa' },
   { db: 'email_siswa', emis: 'ALAMAT EMAIL SISWA', section: 'siswa' },
   { db: 'asal_sekolah', emis: 'ASAL SEKOLAH', section: 'siswa' },
+  { db: 'npsn_asal_sekolah', emis: 'NPSN ASAL SEKOLAH', section: 'siswa' },
+  { db: 'nsm_asal_sekolah', emis: 'NSM ASAL SEKOLAH', section: 'siswa' },
   { db: 'yang_membiayai', emis: 'YANG MEMBIAYAI SEKOLAH', section: 'siswa' },
   { db: 'kebutuhan_disabilitas', emis: 'KEBUTUHAN DISABILITAS', section: 'siswa' },
   { db: 'kebutuhan_khusus', emis: 'KEBUTUHAN KHUSUS', section: 'siswa' },
