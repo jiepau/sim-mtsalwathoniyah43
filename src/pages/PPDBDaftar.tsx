@@ -135,8 +135,8 @@ export default function PPDBDaftar() {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      if (!form.nama.trim()) throw new Error('Nama wajib diisi');
-      if (!form.jenis_kelamin) throw new Error('Jenis kelamin wajib dipilih');
+      const validationErrors = validateForm(form);
+      if (validationErrors.length > 0) throw new Error(validationErrors[0]);
 
       const { data: nomor, error: rpcErr } = await supabase.rpc('generate_nomor_ppdb');
       if (rpcErr) throw rpcErr;
