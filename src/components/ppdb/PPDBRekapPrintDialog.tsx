@@ -9,6 +9,7 @@ import {
   PrintPreviewFrame,
   type PrintOrientation,
 } from '@/components/print/PrintPreviewToolbar';
+import { PPDBAsalSekolahDonut, klasifikasiAsalSekolah } from './PPDBAsalSekolahChart';
 
 type Pendaftar = {
   id: string;
@@ -25,98 +26,6 @@ interface Props {
   pendaftar: Pendaftar[];
 }
 
-/**
- * Klasifikasi asal sekolah:
- * - MI / Madrasah (Kemenag) jika nama sekolah mengandung "MI", "MADRASAH",
- *   "MIN", "MIS", "RA"
- * - SD / Diknas (Kemdikbud) jika mengandung "SD", "SDN", "SDS", "SDIT"
- *   (tetapi bukan MI)
- * - Lainnya jika tidak kosong namun tidak match
- * - Tidak diisi jika kosong
- */
-function klasifikasiAsalSekolah(nama: string | null | undefined):
-  'MI' | 'SD' | 'LAINNYA' | 'KOSONG' {
-  const s = (nama ?? '').trim().toUpperCase();
-  if (!s) return 'KOSONG';
-  // Cek MI dulu (lebih spesifik)
-  if (/\b(MI|MIN|MIS|MADRASAH|RA)\b/.test(s)) return 'MI';
-  if (/\b(SD|SDN|SDS|SDIT|SDI)\b/.test(s)) return 'SD';
-  return 'LAINNYA';
-}
-
-/** Donut chart sederhana berbasis SVG (aman untuk print, no deps). */
-function RekapDonutChart({
-  mi, sd, lainnya, kosong,
-}: { mi: number; sd: number; lainnya: number; kosong: number }) {
-  const total = mi + sd + lainnya + kosong;
-  const segments = [
-    { label: 'MI / Madrasah', value: mi, color: '#0d9488' }, // teal-600
-    { label: 'SD / Diknas', value: sd, color: '#2563eb' }, // blue-600
-    { label: 'Lainnya', value: lainnya, color: '#f59e0b' }, // amber-500
-    { label: 'Belum Diisi', value: kosong, color: '#94a3b8' }, // slate-400
-  ].filter((s) => s.value > 0);
-
-  const size = 160;
-  const stroke = 28;
-  const radius = (size - stroke) / 2;
-  const cx = size / 2;
-  const cy = size / 2;
-  const circ = 2 * Math.PI * radius;
-
-  let offset = 0;
-  return (
-    <div className="flex items-center gap-6 border rounded p-3 bg-white">
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0">
-        {/* track */}
-        <circle cx={cx} cy={cy} r={radius} fill="none" stroke="#e5e7eb" strokeWidth={stroke} />
-        {total > 0 && segments.map((s, i) => {
-          const len = (s.value / total) * circ;
-          const dasharray = `${len} ${circ - len}`;
-          const dashoffset = -offset;
-          offset += len;
-          return (
-            <circle
-              key={i}
-              cx={cx} cy={cy} r={radius}
-              fill="none"
-              stroke={s.color}
-              strokeWidth={stroke}
-              strokeDasharray={dasharray}
-              strokeDashoffset={dashoffset}
-              transform={`rotate(-90 ${cx} ${cy})`}
-            />
-          );
-        })}
-        <text x={cx} y={cy - 4} textAnchor="middle" fontSize="20" fontWeight="700" fill="#111">
-          {total}
-        </text>
-        <text x={cx} y={cy + 14} textAnchor="middle" fontSize="9" fill="#555">
-          PENDAFTAR
-        </text>
-      </svg>
-
-      <div className="flex-1 space-y-1.5">
-        <p className="text-xs font-semibold uppercase mb-1">Distribusi Asal Sekolah</p>
-        {segments.length === 0 ? (
-          <p className="text-xs text-muted-foreground">Belum ada data.</p>
-        ) : segments.map((s) => {
-          const pct = total > 0 ? Math.round((s.value / total) * 100) : 0;
-          return (
-            <div key={s.label} className="flex items-center gap-2 text-xs">
-              <span
-                className="inline-block h-3 w-3 rounded-sm shrink-0"
-                style={{ backgroundColor: s.color }}
-              />
-              <span className="flex-1">{s.label}</span>
-              <span className="font-semibold tabular-nums">{s.value}</span>
-              <span className="text-muted-foreground w-10 text-right tabular-nums">{pct}%</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 export function PPDBRekapPrintDialog({ open, onOpenChange, pendaftar }: Props) {
   const [preview, setPreview] = useState(true);
@@ -252,15 +161,6 @@ export function PPDBRekapPrintDialog({ open, onOpenChange, pendaftar }: Props) {
                 <p className="font-bold text-base">{groups.lainnya.length + groups.kosong.length}</p>
               </div>
             </div>
-
-            {/* Diagram MI vs SD */}
-            <RekapDonutChart
-              mi={groups.mi.length}
-              sd={groups.sd.length}
-              lainnya={groups.lainnya.length}
-              kosong={groups.kosong.length}
-            />
-
             {/* MI */}
             <section>
               <div className="flex items-center justify-between mb-1">

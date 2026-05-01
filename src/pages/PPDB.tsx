@@ -6,6 +6,7 @@ import { PPDBSettingsPanel } from '@/components/ppdb/PPDBSettingsPanel';
 import { PPDBKonversiDialog } from '@/components/ppdb/PPDBKonversiDialog';
 import { PPDBInputOfflineDialog } from '@/components/ppdb/PPDBInputOfflineDialog';
 import { PPDBRekapPrintDialog } from '@/components/ppdb/PPDBRekapPrintDialog';
+import { PPDBAsalSekolahDonut, useAsalSekolahBreakdown } from '@/components/ppdb/PPDBAsalSekolahChart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -139,6 +140,7 @@ export default function PPDB() {
   };
 
   const countByStatus = (s: string) => pendaftar.filter((p) => p.status === s).length;
+  const asalBreakdown = useAsalSekolahBreakdown(pendaftar);
   const selectedDiterima = selected.filter((id) => pendaftar.find((p) => p.id === id)?.status === 'diterima');
 
   return (
@@ -204,6 +206,10 @@ export default function PPDB() {
               </div>
             </CardContent>
           </Card>
+
+          <div className="mt-4">
+            <PPDBAsalSekolahDonut {...asalBreakdown} />
+          </div>
         </div>
 
         <div className="lg:col-span-3 space-y-3">
