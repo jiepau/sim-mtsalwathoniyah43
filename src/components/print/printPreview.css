@@ -64,19 +64,33 @@
     display: block !important;
   }
 
-  /* Hide dialog chrome: title bar, close button, and any element marked .no-print.
-     shadcn Dialog renders <DialogHeader>/<DialogTitle> plus a close <button>
-     inside [data-radix-dialog-content]; none of those should print. */
-  [data-radix-dialog-content] button,
-  [data-radix-dialog-content] [data-radix-dialog-close],
-  .print-root button[aria-label="Close"],
+  /* Hide dialog chrome inside any printed dialog:
+     - DialogHeader / DialogTitle / DialogDescription (Radix sets data-state on them)
+     - Radix close button (DialogPrimitive.Close)
+     - Anything explicitly marked .no-print */
+  [role="dialog"] > button,
+  [role="dialog"] [data-radix-dialog-close],
+  [role="dialog"] [aria-labelledby],
+  [role="dialog"] h2,
+  [role="dialog"] [id$="-title"],
+  [role="dialog"] [id$="-description"],
   .no-print {
     display: none !important;
   }
 
-  /* Hide the dialog header block (title + description) when printing.
-     The print-root already provides its own letterhead. */
-  [data-radix-dialog-content] > div:first-child:not(.print-root):not([data-print-orientation]) {
+  /* Re-show items that happen to live INSIDE print-root (e.g. heading
+     "REKAP PENDAFTAR SPMB" is an h3, but we explicitly allow h1..h6
+     inside print-root). */
+  .print-root,
+  .print-root *,
+  .print-root h1,
+  .print-root h2,
+  .print-root h3,
+  .print-root h4,
+  .print-root button {
+    display: revert !important;
+  }
+  .print-root .no-print {
     display: none !important;
   }
 
