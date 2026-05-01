@@ -185,8 +185,12 @@ export default function PPDB() {
                 <SelectItem value="ditolak">Ditolak</SelectItem>
               </SelectContent>
             </Select>
-            <Button size="sm" variant="outline" onClick={exportCSV}>
-              <Download className="h-4 w-4 mr-1" /> Export
+            <Button size="sm" variant="outline" onClick={handleExportEmis}>
+              <Download className="h-4 w-4 mr-1" /> Export EMIS
+            </Button>
+            <input type="file" accept=".csv" ref={fileInputRef} className="hidden" onChange={handleImportEmis} />
+            <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
+              <Upload className="h-4 w-4 mr-1" /> Import EMIS
             </Button>
           </div>
 
