@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { UserPlus, Search, Download, Upload, ArrowRightCircle, Check, X, ClipboardList, UserCheck, FileSpreadsheet, ChevronRight } from 'lucide-react';
+import { UserPlus, Search, Download, Upload, ArrowRightCircle, Check, X, ClipboardList, UserCheck, FileSpreadsheet, ChevronRight, Printer } from 'lucide-react';
 import { formatDate } from '@/lib/supabase-helpers';
 import { exportEmisCSV, parseEmisCSV } from '@/lib/emis-field-map';
 
