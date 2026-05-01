@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -107,6 +108,9 @@ export default function PPDBDaftar() {
               <p className="text-xs text-muted-foreground">
                 Simpan nomor ini untuk pengecekan hasil seleksi.
               </p>
+              <Link to="/ppdb/cek-status" className="inline-block mt-2 text-sm text-primary hover:underline font-medium">
+                Cek Status Pendaftaran →
+              </Link>
               {settings?.pesan_selamat && (
                 <p className="text-sm mt-4">{settings.pesan_selamat}</p>
               )}
