@@ -9,7 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { EMIS_FIELD_MAP } from '@/lib/emis-field-map';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 const logoImg = '/logo-alwathoniyah.png';
 
