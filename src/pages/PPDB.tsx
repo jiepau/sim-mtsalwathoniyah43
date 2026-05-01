@@ -42,6 +42,14 @@ export default function PPDB() {
     },
   });
 
+  const { data: spmbSettings } = useQuery({
+    queryKey: ['ppdb-settings'],
+    queryFn: async () => {
+      const { data } = await supabase.from('ppdb_settings').select('*').maybeSingle();
+      return data;
+    },
+  });
+
   useEffect(() => {
     const channel = supabase
       .channel('ppdb-realtime')
