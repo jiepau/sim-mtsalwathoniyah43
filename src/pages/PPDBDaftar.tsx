@@ -161,7 +161,7 @@ export default function PPDBDaftar() {
         wa_ortu: form.wa_ortu.trim() || form.ayah_no_hp.trim() || form.ibu_no_hp.trim() || null,
       };
 
-      const { error } = await supabase.from('ppdb_pendaftar').insert(payload);
+      const { error } = await supabase.from('ppdb_pendaftar').insert(payload as any);
       if (error) throw error;
       return nomor as string;
     },
