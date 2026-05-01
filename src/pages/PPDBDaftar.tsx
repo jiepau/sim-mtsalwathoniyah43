@@ -321,13 +321,6 @@ export default function PPDBDaftar() {
                   <Input value={form.no_hp} onChange={(e) => set('no_hp', e.target.value.replace(/[^\d]/g, ''))} placeholder="08xxxxxxxxxx" maxLength={15} />
                 </Field>
                 <Field label="Alamat Email Siswa"><Input type="email" value={form.email_siswa} onChange={(e) => set('email_siswa', e.target.value)} /></Field>
-                <Field label="Asal Sekolah"><Input value={form.asal_sekolah} onChange={(e) => set('asal_sekolah', e.target.value)} /></Field>
-                <Field label="NPSN Asal Sekolah" error={errors.find(e => e.includes('NPSN'))}>
-                  <Input value={form.npsn_asal_sekolah} onChange={(e) => set('npsn_asal_sekolah', e.target.value.replace(/\D/g, ''))} maxLength={8} placeholder="8 digit" />
-                </Field>
-                <Field label="NSM Asal Sekolah">
-                  <Input value={form.nsm_asal_sekolah} onChange={(e) => set('nsm_asal_sekolah', e.target.value)} />
-                </Field>
                 <Field label="Yang Membiayai Sekolah">
                   <SelectField value={form.yang_membiayai} onValueChange={(v) => set('yang_membiayai', v)} options={membiayaiOptions} />
                 </Field>
