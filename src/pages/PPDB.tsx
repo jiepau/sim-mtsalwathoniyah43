@@ -55,6 +55,7 @@ export default function PPDB() {
     return () => { supabase.removeChannel(channel); };
   }, [qc]);
 
+  const updateStatusMutation = useMutation({
     mutationFn: async ({ ids, status }: { ids: string[]; status: string }) => {
       const { error } = await supabase
         .from('ppdb_pendaftar')
