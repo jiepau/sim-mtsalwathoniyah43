@@ -6,6 +6,7 @@ import { PPDBSettingsPanel } from '@/components/ppdb/PPDBSettingsPanel';
 import { PPDBKonversiDialog } from '@/components/ppdb/PPDBKonversiDialog';
 import { PPDBInputOfflineDialog } from '@/components/ppdb/PPDBInputOfflineDialog';
 import { PPDBRekapPrintDialog } from '@/components/ppdb/PPDBRekapPrintDialog';
+import { PPDBAsalSekolahDonut, useAsalSekolahBreakdown } from '@/components/ppdb/PPDBAsalSekolahChart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
