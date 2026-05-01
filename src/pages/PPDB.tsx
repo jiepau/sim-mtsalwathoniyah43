@@ -233,6 +233,9 @@ export default function PPDB() {
             <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
               <Upload className="h-4 w-4 mr-1" /> Import EMIS
             </Button>
+            <Button size="sm" onClick={() => setShowInputOffline(true)}>
+              <UserPlus className="h-4 w-4 mr-1" /> Tambah Pendaftar
+            </Button>
           </div>
 
           {selected.length > 0 && (
