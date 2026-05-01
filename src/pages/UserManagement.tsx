@@ -1088,31 +1088,22 @@ export default function UserManagement() {
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label>
                 Role <span className="text-destructive">*</span>
               </Label>
-              {(["admin", "bendahara", "operator", "guru", "panitia"] as AppRole[]).map((role) => (
-                <div key={role} className="flex items-center space-x-3 p-3 border rounded-lg">
-                  <Checkbox
-                    id={`new-${role}`}
-                    checked={newUserData.roles.includes(role)}
-                    onCheckedChange={() => handleNewUserRoleToggle(role)}
-                  />
-                  <div className="flex-1">
-                    <Label htmlFor={`new-${role}`} className="font-medium cursor-pointer">
-                      {ROLE_LABELS[role]}
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      {role === "admin" && "Akses penuh ke semua fitur sistem"}
-                      {role === "bendahara" && "Akses Dashboard, Siswa (read-only), Keuangan"}
-                      {role === "operator" && "Akses data master (Siswa, Kelas, GTK/PTK, dll)"}
-                      {role === "guru" && "Akses Dashboard, Profil Saya, Kurikulum"}
-                      {role === "panitia" && "Dashboard, SPMB, Riwayat Pembaruan"}
-                    </p>
-                  </div>
-                </div>
-              ))}
+              <div className="grid grid-cols-2 gap-2">
+                {(["admin", "bendahara", "operator", "guru", "panitia"] as AppRole[]).map((role) => (
+                  <label key={role} className={`flex items-center gap-2 p-2 border rounded-lg cursor-pointer text-sm transition-colors ${newUserData.roles.includes(role) ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}>
+                    <Checkbox
+                      id={`new-${role}`}
+                      checked={newUserData.roles.includes(role)}
+                      onCheckedChange={() => handleNewUserRoleToggle(role)}
+                    />
+                    <span className="font-medium">{ROLE_LABELS[role]}</span>
+                  </label>
+                ))}
+              </div>
             </div>
 
             {newUserData.roles.length > 0 && (
