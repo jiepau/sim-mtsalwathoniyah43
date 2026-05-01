@@ -40,7 +40,6 @@ export default function PPDB() {
     },
   });
 
-  // Realtime: auto-refresh when new registrations come in
   useEffect(() => {
     const channel = supabase
       .channel('ppdb-realtime')
@@ -87,18 +86,18 @@ export default function PPDB() {
   };
 
   const exportCSV = () => {
-    const headers = ['No Pendaftaran', 'Nama', 'NISN', 'L/P', 'Tempat Lahir', 'Tgl Lahir', 'Alamat', 'Ayah', 'Ibu', 'WA Ortu', 'Asal Sekolah', 'Status'];
+    const headers = ['No Pendaftaran', 'Nama', 'NISN', 'NIK', 'L/P', 'Agama', 'Tempat Lahir', 'Tgl Lahir', 'Alamat', 'Asal Sekolah', 'Ayah', 'Ibu', 'WA Ortu', 'Status'];
     const rows = filtered.map((p) => [
-      p.nomor_pendaftaran, p.nama, p.nisn ?? '', p.jenis_kelamin ?? '', p.tempat_lahir ?? '',
-      p.tanggal_lahir ?? '', p.alamat ?? '', p.nama_ayah ?? '', p.nama_ibu ?? '',
-      p.wa_ortu ?? '', p.asal_sekolah ?? '', p.status,
+      p.nomor_pendaftaran, p.nama, p.nisn ?? '', p.nik ?? '', p.jenis_kelamin ?? '', p.agama ?? '',
+      p.tempat_lahir ?? '', p.tanggal_lahir ?? '', p.alamat ?? '', p.asal_sekolah ?? '',
+      p.nama_ayah ?? '', p.nama_ibu ?? p.ibu_nama ?? '', p.wa_ortu ?? '', p.status,
     ]);
     const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'ppdb-pendaftar.csv';
+    a.download = 'spmb-pendaftar.csv';
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -109,8 +108,8 @@ export default function PPDB() {
   return (
     <div className="space-y-4 p-4 md:p-6">
       <PageHeader
-        title="PPDB"
-        description="Penerimaan Peserta Didik Baru"
+        title="SPMB"
+        description="Seleksi Penerimaan Murid Baru"
         icon={<UserPlus className="h-5 w-5" />}
       />
 
@@ -141,7 +140,6 @@ export default function PPDB() {
         </div>
 
         <div className="lg:col-span-3 space-y-3">
-          {/* Toolbar */}
           <div className="flex flex-wrap gap-2 items-center">
             <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -168,7 +166,6 @@ export default function PPDB() {
             </Button>
           </div>
 
-          {/* Bulk actions */}
           {selected.length > 0 && (
             <div className="flex items-center gap-2 p-2 bg-muted rounded-md text-sm">
               <span>{selected.length} dipilih</span>
@@ -186,7 +183,6 @@ export default function PPDB() {
             </div>
           )}
 
-          {/* Table */}
           <Card>
             <div className="overflow-x-auto">
               <Table>
