@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { UserPlus, Search, Download, Upload, ArrowRightCircle, Check, X, ClipboardList, UserCheck, FileSpreadsheet, ChevronRight, Printer } from 'lucide-react';
+import { UserPlus, Search, Download, Upload, ArrowRightCircle, Check, X, ClipboardList, UserCheck, FileSpreadsheet, ChevronRight, Printer, UserX } from 'lucide-react';
 import { formatDate } from '@/lib/supabase-helpers';
 import { exportEmisCSV, parseEmisCSV } from '@/lib/emis-field-map';
 
@@ -23,6 +23,14 @@ const statusColors: Record<string, string> = {
   baru: 'bg-blue-100 text-blue-800 border-blue-200',
   diterima: 'bg-green-100 text-green-800 border-green-200',
   ditolak: 'bg-red-100 text-red-800 border-red-200',
+  batal: 'bg-amber-100 text-amber-800 border-amber-200',
+};
+
+const statusLabels: Record<string, string> = {
+  baru: 'Baru',
+  diterima: 'Diterima',
+  ditolak: 'Ditolak',
+  batal: 'Mengundurkan Diri',
 };
 
 export default function PPDB() {
