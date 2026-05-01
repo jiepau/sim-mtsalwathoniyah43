@@ -96,11 +96,12 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+function Field({ label, required, children, error }: { label: string; required?: boolean; children: React.ReactNode; error?: string }) {
   return (
     <div>
-      <Label className="text-xs">{label}{required && ' *'}</Label>
+      <Label className={`text-xs ${error ? 'text-destructive' : ''}`}>{label}{required && ' *'}</Label>
       {children}
+      {error && <p className="text-xs text-destructive mt-0.5">{error}</p>}
     </div>
   );
 }
