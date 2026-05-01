@@ -29,9 +29,11 @@
     display: none !important;
   }
 
-  /* Re-show ONLY the body child that contains the print root
-     (Radix Dialog renders into a portal that is a direct child of body) */
-  body > :has(.print-root) {
+  /* Re-show ONLY the body child that contains the print root.
+     PrintPreviewFrame tags the nearest body-level wrapper (Radix portal
+     or normal mount point) with class `print-portal` on mount. */
+  body > .print-portal,
+  body > #root:has(.print-root) {
     display: block !important;
     position: static !important;
     background: transparent !important;
