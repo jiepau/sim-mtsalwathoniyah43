@@ -1021,6 +1021,7 @@ export default function UserManagement() {
                       {role === "bendahara" && "Akses Dashboard, Siswa (read-only), Keuangan"}
                       {role === "operator" && "Akses data master (Siswa, Kelas, GTK/PTK, dll)"}
                       {role === "guru" && "Akses Dashboard, Profil Saya, Kurikulum"}
+                      {role === "panitia" && "Dashboard, SPMB, Riwayat Pembaruan"}
                     </p>
                   </div>
                 </div>
