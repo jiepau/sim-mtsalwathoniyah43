@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PPDBSettingsPanel } from '@/components/ppdb/PPDBSettingsPanel';
 import { PPDBKonversiDialog } from '@/components/ppdb/PPDBKonversiDialog';
+import { PPDBInputOfflineDialog } from '@/components/ppdb/PPDBInputOfflineDialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ export default function PPDB() {
   const [filterStatus, setFilterStatus] = useState('semua');
   const [selected, setSelected] = useState<string[]>([]);
   const [showKonversi, setShowKonversi] = useState(false);
+  const [showInputOffline, setShowInputOffline] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: pendaftar = [], isLoading } = useQuery({
@@ -231,6 +233,9 @@ export default function PPDB() {
             <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
               <Upload className="h-4 w-4 mr-1" /> Import EMIS
             </Button>
+            <Button size="sm" onClick={() => setShowInputOffline(true)}>
+              <UserPlus className="h-4 w-4 mr-1" /> Tambah Pendaftar
+            </Button>
           </div>
 
           {selected.length > 0 && (
@@ -308,6 +313,7 @@ export default function PPDB() {
         onOpenChange={setShowKonversi}
         pendaftarIds={selectedDiterima}
       />
+      <PPDBInputOfflineDialog open={showInputOffline} onOpenChange={setShowInputOffline} />
     </div>
   );
 }
