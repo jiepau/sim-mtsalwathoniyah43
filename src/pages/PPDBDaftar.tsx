@@ -267,17 +267,33 @@ export default function PPDBDaftar() {
               {/* === DATA SISWA === */}
               <SectionTitle>Data Pribadi Siswa</SectionTitle>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Error summary */}
+                {errors.length > 0 && (
+                  <div className="bg-destructive/10 border border-destructive/30 rounded-md p-3 space-y-1">
+                    <p className="text-xs font-semibold text-destructive">{errors.length} kesalahan ditemukan:</p>
+                    {errors.map((err, i) => <p key={i} className="text-xs text-destructive">• {err}</p>)}
+                  </div>
+                )}
+
                 <div className="sm:col-span-2">
-                  <Field label="Nama Lengkap" required><Input value={form.nama} onChange={(e) => set('nama', e.target.value)} required /></Field>
+                  <Field label="Nama Lengkap" required error={errors.find(e => e.includes('Nama'))}><Input value={form.nama} onChange={(e) => set('nama', e.target.value)} required /></Field>
                 </div>
-                <Field label="NIK"><Input value={form.nik} onChange={(e) => set('nik', e.target.value)} maxLength={16} /></Field>
-                <Field label="NISN"><Input value={form.nisn} onChange={(e) => set('nisn', e.target.value)} /></Field>
+                <Field label="NIK" required error={errors.find(e => e.includes('NIK') && !e.includes('Ayah') && !e.includes('Ibu') && !e.includes('Wali'))}>
+                  <Input value={form.nik} onChange={(e) => set('nik', e.target.value.replace(/\D/g, ''))} maxLength={16} placeholder="16 digit" />
+                </Field>
+                <Field label="NISN" required error={errors.find(e => e.includes('NISN'))}>
+                  <Input value={form.nisn} onChange={(e) => set('nisn', e.target.value.replace(/\D/g, ''))} maxLength={10} placeholder="10 digit" />
+                </Field>
                 <Field label="KIP"><Input value={form.kip} onChange={(e) => set('kip', e.target.value)} /></Field>
-                <Field label="Jenis Kelamin" required>
+                <Field label="Jenis Kelamin" required error={errors.find(e => e.includes('Jenis Kelamin'))}>
                   <SelectField value={form.jenis_kelamin} onValueChange={(v) => set('jenis_kelamin', v)} options={['L', 'P']} placeholder="L / P" />
                 </Field>
-                <Field label="Tempat Lahir"><Input value={form.tempat_lahir} onChange={(e) => set('tempat_lahir', e.target.value)} /></Field>
-                <Field label="Tanggal Lahir"><Input type="date" value={form.tanggal_lahir} onChange={(e) => set('tanggal_lahir', e.target.value)} /></Field>
+                <Field label="Tempat Lahir" required error={errors.find(e => e.includes('Tempat Lahir'))}>
+                  <Input value={form.tempat_lahir} onChange={(e) => set('tempat_lahir', e.target.value)} />
+                </Field>
+                <Field label="Tanggal Lahir" required error={errors.find(e => e.includes('Tanggal Lahir'))}>
+                  <Input type="date" value={form.tanggal_lahir} onChange={(e) => set('tanggal_lahir', e.target.value)} />
+                </Field>
                 <Field label="Agama">
                   <SelectField value={form.agama} onValueChange={(v) => set('agama', v)} options={agamaOptions} />
                 </Field>
@@ -288,9 +304,17 @@ export default function PPDBDaftar() {
                 <div className="sm:col-span-2">
                   <Field label="Prestasi yang Diraih"><Textarea value={form.prestasi} onChange={(e) => set('prestasi', e.target.value)} rows={2} placeholder="Contoh: Juara 1 Lomba MTQ Tingkat Kecamatan 2025" /></Field>
                 </div>
-                <Field label="No. Handphone"><Input value={form.no_hp} onChange={(e) => set('no_hp', e.target.value)} placeholder="08xxx" /></Field>
+                <Field label="No. Handphone" error={errors.find(e => e.includes('Handphone siswa'))}>
+                  <Input value={form.no_hp} onChange={(e) => set('no_hp', e.target.value.replace(/[^\d]/g, ''))} placeholder="08xxxxxxxxxx" maxLength={15} />
+                </Field>
                 <Field label="Alamat Email Siswa"><Input type="email" value={form.email_siswa} onChange={(e) => set('email_siswa', e.target.value)} /></Field>
                 <Field label="Asal Sekolah"><Input value={form.asal_sekolah} onChange={(e) => set('asal_sekolah', e.target.value)} /></Field>
+                <Field label="NPSN Asal Sekolah" error={errors.find(e => e.includes('NPSN'))}>
+                  <Input value={form.npsn_asal_sekolah} onChange={(e) => set('npsn_asal_sekolah', e.target.value.replace(/\D/g, ''))} maxLength={8} placeholder="8 digit" />
+                </Field>
+                <Field label="NSM Asal Sekolah">
+                  <Input value={form.nsm_asal_sekolah} onChange={(e) => set('nsm_asal_sekolah', e.target.value)} />
+                </Field>
                 <Field label="Yang Membiayai Sekolah">
                   <SelectField value={form.yang_membiayai} onValueChange={(v) => set('yang_membiayai', v)} options={membiayaiOptions} />
                 </Field>
