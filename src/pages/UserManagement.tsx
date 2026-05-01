@@ -895,7 +895,7 @@ export default function UserManagement() {
 
       {/* Edit User Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingUser && editingUser.roles.length === 0 ? "Approve User" : "Edit User"}</DialogTitle>
             <DialogDescription>
@@ -962,32 +962,23 @@ export default function UserManagement() {
               </div>
             )}
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label>
                 Role <span className="text-destructive">*</span>
               </Label>
-              {(["admin", "bendahara", "operator", "guru", "panitia"] as AppRole[]).map((role) => (
-                <div key={role} className="flex items-center space-x-3 p-3 border rounded-lg">
-                  <Checkbox
-                    id={`edit-role-${role}`}
-                    checked={editData.roles.includes(role)}
-                    onCheckedChange={() => handleEditRoleToggle(role)}
-                    disabled={editingUser?.id === currentUser?.id && role === "admin"}
-                  />
-                  <div className="flex-1">
-                    <Label htmlFor={`edit-role-${role}`} className="font-medium cursor-pointer">
-                      {ROLE_LABELS[role]}
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      {role === "admin" && "Akses penuh ke semua fitur sistem"}
-                      {role === "bendahara" && "Akses Dashboard, Siswa (read-only), Keuangan"}
-                      {role === "operator" && "Akses data master (Siswa, Kelas, GTK/PTK, dll)"}
-                      {role === "guru" && "Akses Dashboard, Profil Saya, Kurikulum"}
-                      {role === "panitia" && "Dashboard, SPMB, Riwayat Pembaruan"}
-                    </p>
-                  </div>
-                </div>
-              ))}
+              <div className="grid grid-cols-2 gap-2">
+                {(["admin", "bendahara", "operator", "guru", "panitia"] as AppRole[]).map((role) => (
+                  <label key={role} className={`flex items-center gap-2 p-2 border rounded-lg cursor-pointer text-sm transition-colors ${editData.roles.includes(role) ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}>
+                    <Checkbox
+                      id={`edit-role-${role}`}
+                      checked={editData.roles.includes(role)}
+                      onCheckedChange={() => handleEditRoleToggle(role)}
+                      disabled={editingUser?.id === currentUser?.id && role === "admin"}
+                    />
+                    <span className="font-medium">{ROLE_LABELS[role]}</span>
+                  </label>
+                ))}
+              </div>
             </div>
 
             {editData.roles.length > 0 && (
