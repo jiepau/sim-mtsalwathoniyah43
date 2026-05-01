@@ -357,16 +357,11 @@ export function Sidebar() {
 
       {/* TA Aktif — di atas menu, ala EMIS */}
       {taActive && !collapsed && (
-        <div className="px-3 pt-3 pb-2 space-y-1.5">
-          <div className="px-4 py-2 rounded-md bg-white/70 border border-primary/25 shadow-sm">
-            <p className="text-[13px] text-foreground">
-              <span className="font-semibold">Tahun:</span> <span className="font-bold text-primary">{taActive.nama_ta}</span>
-            </p>
-          </div>
-          <div className="px-4 py-2 rounded-md bg-white/70 border border-primary/25 shadow-sm">
-            <p className="text-[13px] text-foreground">
-              <span className="font-semibold">Semester:</span> <span className="font-bold text-primary">{taActive.semester}</span>
-            </p>
+        <div className="px-3 pt-3 pb-2">
+          <div className="px-4 py-2 rounded-md bg-white/70 border border-primary/25 shadow-sm flex items-center gap-1.5 text-[13px] text-foreground">
+            <span className="font-bold text-primary">{taActive.nama_ta}</span>
+            <span className="text-foreground/40">·</span>
+            <span className="font-bold text-primary">{taActive.semester}</span>
           </div>
         </div>
       )}
