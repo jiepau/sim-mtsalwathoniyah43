@@ -56,9 +56,9 @@ const MateriSiswa = lazy(() => import("@/pages/elearning/MateriSiswa"));
 const TugasSiswa = lazy(() => import("@/pages/elearning/TugasSiswa"));
 const NilaiSiswa = lazy(() => import("@/pages/elearning/NilaiSiswa"));
 const ValidasiGtk = lazy(() => import("@/pages/ValidasiGtk"));
-const PPDBPage = lazy(() => import("@/pages/PPDB"));
-const PPDBDaftar = lazy(() => import("@/pages/PPDBDaftar"));
-const PPDBCekStatus = lazy(() => import("@/pages/PPDBCekStatus"));
+const SPMBPage = lazy(() => import("@/pages/PPDB"));
+const SPMBDaftar = lazy(() => import("@/pages/PPDBDaftar"));
+const SPMBCekStatus = lazy(() => import("@/pages/PPDBCekStatus"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -101,8 +101,8 @@ const App = () => {
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/gtk/:id" element={<ValidasiGtk />} />
-                <Route path="/ppdb/daftar" element={<PPDBDaftar />} />
-                <Route path="/ppdb/cek-status" element={<PPDBCekStatus />} />
+                <Route path="/spmb/daftar" element={<SPMBDaftar />} />
+                <Route path="/spmb/cek-status" element={<SPMBCekStatus />} />
                 <Route
                   element={
                     <ProtectedRoute>
@@ -163,8 +163,8 @@ const App = () => {
                   {/* Changelog - all roles */}
                   <Route path="/changelog" element={<Changelog />} />
 
-                  {/* PPDB - admin only */}
-                  <Route path="/ppdb" element={<ProtectedRoute allowedRoles={['admin']}><PPDBPage /></ProtectedRoute>} />
+                  {/* SPMB - admin only */}
+                  <Route path="/spmb" element={<ProtectedRoute allowedRoles={['admin']}><SPMBPage /></ProtectedRoute>} />
 
                   {/* E-Learning - guru side */}
                   <Route path="/e-learning/materi-guru" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><MateriGuru /></ProtectedRoute>} />

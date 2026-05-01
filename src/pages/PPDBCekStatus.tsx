@@ -33,7 +33,7 @@ export default function PPDBCekStatus() {
   const [nomor, setNomor] = useState('');
   const [searchNomor, setSearchNomor] = useState('');
 
-  const { data: result, isLoading, isError } = useQuery({
+  const { data: result, isLoading } = useQuery({
     queryKey: ['ppdb-cek-status', searchNomor],
     queryFn: async () => {
       if (!searchNomor) return null;
@@ -67,7 +67,7 @@ export default function PPDBCekStatus() {
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="flex gap-2">
             <Input
-              placeholder="Masukkan nomor pendaftaran (PPDB-2026-0001)"
+              placeholder="Masukkan nomor pendaftaran (SPMB-2026-0001)"
               value={nomor}
               onChange={(e) => setNomor(e.target.value)}
               className="text-sm"
@@ -106,7 +106,7 @@ export default function PPDBCekStatus() {
           )}
 
           <div className="flex justify-center gap-3 pt-2 text-sm">
-            <Link to="/ppdb/daftar" className="text-primary hover:underline flex items-center gap-1">
+            <Link to="/spmb/daftar" className="text-primary hover:underline flex items-center gap-1">
               <ArrowLeft className="h-3.5 w-3.5" /> Daftar Baru
             </Link>
           </div>
