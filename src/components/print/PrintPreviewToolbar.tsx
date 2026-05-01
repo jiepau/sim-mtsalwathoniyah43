@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Eye, EyeOff, Printer, FileDigit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
