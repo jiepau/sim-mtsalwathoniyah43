@@ -266,6 +266,9 @@ export default function Dashboard() {
   return (
     <div className="animate-fadeIn space-y-6">
       <SetupWizardDialog open={wizardOpen} onOpenChange={handleWizardClose} />
+      {isPanitia && (
+        <PanitiaOnboardingWizard open={panitiaWizardOpen} onClose={() => setPanitiaWizardOpen(false)} />
+      )}
       
       {/* ============ BANNER MADRASAH (ala EMIS) ============ */}
       <div className="rounded-xl bg-gradient-to-r from-primary/90 to-primary overflow-hidden shadow-lg">
