@@ -23,16 +23,35 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
+    // --- Auth guard: require admin or bendahara role ---
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
+    }
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: authError } = await authClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
+    }
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, serviceKey);
+    const { data: roles } = await supabase.from('user_roles').select('role').eq('user_id', user.id);
+    const userRoles = (roles || []).map((r: any) => r.role);
+    if (!userRoles.includes('admin') && !userRoles.includes('bendahara')) {
+      return new Response(JSON.stringify({ error: 'Forbidden: admin or bendahara role required' }), { status: 403, headers: corsHeaders });
+    }
+    // --- End auth guard ---
+
     const FONNTE_API_TOKEN = Deno.env.get('FONNTE_API_TOKEN');
     if (!FONNTE_API_TOKEN) throw new Error('FONNTE_API_TOKEN tidak diset');
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, serviceKey);
-
     let body: any = {};
     try { body = await req.json(); } catch {}
-    const siswaIds: string[] | undefined = body?.siswa_ids; // optional: kirim hanya ke siswa tertentu
+    const siswaIds: string[] | undefined = body?.siswa_ids;
     const isTest = body?.test === true;
 
     // Get template from settings
