@@ -86,15 +86,29 @@ export function PrintPreviewFrame({
   orientation: PrintOrientation;
   children: React.ReactNode;
 }) {
-  // A4 dimensions: 210x297 mm
+  const rootRef = useRef<HTMLDivElement>(null);
   const isLandscape = orientation === 'landscape';
   const pageW = isLandscape ? '297mm' : '210mm';
   const pageH = isLandscape ? '210mm' : '297mm';
 
+  // Tag the body-level portal that contains this print-root so CSS can
+  // selectively show ONLY this branch during print (no :has() needed).
+  useEffect(() => {
+    const node = rootRef.current;
+    if (!node) return;
+    let el: HTMLElement | null = node;
+    while (el && el.parentElement && el.parentElement !== document.body) {
+      el = el.parentElement;
+    }
+    if (el && el.parentElement === document.body) {
+      el.classList.add('print-portal');
+      return () => el?.classList.remove('print-portal');
+    }
+  }, [preview]);
+
   if (!preview) {
-    // Normal flow — keep wrapper that still controls @page orientation when printing
     return (
-      <div data-print-orientation={orientation} className="print-root">
+      <div ref={rootRef} data-print-orientation={orientation} className="print-root">
         {children}
         <PrintOrientationStyle orientation={orientation} />
       </div>
@@ -103,6 +117,7 @@ export function PrintPreviewFrame({
 
   return (
     <div
+      ref={rootRef}
       data-print-orientation={orientation}
       className="print-root print-preview-backdrop bg-muted/40 rounded-lg p-4 overflow-auto"
     >
@@ -127,8 +142,6 @@ function PrintOrientationStyle({ orientation }: { orientation: PrintOrientation 
     <style>{`
       @media print {
         @page { size: A4 ${orientation}; margin: 12mm; }
-        .print-preview-backdrop { background: white !important; padding: 0 !important; }
-        .print-preview-page { box-shadow: none !important; width: auto !important; min-height: 0 !important; padding: 0 !important; margin: 0 !important; }
       }
     `}</style>
   );
