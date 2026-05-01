@@ -64,9 +64,19 @@
     display: block !important;
   }
 
-  /* Hide dialog header (title, close button) and any toolbar marked .no-print */
-  [data-radix-dialog-content] > button,
+  /* Hide dialog chrome: title bar, close button, and any element marked .no-print.
+     shadcn Dialog renders <DialogHeader>/<DialogTitle> plus a close <button>
+     inside [data-radix-dialog-content]; none of those should print. */
+  [data-radix-dialog-content] button,
+  [data-radix-dialog-content] [data-radix-dialog-close],
+  .print-root button[aria-label="Close"],
   .no-print {
+    display: none !important;
+  }
+
+  /* Hide the dialog header block (title + description) when printing.
+     The print-root already provides its own letterhead. */
+  [data-radix-dialog-content] > div:first-child:not(.print-root):not([data-print-orientation]) {
     display: none !important;
   }
 
