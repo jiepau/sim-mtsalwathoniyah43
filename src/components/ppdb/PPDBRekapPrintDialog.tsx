@@ -161,15 +161,6 @@ export function PPDBRekapPrintDialog({ open, onOpenChange, pendaftar }: Props) {
                 <p className="font-bold text-base">{groups.lainnya.length + groups.kosong.length}</p>
               </div>
             </div>
-
-            {/* Diagram MI vs SD */}
-            <RekapDonutChart
-              mi={groups.mi.length}
-              sd={groups.sd.length}
-              lainnya={groups.lainnya.length}
-              kosong={groups.kosong.length}
-            />
-
             {/* MI */}
             <section>
               <div className="flex items-center justify-between mb-1">
