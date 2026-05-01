@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -12,8 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { UserPlus, Search, Download, ArrowRightCircle, Check, X } from 'lucide-react';
+import { UserPlus, Search, Download, Upload, ArrowRightCircle, Check, X } from 'lucide-react';
 import { formatDate } from '@/lib/supabase-helpers';
+import { exportEmisCSV, parseEmisCSV } from '@/lib/emis-field-map';
 
 const statusColors: Record<string, string> = {
   baru: 'bg-blue-100 text-blue-800 border-blue-200',
