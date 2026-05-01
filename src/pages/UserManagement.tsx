@@ -1032,6 +1032,7 @@ export default function UserManagement() {
           </DialogHeader>
 
           <form onSubmit={handleCreateUser} className="flex flex-col flex-1 overflow-hidden">
+           <div className="space-y-4 overflow-y-auto flex-1 pr-1">
             <div className="space-y-2">
               <Label htmlFor="full_name">Nama Lengkap</Label>
               <Input
