@@ -145,6 +145,37 @@ export default function PPDB() {
         icon={<UserPlus className="h-5 w-5" />}
       />
 
+      {/* Wizard Alur Kerja SPMB */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="pt-4 pb-3">
+          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <ClipboardList className="h-4 w-4 text-primary" />
+            Alur Kerja SPMB
+          </h3>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-0">
+            {[
+              { step: 1, label: 'Buka Pendaftaran', desc: 'Aktifkan form di panel Pengaturan', icon: UserPlus, done: spmbSettings?.is_open === true },
+              { step: 2, label: 'Calon Siswa Mendaftar', desc: 'Form publik diisi oleh pendaftar', icon: ClipboardList, done: pendaftar.length > 0 },
+              { step: 3, label: 'Verifikasi & Seleksi', desc: 'Terima atau tolak pendaftar', icon: UserCheck, done: countByStatus('diterima') > 0 || countByStatus('ditolak') > 0 },
+              { step: 4, label: 'Export EMIS 4.0', desc: 'Download CSV untuk import ke EMIS', icon: FileSpreadsheet, done: false },
+            ].map((item, idx) => (
+              <div key={item.step} className="flex items-center gap-0">
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs ${item.done ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-background border-border text-muted-foreground'}`}>
+                  <div className={`flex items-center justify-center h-6 w-6 rounded-full text-[10px] font-bold shrink-0 ${item.done ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                    {item.done ? <Check className="h-3 w-3" /> : item.step}
+                  </div>
+                  <div>
+                    <p className="font-medium leading-tight">{item.label}</p>
+                    <p className="text-[10px] text-muted-foreground leading-tight">{item.desc}</p>
+                  </div>
+                </div>
+                {idx < 3 && <ChevronRight className="h-4 w-4 text-muted-foreground mx-1 hidden sm:block shrink-0" />}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         <div className="lg:col-span-1">
           <PPDBSettingsPanel />
