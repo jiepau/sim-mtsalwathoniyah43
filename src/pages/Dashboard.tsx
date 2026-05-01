@@ -16,6 +16,7 @@ import { formatCurrency } from '@/lib/supabase-helpers';
 import { InteractiveDonut } from '@/components/dashboard/InteractiveDonut';
 import { useSetupWizard } from '@/hooks/useSetupWizard';
 import { SetupWizardDialog } from '@/components/wizard/SetupWizardDialog';
+import { PanitiaOnboardingWizard, usePanitiaOnboarding } from '@/components/wizard/PanitiaOnboardingWizard';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { ActivityLog } from '@/components/dashboard/ActivityLog';
