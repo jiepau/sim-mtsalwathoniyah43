@@ -36,6 +36,7 @@ import { ExportButton } from '@/components/export/ExportButton';
 import { SiswaDetailDialog } from '@/components/siswa/SiswaDetailDialog';
 import { KartuPelajarPrint } from '@/components/siswa/KartuPelajarPrint';
 import { WaOrtuInlineEdit } from '@/components/siswa/WaOrtuInlineEdit';
+import { NisNisnInlineEdit } from '@/components/siswa/NisNisnInlineEdit';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -655,14 +656,16 @@ export default function SiswaPage() {
     { 
       header: 'NIS / NISN', 
       cell: (item: Siswa) => (
-        <div className="font-mono text-xs leading-snug">
-          <span className="font-semibold">{item.nis}</span>
-          {item.nisn && (
-            <span className="text-muted-foreground block">{item.nisn}</span>
-          )}
-        </div>
+        <NisNisnInlineEdit
+          siswaId={item.id}
+          nis={item.nis}
+          nisn={item.nisn}
+          onSaved={(newNis, newNisn) => {
+            setSiswa((prev) => prev.map((s) => (s.id === item.id ? { ...s, nis: newNis, nisn: newNisn } : s)));
+          }}
+        />
       ),
-      className: 'w-28'
+      className: 'w-32'
     },
     { header: 'Nama Siswa', accessorKey: 'nama' as keyof Siswa },
     { 
