@@ -32,8 +32,9 @@ type FormData = Record<string, string>;
 const initialForm: FormData = {
   nama: '', nik: '', nisn: '', kip: '', tempat_lahir: '', tanggal_lahir: '', jenis_kelamin: '',
   agama: 'Islam', alamat: '', jumlah_saudara: '', anak_ke: '', hobi: '', cita_cita: '', prestasi: '',
-  no_hp: '', email_siswa: '', asal_sekolah: '', yang_membiayai: '', kebutuhan_disabilitas: '',
-  kebutuhan_khusus: '', status_tempat_tinggal: '', jarak_ke_madrasah: '', waktu_tempuh: '', transportasi: '',
+  no_hp: '', email_siswa: '', asal_sekolah: '', npsn_asal_sekolah: '', nsm_asal_sekolah: '',
+  yang_membiayai: '', kebutuhan_disabilitas: '', kebutuhan_khusus: '',
+  status_tempat_tinggal: '', jarak_ke_madrasah: '', waktu_tempuh: '', transportasi: '',
   nama_ayah: '', ayah_nik: '', ayah_tempat_lahir: '', ayah_tanggal_lahir: '', ayah_status: '',
   ayah_pendidikan: '', ayah_pekerjaan: '', ayah_domisili: '', ayah_no_hp: '', ayah_penghasilan: '',
   ayah_alamat: '', ayah_status_tempat_tinggal: '',
@@ -44,6 +45,47 @@ const initialForm: FormData = {
   wali_pendidikan: '', wali_pekerjaan: '', wali_domisili: '', wali_no_hp: '', wali_penghasilan: '',
   wali_alamat: '', wali_status_tempat_tinggal: '', wa_ortu: '',
 };
+
+/** Validasi format EMIS 4.0 */
+function validateForm(form: FormData): string[] {
+  const errors: string[] = [];
+  // Wajib isi
+  if (!form.nama.trim()) errors.push('Nama Lengkap wajib diisi');
+  if (!form.nik.trim()) errors.push('NIK Siswa wajib diisi');
+  if (!form.nisn.trim()) errors.push('NISN wajib diisi');
+  if (!form.jenis_kelamin) errors.push('Jenis Kelamin wajib dipilih');
+  if (!form.tempat_lahir.trim()) errors.push('Tempat Lahir wajib diisi');
+  if (!form.tanggal_lahir) errors.push('Tanggal Lahir wajib diisi');
+
+  // Format NIK: 16 digit angka
+  if (form.nik.trim() && !/^\d{16}$/.test(form.nik.trim()))
+    errors.push('NIK harus 16 digit angka');
+  // Format NISN: 10 digit angka
+  if (form.nisn.trim() && !/^\d{10}$/.test(form.nisn.trim()))
+    errors.push('NISN harus 10 digit angka');
+  // NPSN: 8 digit angka
+  if (form.npsn_asal_sekolah.trim() && !/^\d{8}$/.test(form.npsn_asal_sekolah.trim()))
+    errors.push('NPSN Asal Sekolah harus 8 digit angka');
+  // No HP / WA: min 10, max 15 digit, awalan 0 atau 62
+  const phonePattern = /^(0|62)\d{8,13}$/;
+  if (form.no_hp.trim() && !phonePattern.test(form.no_hp.trim().replace(/[\s\-]/g, '')))
+    errors.push('No. Handphone siswa tidak valid (contoh: 08xx atau 628xx, 10-15 digit)');
+  if (form.wa_ortu.trim() && !phonePattern.test(form.wa_ortu.trim().replace(/[\s\-]/g, '')))
+    errors.push('No. WA Orang Tua tidak valid');
+  if (form.ayah_no_hp.trim() && !phonePattern.test(form.ayah_no_hp.trim().replace(/[\s\-]/g, '')))
+    errors.push('No. HP Ayah tidak valid');
+  if (form.ibu_no_hp.trim() && !phonePattern.test(form.ibu_no_hp.trim().replace(/[\s\-]/g, '')))
+    errors.push('No. HP Ibu tidak valid');
+  // NIK orang tua: 16 digit jika diisi
+  if (form.ayah_nik.trim() && !/^\d{16}$/.test(form.ayah_nik.trim()))
+    errors.push('NIK Ayah harus 16 digit angka');
+  if (form.ibu_nik.trim() && !/^\d{16}$/.test(form.ibu_nik.trim()))
+    errors.push('NIK Ibu harus 16 digit angka');
+  if (form.wali_nik.trim() && !/^\d{16}$/.test(form.wali_nik.trim()))
+    errors.push('NIK Wali harus 16 digit angka');
+
+  return errors;
+}
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
