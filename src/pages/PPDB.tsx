@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { UserPlus, Search, Download, Upload, ArrowRightCircle, Check, X, ClipboardList, UserCheck, FileSpreadsheet, ChevronRight, Printer } from 'lucide-react';
+import { UserPlus, Search, Download, Upload, ArrowRightCircle, Check, X, ClipboardList, UserCheck, FileSpreadsheet, ChevronRight, Printer, UserX, Clock } from 'lucide-react';
 import { formatDate } from '@/lib/supabase-helpers';
 import { exportEmisCSV, parseEmisCSV } from '@/lib/emis-field-map';
 
@@ -23,6 +23,14 @@ const statusColors: Record<string, string> = {
   baru: 'bg-blue-100 text-blue-800 border-blue-200',
   diterima: 'bg-green-100 text-green-800 border-green-200',
   ditolak: 'bg-red-100 text-red-800 border-red-200',
+  batal: 'bg-amber-100 text-amber-800 border-amber-200',
+};
+
+const statusLabels: Record<string, string> = {
+  baru: 'Baru',
+  diterima: 'Diterima',
+  ditolak: 'Ditolak',
+  batal: 'Mengundurkan Diri',
 };
 
 export default function PPDB() {
@@ -188,22 +196,46 @@ export default function PPDB() {
 
           <Card className="mt-4">
             <CardContent className="pt-4 space-y-2">
+              <div className="flex justify-between items-center pb-2 border-b">
+                <span className="text-sm font-semibold">Statistik Final SPMB</span>
+                <Badge variant="outline" className="text-xs">{spmbSettings?.tahun_ajaran ?? '-'}</Badge>
+              </div>
               <div className="flex justify-between text-sm">
                 <span>Total Pendaftar</span>
                 <Badge variant="secondary">{pendaftar.length}</Badge>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Baru</span>
+                <span>📥 Baru / Belum Diproses</span>
                 <Badge className="bg-blue-100 text-blue-800">{countByStatus('baru')}</Badge>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Diterima</span>
+                <span>✅ Diterima</span>
                 <Badge className="bg-green-100 text-green-800">{countByStatus('diterima')}</Badge>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Ditolak</span>
+                <span>❌ Ditolak</span>
                 <Badge className="bg-red-100 text-red-800">{countByStatus('ditolak')}</Badge>
               </div>
+              <div className="flex justify-between text-sm">
+                <span>🚪 Mengundurkan Diri</span>
+                <Badge className="bg-amber-100 text-amber-800">{countByStatus('batal')}</Badge>
+              </div>
+              {pendaftar.length > 0 && (
+                <div className="pt-2 mt-2 border-t space-y-1 text-xs text-muted-foreground">
+                  <div className="flex justify-between">
+                    <span>Tingkat Penerimaan</span>
+                    <span className="font-medium text-foreground">
+                      {Math.round((countByStatus('diterima') / pendaftar.length) * 100)}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Aktif Diproses</span>
+                    <span className="font-medium text-foreground">
+                      {pendaftar.length - countByStatus('batal')}
+                    </span>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -228,10 +260,11 @@ export default function PPDB() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="semua">Semua</SelectItem>
+                <SelectItem value="semua">Semua Status</SelectItem>
                 <SelectItem value="baru">Baru</SelectItem>
                 <SelectItem value="diterima">Diterima</SelectItem>
                 <SelectItem value="ditolak">Ditolak</SelectItem>
+                <SelectItem value="batal">Mengundurkan Diri</SelectItem>
               </SelectContent>
             </Select>
             <Button size="sm" variant="outline" onClick={handleExportEmis}>
@@ -250,13 +283,28 @@ export default function PPDB() {
           </div>
 
           {selected.length > 0 && (
-            <div className="flex items-center gap-2 p-2 bg-muted rounded-md text-sm">
+            <div className="flex flex-wrap items-center gap-2 p-2 bg-muted rounded-md text-sm">
               <span>{selected.length} dipilih</span>
+              <Button size="sm" variant="outline" onClick={() => updateStatusMutation.mutate({ ids: selected, status: 'baru' })}>
+                <Clock className="h-3.5 w-3.5 mr-1" /> Set Baru
+              </Button>
               <Button size="sm" variant="outline" onClick={() => updateStatusMutation.mutate({ ids: selected, status: 'diterima' })}>
                 <Check className="h-3.5 w-3.5 mr-1" /> Terima
               </Button>
               <Button size="sm" variant="outline" onClick={() => updateStatusMutation.mutate({ ids: selected, status: 'ditolak' })}>
                 <X className="h-3.5 w-3.5 mr-1" /> Tolak
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-amber-700 border-amber-300 hover:bg-amber-50"
+                onClick={() => {
+                  if (confirm(`Tandai ${selected.length} pendaftar sebagai MENGUNDURKAN DIRI?\n\nData tetap tersimpan, hanya statusnya yang berubah.`)) {
+                    updateStatusMutation.mutate({ ids: selected, status: 'batal' });
+                  }
+                }}
+              >
+                <UserX className="h-3.5 w-3.5 mr-1" /> Mengundurkan Diri
               </Button>
               {selectedDiterima.length > 0 && (
                 <Button size="sm" onClick={() => setShowKonversi(true)}>
@@ -307,7 +355,7 @@ export default function PPDB() {
                         <TableCell className="text-xs">{p.wa_ortu ?? '-'}</TableCell>
                         <TableCell className="text-xs">{formatDate(p.created_at)}</TableCell>
                         <TableCell>
-                          <Badge className={`text-xs ${statusColors[p.status] ?? ''}`}>{p.status}</Badge>
+                          <Badge className={`text-xs ${statusColors[p.status] ?? ''}`}>{statusLabels[p.status] ?? p.status}</Badge>
                         </TableCell>
                       </TableRow>
                     ))

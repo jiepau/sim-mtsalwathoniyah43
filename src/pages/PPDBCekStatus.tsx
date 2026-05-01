@@ -27,6 +27,12 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.R
     icon: <XCircle className="h-12 w-12 text-red-500" />,
     desc: 'Mohon maaf, Anda belum diterima pada seleksi ini. Terima kasih atas partisipasinya.',
   },
+  batal: {
+    label: 'Mengundurkan Diri',
+    color: 'bg-amber-100 text-amber-800 border-amber-200',
+    icon: <XCircle className="h-12 w-12 text-amber-500" />,
+    desc: 'Pendaftaran Anda telah ditandai mengundurkan diri. Jika ini bukan keinginan Anda, silakan hubungi pihak madrasah.',
+  },
 };
 
 export default function PPDBCekStatus() {
