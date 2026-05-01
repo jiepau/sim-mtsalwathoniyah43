@@ -40,7 +40,21 @@ export default function PPDB() {
     },
   });
 
-  const updateStatusMutation = useMutation({
+  // Realtime: auto-refresh when new registrations come in
+  useEffect(() => {
+    const channel = supabase
+      .channel('ppdb-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'ppdb_pendaftar' },
+        () => {
+          qc.invalidateQueries({ queryKey: ['ppdb-pendaftar'] });
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [qc]);
+
     mutationFn: async ({ ids, status }: { ids: string[]; status: string }) => {
       const { error } = await supabase
         .from('ppdb_pendaftar')
