@@ -283,13 +283,28 @@ export default function PPDB() {
           </div>
 
           {selected.length > 0 && (
-            <div className="flex items-center gap-2 p-2 bg-muted rounded-md text-sm">
+            <div className="flex flex-wrap items-center gap-2 p-2 bg-muted rounded-md text-sm">
               <span>{selected.length} dipilih</span>
+              <Button size="sm" variant="outline" onClick={() => updateStatusMutation.mutate({ ids: selected, status: 'baru' })}>
+                <Clock className="h-3.5 w-3.5 mr-1" /> Set Baru
+              </Button>
               <Button size="sm" variant="outline" onClick={() => updateStatusMutation.mutate({ ids: selected, status: 'diterima' })}>
                 <Check className="h-3.5 w-3.5 mr-1" /> Terima
               </Button>
               <Button size="sm" variant="outline" onClick={() => updateStatusMutation.mutate({ ids: selected, status: 'ditolak' })}>
                 <X className="h-3.5 w-3.5 mr-1" /> Tolak
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-amber-700 border-amber-300 hover:bg-amber-50"
+                onClick={() => {
+                  if (confirm(`Tandai ${selected.length} pendaftar sebagai MENGUNDURKAN DIRI?\n\nData tetap tersimpan, hanya statusnya yang berubah.`)) {
+                    updateStatusMutation.mutate({ ids: selected, status: 'batal' });
+                  }
+                }}
+              >
+                <UserX className="h-3.5 w-3.5 mr-1" /> Mengundurkan Diri
               </Button>
               {selectedDiterima.length > 0 && (
                 <Button size="sm" onClick={() => setShowKonversi(true)}>
