@@ -133,7 +133,7 @@ export default function PPDB() {
     <div className="space-y-4 p-4 md:p-6">
       <PageHeader
         title="SPMB"
-        description="Seleksi Penerimaan Murid Baru"
+        description="Sistem Penerimaan Murid Baru"
         icon={<UserPlus className="h-5 w-5" />}
       />
 
