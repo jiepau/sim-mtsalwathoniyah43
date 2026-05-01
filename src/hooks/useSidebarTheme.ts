@@ -75,13 +75,17 @@ export function useSidebarTheme() {
     })();
   }, [user]);
 
-  const persistRemote = (patch: {
+  const persistRemote = async (patch: {
     sidebar_theme?: ThemeColor;
     sidebar_intensity?: GradientIntensity;
   }) => {
     const u = userRef.current;
     if (!u) return;
-    void supabase.from('profiles').update(patch).eq('user_id', u.id);
+    const { error } = await supabase
+      .from('profiles')
+      .update(patch)
+      .eq('user_id', u.id);
+    if (error) console.warn('[SidebarTheme] Failed to persist:', error.message);
   };
 
   const setTheme = (v: ThemeColor) => {
