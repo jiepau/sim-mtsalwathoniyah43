@@ -64,33 +64,22 @@
     display: block !important;
   }
 
-  /* Hide dialog chrome inside any printed dialog:
-     - DialogHeader / DialogTitle / DialogDescription (Radix sets data-state on them)
-     - Radix close button (DialogPrimitive.Close)
-     - Anything explicitly marked .no-print */
+  /* Hide Radix Dialog close button (always direct child of DialogContent).
+     Selector matches both shadcn's <DialogPrimitive.Close> and any
+     button[aria-label="Close"] that browsers add. */
   [role="dialog"] > button,
-  [role="dialog"] [data-radix-dialog-close],
-  [role="dialog"] [aria-labelledby],
-  [role="dialog"] h2,
-  [role="dialog"] [id$="-title"],
-  [role="dialog"] [id$="-description"],
+  [role="dialog"] > [data-radix-dialog-close],
+  [role="dialog"] button[aria-label="Close"],
   .no-print {
     display: none !important;
   }
 
-  /* Re-show items that happen to live INSIDE print-root (e.g. heading
-     "REKAP PENDAFTAR SPMB" is an h3, but we explicitly allow h1..h6
-     inside print-root). */
-  .print-root,
-  .print-root *,
-  .print-root h1,
-  .print-root h2,
-  .print-root h3,
-  .print-root h4,
-  .print-root button {
-    display: revert !important;
-  }
-  .print-root .no-print {
+  /* Hide DialogHeader (the wrapper containing DialogTitle "Rekap Pendaftar SPMB").
+     shadcn's DialogHeader is a plain <div> sibling rendered before our
+     PrintPreviewToolbar / PrintPreviewFrame. We hide any direct child of
+     the dialog that contains an <h2> (DialogTitle), since print-root never
+     does — its kop uses h2 nested deeper inside .print-root. */
+  [role="dialog"] > div:has(> h2) {
     display: none !important;
   }
 
