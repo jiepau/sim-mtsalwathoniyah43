@@ -160,6 +160,8 @@ export default function PPDBDaftar() {
         no_hp: form.no_hp.trim() || null,
         email_siswa: form.email_siswa.trim() || null,
         asal_sekolah: form.asal_sekolah.trim() || null,
+        npsn_asal_sekolah: form.npsn_asal_sekolah.trim() || null,
+        nsm_asal_sekolah: form.nsm_asal_sekolah.trim() || null,
         yang_membiayai: form.yang_membiayai || null,
         kebutuhan_disabilitas: form.kebutuhan_disabilitas.trim() || null,
         kebutuhan_khusus: form.kebutuhan_khusus.trim() || null,
