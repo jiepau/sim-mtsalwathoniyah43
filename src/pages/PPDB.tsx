@@ -196,22 +196,46 @@ export default function PPDB() {
 
           <Card className="mt-4">
             <CardContent className="pt-4 space-y-2">
+              <div className="flex justify-between items-center pb-2 border-b">
+                <span className="text-sm font-semibold">Statistik Final SPMB</span>
+                <Badge variant="outline" className="text-xs">{spmbSettings?.tahun_ajaran ?? '-'}</Badge>
+              </div>
               <div className="flex justify-between text-sm">
                 <span>Total Pendaftar</span>
                 <Badge variant="secondary">{pendaftar.length}</Badge>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Baru</span>
+                <span>📥 Baru / Belum Diproses</span>
                 <Badge className="bg-blue-100 text-blue-800">{countByStatus('baru')}</Badge>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Diterima</span>
+                <span>✅ Diterima</span>
                 <Badge className="bg-green-100 text-green-800">{countByStatus('diterima')}</Badge>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Ditolak</span>
+                <span>❌ Ditolak</span>
                 <Badge className="bg-red-100 text-red-800">{countByStatus('ditolak')}</Badge>
               </div>
+              <div className="flex justify-between text-sm">
+                <span>🚪 Mengundurkan Diri</span>
+                <Badge className="bg-amber-100 text-amber-800">{countByStatus('batal')}</Badge>
+              </div>
+              {pendaftar.length > 0 && (
+                <div className="pt-2 mt-2 border-t space-y-1 text-xs text-muted-foreground">
+                  <div className="flex justify-between">
+                    <span>Tingkat Penerimaan</span>
+                    <span className="font-medium text-foreground">
+                      {Math.round((countByStatus('diterima') / pendaftar.length) * 100)}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Aktif Diproses</span>
+                    <span className="font-medium text-foreground">
+                      {pendaftar.length - countByStatus('batal')}
+                    </span>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -236,10 +260,11 @@ export default function PPDB() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="semua">Semua</SelectItem>
+                <SelectItem value="semua">Semua Status</SelectItem>
                 <SelectItem value="baru">Baru</SelectItem>
                 <SelectItem value="diterima">Diterima</SelectItem>
                 <SelectItem value="ditolak">Ditolak</SelectItem>
+                <SelectItem value="batal">Mengundurkan Diri</SelectItem>
               </SelectContent>
             </Select>
             <Button size="sm" variant="outline" onClick={handleExportEmis}>
