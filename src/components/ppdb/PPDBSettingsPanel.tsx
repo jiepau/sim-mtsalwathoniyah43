@@ -44,7 +44,7 @@ export function PPDBSettingsPanel() {
   const [editTA, setEditTA] = useState('');
 
   const publicUrl = `${window.location.origin}/ppdb/daftar`;
-
+  const cekStatusUrl = `${window.location.origin}/ppdb/cek-status`;
   if (isLoading) return null;
 
   return (
@@ -108,6 +108,30 @@ export function PPDBSettingsPanel() {
               size="sm"
               variant="outline"
               onClick={() => window.open(publicUrl, '_blank')}
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-sm">Link Cek Status</Label>
+          <div className="flex gap-2">
+            <Input value={cekStatusUrl} readOnly className="text-xs" />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                navigator.clipboard.writeText(cekStatusUrl);
+                toast.success('Link disalin');
+              }}
+            >
+              <Copy className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => window.open(cekStatusUrl, '_blank')}
             >
               <ExternalLink className="h-3.5 w-3.5" />
             </Button>
