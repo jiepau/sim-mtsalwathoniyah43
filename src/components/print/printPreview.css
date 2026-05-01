@@ -1,0 +1,110 @@
+/**
+ * Global print styles for PrintPreviewFrame / PrintPreviewToolbar.
+ *
+ * Goal: when the user hits Ctrl+P (or our "Cetak / PDF" button), the browser
+ * print preview should show ONLY the .print-root content — without any:
+ *  - dialog chrome (Radix overlay, dialog header, close button)
+ *  - sidebar / topbar / page chrome
+ *  - toolbar buttons (.no-print)
+ *  - dark backdrop
+ */
+
+@media print {
+  /* 1) Reset page + neutralize backgrounds */
+  html,
+  body {
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* 2) Hide everything by default... */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* 3) ...then re-show only the print root and its descendants */
+  .print-root,
+  .print-root * {
+    visibility: visible !important;
+  }
+
+  /* 4) Pull the print root out of the dialog's fixed positioning so it
+        prints from the top of the page, full width. */
+  .print-root {
+    position: absolute !important;
+    inset: 0 !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    border: none !important;
+    overflow: visible !important;
+  }
+
+  /* 5) Neutralize Radix Dialog overlay + content wrappers so they don't
+        clip / dim the printed page. We target by data attribute so we
+        don't depend on Tailwind class names. */
+  [data-radix-dialog-overlay],
+  [data-radix-popper-content-wrapper] {
+    background: transparent !important;
+    position: static !important;
+    inset: auto !important;
+  }
+
+  [data-radix-dialog-content] {
+    position: static !important;
+    transform: none !important;
+    inset: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  /* 6) Hide any dialog header/close button rendered by shadcn Dialog */
+  [data-radix-dialog-content] > button[aria-label="Close"],
+  .print-root .no-print,
+  .no-print {
+    display: none !important;
+  }
+
+  /* 7) Make sure the preview "page" wrapper doesn't add another margin */
+  .print-preview-backdrop {
+    background: #fff !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  .print-preview-page {
+    box-shadow: none !important;
+    width: auto !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* 8) Avoid awkward mid-row breaks in tables */
+  table {
+    page-break-inside: auto;
+  }
+  tr,
+  td,
+  th {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+  thead {
+    display: table-header-group;
+  }
+}
