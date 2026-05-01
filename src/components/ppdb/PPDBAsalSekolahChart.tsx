@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PieChart as PieIcon } from 'lucide-react';
 
@@ -28,75 +28,177 @@ interface DonutProps {
   bare?: boolean;
 }
 
-/** Donut chart SVG (no deps, print-friendly). */
+interface SegmentDef {
+  key: 'MI' | 'SD' | 'LAINNYA' | 'KOSONG';
+  label: string;
+  value: number;
+  color: string;
+  desc: string;
+}
+
+/** Donut chart SVG (no deps, print-friendly) dengan tooltip interaktif. */
 export function PPDBAsalSekolahDonut({ mi, sd, lainnya, kosong, bare }: DonutProps) {
   const total = mi + sd + lainnya + kosong;
-  const segments = [
-    { label: 'MI / Madrasah', value: mi, color: '#0d9488' },
-    { label: 'SD / Diknas', value: sd, color: '#2563eb' },
-    { label: 'Lainnya', value: lainnya, color: '#f59e0b' },
-    { label: 'Belum Diisi', value: kosong, color: '#94a3b8' },
-  ].filter((s) => s.value > 0);
+  const allSegments: SegmentDef[] = [
+    {
+      key: 'MI',
+      label: 'MI / Madrasah',
+      value: mi,
+      color: '#0d9488',
+      desc: 'Madrasah Ibtidaiyah (Kemenag) — termasuk MIN, MIS, MI Swasta',
+    },
+    {
+      key: 'SD',
+      label: 'SD / Diknas',
+      value: sd,
+      color: '#2563eb',
+      desc: 'Sekolah Dasar umum (Kemdikbud) — SDN, SDS, SDIT, SDI',
+    },
+    {
+      key: 'LAINNYA',
+      label: 'Lainnya',
+      value: lainnya,
+      color: '#f59e0b',
+      desc: 'Asal sekolah terisi namun tidak terdeteksi sebagai MI/SD',
+    },
+    {
+      key: 'KOSONG',
+      label: 'Belum Diisi',
+      value: kosong,
+      color: '#94a3b8',
+      desc: 'Pendaftar belum mengisi field asal sekolah',
+    },
+  ];
+  const segments = allSegments.filter((s) => s.value > 0);
 
-  const size = 160;
-  const stroke = 28;
+  const size = 180;
+  const stroke = 30;
   const radius = (size - stroke) / 2;
   const cx = size / 2;
   const cy = size / 2;
   const circ = 2 * Math.PI * radius;
 
+  const [hovered, setHovered] = useState<SegmentDef['key'] | null>(null);
+  const hoveredSeg = hovered ? segments.find((s) => s.key === hovered) ?? null : null;
+  const hoveredPct =
+    hoveredSeg && total > 0 ? Math.round((hoveredSeg.value / total) * 100) : 0;
+
   let offset = 0;
   const inner = (
     <div className="flex items-center gap-6 flex-wrap">
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0">
-        <circle cx={cx} cy={cy} r={radius} fill="none" stroke="#e5e7eb" strokeWidth={stroke} />
-        {total > 0 &&
-          segments.map((s, i) => {
-            const len = (s.value / total) * circ;
-            const dasharray = `${len} ${circ - len}`;
-            const dashoffset = -offset;
-            offset += len;
-            return (
-              <circle
-                key={i}
-                cx={cx}
-                cy={cy}
-                r={radius}
-                fill="none"
-                stroke={s.color}
-                strokeWidth={stroke}
-                strokeDasharray={dasharray}
-                strokeDashoffset={dashoffset}
-                transform={`rotate(-90 ${cx} ${cy})`}
-              />
-            );
-          })}
-        <text x={cx} y={cy - 4} textAnchor="middle" fontSize="20" fontWeight="700" fill="currentColor">
-          {total}
-        </text>
-        <text x={cx} y={cy + 14} textAnchor="middle" fontSize="9" fill="currentColor" opacity={0.6}>
-          PENDAFTAR
-        </text>
-      </svg>
+      <div className="relative shrink-0" style={{ width: size, height: size }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          <circle cx={cx} cy={cy} r={radius} fill="none" stroke="#e5e7eb" strokeWidth={stroke} />
+          {total > 0 &&
+            segments.map((s) => {
+              const len = (s.value / total) * circ;
+              const dasharray = `${len} ${circ - len}`;
+              const dashoffset = -offset;
+              offset += len;
+              const isActive = hovered === s.key;
+              const isDimmed = hovered !== null && !isActive;
+              return (
+                <circle
+                  key={s.key}
+                  cx={cx}
+                  cy={cy}
+                  r={radius}
+                  fill="none"
+                  stroke={s.color}
+                  strokeWidth={isActive ? stroke + 4 : stroke}
+                  strokeDasharray={dasharray}
+                  strokeDashoffset={dashoffset}
+                  transform={`rotate(-90 ${cx} ${cy})`}
+                  style={{
+                    opacity: isDimmed ? 0.35 : 1,
+                    cursor: 'pointer',
+                    transition: 'opacity 150ms, stroke-width 150ms',
+                  }}
+                  onMouseEnter={() => setHovered(s.key)}
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  <title>
+                    {s.label}: {s.value} pendaftar ({total > 0 ? Math.round((s.value / total) * 100) : 0}%)
+                    {'\n'}
+                    {s.desc}
+                  </title>
+                </circle>
+              );
+            })}
+          {hoveredSeg ? (
+            <>
+              <text
+                x={cx}
+                y={cy - 8}
+                textAnchor="middle"
+                fontSize="22"
+                fontWeight="700"
+                fill={hoveredSeg.color}
+              >
+                {hoveredPct}%
+              </text>
+              <text x={cx} y={cy + 10} textAnchor="middle" fontSize="10" fill="currentColor" opacity={0.7}>
+                {hoveredSeg.value} dari {total}
+              </text>
+            </>
+          ) : (
+            <>
+              <text x={cx} y={cy - 4} textAnchor="middle" fontSize="22" fontWeight="700" fill="currentColor">
+                {total}
+              </text>
+              <text x={cx} y={cy + 14} textAnchor="middle" fontSize="9" fill="currentColor" opacity={0.6}>
+                PENDAFTAR
+              </text>
+            </>
+          )}
+        </svg>
+      </div>
 
-      <div className="flex-1 min-w-[180px] space-y-1.5">
+      <div className="flex-1 min-w-[200px] space-y-1.5">
         {segments.length === 0 ? (
           <p className="text-xs text-muted-foreground">Belum ada data pendaftar.</p>
         ) : (
           segments.map((s) => {
             const pct = total > 0 ? Math.round((s.value / total) * 100) : 0;
+            const isActive = hovered === s.key;
             return (
-              <div key={s.label} className="flex items-center gap-2 text-xs">
-                <span
-                  className="inline-block h-3 w-3 rounded-sm shrink-0"
-                  style={{ backgroundColor: s.color }}
-                />
-                <span className="flex-1">{s.label}</span>
-                <span className="font-semibold tabular-nums">{s.value}</span>
-                <span className="text-muted-foreground w-10 text-right tabular-nums">{pct}%</span>
+              <div
+                key={s.key}
+                className="rounded transition-colors"
+                style={{
+                  backgroundColor: isActive ? `${s.color}15` : 'transparent',
+                }}
+                onMouseEnter={() => setHovered(s.key)}
+                onMouseLeave={() => setHovered(null)}
+                title={s.desc}
+              >
+                <div className="flex items-center gap-2 text-xs px-1.5 py-1 cursor-default">
+                  <span
+                    className="inline-block h-3 w-3 rounded-sm shrink-0"
+                    style={{ backgroundColor: s.color }}
+                  />
+                  <span className="flex-1 font-medium">{s.label}</span>
+                  <span className="font-semibold tabular-nums">{s.value}</span>
+                  <span
+                    className="w-10 text-right tabular-nums font-semibold"
+                    style={{ color: s.color }}
+                  >
+                    {pct}%
+                  </span>
+                </div>
+                {isActive && (
+                  <p className="text-[10px] text-muted-foreground px-1.5 pb-1.5 leading-snug">
+                    {s.desc}
+                  </p>
+                )}
               </div>
             );
           })
+        )}
+        {segments.length > 0 && (
+          <p className="text-[10px] text-muted-foreground pt-1 border-t">
+            Arahkan kursor ke segmen untuk detail.
+          </p>
         )}
       </div>
     </div>
