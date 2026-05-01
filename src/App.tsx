@@ -164,7 +164,7 @@ const App = () => {
                   <Route path="/changelog" element={<Changelog />} />
 
                   {/* SPMB - admin only */}
-                  <Route path="/spmb" element={<ProtectedRoute allowedRoles={['admin']}><SPMBPage /></ProtectedRoute>} />
+                  <Route path="/spmb" element={<ProtectedRoute allowedRoles={['admin', 'panitia']}><SPMBPage /></ProtectedRoute>} />
 
                   {/* E-Learning - guru side */}
                   <Route path="/e-learning/materi-guru" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><MateriGuru /></ProtectedRoute>} />
