@@ -336,7 +336,7 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground">Perempuan</p>
               </div>
             </div>
-            {(isAdmin || isOperator) && (
+            {(isAdmin || isOperator || isPanitia) && (
               <div className="flex items-center gap-2 pt-1 border-t border-border/50 text-sm">
                 <School className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Jumlah Kelas:</span>
@@ -347,7 +347,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Card: Data GTK/PTK */}
-        {(isAdmin || isOperator || isBendahara) && (
+        {(isAdmin || isOperator || isBendahara || isPanitia) && (
           <Card className="shadow-card">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold flex items-center gap-2 text-muted-foreground">
@@ -382,7 +382,7 @@ export default function Dashboard() {
         )}
 
         {/* Card: Keuangan */}
-        {(isAdmin || isBendahara) && (
+        {(isAdmin || isBendahara || isPanitia) && (
           <Card className="shadow-card">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold flex items-center gap-2 text-muted-foreground">
@@ -461,7 +461,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Status Kepegawaian */}
-        {(isAdmin || isOperator || isBendahara) && (
+        {(isAdmin || isOperator || isBendahara || isPanitia) && (
         <Card className="shadow-card overflow-hidden">
           <CardHeader className="pb-1 sm:pb-2">
             <CardTitle className="text-sm sm:text-base font-semibold">Status Kepegawaian</CardTitle>
@@ -478,7 +478,7 @@ export default function Dashboard() {
         )}
 
         {/* Ringkasan Keuangan */}
-        {(isAdmin || isBendahara) && (
+        {(isAdmin || isBendahara || isPanitia) && (
         <Card className="shadow-card overflow-hidden">
           <CardHeader className="pb-1 sm:pb-2">
             <CardTitle className="text-sm sm:text-base font-semibold">Ringkasan Keuangan</CardTitle>
