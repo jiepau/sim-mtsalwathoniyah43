@@ -87,21 +87,43 @@ export default function PPDB() {
     else setSelected(filtered.map((p) => p.id));
   };
 
-  const exportCSV = () => {
-    const headers = ['No Pendaftaran', 'Nama', 'NISN', 'NIK', 'L/P', 'Agama', 'Tempat Lahir', 'Tgl Lahir', 'Alamat', 'Asal Sekolah', 'Ayah', 'Ibu', 'WA Ortu', 'Status'];
-    const rows = filtered.map((p) => [
-      p.nomor_pendaftaran, p.nama, p.nisn ?? '', p.nik ?? '', p.jenis_kelamin ?? '', p.agama ?? '',
-      p.tempat_lahir ?? '', p.tanggal_lahir ?? '', p.alamat ?? '', p.asal_sekolah ?? '',
-      p.nama_ayah ?? '', p.nama_ibu ?? p.ibu_nama ?? '', p.wa_ortu ?? '', p.status,
-    ]);
-    const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
-    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'spmb-pendaftar.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleExportEmis = () => {
+    exportEmisCSV(filtered as Record<string, unknown>[], 'spmb-emis4.csv');
+    toast.success(`${filtered.length} data diekspor format EMIS 4.0`);
+  };
+
+  const handleImportEmis = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+
+    try {
+      const text = await file.text();
+      const rows = parseEmisCSV(text);
+      if (!rows.length) { toast.error('File CSV kosong atau format tidak sesuai'); return; }
+
+      let inserted = 0;
+      for (const row of rows) {
+        if (!row.nama) continue;
+        // Generate nomor
+        const { data: nomor, error: rpcErr } = await supabase.rpc('generate_nomor_ppdb');
+        if (rpcErr) throw rpcErr;
+
+        const payload: Record<string, unknown> = { nomor_pendaftaran: nomor, status: 'baru', ...row };
+        // Convert numeric fields
+        if (payload.jumlah_saudara) payload.jumlah_saudara = parseInt(String(payload.jumlah_saudara)) || null;
+        if (payload.anak_ke) payload.anak_ke = parseInt(String(payload.anak_ke)) || null;
+
+        const { error } = await supabase.from('ppdb_pendaftar').insert(payload as any);
+        if (error) { console.error('Import row error:', error); continue; }
+        inserted++;
+      }
+
+      qc.invalidateQueries({ queryKey: ['ppdb-pendaftar'] });
+      toast.success(`${inserted} dari ${rows.length} data berhasil diimport`);
+    } catch (err: any) {
+      toast.error('Gagal import: ' + err.message);
+    }
   };
 
   const countByStatus = (s: string) => pendaftar.filter((p) => p.status === s).length;
