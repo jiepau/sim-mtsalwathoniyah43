@@ -422,7 +422,7 @@ export default function Dashboard() {
       </div>
 
       {/* Activity Log - Admin only */}
-      {isAdmin && <ActivityLog />}
+      {(isAdmin || isPanitia) && <ActivityLog />}
 
       {/* Donut Charts — EMIS style, interactive legend */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
