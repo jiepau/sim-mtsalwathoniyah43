@@ -1226,6 +1226,7 @@ export type Database = {
           nisn: string | null
           no_hp: string | null
           nomor_pendaftaran: string
+          prestasi: string | null
           status: string
           status_tempat_tinggal: string | null
           tanggal_lahir: string | null
@@ -1295,6 +1296,7 @@ export type Database = {
           nisn?: string | null
           no_hp?: string | null
           nomor_pendaftaran: string
+          prestasi?: string | null
           status?: string
           status_tempat_tinggal?: string | null
           tanggal_lahir?: string | null
@@ -1364,6 +1366,7 @@ export type Database = {
           nisn?: string | null
           no_hp?: string | null
           nomor_pendaftaran?: string
+          prestasi?: string | null
           status?: string
           status_tempat_tinggal?: string | null
           tanggal_lahir?: string | null
