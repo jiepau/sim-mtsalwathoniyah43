@@ -9,6 +9,7 @@ import {
   PrintPreviewFrame,
   type PrintOrientation,
 } from '@/components/print/PrintPreviewToolbar';
+import { PPDBAsalSekolahDonut, klasifikasiAsalSekolah } from './PPDBAsalSekolahChart';
 
 type Pendaftar = {
   id: string;
