@@ -181,7 +181,7 @@ export default function Dashboard() {
       
       const kelasRes = await supabase.from('kelas').select('id, nama_kelas', { count: 'exact' });
       
-      const gtkRes = (isAdmin || isOperator || isBendahara)
+      const gtkRes = (isAdmin || isOperator || isBendahara || isPanitia)
         ? await supabase.from('gtk_ptk').select('id, jenis_kelamin, status_kepegawaian, sertifikasi', { count: 'exact' })
         : { data: [], count: 0 };
       const gtkData = gtkRes.data || [];
