@@ -57,8 +57,18 @@ const KEUANGAN_COLORS = ['hsl(170, 60%, 32%)', 'hsl(45, 90%, 50%)', 'hsl(0, 72%,
 export default function Dashboard() {
   const { isAdmin, isBendahara, hasRole } = useAuth();
   const isOperator = hasRole('operator');
+  const isPanitia = hasRole('panitia');
   const setupStatus = useSetupWizard();
   const [wizardOpen, setWizardOpen] = useState(false);
+  const panitiaOnboarding = usePanitiaOnboarding();
+  const [panitiaWizardOpen, setPanitiaWizardOpen] = useState(false);
+
+  // Show panitia onboarding on first visit
+  useEffect(() => {
+    if (isPanitia && !panitiaOnboarding.isDone) {
+      setPanitiaWizardOpen(true);
+    }
+  }, [isPanitia, panitiaOnboarding.isDone]);
   const [madrasah, setMadrasah] = useState<MadrasahInfo | null>(null);
   const [stats, setStats] = useState<DashboardStats>({
     totalSiswa: 0,
