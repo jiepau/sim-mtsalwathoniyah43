@@ -347,7 +347,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Card: Data GTK/PTK */}
-        {(isAdmin || isOperator || isBendahara) && (
+        {(isAdmin || isOperator || isBendahara || isPanitia) && (
           <Card className="shadow-card">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold flex items-center gap-2 text-muted-foreground">
