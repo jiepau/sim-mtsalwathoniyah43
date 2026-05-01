@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
-import logoImg from '@/assets/logo-mts.svg';
+const logoImg = '/logo-alwathoniyah.png';
 
 export default function PPDBDaftar() {
   const [submitted, setSubmitted] = useState<string | null>(null);

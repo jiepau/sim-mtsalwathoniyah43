@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -39,6 +39,21 @@ export default function PPDB() {
       return data;
     },
   });
+
+  // Realtime: auto-refresh when new registrations come in
+  useEffect(() => {
+    const channel = supabase
+      .channel('ppdb-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'ppdb_pendaftar' },
+        () => {
+          qc.invalidateQueries({ queryKey: ['ppdb-pendaftar'] });
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [qc]);
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ ids, status }: { ids: string[]; status: string }) => {
