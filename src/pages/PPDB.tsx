@@ -355,7 +355,7 @@ export default function PPDB() {
                         <TableCell className="text-xs">{p.wa_ortu ?? '-'}</TableCell>
                         <TableCell className="text-xs">{formatDate(p.created_at)}</TableCell>
                         <TableCell>
-                          <Badge className={`text-xs ${statusColors[p.status] ?? ''}`}>{p.status}</Badge>
+                          <Badge className={`text-xs ${statusColors[p.status] ?? ''}`}>{statusLabels[p.status] ?? p.status}</Badge>
                         </TableCell>
                       </TableRow>
                     ))
