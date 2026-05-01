@@ -341,7 +341,7 @@ export default function PPDBDaftar() {
               <SectionTitle>Data Ayah Kandung</SectionTitle>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Nama Lengkap"><Input value={form.nama_ayah} onChange={(e) => set('nama_ayah', e.target.value)} /></Field>
-                <Field label="NIK"><Input value={form.ayah_nik} onChange={(e) => set('ayah_nik', e.target.value)} maxLength={16} /></Field>
+                <Field label="NIK" error={errors.find(e => e.includes('NIK Ayah'))}><Input value={form.ayah_nik} onChange={(e) => set('ayah_nik', e.target.value.replace(/\D/g, ''))} maxLength={16} placeholder="16 digit" /></Field>
                 <Field label="Tempat Lahir"><Input value={form.ayah_tempat_lahir} onChange={(e) => set('ayah_tempat_lahir', e.target.value)} /></Field>
                 <Field label="Tanggal Lahir"><Input type="date" value={form.ayah_tanggal_lahir} onChange={(e) => set('ayah_tanggal_lahir', e.target.value)} /></Field>
                 <Field label="Status"><Input value={form.ayah_status} onChange={(e) => set('ayah_status', e.target.value)} placeholder="Masih Hidup / Meninggal" /></Field>
@@ -352,7 +352,7 @@ export default function PPDBDaftar() {
                   <SelectField value={form.ayah_pekerjaan} onValueChange={(v) => set('ayah_pekerjaan', v)} options={pekerjaanOptions} />
                 </Field>
                 <Field label="Domisili"><Input value={form.ayah_domisili} onChange={(e) => set('ayah_domisili', e.target.value)} /></Field>
-                <Field label="No. Handphone"><Input value={form.ayah_no_hp} onChange={(e) => set('ayah_no_hp', e.target.value)} placeholder="08xxx" /></Field>
+                <Field label="No. Handphone" error={errors.find(e => e.includes('HP Ayah'))}><Input value={form.ayah_no_hp} onChange={(e) => set('ayah_no_hp', e.target.value.replace(/[^\d]/g, ''))} placeholder="08xxxxxxxxxx" maxLength={15} /></Field>
                 <Field label="Penghasilan Rata-rata Per Bulan">
                   <SelectField value={form.ayah_penghasilan} onValueChange={(v) => set('ayah_penghasilan', v)} options={penghasilanOptions} />
                 </Field>
@@ -368,7 +368,7 @@ export default function PPDBDaftar() {
               <SectionTitle>Data Ibu Kandung</SectionTitle>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Nama Lengkap"><Input value={form.ibu_nama} onChange={(e) => set('ibu_nama', e.target.value)} /></Field>
-                <Field label="NIK"><Input value={form.ibu_nik} onChange={(e) => set('ibu_nik', e.target.value)} maxLength={16} /></Field>
+                <Field label="NIK" error={errors.find(e => e.includes('NIK Ibu'))}><Input value={form.ibu_nik} onChange={(e) => set('ibu_nik', e.target.value.replace(/\D/g, ''))} maxLength={16} placeholder="16 digit" /></Field>
                 <Field label="Tempat Lahir"><Input value={form.ibu_tempat_lahir} onChange={(e) => set('ibu_tempat_lahir', e.target.value)} /></Field>
                 <Field label="Tanggal Lahir"><Input type="date" value={form.ibu_tanggal_lahir} onChange={(e) => set('ibu_tanggal_lahir', e.target.value)} /></Field>
                 <Field label="Status"><Input value={form.ibu_status} onChange={(e) => set('ibu_status', e.target.value)} placeholder="Masih Hidup / Meninggal" /></Field>
@@ -379,7 +379,7 @@ export default function PPDBDaftar() {
                   <SelectField value={form.ibu_pekerjaan} onValueChange={(v) => set('ibu_pekerjaan', v)} options={pekerjaanOptions} />
                 </Field>
                 <Field label="Domisili"><Input value={form.ibu_domisili} onChange={(e) => set('ibu_domisili', e.target.value)} /></Field>
-                <Field label="No. Handphone"><Input value={form.ibu_no_hp} onChange={(e) => set('ibu_no_hp', e.target.value)} placeholder="08xxx" /></Field>
+                <Field label="No. Handphone" error={errors.find(e => e.includes('HP Ibu'))}><Input value={form.ibu_no_hp} onChange={(e) => set('ibu_no_hp', e.target.value.replace(/[^\d]/g, ''))} placeholder="08xxxxxxxxxx" maxLength={15} /></Field>
                 <Field label="Penghasilan Rata-rata Per Bulan">
                   <SelectField value={form.ibu_penghasilan} onValueChange={(v) => set('ibu_penghasilan', v)} options={penghasilanOptions} />
                 </Field>
@@ -396,7 +396,7 @@ export default function PPDBDaftar() {
               <p className="text-xs text-muted-foreground">Isi jika wali berbeda dari orang tua kandung</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Nama Lengkap"><Input value={form.wali_nama} onChange={(e) => set('wali_nama', e.target.value)} /></Field>
-                <Field label="NIK"><Input value={form.wali_nik} onChange={(e) => set('wali_nik', e.target.value)} maxLength={16} /></Field>
+                <Field label="NIK" error={errors.find(e => e.includes('NIK Wali'))}><Input value={form.wali_nik} onChange={(e) => set('wali_nik', e.target.value.replace(/\D/g, ''))} maxLength={16} placeholder="16 digit" /></Field>
                 <Field label="Tempat Lahir"><Input value={form.wali_tempat_lahir} onChange={(e) => set('wali_tempat_lahir', e.target.value)} /></Field>
                 <Field label="Tanggal Lahir"><Input type="date" value={form.wali_tanggal_lahir} onChange={(e) => set('wali_tanggal_lahir', e.target.value)} /></Field>
                 <Field label="Status"><Input value={form.wali_status} onChange={(e) => set('wali_status', e.target.value)} /></Field>
@@ -422,7 +422,7 @@ export default function PPDBDaftar() {
               {/* === KONTAK UTAMA === */}
               <SectionTitle>Kontak Utama (WA Orang Tua/Wali)</SectionTitle>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="No. WA Orang Tua / Wali"><Input value={form.wa_ortu} onChange={(e) => set('wa_ortu', e.target.value)} placeholder="08xxxxxxxxxx" /></Field>
+                <Field label="No. WA Orang Tua / Wali" error={errors.find(e => e.includes('WA Orang Tua'))}><Input value={form.wa_ortu} onChange={(e) => set('wa_ortu', e.target.value.replace(/[^\d]/g, ''))} placeholder="08xxxxxxxxxx" maxLength={15} /></Field>
               </div>
 
               <div className="pt-4">
