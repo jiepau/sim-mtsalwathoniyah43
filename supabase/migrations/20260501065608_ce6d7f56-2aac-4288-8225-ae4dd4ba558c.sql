@@ -1,0 +1,1 @@
+ALTER TABLE public.ppdb_pendaftar ADD COLUMN IF NOT EXISTS prestasi text;
