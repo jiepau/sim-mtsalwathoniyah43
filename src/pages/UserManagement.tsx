@@ -905,7 +905,7 @@ export default function UserManagement() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto flex-1 pr-1">
             <div className="space-y-2">
               <Label htmlFor="edit_full_name">Nama Lengkap</Label>
               <Input
