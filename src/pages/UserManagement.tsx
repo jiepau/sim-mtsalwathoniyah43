@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatDateTime, AppRole } from "@/lib/supabase-helpers";
 import { mapDatabaseError } from "@/lib/error-mapper";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface UserWithRoles {
   id: string;
