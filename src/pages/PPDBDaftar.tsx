@@ -265,6 +265,19 @@ export default function PPDBDaftar() {
           ) : (
             <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); const errs = validateForm(form); setErrors(errs); if (errs.length > 0) { toast.error(`${errs.length} kesalahan ditemukan, periksa form`); return; } setShowPreview(true); }}>
               {/* === DATA SISWA === */}
+              <SectionTitle>Asal Sekolah</SectionTitle>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2">
+                  <Field label="Asal Sekolah"><Input value={form.asal_sekolah} onChange={(e) => set('asal_sekolah', e.target.value)} /></Field>
+                </div>
+                <Field label="NPSN Asal Sekolah" error={errors.find(e => e.includes('NPSN'))}>
+                  <Input value={form.npsn_asal_sekolah} onChange={(e) => set('npsn_asal_sekolah', e.target.value.replace(/\D/g, ''))} maxLength={8} placeholder="8 digit" />
+                </Field>
+                <Field label="NSM Asal Sekolah">
+                  <Input value={form.nsm_asal_sekolah} onChange={(e) => set('nsm_asal_sekolah', e.target.value)} />
+                </Field>
+              </div>
+
               <SectionTitle>Data Pribadi Siswa</SectionTitle>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Error summary */}
