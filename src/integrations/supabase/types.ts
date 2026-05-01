@@ -1180,58 +1180,211 @@ export type Database = {
       }
       ppdb_pendaftar: {
         Row: {
+          agama: string | null
           alamat: string | null
+          anak_ke: number | null
           asal_sekolah: string | null
+          ayah_alamat: string | null
+          ayah_domisili: string | null
+          ayah_nik: string | null
+          ayah_no_hp: string | null
+          ayah_pekerjaan: string | null
+          ayah_pendidikan: string | null
+          ayah_penghasilan: string | null
+          ayah_status: string | null
+          ayah_status_tempat_tinggal: string | null
+          ayah_tanggal_lahir: string | null
+          ayah_tempat_lahir: string | null
           catatan: string | null
+          cita_cita: string | null
           created_at: string
+          email_siswa: string | null
+          hobi: string | null
+          ibu_alamat: string | null
+          ibu_domisili: string | null
+          ibu_nama: string | null
+          ibu_nik: string | null
+          ibu_no_hp: string | null
+          ibu_pekerjaan: string | null
+          ibu_pendidikan: string | null
+          ibu_penghasilan: string | null
+          ibu_status: string | null
+          ibu_status_tempat_tinggal: string | null
+          ibu_tanggal_lahir: string | null
+          ibu_tempat_lahir: string | null
           id: string
+          jarak_ke_madrasah: string | null
           jenis_kelamin: string | null
+          jumlah_saudara: number | null
+          kebutuhan_disabilitas: string | null
+          kebutuhan_khusus: string | null
+          kip: string | null
           nama: string
           nama_ayah: string | null
           nama_ibu: string | null
+          nik: string | null
           nisn: string | null
+          no_hp: string | null
           nomor_pendaftaran: string
           status: string
+          status_tempat_tinggal: string | null
           tanggal_lahir: string | null
           tempat_lahir: string | null
+          transportasi: string | null
           updated_at: string
           wa_ortu: string | null
+          waktu_tempuh: string | null
+          wali_alamat: string | null
+          wali_domisili: string | null
+          wali_nama: string | null
+          wali_nik: string | null
+          wali_no_hp: string | null
+          wali_pekerjaan: string | null
+          wali_pendidikan: string | null
+          wali_penghasilan: string | null
+          wali_status: string | null
+          wali_status_tempat_tinggal: string | null
+          wali_tanggal_lahir: string | null
+          wali_tempat_lahir: string | null
+          yang_membiayai: string | null
         }
         Insert: {
+          agama?: string | null
           alamat?: string | null
+          anak_ke?: number | null
           asal_sekolah?: string | null
+          ayah_alamat?: string | null
+          ayah_domisili?: string | null
+          ayah_nik?: string | null
+          ayah_no_hp?: string | null
+          ayah_pekerjaan?: string | null
+          ayah_pendidikan?: string | null
+          ayah_penghasilan?: string | null
+          ayah_status?: string | null
+          ayah_status_tempat_tinggal?: string | null
+          ayah_tanggal_lahir?: string | null
+          ayah_tempat_lahir?: string | null
           catatan?: string | null
+          cita_cita?: string | null
           created_at?: string
+          email_siswa?: string | null
+          hobi?: string | null
+          ibu_alamat?: string | null
+          ibu_domisili?: string | null
+          ibu_nama?: string | null
+          ibu_nik?: string | null
+          ibu_no_hp?: string | null
+          ibu_pekerjaan?: string | null
+          ibu_pendidikan?: string | null
+          ibu_penghasilan?: string | null
+          ibu_status?: string | null
+          ibu_status_tempat_tinggal?: string | null
+          ibu_tanggal_lahir?: string | null
+          ibu_tempat_lahir?: string | null
           id?: string
+          jarak_ke_madrasah?: string | null
           jenis_kelamin?: string | null
+          jumlah_saudara?: number | null
+          kebutuhan_disabilitas?: string | null
+          kebutuhan_khusus?: string | null
+          kip?: string | null
           nama: string
           nama_ayah?: string | null
           nama_ibu?: string | null
+          nik?: string | null
           nisn?: string | null
+          no_hp?: string | null
           nomor_pendaftaran: string
           status?: string
+          status_tempat_tinggal?: string | null
           tanggal_lahir?: string | null
           tempat_lahir?: string | null
+          transportasi?: string | null
           updated_at?: string
           wa_ortu?: string | null
+          waktu_tempuh?: string | null
+          wali_alamat?: string | null
+          wali_domisili?: string | null
+          wali_nama?: string | null
+          wali_nik?: string | null
+          wali_no_hp?: string | null
+          wali_pekerjaan?: string | null
+          wali_pendidikan?: string | null
+          wali_penghasilan?: string | null
+          wali_status?: string | null
+          wali_status_tempat_tinggal?: string | null
+          wali_tanggal_lahir?: string | null
+          wali_tempat_lahir?: string | null
+          yang_membiayai?: string | null
         }
         Update: {
+          agama?: string | null
           alamat?: string | null
+          anak_ke?: number | null
           asal_sekolah?: string | null
+          ayah_alamat?: string | null
+          ayah_domisili?: string | null
+          ayah_nik?: string | null
+          ayah_no_hp?: string | null
+          ayah_pekerjaan?: string | null
+          ayah_pendidikan?: string | null
+          ayah_penghasilan?: string | null
+          ayah_status?: string | null
+          ayah_status_tempat_tinggal?: string | null
+          ayah_tanggal_lahir?: string | null
+          ayah_tempat_lahir?: string | null
           catatan?: string | null
+          cita_cita?: string | null
           created_at?: string
+          email_siswa?: string | null
+          hobi?: string | null
+          ibu_alamat?: string | null
+          ibu_domisili?: string | null
+          ibu_nama?: string | null
+          ibu_nik?: string | null
+          ibu_no_hp?: string | null
+          ibu_pekerjaan?: string | null
+          ibu_pendidikan?: string | null
+          ibu_penghasilan?: string | null
+          ibu_status?: string | null
+          ibu_status_tempat_tinggal?: string | null
+          ibu_tanggal_lahir?: string | null
+          ibu_tempat_lahir?: string | null
           id?: string
+          jarak_ke_madrasah?: string | null
           jenis_kelamin?: string | null
+          jumlah_saudara?: number | null
+          kebutuhan_disabilitas?: string | null
+          kebutuhan_khusus?: string | null
+          kip?: string | null
           nama?: string
           nama_ayah?: string | null
           nama_ibu?: string | null
+          nik?: string | null
           nisn?: string | null
+          no_hp?: string | null
           nomor_pendaftaran?: string
           status?: string
+          status_tempat_tinggal?: string | null
           tanggal_lahir?: string | null
           tempat_lahir?: string | null
+          transportasi?: string | null
           updated_at?: string
           wa_ortu?: string | null
+          waktu_tempuh?: string | null
+          wali_alamat?: string | null
+          wali_domisili?: string | null
+          wali_nama?: string | null
+          wali_nik?: string | null
+          wali_no_hp?: string | null
+          wali_pekerjaan?: string | null
+          wali_pendidikan?: string | null
+          wali_penghasilan?: string | null
+          wali_status?: string | null
+          wali_status_tempat_tinggal?: string | null
+          wali_tanggal_lahir?: string | null
+          wali_tempat_lahir?: string | null
+          yang_membiayai?: string | null
         }
         Relationships: []
       }
