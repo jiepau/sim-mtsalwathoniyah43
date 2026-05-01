@@ -26,6 +26,7 @@ const Pemasukan = lazy(() => import("@/pages/Pemasukan"));
 const Pengeluaran = lazy(() => import("@/pages/Pengeluaran"));
 const Tunggakan = lazy(() => import("@/pages/Tunggakan"));
 const LaporanKeuangan = lazy(() => import("@/pages/LaporanKeuangan"));
+const TutupBuku = lazy(() => import("@/pages/TutupBuku"));
 const NaikKelas = lazy(() => import("@/pages/NaikKelas"));
 const Alumni = lazy(() => import("@/pages/Alumni"));
 const UserManagement = lazy(() => import("@/pages/UserManagement"));
@@ -129,6 +130,7 @@ const App = () => {
                   <Route path="/pengeluaran" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><Pengeluaran /></ProtectedRoute>} />
                   <Route path="/tunggakan" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><Tunggakan /></ProtectedRoute>} />
                   <Route path="/laporan-keuangan" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><LaporanKeuangan /></ProtectedRoute>} />
+                  <Route path="/tutup-buku" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><TutupBuku /></ProtectedRoute>} />
 
                   {/* Kurikulum - admin/operator/guru */}
                   <Route path="/atp" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><ATP /></ProtectedRoute>} />

@@ -876,6 +876,81 @@ export type Database = {
           },
         ]
       }
+      laporan_tahunan: {
+        Row: {
+          breakdown_pemasukan: Json
+          breakdown_pengeluaran: Json
+          catatan: string | null
+          created_at: string
+          daftar_tunggakan: Json
+          id: string
+          judul: string
+          jumlah_siswa_nunggak: number
+          nama_bendahara: string | null
+          nama_kepala: string | null
+          nip_kepala: string | null
+          periode_jenis: string
+          periode_label: string
+          saldo: number
+          ta_id: string | null
+          tanggal_akhir: string
+          tanggal_mulai: string
+          total_pemasukan: number
+          total_pengeluaran: number
+          total_tunggakan: number
+          tutup_oleh: string | null
+          tutup_oleh_nama: string | null
+        }
+        Insert: {
+          breakdown_pemasukan?: Json
+          breakdown_pengeluaran?: Json
+          catatan?: string | null
+          created_at?: string
+          daftar_tunggakan?: Json
+          id?: string
+          judul: string
+          jumlah_siswa_nunggak?: number
+          nama_bendahara?: string | null
+          nama_kepala?: string | null
+          nip_kepala?: string | null
+          periode_jenis: string
+          periode_label: string
+          saldo?: number
+          ta_id?: string | null
+          tanggal_akhir: string
+          tanggal_mulai: string
+          total_pemasukan?: number
+          total_pengeluaran?: number
+          total_tunggakan?: number
+          tutup_oleh?: string | null
+          tutup_oleh_nama?: string | null
+        }
+        Update: {
+          breakdown_pemasukan?: Json
+          breakdown_pengeluaran?: Json
+          catatan?: string | null
+          created_at?: string
+          daftar_tunggakan?: Json
+          id?: string
+          judul?: string
+          jumlah_siswa_nunggak?: number
+          nama_bendahara?: string | null
+          nama_kepala?: string | null
+          nip_kepala?: string | null
+          periode_jenis?: string
+          periode_label?: string
+          saldo?: number
+          ta_id?: string | null
+          tanggal_akhir?: string
+          tanggal_mulai?: string
+          total_pemasukan?: number
+          total_pengeluaran?: number
+          total_tunggakan?: number
+          tutup_oleh?: string | null
+          tutup_oleh_nama?: string | null
+        }
+        Relationships: []
+      }
       madrasah_settings: {
         Row: {
           akreditasi: string | null
