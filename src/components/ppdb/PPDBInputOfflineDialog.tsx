@@ -234,7 +234,8 @@ export function PPDBInputOfflineDialog({ open, onOpenChange }: Props) {
                   <Field label="No HP" field="no_hp" placeholder="No HP calon siswa" />
                   <Field label="Email" field="email_siswa" type="email" placeholder="Email (opsional)" />
                   <Field label="Asal Sekolah" field="asal_sekolah" placeholder="Nama SD/MI asal" />
-                  <Field label="NPSN Asal" field="npsn_asal_sekolah" placeholder="NPSN sekolah asal" />
+                   <Field label="NPSN Asal" field="npsn_asal_sekolah" placeholder="NPSN sekolah asal" />
+                   <Field label="NSM Asal Sekolah" field="nsm_asal_sekolah" placeholder="NSM sekolah asal" />
                   <Field label="Jumlah Saudara" field="jumlah_saudara" type="number" />
                   <Field label="Anak Ke" field="anak_ke" type="number" />
                 </div>
