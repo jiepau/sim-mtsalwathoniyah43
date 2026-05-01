@@ -1226,6 +1226,8 @@ export type Database = {
           nisn: string | null
           no_hp: string | null
           nomor_pendaftaran: string
+          npsn_asal_sekolah: string | null
+          nsm_asal_sekolah: string | null
           prestasi: string | null
           status: string
           status_tempat_tinggal: string | null
@@ -1296,6 +1298,8 @@ export type Database = {
           nisn?: string | null
           no_hp?: string | null
           nomor_pendaftaran: string
+          npsn_asal_sekolah?: string | null
+          nsm_asal_sekolah?: string | null
           prestasi?: string | null
           status?: string
           status_tempat_tinggal?: string | null
@@ -1366,6 +1370,8 @@ export type Database = {
           nisn?: string | null
           no_hp?: string | null
           nomor_pendaftaran?: string
+          npsn_asal_sekolah?: string | null
+          nsm_asal_sekolah?: string | null
           prestasi?: string | null
           status?: string
           status_tempat_tinggal?: string | null

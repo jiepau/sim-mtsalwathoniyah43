@@ -32,8 +32,9 @@ type FormData = Record<string, string>;
 const initialForm: FormData = {
   nama: '', nik: '', nisn: '', kip: '', tempat_lahir: '', tanggal_lahir: '', jenis_kelamin: '',
   agama: 'Islam', alamat: '', jumlah_saudara: '', anak_ke: '', hobi: '', cita_cita: '', prestasi: '',
-  no_hp: '', email_siswa: '', asal_sekolah: '', yang_membiayai: '', kebutuhan_disabilitas: '',
-  kebutuhan_khusus: '', status_tempat_tinggal: '', jarak_ke_madrasah: '', waktu_tempuh: '', transportasi: '',
+  no_hp: '', email_siswa: '', asal_sekolah: '', npsn_asal_sekolah: '', nsm_asal_sekolah: '',
+  yang_membiayai: '', kebutuhan_disabilitas: '', kebutuhan_khusus: '',
+  status_tempat_tinggal: '', jarak_ke_madrasah: '', waktu_tempuh: '', transportasi: '',
   nama_ayah: '', ayah_nik: '', ayah_tempat_lahir: '', ayah_tanggal_lahir: '', ayah_status: '',
   ayah_pendidikan: '', ayah_pekerjaan: '', ayah_domisili: '', ayah_no_hp: '', ayah_penghasilan: '',
   ayah_alamat: '', ayah_status_tempat_tinggal: '',
@@ -45,6 +46,47 @@ const initialForm: FormData = {
   wali_alamat: '', wali_status_tempat_tinggal: '', wa_ortu: '',
 };
 
+/** Validasi format EMIS 4.0 */
+function validateForm(form: FormData): string[] {
+  const errors: string[] = [];
+  // Wajib isi
+  if (!form.nama.trim()) errors.push('Nama Lengkap wajib diisi');
+  if (!form.nik.trim()) errors.push('NIK Siswa wajib diisi');
+  if (!form.nisn.trim()) errors.push('NISN wajib diisi');
+  if (!form.jenis_kelamin) errors.push('Jenis Kelamin wajib dipilih');
+  if (!form.tempat_lahir.trim()) errors.push('Tempat Lahir wajib diisi');
+  if (!form.tanggal_lahir) errors.push('Tanggal Lahir wajib diisi');
+
+  // Format NIK: 16 digit angka
+  if (form.nik.trim() && !/^\d{16}$/.test(form.nik.trim()))
+    errors.push('NIK harus 16 digit angka');
+  // Format NISN: 10 digit angka
+  if (form.nisn.trim() && !/^\d{10}$/.test(form.nisn.trim()))
+    errors.push('NISN harus 10 digit angka');
+  // NPSN: 8 digit angka
+  if (form.npsn_asal_sekolah.trim() && !/^\d{8}$/.test(form.npsn_asal_sekolah.trim()))
+    errors.push('NPSN Asal Sekolah harus 8 digit angka');
+  // No HP / WA: min 10, max 15 digit, awalan 0 atau 62
+  const phonePattern = /^(0|62)\d{8,13}$/;
+  if (form.no_hp.trim() && !phonePattern.test(form.no_hp.trim().replace(/[\s\-]/g, '')))
+    errors.push('No. Handphone siswa tidak valid (contoh: 08xx atau 628xx, 10-15 digit)');
+  if (form.wa_ortu.trim() && !phonePattern.test(form.wa_ortu.trim().replace(/[\s\-]/g, '')))
+    errors.push('No. WA Orang Tua tidak valid');
+  if (form.ayah_no_hp.trim() && !phonePattern.test(form.ayah_no_hp.trim().replace(/[\s\-]/g, '')))
+    errors.push('No. HP Ayah tidak valid');
+  if (form.ibu_no_hp.trim() && !phonePattern.test(form.ibu_no_hp.trim().replace(/[\s\-]/g, '')))
+    errors.push('No. HP Ibu tidak valid');
+  // NIK orang tua: 16 digit jika diisi
+  if (form.ayah_nik.trim() && !/^\d{16}$/.test(form.ayah_nik.trim()))
+    errors.push('NIK Ayah harus 16 digit angka');
+  if (form.ibu_nik.trim() && !/^\d{16}$/.test(form.ibu_nik.trim()))
+    errors.push('NIK Ibu harus 16 digit angka');
+  if (form.wali_nik.trim() && !/^\d{16}$/.test(form.wali_nik.trim()))
+    errors.push('NIK Wali harus 16 digit angka');
+
+  return errors;
+}
+
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <div className="pt-4 pb-2">
@@ -54,11 +96,12 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+function Field({ label, required, children, error }: { label: string; required?: boolean; children: React.ReactNode; error?: string }) {
   return (
     <div>
-      <Label className="text-xs">{label}{required && ' *'}</Label>
+      <Label className={`text-xs ${error ? 'text-destructive' : ''}`}>{label}{required && ' *'}</Label>
       {children}
+      {error && <p className="text-xs text-destructive mt-0.5">{error}</p>}
     </div>
   );
 }
@@ -78,6 +121,7 @@ export default function PPDBDaftar() {
   const [submitted, setSubmitted] = useState<string | null>(null);
   const [form, setForm] = useState<FormData>({ ...initialForm });
   const [showPreview, setShowPreview] = useState(false);
+  const [errors, setErrors] = useState<string[]>([]);
   const { data: settings, isLoading: loadingSettings } = useQuery({
     queryKey: ['ppdb-settings-public'],
     queryFn: async () => {
@@ -91,8 +135,8 @@ export default function PPDBDaftar() {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      if (!form.nama.trim()) throw new Error('Nama wajib diisi');
-      if (!form.jenis_kelamin) throw new Error('Jenis kelamin wajib dipilih');
+      const validationErrors = validateForm(form);
+      if (validationErrors.length > 0) throw new Error(validationErrors[0]);
 
       const { data: nomor, error: rpcErr } = await supabase.rpc('generate_nomor_ppdb');
       if (rpcErr) throw rpcErr;
@@ -116,6 +160,8 @@ export default function PPDBDaftar() {
         no_hp: form.no_hp.trim() || null,
         email_siswa: form.email_siswa.trim() || null,
         asal_sekolah: form.asal_sekolah.trim() || null,
+        npsn_asal_sekolah: form.npsn_asal_sekolah.trim() || null,
+        nsm_asal_sekolah: form.nsm_asal_sekolah.trim() || null,
         yang_membiayai: form.yang_membiayai || null,
         kebutuhan_disabilitas: form.kebutuhan_disabilitas.trim() || null,
         kebutuhan_khusus: form.kebutuhan_khusus.trim() || null,
@@ -217,21 +263,37 @@ export default function PPDBDaftar() {
               </p>
             </div>
           ) : (
-            <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); if (!form.nama.trim() || !form.jenis_kelamin) { toast.error('Nama dan Jenis Kelamin wajib diisi'); return; } setShowPreview(true); }}>
+            <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); const errs = validateForm(form); setErrors(errs); if (errs.length > 0) { toast.error(`${errs.length} kesalahan ditemukan, periksa form`); return; } setShowPreview(true); }}>
               {/* === DATA SISWA === */}
               <SectionTitle>Data Pribadi Siswa</SectionTitle>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Error summary */}
+                {errors.length > 0 && (
+                  <div className="bg-destructive/10 border border-destructive/30 rounded-md p-3 space-y-1">
+                    <p className="text-xs font-semibold text-destructive">{errors.length} kesalahan ditemukan:</p>
+                    {errors.map((err, i) => <p key={i} className="text-xs text-destructive">• {err}</p>)}
+                  </div>
+                )}
+
                 <div className="sm:col-span-2">
-                  <Field label="Nama Lengkap" required><Input value={form.nama} onChange={(e) => set('nama', e.target.value)} required /></Field>
+                  <Field label="Nama Lengkap" required error={errors.find(e => e.includes('Nama'))}><Input value={form.nama} onChange={(e) => set('nama', e.target.value)} required /></Field>
                 </div>
-                <Field label="NIK"><Input value={form.nik} onChange={(e) => set('nik', e.target.value)} maxLength={16} /></Field>
-                <Field label="NISN"><Input value={form.nisn} onChange={(e) => set('nisn', e.target.value)} /></Field>
+                <Field label="NIK" required error={errors.find(e => e.includes('NIK') && !e.includes('Ayah') && !e.includes('Ibu') && !e.includes('Wali'))}>
+                  <Input value={form.nik} onChange={(e) => set('nik', e.target.value.replace(/\D/g, ''))} maxLength={16} placeholder="16 digit" />
+                </Field>
+                <Field label="NISN" required error={errors.find(e => e.includes('NISN'))}>
+                  <Input value={form.nisn} onChange={(e) => set('nisn', e.target.value.replace(/\D/g, ''))} maxLength={10} placeholder="10 digit" />
+                </Field>
                 <Field label="KIP"><Input value={form.kip} onChange={(e) => set('kip', e.target.value)} /></Field>
-                <Field label="Jenis Kelamin" required>
+                <Field label="Jenis Kelamin" required error={errors.find(e => e.includes('Jenis Kelamin'))}>
                   <SelectField value={form.jenis_kelamin} onValueChange={(v) => set('jenis_kelamin', v)} options={['L', 'P']} placeholder="L / P" />
                 </Field>
-                <Field label="Tempat Lahir"><Input value={form.tempat_lahir} onChange={(e) => set('tempat_lahir', e.target.value)} /></Field>
-                <Field label="Tanggal Lahir"><Input type="date" value={form.tanggal_lahir} onChange={(e) => set('tanggal_lahir', e.target.value)} /></Field>
+                <Field label="Tempat Lahir" required error={errors.find(e => e.includes('Tempat Lahir'))}>
+                  <Input value={form.tempat_lahir} onChange={(e) => set('tempat_lahir', e.target.value)} />
+                </Field>
+                <Field label="Tanggal Lahir" required error={errors.find(e => e.includes('Tanggal Lahir'))}>
+                  <Input type="date" value={form.tanggal_lahir} onChange={(e) => set('tanggal_lahir', e.target.value)} />
+                </Field>
                 <Field label="Agama">
                   <SelectField value={form.agama} onValueChange={(v) => set('agama', v)} options={agamaOptions} />
                 </Field>
@@ -242,9 +304,17 @@ export default function PPDBDaftar() {
                 <div className="sm:col-span-2">
                   <Field label="Prestasi yang Diraih"><Textarea value={form.prestasi} onChange={(e) => set('prestasi', e.target.value)} rows={2} placeholder="Contoh: Juara 1 Lomba MTQ Tingkat Kecamatan 2025" /></Field>
                 </div>
-                <Field label="No. Handphone"><Input value={form.no_hp} onChange={(e) => set('no_hp', e.target.value)} placeholder="08xxx" /></Field>
+                <Field label="No. Handphone" error={errors.find(e => e.includes('Handphone siswa'))}>
+                  <Input value={form.no_hp} onChange={(e) => set('no_hp', e.target.value.replace(/[^\d]/g, ''))} placeholder="08xxxxxxxxxx" maxLength={15} />
+                </Field>
                 <Field label="Alamat Email Siswa"><Input type="email" value={form.email_siswa} onChange={(e) => set('email_siswa', e.target.value)} /></Field>
                 <Field label="Asal Sekolah"><Input value={form.asal_sekolah} onChange={(e) => set('asal_sekolah', e.target.value)} /></Field>
+                <Field label="NPSN Asal Sekolah" error={errors.find(e => e.includes('NPSN'))}>
+                  <Input value={form.npsn_asal_sekolah} onChange={(e) => set('npsn_asal_sekolah', e.target.value.replace(/\D/g, ''))} maxLength={8} placeholder="8 digit" />
+                </Field>
+                <Field label="NSM Asal Sekolah">
+                  <Input value={form.nsm_asal_sekolah} onChange={(e) => set('nsm_asal_sekolah', e.target.value)} />
+                </Field>
                 <Field label="Yang Membiayai Sekolah">
                   <SelectField value={form.yang_membiayai} onValueChange={(v) => set('yang_membiayai', v)} options={membiayaiOptions} />
                 </Field>
@@ -271,7 +341,7 @@ export default function PPDBDaftar() {
               <SectionTitle>Data Ayah Kandung</SectionTitle>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Nama Lengkap"><Input value={form.nama_ayah} onChange={(e) => set('nama_ayah', e.target.value)} /></Field>
-                <Field label="NIK"><Input value={form.ayah_nik} onChange={(e) => set('ayah_nik', e.target.value)} maxLength={16} /></Field>
+                <Field label="NIK" error={errors.find(e => e.includes('NIK Ayah'))}><Input value={form.ayah_nik} onChange={(e) => set('ayah_nik', e.target.value.replace(/\D/g, ''))} maxLength={16} placeholder="16 digit" /></Field>
                 <Field label="Tempat Lahir"><Input value={form.ayah_tempat_lahir} onChange={(e) => set('ayah_tempat_lahir', e.target.value)} /></Field>
                 <Field label="Tanggal Lahir"><Input type="date" value={form.ayah_tanggal_lahir} onChange={(e) => set('ayah_tanggal_lahir', e.target.value)} /></Field>
                 <Field label="Status"><Input value={form.ayah_status} onChange={(e) => set('ayah_status', e.target.value)} placeholder="Masih Hidup / Meninggal" /></Field>
@@ -282,7 +352,7 @@ export default function PPDBDaftar() {
                   <SelectField value={form.ayah_pekerjaan} onValueChange={(v) => set('ayah_pekerjaan', v)} options={pekerjaanOptions} />
                 </Field>
                 <Field label="Domisili"><Input value={form.ayah_domisili} onChange={(e) => set('ayah_domisili', e.target.value)} /></Field>
-                <Field label="No. Handphone"><Input value={form.ayah_no_hp} onChange={(e) => set('ayah_no_hp', e.target.value)} placeholder="08xxx" /></Field>
+                <Field label="No. Handphone" error={errors.find(e => e.includes('HP Ayah'))}><Input value={form.ayah_no_hp} onChange={(e) => set('ayah_no_hp', e.target.value.replace(/[^\d]/g, ''))} placeholder="08xxxxxxxxxx" maxLength={15} /></Field>
                 <Field label="Penghasilan Rata-rata Per Bulan">
                   <SelectField value={form.ayah_penghasilan} onValueChange={(v) => set('ayah_penghasilan', v)} options={penghasilanOptions} />
                 </Field>
@@ -298,7 +368,7 @@ export default function PPDBDaftar() {
               <SectionTitle>Data Ibu Kandung</SectionTitle>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Nama Lengkap"><Input value={form.ibu_nama} onChange={(e) => set('ibu_nama', e.target.value)} /></Field>
-                <Field label="NIK"><Input value={form.ibu_nik} onChange={(e) => set('ibu_nik', e.target.value)} maxLength={16} /></Field>
+                <Field label="NIK" error={errors.find(e => e.includes('NIK Ibu'))}><Input value={form.ibu_nik} onChange={(e) => set('ibu_nik', e.target.value.replace(/\D/g, ''))} maxLength={16} placeholder="16 digit" /></Field>
                 <Field label="Tempat Lahir"><Input value={form.ibu_tempat_lahir} onChange={(e) => set('ibu_tempat_lahir', e.target.value)} /></Field>
                 <Field label="Tanggal Lahir"><Input type="date" value={form.ibu_tanggal_lahir} onChange={(e) => set('ibu_tanggal_lahir', e.target.value)} /></Field>
                 <Field label="Status"><Input value={form.ibu_status} onChange={(e) => set('ibu_status', e.target.value)} placeholder="Masih Hidup / Meninggal" /></Field>
@@ -309,7 +379,7 @@ export default function PPDBDaftar() {
                   <SelectField value={form.ibu_pekerjaan} onValueChange={(v) => set('ibu_pekerjaan', v)} options={pekerjaanOptions} />
                 </Field>
                 <Field label="Domisili"><Input value={form.ibu_domisili} onChange={(e) => set('ibu_domisili', e.target.value)} /></Field>
-                <Field label="No. Handphone"><Input value={form.ibu_no_hp} onChange={(e) => set('ibu_no_hp', e.target.value)} placeholder="08xxx" /></Field>
+                <Field label="No. Handphone" error={errors.find(e => e.includes('HP Ibu'))}><Input value={form.ibu_no_hp} onChange={(e) => set('ibu_no_hp', e.target.value.replace(/[^\d]/g, ''))} placeholder="08xxxxxxxxxx" maxLength={15} /></Field>
                 <Field label="Penghasilan Rata-rata Per Bulan">
                   <SelectField value={form.ibu_penghasilan} onValueChange={(v) => set('ibu_penghasilan', v)} options={penghasilanOptions} />
                 </Field>
@@ -326,7 +396,7 @@ export default function PPDBDaftar() {
               <p className="text-xs text-muted-foreground">Isi jika wali berbeda dari orang tua kandung</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Nama Lengkap"><Input value={form.wali_nama} onChange={(e) => set('wali_nama', e.target.value)} /></Field>
-                <Field label="NIK"><Input value={form.wali_nik} onChange={(e) => set('wali_nik', e.target.value)} maxLength={16} /></Field>
+                <Field label="NIK" error={errors.find(e => e.includes('NIK Wali'))}><Input value={form.wali_nik} onChange={(e) => set('wali_nik', e.target.value.replace(/\D/g, ''))} maxLength={16} placeholder="16 digit" /></Field>
                 <Field label="Tempat Lahir"><Input value={form.wali_tempat_lahir} onChange={(e) => set('wali_tempat_lahir', e.target.value)} /></Field>
                 <Field label="Tanggal Lahir"><Input type="date" value={form.wali_tanggal_lahir} onChange={(e) => set('wali_tanggal_lahir', e.target.value)} /></Field>
                 <Field label="Status"><Input value={form.wali_status} onChange={(e) => set('wali_status', e.target.value)} /></Field>
@@ -352,7 +422,7 @@ export default function PPDBDaftar() {
               {/* === KONTAK UTAMA === */}
               <SectionTitle>Kontak Utama (WA Orang Tua/Wali)</SectionTitle>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="No. WA Orang Tua / Wali"><Input value={form.wa_ortu} onChange={(e) => set('wa_ortu', e.target.value)} placeholder="08xxxxxxxxxx" /></Field>
+                <Field label="No. WA Orang Tua / Wali" error={errors.find(e => e.includes('WA Orang Tua'))}><Input value={form.wa_ortu} onChange={(e) => set('wa_ortu', e.target.value.replace(/[^\d]/g, ''))} placeholder="08xxxxxxxxxx" maxLength={15} /></Field>
               </div>
 
               <div className="pt-4">
