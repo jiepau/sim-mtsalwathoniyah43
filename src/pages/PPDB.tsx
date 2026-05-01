@@ -319,6 +319,7 @@ export default function PPDB() {
         pendaftarIds={selectedDiterima}
       />
       <PPDBInputOfflineDialog open={showInputOffline} onOpenChange={setShowInputOffline} />
+      <PPDBRekapPrintDialog open={showRekap} onOpenChange={setShowRekap} pendaftar={filtered} />
     </div>
   );
 }
