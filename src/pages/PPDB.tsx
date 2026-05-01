@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PPDBSettingsPanel } from '@/components/ppdb/PPDBSettingsPanel';
 import { PPDBKonversiDialog } from '@/components/ppdb/PPDBKonversiDialog';
+import { PPDBInputOfflineDialog } from '@/components/ppdb/PPDBInputOfflineDialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
