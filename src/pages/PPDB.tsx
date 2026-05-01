@@ -204,6 +204,10 @@ export default function PPDB() {
               </div>
             </CardContent>
           </Card>
+
+          <div className="mt-4">
+            <PPDBAsalSekolahDonut {...asalBreakdown} />
+          </div>
         </div>
 
         <div className="lg:col-span-3 space-y-3">
