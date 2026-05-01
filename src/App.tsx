@@ -100,6 +100,7 @@ const App = () => {
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/gtk/:id" element={<ValidasiGtk />} />
+                <Route path="/ppdb/daftar" element={<PPDBDaftar />} />
                 <Route
                   element={
                     <ProtectedRoute>
