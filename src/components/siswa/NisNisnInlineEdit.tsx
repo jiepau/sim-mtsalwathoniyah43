@@ -1,7 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
-import { Pencil, Check, X, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Pencil, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -18,6 +17,7 @@ export function NisNisnInlineEdit({ siswaId, nis, nisn, onSaved }: Props) {
   const [draftNisn, setDraftNisn] = useState(nisn || '');
   const [saving, setSaving] = useState(false);
   const nisRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (editing) {
@@ -27,7 +27,7 @@ export function NisNisnInlineEdit({ siswaId, nis, nisn, onSaved }: Props) {
     }
   }, [editing, nis, nisn]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     const trimNis = draftNis.trim();
     const trimNisn = draftNisn.trim() || null;
 
@@ -60,22 +60,33 @@ export function NisNisnInlineEdit({ siswaId, nis, nisn, onSaved }: Props) {
     toast.success('NIS/NISN tersimpan');
     onSaved(trimNis, trimNisn);
     setEditing(false);
-  };
+  }, [draftNis, draftNisn, nis, nisn, siswaId, onSaved]);
 
-  const handleCancel = () => {
-    setDraftNis(nis);
-    setDraftNisn(nisn || '');
-    setEditing(false);
-  };
+  // Auto-save on blur outside the container
+  useEffect(() => {
+    if (!editing) return;
+    const handleFocusOut = (e: FocusEvent) => {
+      // If focus moves to another element inside the container, ignore
+      if (containerRef.current?.contains(e.relatedTarget as Node)) return;
+      handleSave();
+    };
+    const el = containerRef.current;
+    el?.addEventListener('focusout', handleFocusOut);
+    return () => el?.removeEventListener('focusout', handleFocusOut);
+  }, [editing, handleSave]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleSave();
-    else if (e.key === 'Escape') handleCancel();
+    else if (e.key === 'Escape') {
+      setDraftNis(nis);
+      setDraftNisn(nisn || '');
+      setEditing(false);
+    }
   };
 
   if (editing) {
     return (
-      <div className="flex flex-col gap-1" onClick={(e) => e.stopPropagation()}>
+      <div ref={containerRef} className="flex flex-col gap-1" onClick={(e) => e.stopPropagation()}>
         <Input
           ref={nisRef}
           value={draftNis}
@@ -93,28 +104,7 @@ export function NisNisnInlineEdit({ siswaId, nis, nisn, onSaved }: Props) {
           className="h-7 w-28 text-xs font-mono"
           disabled={saving}
         />
-        <div className="flex items-center gap-0.5">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 w-6 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
-            onClick={handleSave}
-            disabled={saving}
-            title="Simpan (Enter)"
-          >
-            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-            onClick={handleCancel}
-            disabled={saving}
-            title="Batal (Esc)"
-          >
-            <X className="h-3.5 w-3.5" />
-          </Button>
-        </div>
+        {saving && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />}
       </div>
     );
   }
