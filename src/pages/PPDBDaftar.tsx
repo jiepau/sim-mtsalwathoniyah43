@@ -121,6 +121,7 @@ export default function PPDBDaftar() {
   const [submitted, setSubmitted] = useState<string | null>(null);
   const [form, setForm] = useState<FormData>({ ...initialForm });
   const [showPreview, setShowPreview] = useState(false);
+  const [errors, setErrors] = useState<string[]>([]);
   const { data: settings, isLoading: loadingSettings } = useQuery({
     queryKey: ['ppdb-settings-public'],
     queryFn: async () => {
