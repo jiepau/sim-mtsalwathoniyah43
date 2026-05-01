@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { PPDBSettingsPanel } from '@/components/ppdb/PPDBSettingsPanel';
 import { PPDBKonversiDialog } from '@/components/ppdb/PPDBKonversiDialog';
 import { PPDBInputOfflineDialog } from '@/components/ppdb/PPDBInputOfflineDialog';
+import { PPDBRekapPrintDialog } from '@/components/ppdb/PPDBRekapPrintDialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { UserPlus, Search, Download, Upload, ArrowRightCircle, Check, X, ClipboardList, UserCheck, FileSpreadsheet, ChevronRight } from 'lucide-react';
+import { UserPlus, Search, Download, Upload, ArrowRightCircle, Check, X, ClipboardList, UserCheck, FileSpreadsheet, ChevronRight, Printer } from 'lucide-react';
 import { formatDate } from '@/lib/supabase-helpers';
 import { exportEmisCSV, parseEmisCSV } from '@/lib/emis-field-map';
 
@@ -30,6 +31,7 @@ export default function PPDB() {
   const [selected, setSelected] = useState<string[]>([]);
   const [showKonversi, setShowKonversi] = useState(false);
   const [showInputOffline, setShowInputOffline] = useState(false);
+  const [showRekap, setShowRekap] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: pendaftar = [], isLoading } = useQuery({
@@ -233,6 +235,9 @@ export default function PPDB() {
             <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
               <Upload className="h-4 w-4 mr-1" /> Import EMIS
             </Button>
+            <Button size="sm" variant="outline" onClick={() => setShowRekap(true)}>
+              <Printer className="h-4 w-4 mr-1" /> Cetak Rekap
+            </Button>
             <Button size="sm" onClick={() => setShowInputOffline(true)}>
               <UserPlus className="h-4 w-4 mr-1" /> Tambah Pendaftar
             </Button>
@@ -314,6 +319,7 @@ export default function PPDB() {
         pendaftarIds={selectedDiterima}
       />
       <PPDBInputOfflineDialog open={showInputOffline} onOpenChange={setShowInputOffline} />
+      <PPDBRekapPrintDialog open={showRekap} onOpenChange={setShowRekap} pendaftar={filtered} />
     </div>
   );
 }
