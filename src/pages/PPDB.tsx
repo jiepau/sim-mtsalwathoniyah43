@@ -31,6 +31,7 @@ export default function PPDB() {
   const [selected, setSelected] = useState<string[]>([]);
   const [showKonversi, setShowKonversi] = useState(false);
   const [showInputOffline, setShowInputOffline] = useState(false);
+  const [showRekap, setShowRekap] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: pendaftar = [], isLoading } = useQuery({
