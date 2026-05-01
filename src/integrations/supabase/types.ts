@@ -1178,6 +1178,90 @@ export type Database = {
         }
         Relationships: []
       }
+      ppdb_pendaftar: {
+        Row: {
+          alamat: string | null
+          asal_sekolah: string | null
+          catatan: string | null
+          created_at: string
+          id: string
+          jenis_kelamin: string | null
+          nama: string
+          nama_ayah: string | null
+          nama_ibu: string | null
+          nisn: string | null
+          nomor_pendaftaran: string
+          status: string
+          tanggal_lahir: string | null
+          tempat_lahir: string | null
+          updated_at: string
+          wa_ortu: string | null
+        }
+        Insert: {
+          alamat?: string | null
+          asal_sekolah?: string | null
+          catatan?: string | null
+          created_at?: string
+          id?: string
+          jenis_kelamin?: string | null
+          nama: string
+          nama_ayah?: string | null
+          nama_ibu?: string | null
+          nisn?: string | null
+          nomor_pendaftaran: string
+          status?: string
+          tanggal_lahir?: string | null
+          tempat_lahir?: string | null
+          updated_at?: string
+          wa_ortu?: string | null
+        }
+        Update: {
+          alamat?: string | null
+          asal_sekolah?: string | null
+          catatan?: string | null
+          created_at?: string
+          id?: string
+          jenis_kelamin?: string | null
+          nama?: string
+          nama_ayah?: string | null
+          nama_ibu?: string | null
+          nisn?: string | null
+          nomor_pendaftaran?: string
+          status?: string
+          tanggal_lahir?: string | null
+          tempat_lahir?: string | null
+          updated_at?: string
+          wa_ortu?: string | null
+        }
+        Relationships: []
+      }
+      ppdb_settings: {
+        Row: {
+          created_at: string
+          id: string
+          is_open: boolean
+          pesan_selamat: string | null
+          tahun_ajaran: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_open?: boolean
+          pesan_selamat?: string | null
+          tahun_ajaran?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_open?: boolean
+          pesan_selamat?: string | null
+          tahun_ajaran?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1689,6 +1773,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_nomor_ppdb: { Args: never; Returns: string }
       generate_nomor_surat: { Args: { p_jenis: string }; Returns: string }
       has_any_role: { Args: { _user_id: string }; Returns: boolean }
       has_role: {

@@ -56,6 +56,8 @@ const MateriSiswa = lazy(() => import("@/pages/elearning/MateriSiswa"));
 const TugasSiswa = lazy(() => import("@/pages/elearning/TugasSiswa"));
 const NilaiSiswa = lazy(() => import("@/pages/elearning/NilaiSiswa"));
 const ValidasiGtk = lazy(() => import("@/pages/ValidasiGtk"));
+const PPDBPage = lazy(() => import("@/pages/PPDB"));
+const PPDBDaftar = lazy(() => import("@/pages/PPDBDaftar"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -98,6 +100,7 @@ const App = () => {
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/gtk/:id" element={<ValidasiGtk />} />
+                <Route path="/ppdb/daftar" element={<PPDBDaftar />} />
                 <Route
                   element={
                     <ProtectedRoute>
@@ -157,6 +160,9 @@ const App = () => {
 
                   {/* Changelog - all roles */}
                   <Route path="/changelog" element={<Changelog />} />
+
+                  {/* PPDB - admin only */}
+                  <Route path="/ppdb" element={<ProtectedRoute allowedRoles={['admin']}><PPDBPage /></ProtectedRoute>} />
 
                   {/* E-Learning - guru side */}
                   <Route path="/e-learning/materi-guru" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><MateriGuru /></ProtectedRoute>} />

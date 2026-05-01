@@ -38,6 +38,7 @@ import {
   MessageSquare,
   History,
   Palette,
+  UserPlus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -132,6 +133,7 @@ const allMenuItems: MenuItem[] = [
   { title: 'Riwayat Pembaruan', icon: History, path: '/changelog' }, // All roles
   { title: 'Pengaturan Madrasah', icon: Settings, path: '/pengaturan-madrasah', roles: ['admin'] },
   { title: 'Notifikasi WA', icon: MessageSquare, path: '/notifikasi-wa', roles: ['admin'] },
+  { title: 'PPDB', icon: UserPlus, path: '/ppdb', roles: ['admin'] },
   { title: 'Manajemen User', icon: Shield, path: '/user-management', roles: ['admin'] },
 ];
 
