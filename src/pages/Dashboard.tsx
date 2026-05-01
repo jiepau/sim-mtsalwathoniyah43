@@ -478,7 +478,7 @@ export default function Dashboard() {
         )}
 
         {/* Ringkasan Keuangan */}
-        {(isAdmin || isBendahara) && (
+        {(isAdmin || isBendahara || isPanitia) && (
         <Card className="shadow-card overflow-hidden">
           <CardHeader className="pb-1 sm:pb-2">
             <CardTitle className="text-sm sm:text-base font-semibold">Ringkasan Keuangan</CardTitle>
