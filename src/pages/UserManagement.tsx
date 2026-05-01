@@ -794,6 +794,9 @@ export default function UserManagement() {
           </li>
           <li>
             <Badge variant="outline">Siswa</Badge> - Dashboard Siswa, E-Learning (lihat materi, kerjakan tugas, nilai, forum diskusi), Kalender Akademik
+          </p>
+          <p className="text-sm flex items-center gap-2">
+            <Badge variant="secondary">Panitia</Badge> - Dashboard, SPMB (Sistem Penerimaan Murid Baru), Riwayat Pembaruan
           </li>
         </ul>
         <p className="text-xs text-muted-foreground mt-2 border-t pt-2">
@@ -876,7 +879,7 @@ export default function UserManagement() {
               <Label>
                 Role <span className="text-destructive">*</span>
               </Label>
-              {(["admin", "bendahara", "operator", "guru"] as AppRole[]).map((role) => (
+              {(["admin", "bendahara", "operator", "guru", "panitia"] as AppRole[]).map((role) => (
                 <div key={role} className="flex items-center space-x-3 p-3 border rounded-lg">
                   <Checkbox
                     id={`edit-role-${role}`}
@@ -893,6 +896,7 @@ export default function UserManagement() {
                       {role === "bendahara" && "Akses Dashboard, Siswa (read-only), Keuangan"}
                       {role === "operator" && "Akses data master (Siswa, Kelas, GTK/PTK, dll)"}
                       {role === "guru" && "Akses Dashboard, Profil Saya, Kurikulum"}
+                      {role === "panitia" && "Dashboard, SPMB, Riwayat Pembaruan"}
                     </p>
                   </div>
                 </div>
@@ -1001,7 +1005,7 @@ export default function UserManagement() {
               <Label>
                 Role <span className="text-destructive">*</span>
               </Label>
-              {(["admin", "bendahara", "operator", "guru"] as AppRole[]).map((role) => (
+              {(["admin", "bendahara", "operator", "guru", "panitia"] as AppRole[]).map((role) => (
                 <div key={role} className="flex items-center space-x-3 p-3 border rounded-lg">
                   <Checkbox
                     id={`new-${role}`}
