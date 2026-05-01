@@ -181,7 +181,7 @@ export default function Dashboard() {
       
       const kelasRes = await supabase.from('kelas').select('id, nama_kelas', { count: 'exact' });
       
-      const gtkRes = (isAdmin || isOperator || isBendahara)
+      const gtkRes = (isAdmin || isOperator || isBendahara || isPanitia)
         ? await supabase.from('gtk_ptk').select('id, jenis_kelamin, status_kepegawaian, sertifikasi', { count: 'exact' })
         : { data: [], count: 0 };
       const gtkData = gtkRes.data || [];
@@ -191,11 +191,11 @@ export default function Dashboard() {
       const gtkHonor = gtkData.filter((g: any) => ['Honorer', 'GTT', 'GTY'].includes(g.status_kepegawaian)).length;
       const gtkSertifikasi = gtkData.filter((g: any) => g.sertifikasi === true).length;
       
-      const pembayaranRes = (isAdmin || isBendahara)
+      const pembayaranRes = (isAdmin || isBendahara || isPanitia)
         ? await supabase.from('pembayaran').select('nominal, nominal_bayar, status')
         : { data: [] };
         
-      const pengeluaranRes = (isAdmin || isBendahara)
+      const pengeluaranRes = (isAdmin || isBendahara || isPanitia)
         ? await supabase.from('pengeluaran').select('nominal')
         : { data: [] };
 
