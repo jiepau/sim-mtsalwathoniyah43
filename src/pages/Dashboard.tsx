@@ -336,7 +336,7 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground">Perempuan</p>
               </div>
             </div>
-            {(isAdmin || isOperator) && (
+            {(isAdmin || isOperator || isPanitia) && (
               <div className="flex items-center gap-2 pt-1 border-t border-border/50 text-sm">
                 <School className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Jumlah Kelas:</span>
