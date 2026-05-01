@@ -36,6 +36,7 @@ import { ExportButton } from '@/components/export/ExportButton';
 import { SiswaDetailDialog } from '@/components/siswa/SiswaDetailDialog';
 import { KartuPelajarPrint } from '@/components/siswa/KartuPelajarPrint';
 import { WaOrtuInlineEdit } from '@/components/siswa/WaOrtuInlineEdit';
+import { NisNisnInlineEdit } from '@/components/siswa/NisNisnInlineEdit';
 import {
   DropdownMenu,
   DropdownMenuContent,
