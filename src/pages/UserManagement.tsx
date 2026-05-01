@@ -794,8 +794,8 @@ export default function UserManagement() {
           </li>
           <li>
             <Badge variant="outline">Siswa</Badge> - Dashboard Siswa, E-Learning (lihat materi, kerjakan tugas, nilai, forum diskusi), Kalender Akademik
-          </p>
-          <p className="text-sm flex items-center gap-2">
+          </li>
+          <li>
             <Badge variant="secondary">Panitia</Badge> - Dashboard, SPMB (Sistem Penerimaan Murid Baru), Riwayat Pembaruan
           </li>
         </ul>
