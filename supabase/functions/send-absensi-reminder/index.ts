@@ -22,14 +22,33 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // --- Auth guard: require admin or operator role ---
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
+    }
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: authError } = await authClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
+    }
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: roles } = await supabase.from('user_roles').select('role').eq('user_id', user.id);
+    const userRoles = (roles || []).map((r: any) => r.role);
+    if (!userRoles.includes('admin') && !userRoles.includes('operator')) {
+      return new Response(JSON.stringify({ error: 'Forbidden: admin or operator role required' }), { status: 403, headers: corsHeaders });
+    }
+    // --- End auth guard ---
+
     const FONNTE_API_TOKEN = Deno.env.get('FONNTE_API_TOKEN');
     if (!FONNTE_API_TOKEN) {
       throw new Error('FONNTE_API_TOKEN is not configured');
     }
-
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const today = new Date().toISOString().split('T')[0];
 
