@@ -133,7 +133,7 @@ const allMenuItems: MenuItem[] = [
   { title: 'Riwayat Pembaruan', icon: History, path: '/changelog' }, // All roles
   { title: 'Pengaturan Madrasah', icon: Settings, path: '/pengaturan-madrasah', roles: ['admin'] },
   { title: 'Notifikasi WA', icon: MessageSquare, path: '/notifikasi-wa', roles: ['admin'] },
-  { title: 'SPMB', icon: UserPlus, path: '/spmb', roles: ['admin', 'panitia'] },
+  { title: 'SPMB (Penerimaan Murid Baru)', icon: UserPlus, path: '/spmb', roles: ['admin', 'panitia'] },
   { title: 'Manajemen User', icon: Shield, path: '/user-management', roles: ['admin'] },
 ];
 

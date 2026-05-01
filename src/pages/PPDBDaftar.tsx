@@ -235,7 +235,7 @@ export default function PPDBDaftar() {
       <Card className="w-full max-w-2xl">
         <CardHeader className="text-center space-y-2">
           <img src={logoImg} alt="Logo" className="h-16 mx-auto" />
-          <CardTitle className="text-lg">Seleksi Penerimaan Murid Baru</CardTitle>
+          <CardTitle className="text-lg">SPMB — Sistem Penerimaan Murid Baru</CardTitle>
           <p className="text-sm text-muted-foreground">
             MTs Al-Wathoniyah 43 — TA {settings?.tahun_ajaran ?? '-'}
           </p>
