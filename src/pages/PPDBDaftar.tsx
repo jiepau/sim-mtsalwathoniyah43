@@ -217,7 +217,7 @@ export default function PPDBDaftar() {
               </p>
             </div>
           ) : (
-            <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); mutation.mutate(); }}>
+            <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); if (!form.nama.trim() || !form.jenis_kelamin) { toast.error('Nama dan Jenis Kelamin wajib diisi'); return; } setShowPreview(true); }}>
               {/* === DATA SISWA === */}
               <SectionTitle>Data Pribadi Siswa</SectionTitle>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
