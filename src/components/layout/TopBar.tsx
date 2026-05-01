@@ -21,6 +21,7 @@ const roleLabels: Record<AppRole, string> = {
   bendahara: 'Bendahara',
   guru: 'Guru',
   siswa: 'Siswa',
+  panitia: 'Panitia SPMB',
 };
 
 export function TopBar() {

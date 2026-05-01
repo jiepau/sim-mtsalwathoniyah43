@@ -61,6 +61,7 @@ const ROLE_LABELS: Record<AppRole, string> = {
   operator: "Operator",
   guru: "Guru",
   siswa: "Siswa",
+  panitia: "Panitia",
 };
 
 const ROLE_COLORS: Record<AppRole, "default" | "secondary" | "destructive" | "outline"> = {
@@ -69,6 +70,7 @@ const ROLE_COLORS: Record<AppRole, "default" | "secondary" | "destructive" | "ou
   operator: "secondary",
   guru: "outline",
   siswa: "outline",
+  panitia: "secondary",
 };
 
 export default function UserManagement() {
