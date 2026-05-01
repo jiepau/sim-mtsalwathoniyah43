@@ -27,7 +27,7 @@ type FormData = Record<string, string>;
 
 const initialForm: FormData = {
   nama: '', nik: '', nisn: '', kip: '', tempat_lahir: '', tanggal_lahir: '', jenis_kelamin: '',
-  agama: 'Islam', alamat: '', jumlah_saudara: '', anak_ke: '', hobi: '', cita_cita: '',
+  agama: 'Islam', alamat: '', jumlah_saudara: '', anak_ke: '', hobi: '', cita_cita: '', prestasi: '',
   no_hp: '', email_siswa: '', asal_sekolah: '', yang_membiayai: '', kebutuhan_disabilitas: '',
   kebutuhan_khusus: '', status_tempat_tinggal: '', jarak_ke_madrasah: '', waktu_tempuh: '', transportasi: '',
   nama_ayah: '', ayah_nik: '', ayah_tempat_lahir: '', ayah_tanggal_lahir: '', ayah_status: '',
@@ -108,6 +108,7 @@ export default function PPDBDaftar() {
         anak_ke: form.anak_ke ? parseInt(form.anak_ke) : null,
         hobi: form.hobi.trim() || null,
         cita_cita: form.cita_cita.trim() || null,
+        prestasi: form.prestasi.trim() || null,
         no_hp: form.no_hp.trim() || null,
         email_siswa: form.email_siswa.trim() || null,
         asal_sekolah: form.asal_sekolah.trim() || null,
@@ -234,6 +235,9 @@ export default function PPDBDaftar() {
                 <Field label="Anak Ke"><Input type="number" min={1} value={form.anak_ke} onChange={(e) => set('anak_ke', e.target.value)} /></Field>
                 <Field label="Hobi"><Input value={form.hobi} onChange={(e) => set('hobi', e.target.value)} /></Field>
                 <Field label="Cita-cita"><Input value={form.cita_cita} onChange={(e) => set('cita_cita', e.target.value)} /></Field>
+                <div className="sm:col-span-2">
+                  <Field label="Prestasi yang Diraih"><Textarea value={form.prestasi} onChange={(e) => set('prestasi', e.target.value)} rows={2} placeholder="Contoh: Juara 1 Lomba MTQ Tingkat Kecamatan 2025" /></Field>
+                </div>
                 <Field label="No. Handphone"><Input value={form.no_hp} onChange={(e) => set('no_hp', e.target.value)} placeholder="08xxx" /></Field>
                 <Field label="Alamat Email Siswa"><Input type="email" value={form.email_siswa} onChange={(e) => set('email_siswa', e.target.value)} /></Field>
                 <Field label="Asal Sekolah"><Input value={form.asal_sekolah} onChange={(e) => set('asal_sekolah', e.target.value)} /></Field>
