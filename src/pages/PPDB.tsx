@@ -313,6 +313,7 @@ export default function PPDB() {
         onOpenChange={setShowKonversi}
         pendaftarIds={selectedDiterima}
       />
+      <PPDBInputOfflineDialog open={showInputOffline} onOpenChange={setShowInputOffline} />
     </div>
   );
 }
