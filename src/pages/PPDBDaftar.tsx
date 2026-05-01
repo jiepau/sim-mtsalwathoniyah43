@@ -9,7 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { EMIS_FIELD_MAP } from '@/lib/emis-field-map';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 const logoImg = '/logo-alwathoniyah.png';
 
@@ -73,7 +77,7 @@ function SelectField({ value, onValueChange, options, placeholder = 'Pilih' }: {
 export default function PPDBDaftar() {
   const [submitted, setSubmitted] = useState<string | null>(null);
   const [form, setForm] = useState<FormData>({ ...initialForm });
-
+  const [showPreview, setShowPreview] = useState(false);
   const { data: settings, isLoading: loadingSettings } = useQuery({
     queryKey: ['ppdb-settings-public'],
     queryFn: async () => {
@@ -213,7 +217,7 @@ export default function PPDBDaftar() {
               </p>
             </div>
           ) : (
-            <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); mutation.mutate(); }}>
+            <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); if (!form.nama.trim() || !form.jenis_kelamin) { toast.error('Nama dan Jenis Kelamin wajib diisi'); return; } setShowPreview(true); }}>
               {/* === DATA SISWA === */}
               <SectionTitle>Data Pribadi Siswa</SectionTitle>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -353,14 +357,66 @@ export default function PPDBDaftar() {
 
               <div className="pt-4">
                 <Button type="submit" className="w-full" disabled={mutation.isPending}>
-                  {mutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Daftar Sekarang
+                  Preview & Kirim Pendaftaran
                 </Button>
               </div>
             </form>
           )}
         </CardContent>
       </Card>
+
+      {/* Preview Dialog */}
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-base">Preview Data Pendaftaran (EMIS 4.0)</DialogTitle>
+            <p className="text-xs text-muted-foreground">Periksa kembali data berikut sebelum mengirim pendaftaran.</p>
+          </DialogHeader>
+          <ScrollArea className="flex-1 max-h-[60vh] pr-3">
+            {(['siswa', 'ayah', 'ibu', 'wali'] as const).map((section) => {
+              const sectionLabel = { siswa: 'Data Pribadi Siswa', ayah: 'Data Ayah Kandung', ibu: 'Data Ibu Kandung', wali: 'Data Wali' }[section];
+              const fields = EMIS_FIELD_MAP.filter((f) => f.section === section);
+              const filledFields = fields.filter((f) => {
+                const val = form[f.db];
+                return val && val.trim() !== '';
+              });
+              if (section === 'wali' && filledFields.length === 0) return null;
+              return (
+                <div key={section} className="mb-4">
+                  <h4 className="text-xs font-semibold text-primary mb-1">{sectionLabel}</h4>
+                  <Separator className="mb-2" />
+                  <div className="space-y-1">
+                    {fields.map((f) => {
+                      const val = form[f.db]?.trim();
+                      return (
+                        <div key={f.db} className="flex justify-between text-xs gap-2">
+                          <span className="text-muted-foreground shrink-0">{f.emis}</span>
+                          <span className={`text-right font-medium ${val ? '' : 'text-muted-foreground/50 italic'}`}>
+                            {val || '—'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+            {/* Summary badge */}
+            <div className="flex items-center gap-2 mt-2 mb-1">
+              <Badge variant="outline" className="text-xs">
+                {EMIS_FIELD_MAP.filter((f) => f.section !== 'meta' && form[f.db]?.trim()).length} / {EMIS_FIELD_MAP.filter((f) => f.section !== 'meta').length} field terisi
+              </Badge>
+            </div>
+          </ScrollArea>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowPreview(false)}>Kembali & Edit</Button>
+            <Button onClick={() => { setShowPreview(false); mutation.mutate(); }} disabled={mutation.isPending}>
+              {mutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Kirim Pendaftaran
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
