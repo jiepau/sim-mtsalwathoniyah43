@@ -58,7 +58,7 @@ interface MenuItem {
 
 // All menu items with role restrictions
 const allMenuItems: MenuItem[] = [
-  { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', roles: ['admin', 'operator', 'bendahara', 'guru'] },
+  { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', roles: ['admin', 'operator', 'bendahara', 'guru', 'panitia'] },
   { title: 'Dashboard Siswa', icon: GraduationCap, path: '/e-learning/dashboard', roles: ['siswa'] },
   { title: 'Profil Saya', icon: User, path: '/profil-guru', roles: ['guru', 'bendahara'] },
   { title: 'Siswa', icon: Users, path: '/siswa', roles: ['admin', 'operator', 'bendahara'] },
@@ -133,7 +133,7 @@ const allMenuItems: MenuItem[] = [
   { title: 'Riwayat Pembaruan', icon: History, path: '/changelog' }, // All roles
   { title: 'Pengaturan Madrasah', icon: Settings, path: '/pengaturan-madrasah', roles: ['admin'] },
   { title: 'Notifikasi WA', icon: MessageSquare, path: '/notifikasi-wa', roles: ['admin'] },
-  { title: 'SPMB', icon: UserPlus, path: '/spmb', roles: ['admin'] },
+  { title: 'SPMB', icon: UserPlus, path: '/spmb', roles: ['admin', 'panitia'] },
   { title: 'Manajemen User', icon: Shield, path: '/user-management', roles: ['admin'] },
 ];
 
