@@ -111,7 +111,7 @@ const App = () => {
                   }
                 >
                   {/* Dashboard - all roles */}
-                  <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['admin','operator','bendahara','guru']}><Dashboard /></ProtectedRoute>} />
+                  <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['admin','operator','bendahara','guru','panitia']}><Dashboard /></ProtectedRoute>} />
 
                   {/* Akademik - admin/operator (siswa read via Bendahara too) */}
                   <Route path="/siswa" element={<ProtectedRoute allowedRoles={['admin','operator','bendahara']}><Siswa /></ProtectedRoute>} />
