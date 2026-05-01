@@ -58,6 +58,7 @@ const NilaiSiswa = lazy(() => import("@/pages/elearning/NilaiSiswa"));
 const ValidasiGtk = lazy(() => import("@/pages/ValidasiGtk"));
 const PPDBPage = lazy(() => import("@/pages/PPDB"));
 const PPDBDaftar = lazy(() => import("@/pages/PPDBDaftar"));
+const PPDBCekStatus = lazy(() => import("@/pages/PPDBCekStatus"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -101,6 +102,7 @@ const App = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/gtk/:id" element={<ValidasiGtk />} />
                 <Route path="/ppdb/daftar" element={<PPDBDaftar />} />
+                <Route path="/ppdb/cek-status" element={<PPDBCekStatus />} />
                 <Route
                   element={
                     <ProtectedRoute>
