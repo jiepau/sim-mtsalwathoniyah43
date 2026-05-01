@@ -56,6 +56,8 @@ const MateriSiswa = lazy(() => import("@/pages/elearning/MateriSiswa"));
 const TugasSiswa = lazy(() => import("@/pages/elearning/TugasSiswa"));
 const NilaiSiswa = lazy(() => import("@/pages/elearning/NilaiSiswa"));
 const ValidasiGtk = lazy(() => import("@/pages/ValidasiGtk"));
+const PPDBPage = lazy(() => import("@/pages/PPDB"));
+const PPDBDaftar = lazy(() => import("@/pages/PPDBDaftar"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
