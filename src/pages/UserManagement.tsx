@@ -1127,8 +1127,9 @@ export default function UserManagement() {
                 </p>
               </div>
             )}
+           </div>
 
-            <DialogFooter>
+            <DialogFooter className="border-t pt-4 shrink-0">
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
                 Batal
               </Button>
