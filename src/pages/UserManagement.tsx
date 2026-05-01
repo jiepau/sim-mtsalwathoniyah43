@@ -895,7 +895,7 @@ export default function UserManagement() {
 
       {/* Edit User Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-md max-h-[90vh] flex flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle>{editingUser && editingUser.roles.length === 0 ? "Approve User" : "Edit User"}</DialogTitle>
             <DialogDescription>
