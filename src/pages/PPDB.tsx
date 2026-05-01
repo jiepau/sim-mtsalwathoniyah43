@@ -140,6 +140,7 @@ export default function PPDB() {
   };
 
   const countByStatus = (s: string) => pendaftar.filter((p) => p.status === s).length;
+  const asalBreakdown = useAsalSekolahBreakdown(pendaftar);
   const selectedDiterima = selected.filter((id) => pendaftar.find((p) => p.id === id)?.status === 'diterima');
 
   return (
