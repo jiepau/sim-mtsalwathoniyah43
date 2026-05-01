@@ -86,6 +86,13 @@ export function TopBar() {
           </div>
         </div>
 
+        {/* Title tengah */}
+        <div className="hidden lg:flex items-center flex-1 min-w-0 px-4">
+          <h1 className="text-sm font-bold tracking-wide text-primary uppercase truncate">
+            Sistem Informasi Manajemen
+          </h1>
+        </div>
+
         {/* Spacer mobile (tempat tombol toggle sidebar) */}
         <div className="lg:hidden pl-12" />
 
