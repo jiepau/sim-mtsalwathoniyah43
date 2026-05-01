@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatDateTime, AppRole } from "@/lib/supabase-helpers";
 import { mapDatabaseError } from "@/lib/error-mapper";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface UserWithRoles {
   id: string;
@@ -777,32 +778,118 @@ export default function UserManagement() {
         }
       />
 
-      <div className="mb-4 p-4 bg-muted/50 rounded-lg border">
-        <h3 className="font-medium mb-2">Panduan Role:</h3>
-        <ul className="text-sm text-muted-foreground space-y-1">
-          <li>
-            <Badge variant="destructive">Admin</Badge> - Akses penuh ke semua fitur sistem
-          </li>
-          <li>
-            <Badge variant="default">Bendahara</Badge> - Dashboard (info siswa & GTK L/P, keuangan), Siswa (read-only), Buku Induk, dan semua modul Keuangan
-          </li>
-          <li>
-            <Badge variant="secondary">Operator</Badge> - Dashboard, Siswa, Kelas, Tahun Ajaran, GTK/PTK, Absensi, Surat Menyurat, E-Learning (kelola), Naik Kelas, Alumni
-          </li>
-          <li>
-            <Badge variant="secondary">Guru</Badge> - Dashboard, Profil Saya, Absensi GTK (self-attendance), Kurikulum, E-Learning (kelola materi & tugas, forum)
-          </li>
-          <li>
-            <Badge variant="outline">Siswa</Badge> - Dashboard Siswa, E-Learning (lihat materi, kerjakan tugas, nilai, forum diskusi), Kalender Akademik
-          </li>
-          <li>
-            <Badge variant="secondary">Panitia</Badge> - Dashboard, SPMB (Sistem Penerimaan Murid Baru), Riwayat Pembaruan
-          </li>
-        </ul>
-        <p className="text-xs text-muted-foreground mt-2 border-t pt-2">
-          💡 Guru yang masuk via Google akan berstatus <Badge variant="outline" className="text-orange-600 border-orange-300 text-xs">Menunggu Approval</Badge> — Admin perlu assign role secara manual.
-        </p>
-      </div>
+      <Collapsible>
+        <div className="mb-4 p-4 bg-muted/50 rounded-lg border">
+          <CollapsibleTrigger className="flex items-center justify-between w-full">
+            <h3 className="font-medium flex items-center gap-2">
+              <Shield className="h-4 w-4" /> Panduan Role & Hak Akses
+            </h3>
+            <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 data-[state=open]:rotate-180" />
+          </CollapsibleTrigger>
+
+          <CollapsibleContent className="mt-3 space-y-4">
+            {/* Role Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+              {/* Admin */}
+              <div className="border rounded-lg p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Badge variant="destructive">Admin</Badge>
+                  <span className="text-xs text-muted-foreground">Superuser</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Akses penuh ke <strong>seluruh fitur</strong> sistem tanpa batasan.</p>
+                <ul className="text-xs text-muted-foreground space-y-0.5 list-disc list-inside">
+                  <li>Dashboard, Siswa, Kelas, Tahun Ajaran, GTK/PTK</li>
+                  <li>Absensi, Surat Menyurat, Kurikulum, E-Learning</li>
+                  <li>Keuangan (semua modul), Buku Induk</li>
+                  <li>Naik Kelas, Alumni, SPMB</li>
+                  <li>Pengaturan Madrasah, Notifikasi WA</li>
+                  <li>Manajemen User (tambah, edit, hapus)</li>
+                </ul>
+              </div>
+
+              {/* Operator */}
+              <div className="border rounded-lg p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">Operator</Badge>
+                  <span className="text-xs text-muted-foreground">Data Master</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Mengelola data akademik & administratif <strong>tanpa akses keuangan</strong>.</p>
+                <ul className="text-xs text-muted-foreground space-y-0.5 list-disc list-inside">
+                  <li>Dashboard, Siswa, Kelas, Tahun Ajaran</li>
+                  <li>GTK/PTK, Absensi, Surat Menyurat</li>
+                  <li>Kurikulum, E-Learning (kelola)</li>
+                  <li>Naik Kelas, Alumni</li>
+                </ul>
+              </div>
+
+              {/* Bendahara */}
+              <div className="border rounded-lg p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Badge variant="default">Bendahara</Badge>
+                  <span className="text-xs text-muted-foreground">Keuangan</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Mengelola seluruh modul keuangan, <strong>baca saja</strong> untuk data siswa.</p>
+                <ul className="text-xs text-muted-foreground space-y-0.5 list-disc list-inside">
+                  <li>Dashboard (info siswa & GTK L/P, keuangan)</li>
+                  <li>Siswa (read-only), Profil Saya</li>
+                  <li>Jenis Tagihan, Pembayaran, Pemasukan</li>
+                  <li>Pengeluaran, Tunggakan, Laporan Keuangan</li>
+                  <li>Buku Induk</li>
+                </ul>
+              </div>
+
+              {/* Guru */}
+              <div className="border rounded-lg p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">Guru</Badge>
+                  <span className="text-xs text-muted-foreground">Pengajar</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Akses kurikulum, e-learning, dan <strong>absensi mandiri</strong>.</p>
+                <ul className="text-xs text-muted-foreground space-y-0.5 list-disc list-inside">
+                  <li>Dashboard, Profil Saya</li>
+                  <li>Absensi GTK (self-attendance)</li>
+                  <li>Kurikulum (ATP, KKTP, Prota, Promes, RPP)</li>
+                  <li>E-Learning (kelola materi & tugas, forum)</li>
+                </ul>
+              </div>
+
+              {/* Siswa */}
+              <div className="border rounded-lg p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">Siswa</Badge>
+                  <span className="text-xs text-muted-foreground">Peserta Didik</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Akses e-learning dan <strong>dashboard khusus siswa</strong>.</p>
+                <ul className="text-xs text-muted-foreground space-y-0.5 list-disc list-inside">
+                  <li>Dashboard Siswa</li>
+                  <li>E-Learning (lihat materi, kerjakan tugas)</li>
+                  <li>Nilai Saya, Forum Diskusi</li>
+                  <li>Kalender Akademik</li>
+                </ul>
+              </div>
+
+              {/* Panitia */}
+              <div className="border rounded-lg p-3 space-y-2 border-primary/30 bg-primary/5">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">Panitia</Badge>
+                  <span className="text-xs text-muted-foreground">SPMB</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Khusus mengelola <strong>Sistem Penerimaan Murid Baru</strong>.</p>
+                <ul className="text-xs text-muted-foreground space-y-0.5 list-disc list-inside">
+                  <li>Dashboard</li>
+                  <li>SPMB — lihat, verifikasi, dan kelola pendaftar</li>
+                  <li>Export data pendaftar (CSV EMIS 4.0)</li>
+                  <li>Riwayat Pembaruan</li>
+                </ul>
+              </div>
+            </div>
+
+            <p className="text-xs text-muted-foreground border-t pt-2">
+              💡 Guru yang masuk via Google akan berstatus <Badge variant="outline" className="text-orange-600 border-orange-300 text-xs">Menunggu Approval</Badge> — Admin perlu assign role secara manual.
+            </p>
+          </CollapsibleContent>
+        </div>
+      </Collapsible>
 
       <DataTable data={users} columns={columns} loading={loading} emptyMessage="Belum ada user terdaftar" paginated defaultPageSize={10} />
 
