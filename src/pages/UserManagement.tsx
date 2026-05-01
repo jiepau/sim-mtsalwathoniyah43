@@ -895,7 +895,7 @@ export default function UserManagement() {
 
       {/* Edit User Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-md max-h-[90vh] flex flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle>{editingUser && editingUser.roles.length === 0 ? "Approve User" : "Edit User"}</DialogTitle>
             <DialogDescription>
@@ -905,7 +905,7 @@ export default function UserManagement() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto flex-1 pr-1">
             <div className="space-y-2">
               <Label htmlFor="edit_full_name">Nama Lengkap</Label>
               <Input
@@ -1012,7 +1012,7 @@ export default function UserManagement() {
             )}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="border-t pt-4 shrink-0">
             <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
               Batal
             </Button>
@@ -1025,13 +1025,14 @@ export default function UserManagement() {
 
       {/* Create User Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-md max-h-[90vh] flex flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle>Tambah User Baru</DialogTitle>
             <DialogDescription>Buat akun user baru dan tentukan role-nya</DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleCreateUser} className="space-y-4">
+          <form onSubmit={handleCreateUser} className="flex flex-col flex-1 overflow-hidden">
+           <div className="space-y-4 overflow-y-auto flex-1 pr-1">
             <div className="space-y-2">
               <Label htmlFor="full_name">Nama Lengkap</Label>
               <Input
@@ -1126,8 +1127,9 @@ export default function UserManagement() {
                 </p>
               </div>
             )}
+           </div>
 
-            <DialogFooter>
+            <DialogFooter className="border-t pt-4 shrink-0">
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
                 Batal
               </Button>
