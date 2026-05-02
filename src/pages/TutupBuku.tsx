@@ -788,11 +788,11 @@ export default function TutupBuku() {
                     </table>
                   </div>
 
-                  {/* Saldo */}
-                  <div className="mb-4">
+                  {/* Saldo akhir — baris penegas */}
+                  <div className="mb-1">
                     <table className="w-full text-sm border-collapse">
                       <tbody>
-                        <tr className={`font-bold ${viewArsip.saldo >= 0 ? 'bg-emerald-100' : 'bg-rose-100'}`}>
+                        <tr className="font-bold">
                           <td className="border-2 border-black px-3 py-2 w-1/2">SALDO AKHIR ({viewArsip.saldo >= 0 ? 'SURPLUS' : 'DEFISIT'})</td>
                           <td className="border-2 border-black px-3 py-2 text-right tabular-nums">{formatCurrency(Math.abs(viewArsip.saldo))}</td>
                         </tr>
