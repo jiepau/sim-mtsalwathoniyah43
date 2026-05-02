@@ -1,6 +1,8 @@
 import { useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Printer, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
   DialogContent,
@@ -45,6 +47,16 @@ const PRINT_STYLES = `
 
 export function CpPrintDialog({ open, onOpenChange, template }: CpPrintDialogProps) {
   const printRef = useRef<HTMLDivElement>(null);
+
+  const { data: madrasah } = useQuery({
+    queryKey: ['madrasah-settings-cp-print'],
+    queryFn: async () => {
+      const { data } = await supabase.from('madrasah_settings').select('*').maybeSingle();
+      return data as any;
+    },
+    staleTime: 5 * 60 * 1000,
+    enabled: open,
+  });
 
   if (!template) return null;
 
@@ -107,15 +119,34 @@ export function CpPrintDialog({ open, onOpenChange, template }: CpPrintDialogPro
         </DialogHeader>
 
         <div ref={printRef}>
-          {/* Header */}
-          <div style={{ textAlign: 'center', marginBottom: 16, ...font }}>
-            <h1 style={{ fontSize: '13pt', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: 2, ...font }}>
-              ANALISIS KETERKAITAN CP DAN TP DENGAN IKTP DAN MATERI PEMBELAJARAN
-            </h1>
-            <div style={{ fontSize: '12pt', fontWeight: 'bold', marginBottom: 10, ...font }}>
-              TAHUN PELAJARAN 2024 / 2025
+          {/* Kop Madrasah dua-logo (acuan Rekap SPMB) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, borderBottom: '2px solid #000', paddingBottom: 6, marginBottom: 8, ...font }}>
+            <img src="/logo-alwathoniyah.png" alt="Logo Madrasah" style={{ height: 70, width: 70, objectFit: 'contain', flexShrink: 0 }} />
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ fontSize: '10pt', fontWeight: 600, textTransform: 'uppercase', lineHeight: 1.2 }}>
+                Kementerian Agama Republik Indonesia
+              </div>
+              <div style={{ fontSize: '12pt', fontWeight: 'bold', textTransform: 'uppercase', lineHeight: 1.2 }}>
+                {madrasah?.nama_madrasah ?? 'MTs Al-Wathoniyah 43'}
+              </div>
+              {madrasah?.alamat && <div style={{ fontSize: '10pt', lineHeight: 1.2 }}>{madrasah.alamat}</div>}
+              {(madrasah?.npsn || madrasah?.nsm) && (
+                <div style={{ fontSize: '10pt', lineHeight: 1.2 }}>
+                  {madrasah?.nsm && `NSM: ${madrasah.nsm}`}
+                  {madrasah?.nsm && madrasah?.npsn && ' • '}
+                  {madrasah?.npsn && `NPSN: ${madrasah.npsn}`}
+                </div>
+              )}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '2px solid #000', borderBottom: '2px solid #000', padding: '6px 4px', fontSize: '11pt', ...font }}>
+            <img src="/logo-kemenag.png" alt="Logo Kemenag" style={{ height: 70, width: 70, objectFit: 'contain', flexShrink: 0 }} />
+          </div>
+
+          {/* Judul laporan */}
+          <div style={{ textAlign: 'center', marginBottom: 12, ...font }}>
+            <h1 style={{ fontSize: '12pt', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: 2, ...font }}>
+              Analisis Keterkaitan CP, TP, IKTP, dan Materi Pembelajaran
+            </h1>
+            <div style={{ display: 'flex', justifyContent: 'space-between', border: '1px solid #000', padding: '6px 8px', fontSize: '10.5pt', marginTop: 6, ...font }}>
               <div style={{ textAlign: 'left' }}>
                 <div><strong>Mata Pelajaran</strong> : <span style={{ textDecoration: 'underline' }}>{template.mapel}</span></div>
                 <div><strong>Kelas/Semester</strong> : <span style={{ textDecoration: 'underline' }}>{template.kelas || '-'} / {semesterLabel}</span></div>

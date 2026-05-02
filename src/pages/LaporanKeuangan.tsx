@@ -9,6 +9,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/supabase-helpers';
 import { PrintPreviewToolbar, PrintPreviewFrame, type PrintOrientation } from '@/components/print/PrintPreviewToolbar';
+import { PrintKopMadrasah, PrintTtdKepala } from '@/components/print/PrintKopMadrasah';
 
 interface MadrasahSettings {
   nama_madrasah: string;
@@ -236,142 +237,130 @@ export default function LaporanKeuangan() {
 
       {/* PRINT AREA */}
       <PrintPreviewFrame preview={preview} orientation={orientation}>
-      <div className={`print-area ${preview ? '' : 'bg-white text-black p-6 rounded-lg border'}`}>
-        {/* Header Madrasah */}
-        <div className="text-center border-b-2 border-black pb-3 mb-4">
-          <h1 className="text-lg font-bold uppercase">{madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43'}</h1>
-          {madrasah?.alamat && <p className="text-xs">{madrasah.alamat}</p>}
-          <p className="text-[11px]">
-            {madrasah?.npsn && `NPSN: ${madrasah.npsn}`}
-            {madrasah?.nsm && ` · NSM: ${madrasah.nsm}`}
-          </p>
-        </div>
+        <div className="space-y-3 text-black">
+          <PrintKopMadrasah
+            judul="Laporan Keuangan"
+            subjudul={`${periode === 'bulanan' ? 'Bulanan' : 'Tahunan'} — ${periodeLabel}`}
+          />
 
-        <div className="text-center mb-4">
-          <h2 className="text-base font-bold underline">LAPORAN KEUANGAN</h2>
-          <p className="text-sm font-semibold">{periode === 'bulanan' ? 'Bulanan' : 'Tahunan'} — {periodeLabel}</p>
-        </div>
+          {/* Ringkasan 3 kolom */}
+          <div className="grid grid-cols-3 gap-2 text-xs">
+            <div className="border p-2 rounded">
+              <p className="text-[10px] text-muted-foreground">Total Pemasukan</p>
+              <p className="font-bold text-sm tabular-nums">{formatCurrency(totalPemasukan)}</p>
+            </div>
+            <div className="border p-2 rounded">
+              <p className="text-[10px] text-muted-foreground">Total Pengeluaran</p>
+              <p className="font-bold text-sm tabular-nums">{formatCurrency(totalPengeluaran)}</p>
+            </div>
+            <div className="border p-2 rounded">
+              <p className="text-[10px] text-muted-foreground">Saldo ({saldo >= 0 ? 'Surplus' : 'Defisit'})</p>
+              <p className="font-bold text-sm tabular-nums">{formatCurrency(Math.abs(saldo))}</p>
+            </div>
+          </div>
 
-        {/* Pemasukan */}
-        <div className="mb-4">
-          <h3 className="text-sm font-bold mb-2 bg-emerald-100 px-2 py-1 border border-black">A. PEMASUKAN</h3>
-          <table className="w-full text-xs border-collapse">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border border-black px-2 py-1 text-center w-10">No</th>
-                <th className="border border-black px-2 py-1 text-left">Jenis Tagihan</th>
-                <th className="border border-black px-2 py-1 text-right w-40">Nominal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pemasukanGrouped.length === 0 ? (
-                <tr><td colSpan={3} className="border border-black px-2 py-3 text-center italic">Tidak ada data</td></tr>
-              ) : pemasukanGrouped.map(([nama, val], i) => (
-                <tr key={nama}>
-                  <td className="border border-black px-2 py-1 text-center">{i + 1}</td>
-                  <td className="border border-black px-2 py-1">{nama}</td>
-                  <td className="border border-black px-2 py-1 text-right tabular-nums">{formatCurrency(val)}</td>
-                </tr>
-              ))}
-              <tr className="bg-emerald-50 font-bold">
-                <td colSpan={2} className="border border-black px-2 py-1 text-right">TOTAL PEMASUKAN</td>
-                <td className="border border-black px-2 py-1 text-right tabular-nums">{formatCurrency(totalPemasukan)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pengeluaran */}
-        <div className="mb-4">
-          <h3 className="text-sm font-bold mb-2 bg-rose-100 px-2 py-1 border border-black">B. PENGELUARAN</h3>
-          <table className="w-full text-xs border-collapse">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border border-black px-2 py-1 text-center w-10">No</th>
-                <th className="border border-black px-2 py-1 text-left">Kategori</th>
-                <th className="border border-black px-2 py-1 text-right w-40">Nominal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pengeluaranGrouped.length === 0 ? (
-                <tr><td colSpan={3} className="border border-black px-2 py-3 text-center italic">Tidak ada data</td></tr>
-              ) : pengeluaranGrouped.map(([nama, val], i) => (
-                <tr key={nama}>
-                  <td className="border border-black px-2 py-1 text-center">{i + 1}</td>
-                  <td className="border border-black px-2 py-1">{nama}</td>
-                  <td className="border border-black px-2 py-1 text-right tabular-nums">{formatCurrency(val)}</td>
-                </tr>
-              ))}
-              <tr className="bg-rose-50 font-bold">
-                <td colSpan={2} className="border border-black px-2 py-1 text-right">TOTAL PENGELUARAN</td>
-                <td className="border border-black px-2 py-1 text-right tabular-nums">{formatCurrency(totalPengeluaran)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* Saldo */}
-        <div className="mb-6">
-          <table className="w-full text-sm border-collapse">
-            <tbody>
-              <tr className={`font-bold ${saldo >= 0 ? 'bg-emerald-100' : 'bg-rose-100'}`}>
-                <td className="border-2 border-black px-3 py-2 w-1/2">SALDO ({saldo >= 0 ? 'SURPLUS' : 'DEFISIT'})</td>
-                <td className="border-2 border-black px-3 py-2 text-right tabular-nums">{formatCurrency(Math.abs(saldo))}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* Detail Pengeluaran (transaksi) */}
-        {pengeluaran.length > 0 && (
-          <div className="mb-4">
-            <h3 className="text-sm font-bold mb-2 underline">Lampiran: Detail Transaksi Pengeluaran</h3>
-            <table className="w-full text-[11px] border-collapse">
+          {/* Pemasukan */}
+          <section>
+            <h3 className="text-xs font-bold uppercase mb-1">A. Pemasukan</h3>
+            <table className="w-full text-xs border-collapse">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border border-black px-2 py-1 w-8">No</th>
-                  <th className="border border-black px-2 py-1 w-24">Tanggal</th>
-                  <th className="border border-black px-2 py-1">Kategori</th>
-                  <th className="border border-black px-2 py-1">Deskripsi</th>
-                  <th className="border border-black px-2 py-1 text-right w-32">Nominal</th>
+                  <th className="border border-black px-2 py-1 text-center w-10">No</th>
+                  <th className="border border-black px-2 py-1 text-left">Jenis Tagihan</th>
+                  <th className="border border-black px-2 py-1 text-right w-40">Nominal</th>
                 </tr>
               </thead>
               <tbody>
-                {pengeluaran.map((p, i) => (
-                  <tr key={i}>
+                {pemasukanGrouped.length === 0 ? (
+                  <tr><td colSpan={3} className="border border-black px-2 py-3 text-center italic">Tidak ada data</td></tr>
+                ) : pemasukanGrouped.map(([nama, val], i) => (
+                  <tr key={nama}>
                     <td className="border border-black px-2 py-1 text-center">{i + 1}</td>
-                    <td className="border border-black px-2 py-1">{new Date(p.tanggal).toLocaleDateString('id-ID')}</td>
-                    <td className="border border-black px-2 py-1">{p.kategori}</td>
-                    <td className="border border-black px-2 py-1">{p.deskripsi}</td>
-                    <td className="border border-black px-2 py-1 text-right tabular-nums">{formatCurrency(p.nominal)}</td>
+                    <td className="border border-black px-2 py-1">{nama}</td>
+                    <td className="border border-black px-2 py-1 text-right tabular-nums">{formatCurrency(val)}</td>
                   </tr>
                 ))}
+                <tr className="font-bold">
+                  <td colSpan={2} className="border border-black px-2 py-1 text-right">TOTAL PEMASUKAN</td>
+                  <td className="border border-black px-2 py-1 text-right tabular-nums">{formatCurrency(totalPemasukan)}</td>
+                </tr>
               </tbody>
             </table>
-          </div>
-        )}
+          </section>
 
-        {/* TTD */}
-        <div className="grid grid-cols-2 gap-8 mt-12 text-xs">
-          <div></div>
-          <div className="text-center">
-            <p>Jakarta, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-            <p className="font-semibold">Kepala Madrasah,</p>
-            <div className="h-20"></div>
-            <p className="font-bold underline">{madrasah?.kepala_madrasah || '...........................'}</p>
-            {madrasah?.nip_kepala && <p>NIP. {madrasah.nip_kepala}</p>}
-          </div>
+          {/* Pengeluaran */}
+          <section>
+            <h3 className="text-xs font-bold uppercase mb-1">B. Pengeluaran</h3>
+            <table className="w-full text-xs border-collapse">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border border-black px-2 py-1 text-center w-10">No</th>
+                  <th className="border border-black px-2 py-1 text-left">Kategori</th>
+                  <th className="border border-black px-2 py-1 text-right w-40">Nominal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pengeluaranGrouped.length === 0 ? (
+                  <tr><td colSpan={3} className="border border-black px-2 py-3 text-center italic">Tidak ada data</td></tr>
+                ) : pengeluaranGrouped.map(([nama, val], i) => (
+                  <tr key={nama}>
+                    <td className="border border-black px-2 py-1 text-center">{i + 1}</td>
+                    <td className="border border-black px-2 py-1">{nama}</td>
+                    <td className="border border-black px-2 py-1 text-right tabular-nums">{formatCurrency(val)}</td>
+                  </tr>
+                ))}
+                <tr className="font-bold">
+                  <td colSpan={2} className="border border-black px-2 py-1 text-right">TOTAL PENGELUARAN</td>
+                  <td className="border border-black px-2 py-1 text-right tabular-nums">{formatCurrency(totalPengeluaran)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          {/* Saldo */}
+          <section>
+            <table className="w-full text-sm border-collapse">
+              <tbody>
+                <tr className="font-bold">
+                  <td className="border-2 border-black px-3 py-2 w-1/2">SALDO ({saldo >= 0 ? 'SURPLUS' : 'DEFISIT'})</td>
+                  <td className="border-2 border-black px-3 py-2 text-right tabular-nums">{formatCurrency(Math.abs(saldo))}</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          {/* Detail Pengeluaran (transaksi) */}
+          {pengeluaran.length > 0 && (
+            <section>
+              <h3 className="text-xs font-bold uppercase mb-1">Lampiran: Detail Transaksi Pengeluaran</h3>
+              <table className="w-full text-[11px] border-collapse">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border border-black px-2 py-1 w-8">No</th>
+                    <th className="border border-black px-2 py-1 w-24">Tanggal</th>
+                    <th className="border border-black px-2 py-1">Kategori</th>
+                    <th className="border border-black px-2 py-1">Deskripsi</th>
+                    <th className="border border-black px-2 py-1 text-right w-32">Nominal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pengeluaran.map((p, i) => (
+                    <tr key={i}>
+                      <td className="border border-black px-2 py-1 text-center">{i + 1}</td>
+                      <td className="border border-black px-2 py-1">{new Date(p.tanggal).toLocaleDateString('id-ID')}</td>
+                      <td className="border border-black px-2 py-1">{p.kategori}</td>
+                      <td className="border border-black px-2 py-1">{p.deskripsi}</td>
+                      <td className="border border-black px-2 py-1 text-right tabular-nums">{formatCurrency(p.nominal)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          )}
+
+          <PrintTtdKepala />
         </div>
-      </div>
       </PrintPreviewFrame>
-
-      <style>{`
-        @media print {
-          body { background: white !important; }
-          .no-print, .sidebar-aside, header, nav, footer { display: none !important; }
-          .print-area { border: none !important; padding: 0 !important; }
-        }
-      `}</style>
     </div>
   );
 }

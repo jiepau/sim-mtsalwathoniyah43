@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useHariLibur } from '@/hooks/useHariLibur';
 import { ClipboardList, Users, FileText } from 'lucide-react';
 import { PrintPreviewToolbar, PrintPreviewFrame, type PrintOrientation } from '@/components/print/PrintPreviewToolbar';
+import { PrintKopMadrasah, PrintTtdKepala } from '@/components/print/PrintKopMadrasah';
 import { getDaysInMonth } from 'date-fns';
 
 interface Kelas { id: string; nama_kelas: string; tingkat: number; }
@@ -264,92 +265,65 @@ const RaporKehadiran = () => {
         </Card>
       ) : (
         <PrintPreviewFrame preview={preview} orientation={orientation}>
-        <Card className={`print:shadow-none print:border-0 ${preview ? 'shadow-none border-0' : ''}`}>
-          {/* Print header — also visible in preview mode */}
-          <div className={`${preview ? 'block' : 'hidden'} print:block px-6 pt-6 text-center`}>
-            <h1 className="text-lg font-bold uppercase">{madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43'}</h1>
-            {madrasah?.alamat && <p className="text-xs">{madrasah.alamat}</p>}
-            {(madrasah?.nsm || madrasah?.npsn) && (
-              <p className="text-xs">
-                {madrasah?.nsm && <>NSM: {madrasah.nsm} </>}
-                {madrasah?.npsn && <>· NPSN: {madrasah.npsn}</>}
-              </p>
-            )}
-            <hr className="my-2 border-black" />
-            <h2 className="text-base font-bold mt-2">REKAP KEHADIRAN SISWA</h2>
-            <p className="text-sm">Semester {selectedSemester === 'ganjil' ? 'Ganjil' : 'Genap'} — Tahun Ajaran {taName}</p>
-            <p className="text-sm">Kelas: <strong>{kelasName}</strong></p>
-          </div>
+          <div className={preview ? 'space-y-3 text-black' : 'space-y-3 text-black bg-white p-4 rounded-lg border'}>
+            <PrintKopMadrasah
+              judul="Rekap Kehadiran Siswa"
+              subjudul={`Semester ${selectedSemester === 'ganjil' ? 'Ganjil' : 'Genap'} — TA ${taName}`}
+              periode={`Kelas: ${kelasName} • Total hari efektif: ${totalHariEfektif} hari`}
+            />
 
-          <CardHeader className={`pb-3 print:hidden ${preview ? 'hidden' : ''}`}>
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <div>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Rapor Kehadiran — {kelasName} · Semester {selectedSemester === 'ganjil' ? 'Ganjil' : 'Genap'} TA {taName}
-                </CardTitle>
-                <CardDescription>
-                  Total hari efektif semester: <strong>{totalHariEfektif} hari</strong>
-                </CardDescription>
-              </div>
-              <Badge variant="outline" className="text-xs">
-                {rekap.length} siswa
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="print:p-2">
             <div className="overflow-x-auto">
               <table className="w-full text-xs border-collapse print:text-[10px]">
                 <thead>
-                  <tr className="bg-muted/50 print:bg-transparent">
-                    <th rowSpan={2} className="p-2 border text-left">No</th>
-                    <th rowSpan={2} className="p-2 border text-left">NIS</th>
-                    <th rowSpan={2} className="p-2 border text-left">Nama Siswa</th>
-                    <th rowSpan={2} className="p-2 border text-center">L/P</th>
+                  <tr className="bg-gray-100">
+                    <th rowSpan={2} className="p-2 border border-black text-left">No</th>
+                    <th rowSpan={2} className="p-2 border border-black text-left">NIS</th>
+                    <th rowSpan={2} className="p-2 border border-black text-left">Nama Siswa</th>
+                    <th rowSpan={2} className="p-2 border border-black text-center">L/P</th>
                     {bulanSemester.map(b => (
-                      <th key={b} colSpan={4} className="p-1 border text-center font-semibold">
+                      <th key={b} colSpan={4} className="p-1 border border-black text-center font-semibold">
                         {BULAN_LABEL[b]}
                         <div className="text-[9px] font-normal opacity-70">({hariEfektifPerBulan[b] || 0} hari)</div>
                       </th>
                     ))}
-                    <th colSpan={4} className="p-1 border text-center font-semibold bg-primary/5">Total Semester</th>
-                    <th rowSpan={2} className="p-2 border text-center">% Hadir</th>
+                    <th colSpan={4} className="p-1 border border-black text-center font-semibold">Total Semester</th>
+                    <th rowSpan={2} className="p-2 border border-black text-center">% Hadir</th>
                   </tr>
-                  <tr className="bg-muted/30 print:bg-transparent">
+                  <tr className="bg-gray-50">
                     {bulanSemester.map(b => (
                       <>
-                        <th key={`h-${b}`} className="p-1 border text-center w-7">H</th>
-                        <th key={`s-${b}`} className="p-1 border text-center w-7">S</th>
-                        <th key={`i-${b}`} className="p-1 border text-center w-7">I</th>
-                        <th key={`a-${b}`} className="p-1 border text-center w-7">A</th>
+                        <th key={`h-${b}`} className="p-1 border border-black text-center w-7">H</th>
+                        <th key={`s-${b}`} className="p-1 border border-black text-center w-7">S</th>
+                        <th key={`i-${b}`} className="p-1 border border-black text-center w-7">I</th>
+                        <th key={`a-${b}`} className="p-1 border border-black text-center w-7">A</th>
                       </>
                     ))}
-                    <th className="p-1 border text-center w-8 bg-primary/5">H</th>
-                    <th className="p-1 border text-center w-8 bg-primary/5">S</th>
-                    <th className="p-1 border text-center w-8 bg-primary/5">I</th>
-                    <th className="p-1 border text-center w-8 bg-primary/5">A</th>
+                    <th className="p-1 border border-black text-center w-8">H</th>
+                    <th className="p-1 border border-black text-center w-8">S</th>
+                    <th className="p-1 border border-black text-center w-8">I</th>
+                    <th className="p-1 border border-black text-center w-8">A</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rekap.map((r, idx) => (
-                    <tr key={r.siswa.id} className="hover:bg-muted/30 print:hover:bg-transparent">
-                      <td className="p-2 border text-center">{idx + 1}</td>
-                      <td className="p-2 border font-mono text-[10px]">{r.siswa.nis}</td>
-                      <td className="p-2 border font-medium">{r.siswa.nama}</td>
-                      <td className="p-2 border text-center">{r.siswa.jenis_kelamin === 'Laki-laki' ? 'L' : 'P'}</td>
+                    <tr key={r.siswa.id}>
+                      <td className="p-1 border border-black text-center">{idx + 1}</td>
+                      <td className="p-1 border border-black font-mono text-[10px]">{r.siswa.nis}</td>
+                      <td className="p-1 border border-black font-medium">{r.siswa.nama}</td>
+                      <td className="p-1 border border-black text-center">{r.siswa.jenis_kelamin === 'Laki-laki' ? 'L' : 'P'}</td>
                       {r.perBulan.map(m => (
                         <>
-                          <td key={`h-${m.bulan}`} className="p-1 border text-center">{m.hadir || ''}</td>
-                          <td key={`s-${m.bulan}`} className="p-1 border text-center">{m.sakit || ''}</td>
-                          <td key={`i-${m.bulan}`} className="p-1 border text-center">{m.izin || ''}</td>
-                          <td key={`a-${m.bulan}`} className="p-1 border text-center text-red-600">{m.alfa || ''}</td>
+                          <td key={`h-${m.bulan}`} className="p-1 border border-black text-center">{m.hadir || ''}</td>
+                          <td key={`s-${m.bulan}`} className="p-1 border border-black text-center">{m.sakit || ''}</td>
+                          <td key={`i-${m.bulan}`} className="p-1 border border-black text-center">{m.izin || ''}</td>
+                          <td key={`a-${m.bulan}`} className="p-1 border border-black text-center">{m.alfa || ''}</td>
                         </>
                       ))}
-                      <td className="p-1 border text-center font-semibold bg-emerald-50 print:bg-transparent">{r.total.hadir}</td>
-                      <td className="p-1 border text-center font-semibold bg-amber-50 print:bg-transparent">{r.total.sakit}</td>
-                      <td className="p-1 border text-center font-semibold bg-blue-50 print:bg-transparent">{r.total.izin}</td>
-                      <td className="p-1 border text-center font-semibold bg-red-50 text-red-700 print:bg-transparent">{r.total.alfa}</td>
-                      <td className={`p-1 border text-center font-bold ${r.persen >= 80 ? 'text-emerald-700' : r.persen >= 60 ? 'text-amber-700' : 'text-red-700'}`}>
+                      <td className="p-1 border border-black text-center font-semibold">{r.total.hadir}</td>
+                      <td className="p-1 border border-black text-center font-semibold">{r.total.sakit}</td>
+                      <td className="p-1 border border-black text-center font-semibold">{r.total.izin}</td>
+                      <td className="p-1 border border-black text-center font-semibold">{r.total.alfa}</td>
+                      <td className="p-1 border border-black text-center font-bold">
                         {r.persen}%
                       </td>
                     </tr>
@@ -358,32 +332,13 @@ const RaporKehadiran = () => {
               </table>
             </div>
 
-            {/* Print signature — visible in preview too */}
-            <div className={`${preview ? 'grid' : 'hidden'} print:grid grid-cols-2 gap-8 mt-8 px-6`}>
-              <div className="text-center text-xs">
-                <p>Mengetahui,</p>
-                <p>Kepala Madrasah</p>
-                <div className="h-16" />
-                <p className="font-semibold underline">{madrasah?.kepala_madrasah || '..............................'}</p>
-                {madrasah?.nip_kepala && <p>NIP. {madrasah.nip_kepala}</p>}
-              </div>
-              <div className="text-center text-xs">
-                <p>Jakarta, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                <p>Wali Kelas</p>
-                <div className="h-16" />
-                <p className="font-semibold underline">..............................</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            <PrintTtdKepala
+              twoColumn
+              kiri={{ jabatan: 'Wali Kelas', nama: '..............................' }}
+            />
+          </div>
         </PrintPreviewFrame>
       )}
-
-      <style>{`
-        @media print {
-          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        }
-      `}</style>
     </div>
   );
 };
