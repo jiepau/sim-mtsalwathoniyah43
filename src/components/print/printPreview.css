@@ -1,19 +1,18 @@
 /**
  * Global print styles for PrintPreviewFrame / PrintPreviewToolbar.
  *
- * Strategy (revised — supports BOTH dialog & page-level print roots):
- *  1. Hide every direct child of <body>.
- *  2. Re-show ONLY the body branch that contains `.print-root`
- *     (either a Radix portal tagged `.print-portal`, or `#root` for page-level).
- *  3. Inside that branch, hide every sibling that is NOT an ancestor of
- *     `.print-root`. This kills the sidebar, topbar, footer, page header, etc.
- *     that surround a page-level printable section.
- *  4. Flatten Radix Dialog wrappers so the print-root flows from page top.
- *  5. Reset positioning on `.print-root` so it occupies the full A4 page.
+ * Strategy (FINAL — robust visibility approach):
+ *  - In print mode, set body { visibility: hidden } so NOTHING shows by default.
+ *  - Set .print-root { visibility: visible } to show ONLY the printable content.
+ *  - Reposition .print-root to top-left of page using fixed positioning, so
+ *    surrounding layout (sidebar, topbar, footer) — which still occupies space
+ *    but is invisible — does not push it down.
+ *  - Use `visibility` (not `display: none`) so layout calculations remain
+ *    sane and ancestors (Radix portals, modals) keep their stacking context.
  *
- * The trick in step 3 uses `:has()` to target every element that does NOT
- * contain a `.print-root`, combined with `:not(.print-root) :not(:has(...))`
- * to walk down the tree only into the branch that leads to `.print-root`.
+ * This works for BOTH:
+ *   - Page-level cetak (LaporanKeuangan, RaporKehadiran)
+ *   - Dialog cetak (PPDBRekapPrintDialog, KwitansiPrintDialog, TutupBuku)
  */
 
 @media print {
@@ -29,80 +28,23 @@
     padding: 0 !important;
   }
 
-  /* 1. Hide every direct child of body */
-  body > * {
-    display: none !important;
+  /* Hide everything by default (visibility, not display — preserves layout) */
+  body * {
+    visibility: hidden !important;
   }
 
-  /* 2. Re-show the body branch containing print-root */
-  body > .print-portal,
-  body > #root:has(.print-root) {
-    display: block !important;
-    position: static !important;
-    background: transparent !important;
+  /* Re-show ONLY the print-root and its descendants */
+  .print-root,
+  .print-root * {
+    visibility: visible !important;
   }
 
-  /* 3. Walk down the tree: hide every element that does NOT contain
-        a `.print-root` AND is not the print-root itself.
-        This removes Sidebar, TopBar, Footer, PageHeader, sibling Cards, etc. */
-  body > #root:has(.print-root) *:not(:has(.print-root)):not(.print-root):not(.print-root *) {
-    display: none !important;
-  }
-
-  /* Flatten Radix Dialog overlay + content so they don't clip / dim */
-  [data-radix-dialog-overlay] {
-    display: none !important;
-  }
-
-  [data-radix-dialog-content],
-  [role="dialog"] {
-    position: static !important;
-    transform: none !important;
-    inset: auto !important;
-    left: auto !important;
-    top: auto !important;
-    max-width: none !important;
-    max-height: none !important;
-    width: 100% !important;
-    height: auto !important;
-    overflow: visible !important;
-    box-shadow: none !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    background: #fff !important;
-    display: block !important;
-  }
-
-  /* Hide Radix Dialog close button + DialogHeader (h2 wrapper) */
-  [role="dialog"] > button,
-  [role="dialog"] > [data-radix-dialog-close],
-  [role="dialog"] button[aria-label="Close"],
-  [role="dialog"] > div:has(> h2),
-  .no-print {
-    display: none !important;
-  }
-
-  /* Re-ensure ancestors leading to the print-root are visible
-     (the :not selector in step 3 already keeps them, but reset layout here) */
-  body > #root:has(.print-root),
-  body > #root:has(.print-root) > *,
-  body > #root:has(.print-root) main,
-  body > #root:has(.print-root) [data-print-ancestor] {
-    display: block !important;
-    position: static !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 100% !important;
-    max-width: none !important;
-    overflow: visible !important;
-    background: #fff !important;
-  }
-
-  /* Print root: clean page area */
+  /* Position the print-root at the top-left of the printable page area
+     so the hidden surrounding layout does not push it down or right. */
   .print-root {
-    display: block !important;
-    position: static !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
     width: 100% !important;
     max-width: none !important;
     height: auto !important;
@@ -116,51 +58,12 @@
   }
 
   .print-root * {
-    overflow: visible !important;
     box-shadow: none !important;
-    /* Re-display children — the :not() rule above kept them visible by
-       not matching them, but be defensive against parent selectors. */
+    overflow: visible !important;
   }
-  /* Ensure descendants of print-root that may have been hit accidentally
-     by the hide rule (because they DO contain .print-root via :has) are
-     still visible. .print-root descendants do NOT contain .print-root. */
-  .print-root,
-  .print-root * {
-    display: revert !important;
-  }
-  /* But common block defaults */
-  .print-root div,
-  .print-root section,
-  .print-root header,
-  .print-root nav,
-  .print-root main,
-  .print-root article {
-    display: block !important;
-  }
-  .print-root img { display: inline-block !important; }
-  .print-root table { display: table !important; }
-  .print-root thead { display: table-header-group !important; }
-  .print-root tbody { display: table-row-group !important; }
-  .print-root tr { display: table-row !important; }
-  .print-root th,
-  .print-root td { display: table-cell !important; }
-  .print-root span,
-  .print-root strong,
-  .print-root em,
-  .print-root b,
-  .print-root i,
-  .print-root a { display: inline !important; }
-  .print-root p,
-  .print-root h1,
-  .print-root h2,
-  .print-root h3,
-  .print-root h4,
-  .print-root h5,
-  .print-root h6 { display: block !important; }
-  .print-root .grid { display: grid !important; }
-  .print-root .flex { display: flex !important; }
 
-  /* Strip the on-screen "page" wrapper (drop shadow, fixed mm width) */
+  /* Strip the on-screen "page" wrapper (drop shadow, fixed mm width)
+     so the browser's own A4 page handles sizing */
   .print-preview-backdrop {
     background: #fff !important;
     padding: 0 !important;
@@ -173,6 +76,9 @@
     padding: 0 !important;
     margin: 0 !important;
   }
+
+  /* Helpers always hidden in print */
+  .no-print { display: none !important; }
 
   /* Avoid mid-row breaks in tables */
   table { page-break-inside: auto; }
