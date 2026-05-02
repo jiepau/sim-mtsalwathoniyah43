@@ -1,6 +1,8 @@
 import { useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Printer, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
   DialogContent,
@@ -45,6 +47,16 @@ const PRINT_STYLES = `
 
 export function CpPrintDialog({ open, onOpenChange, template }: CpPrintDialogProps) {
   const printRef = useRef<HTMLDivElement>(null);
+
+  const { data: madrasah } = useQuery({
+    queryKey: ['madrasah-settings-cp-print'],
+    queryFn: async () => {
+      const { data } = await supabase.from('madrasah_settings').select('*').maybeSingle();
+      return data as any;
+    },
+    staleTime: 5 * 60 * 1000,
+    enabled: open,
+  });
 
   if (!template) return null;
 
