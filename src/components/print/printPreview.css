@@ -1,14 +1,19 @@
 /**
  * Global print styles for PrintPreviewFrame / PrintPreviewToolbar.
  *
- * Strategy:
- *  - Add `html.printing` right before window.print() (handler does this).
- *  - In print mode, hide every direct child of <body> EXCEPT the portal/node
- *    containing `.print-root`, then flatten Radix Dialog wrappers so the
- *    print-root flows from page top, full width, with no overlay or chrome.
- *  - We avoid `visibility: hidden` on `body *` because shadcn components
- *    (Card, Table) use overflow-hidden / fixed positioning and end up
- *    clipping the only visible descendant.
+ * Strategy (revised — supports BOTH dialog & page-level print roots):
+ *  1. Hide every direct child of <body>.
+ *  2. Re-show ONLY the body branch that contains `.print-root`
+ *     (either a Radix portal tagged `.print-portal`, or `#root` for page-level).
+ *  3. Inside that branch, hide every sibling that is NOT an ancestor of
+ *     `.print-root`. This kills the sidebar, topbar, footer, page header, etc.
+ *     that surround a page-level printable section.
+ *  4. Flatten Radix Dialog wrappers so the print-root flows from page top.
+ *  5. Reset positioning on `.print-root` so it occupies the full A4 page.
+ *
+ * The trick in step 3 uses `:has()` to target every element that does NOT
+ * contain a `.print-root`, combined with `:not(.print-root) :not(:has(...))`
+ * to walk down the tree only into the branch that leads to `.print-root`.
  */
 
 @media print {
@@ -24,19 +29,24 @@
     padding: 0 !important;
   }
 
-  /* Hide app shell + every body child by default */
+  /* 1. Hide every direct child of body */
   body > * {
     display: none !important;
   }
 
-  /* Re-show ONLY the body child that contains the print root.
-     PrintPreviewFrame tags the nearest body-level wrapper (Radix portal
-     or normal mount point) with class `print-portal` on mount. */
+  /* 2. Re-show the body branch containing print-root */
   body > .print-portal,
   body > #root:has(.print-root) {
     display: block !important;
     position: static !important;
     background: transparent !important;
+  }
+
+  /* 3. Walk down the tree: hide every element that does NOT contain
+        a `.print-root` AND is not the print-root itself.
+        This removes Sidebar, TopBar, Footer, PageHeader, sibling Cards, etc. */
+  body > #root:has(.print-root) *:not(:has(.print-root)):not(.print-root):not(.print-root *) {
+    display: none !important;
   }
 
   /* Flatten Radix Dialog overlay + content so they don't clip / dim */
@@ -64,23 +74,29 @@
     display: block !important;
   }
 
-  /* Hide Radix Dialog close button (always direct child of DialogContent).
-     Selector matches both shadcn's <DialogPrimitive.Close> and any
-     button[aria-label="Close"] that browsers add. */
+  /* Hide Radix Dialog close button + DialogHeader (h2 wrapper) */
   [role="dialog"] > button,
   [role="dialog"] > [data-radix-dialog-close],
   [role="dialog"] button[aria-label="Close"],
+  [role="dialog"] > div:has(> h2),
   .no-print {
     display: none !important;
   }
 
-  /* Hide DialogHeader (the wrapper containing DialogTitle "Rekap Pendaftar SPMB").
-     shadcn's DialogHeader is a plain <div> sibling rendered before our
-     PrintPreviewToolbar / PrintPreviewFrame. We hide any direct child of
-     the dialog that contains an <h2> (DialogTitle), since print-root never
-     does — its kop uses h2 nested deeper inside .print-root. */
-  [role="dialog"] > div:has(> h2) {
-    display: none !important;
+  /* Re-ensure ancestors leading to the print-root are visible
+     (the :not selector in step 3 already keeps them, but reset layout here) */
+  body > #root:has(.print-root),
+  body > #root:has(.print-root) > *,
+  body > #root:has(.print-root) main,
+  body > #root:has(.print-root) [data-print-ancestor] {
+    display: block !important;
+    position: static !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    overflow: visible !important;
+    background: #fff !important;
   }
 
   /* Print root: clean page area */
@@ -102,10 +118,49 @@
   .print-root * {
     overflow: visible !important;
     box-shadow: none !important;
+    /* Re-display children — the :not() rule above kept them visible by
+       not matching them, but be defensive against parent selectors. */
   }
+  /* Ensure descendants of print-root that may have been hit accidentally
+     by the hide rule (because they DO contain .print-root via :has) are
+     still visible. .print-root descendants do NOT contain .print-root. */
+  .print-root,
+  .print-root * {
+    display: revert !important;
+  }
+  /* But common block defaults */
+  .print-root div,
+  .print-root section,
+  .print-root header,
+  .print-root nav,
+  .print-root main,
+  .print-root article {
+    display: block !important;
+  }
+  .print-root img { display: inline-block !important; }
+  .print-root table { display: table !important; }
+  .print-root thead { display: table-header-group !important; }
+  .print-root tbody { display: table-row-group !important; }
+  .print-root tr { display: table-row !important; }
+  .print-root th,
+  .print-root td { display: table-cell !important; }
+  .print-root span,
+  .print-root strong,
+  .print-root em,
+  .print-root b,
+  .print-root i,
+  .print-root a { display: inline !important; }
+  .print-root p,
+  .print-root h1,
+  .print-root h2,
+  .print-root h3,
+  .print-root h4,
+  .print-root h5,
+  .print-root h6 { display: block !important; }
+  .print-root .grid { display: grid !important; }
+  .print-root .flex { display: flex !important; }
 
-  /* Strip the on-screen "page" wrapper (drop shadow, fixed mm width)
-     so the browser's own A4 page handles sizing */
+  /* Strip the on-screen "page" wrapper (drop shadow, fixed mm width) */
   .print-preview-backdrop {
     background: #fff !important;
     padding: 0 !important;
@@ -119,14 +174,14 @@
     margin: 0 !important;
   }
 
-  /* Landscape variant — toggled by data attribute on .print-root */
-  .print-root[data-print-orientation="landscape"] {
-    /* @page rule above is overridden via inline <style> from
-       PrintOrientationStyle when the user picks landscape */
-  }
-
   /* Avoid mid-row breaks in tables */
   table { page-break-inside: auto; }
   tr, td, th { page-break-inside: avoid; page-break-after: auto; }
   thead { display: table-header-group; }
+
+  /* Avoid breaking signature blocks across pages */
+  .avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
 }
