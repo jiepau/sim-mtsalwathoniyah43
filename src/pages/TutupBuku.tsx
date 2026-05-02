@@ -843,20 +843,19 @@ export default function TutupBuku() {
                     </div>
                   )}
 
-                  {/* TTD - 2 kolom */}
-                  <div className="grid grid-cols-2 gap-8 mt-12 text-xs">
+                  {/* TTD - 2 kolom (Bendahara kiri, Kepala kanan) */}
+                  <div className="grid grid-cols-2 gap-8 pt-6 text-xs avoid-break">
                     <div className="text-center">
+                      <p>&nbsp;</p>
                       <p>Bendahara,</p>
-                      <div className="h-20"></div>
-                      <p className="font-bold underline">{viewArsip.nama_bendahara || '...........................'}</p>
+                      <div className="h-20" />
+                      <p className="font-semibold underline">{viewArsip.nama_bendahara || '...........................'}</p>
                     </div>
                     <div className="text-center">
-                      <p>
-                        Jakarta, {new Date(viewArsip.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                      </p>
+                      <p>Jakarta, {new Date(viewArsip.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                       <p>Kepala Madrasah,</p>
-                      <div className="h-20"></div>
-                      <p className="font-bold underline">{viewArsip.nama_kepala || '...........................'}</p>
+                      <div className="h-20" />
+                      <p className="font-semibold underline">{viewArsip.nama_kepala || '...........................'}</p>
                       {viewArsip.nip_kepala && <p>NIP. {viewArsip.nip_kepala}</p>}
                     </div>
                   </div>
@@ -866,15 +865,6 @@ export default function TutupBuku() {
           )}
         </DialogContent>
       </Dialog>
-
-      <style>{`
-        @media print {
-          body { background: white !important; }
-          .no-print, .sidebar-aside, header, nav, footer { display: none !important; }
-          .print-area { border: none !important; padding: 0 !important; }
-          [role="dialog"] { position: static !important; max-height: none !important; overflow: visible !important; box-shadow: none !important; border: none !important; }
-        }
-      `}</style>
     </div>
   );
 }
