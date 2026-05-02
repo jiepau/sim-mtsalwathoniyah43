@@ -667,24 +667,67 @@ export default function TutupBuku() {
                 hint="Cetak arsip resmi tutup buku"
               />
               <PrintPreviewFrame preview={printPreview} orientation={orientation}>
-                <div className={`print-area ${printPreview ? '' : 'bg-white text-black p-6 rounded-lg border'}`}>
-                  {/* Header */}
-                  <div className="text-center border-b-2 border-black pb-3 mb-4">
-                    <h1 className="text-lg font-bold uppercase">{madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43'}</h1>
-                    {madrasah?.alamat && <p className="text-xs">{madrasah.alamat}</p>}
+                <div className="space-y-3 text-black">
+                  {/* Kop dengan logo madrasah (kiri) & logo Kemenag (kanan) — sama dgn Rekap SPMB */}
+                  <div className="flex items-center gap-3 border-b-2 border-black pb-2">
+                    <img
+                      src="/logo-alwathoniyah.png"
+                      alt="Logo Madrasah"
+                      className="h-20 w-20 object-contain shrink-0"
+                    />
+                    <div className="flex-1 text-center">
+                      <p className="text-[11px] font-semibold uppercase leading-tight">
+                        Kementerian Agama Republik Indonesia
+                      </p>
+                      <h2 className="text-base font-bold uppercase leading-tight">
+                        {madrasah?.nama_madrasah ?? 'MTs Al-Wathoniyah 43'}
+                      </h2>
+                      {madrasah?.alamat && (
+                        <p className="text-[11px] leading-tight">{madrasah.alamat}</p>
+                      )}
+                      {(madrasah?.npsn || madrasah?.nsm) && (
+                        <p className="text-[11px] leading-tight">
+                          {madrasah?.nsm && `NSM: ${madrasah.nsm}`}
+                          {madrasah?.nsm && madrasah?.npsn && ' • '}
+                          {madrasah?.npsn && `NPSN: ${madrasah.npsn}`}
+                        </p>
+                      )}
+                    </div>
+                    <img
+                      src="/logo-kemenag.png"
+                      alt="Logo Kemenag"
+                      className="h-20 w-20 object-contain shrink-0"
+                    />
+                  </div>
+
+                  <div className="text-center">
+                    <h3 className="text-sm font-bold uppercase">Laporan Tutup Buku Keuangan</h3>
+                    <p className="text-xs font-semibold">{viewArsip.periode_label}</p>
                     <p className="text-[11px]">
-                      {madrasah?.npsn && `NPSN: ${madrasah.npsn}`}
-                      {madrasah?.nsm && ` · NSM: ${madrasah.nsm}`}
+                      Periode: {new Date(viewArsip.tanggal_mulai).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      {' s.d. '}
+                      {new Date(viewArsip.tanggal_akhir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </p>
                   </div>
 
-                  <div className="text-center mb-4">
-                    <h2 className="text-base font-bold underline">LAPORAN TUTUP BUKU KEUANGAN</h2>
-                    <p className="text-sm font-semibold">{viewArsip.periode_label}</p>
-                    <p className="text-xs">
-                      Periode: {new Date(viewArsip.tanggal_mulai).toLocaleDateString('id-ID')} s.d.{' '}
-                      {new Date(viewArsip.tanggal_akhir).toLocaleDateString('id-ID')}
-                    </p>
+                  {/* Ringkasan 4 kolom seperti Rekap SPMB */}
+                  <div className="grid grid-cols-4 gap-2 text-xs">
+                    <div className="border p-2 rounded">
+                      <p className="text-[10px] text-muted-foreground">Total Pemasukan</p>
+                      <p className="font-bold text-sm tabular-nums">{formatCurrency(viewArsip.total_pemasukan)}</p>
+                    </div>
+                    <div className="border p-2 rounded">
+                      <p className="text-[10px] text-muted-foreground">Total Pengeluaran</p>
+                      <p className="font-bold text-sm tabular-nums">{formatCurrency(viewArsip.total_pengeluaran)}</p>
+                    </div>
+                    <div className="border p-2 rounded">
+                      <p className="text-[10px] text-muted-foreground">Saldo Akhir ({viewArsip.saldo >= 0 ? 'Surplus' : 'Defisit'})</p>
+                      <p className="font-bold text-sm tabular-nums">{formatCurrency(Math.abs(viewArsip.saldo))}</p>
+                    </div>
+                    <div className="border p-2 rounded">
+                      <p className="text-[10px] text-muted-foreground">Tunggakan ({viewArsip.jumlah_siswa_nunggak} siswa)</p>
+                      <p className="font-bold text-sm tabular-nums">{formatCurrency(viewArsip.total_tunggakan)}</p>
+                    </div>
                   </div>
 
                   {/* Pemasukan */}
