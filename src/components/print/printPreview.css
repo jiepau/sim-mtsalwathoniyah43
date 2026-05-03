@@ -18,7 +18,7 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 12mm;
+    margin: 0;
   }
 
   html,
@@ -28,14 +28,15 @@
     padding: 0 !important;
   }
 
-  /* Hide everything by default (visibility, not display — preserves layout) */
+  /* Hide everything by default, then display only the ancestor path to .print-root. */
   body * {
-    visibility: hidden !important;
+    display: none !important;
   }
 
-  /* Re-show ONLY the print-root and its descendants */
+  .print-ancestor,
   .print-root,
   .print-root * {
+    display: revert !important;
     visibility: visible !important;
   }
 
@@ -77,15 +78,19 @@
     display: none !important;
   }
 
-  /* Print-root flows in normal document order; visibility (not display)
-     keeps Radix portals & focus management happy. */
+  /* Lock printable content to the physical A4 page. Padding is owned here
+     so dialogs/backdrops cannot add extra margins and push TTD to page 2. */
   .print-root {
-    position: static !important;
-    width: 100% !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 210mm !important;
     max-width: none !important;
+    min-height: 297mm !important;
     height: auto !important;
     margin: 0 !important;
-    padding: 0 !important;
+    padding: 12mm !important;
+    box-sizing: border-box !important;
     background: #fff !important;
     color: #000 !important;
     box-shadow: none !important;
@@ -96,6 +101,7 @@
   .print-root * {
     box-shadow: none !important;
     overflow: visible !important;
+    box-sizing: border-box !important;
   }
 
   /* Strip the on-screen "page" wrapper (drop shadow, fixed mm width)
@@ -107,7 +113,7 @@
   }
   .print-preview-page {
     box-shadow: none !important;
-    width: auto !important;
+    width: 100% !important;
     min-height: 0 !important;
     padding: 0 !important;
     margin: 0 !important;
