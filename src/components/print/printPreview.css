@@ -98,6 +98,11 @@
     overflow: visible !important;
   }
 
+  .print-root[data-print-orientation="landscape"] {
+    width: 297mm !important;
+    min-height: 210mm !important;
+  }
+
   .print-root * {
     box-shadow: none !important;
     overflow: visible !important;
