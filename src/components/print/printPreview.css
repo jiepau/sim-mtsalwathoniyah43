@@ -46,8 +46,7 @@
   [data-radix-dialog-overlay],
   [data-radix-dialog-content],
   [role="dialog"],
-  .print-portal,
-  .print-portal * {
+  .print-portal {
     position: static !important;
     transform: none !important;
     inset: auto !important;
@@ -63,6 +62,14 @@
     border: none !important;
     margin: 0 !important;
     padding: 0 !important;
+  }
+
+  .print-kop-logo {
+    width: 20mm !important;
+    height: 20mm !important;
+    max-width: 20mm !important;
+    max-height: 20mm !important;
+    object-fit: contain !important;
   }
 
   /* Hide Radix Dialog overlay (the dimmed backdrop) */
