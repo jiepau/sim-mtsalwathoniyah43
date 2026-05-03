@@ -40,7 +40,7 @@ export function PrintKopMadrasah({ judul, subjudul, periode }: Props) {
         <img
           src="/logo-alwathoniyah.png"
           alt="Logo Madrasah"
-          className="h-20 w-20 object-contain shrink-0"
+          className="print-kop-logo h-20 w-20 object-contain shrink-0"
         />
         <div className="flex-1 text-center">
           <p className="text-[11px] font-semibold uppercase leading-tight">
@@ -63,7 +63,7 @@ export function PrintKopMadrasah({ judul, subjudul, periode }: Props) {
         <img
           src="/logo-kemenag.png"
           alt="Logo Kemenag"
-          className="h-20 w-20 object-contain shrink-0"
+          className="print-kop-logo h-20 w-20 object-contain shrink-0"
         />
       </div>
 
