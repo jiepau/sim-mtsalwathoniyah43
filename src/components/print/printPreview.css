@@ -39,12 +39,41 @@
     visibility: visible !important;
   }
 
-  /* Position the print-root at the top-left of the printable page area
-     so the hidden surrounding layout does not push it down or right. */
+  /* Neutralize Radix Dialog (and any portalled) ancestors so the print-root
+     flows naturally from top-left of the page instead of being centered by
+     a fixed/translate ancestor. */
+  [data-radix-portal],
+  [data-radix-dialog-overlay],
+  [data-radix-dialog-content],
+  [role="dialog"],
+  .print-portal,
+  .print-portal * {
+    position: static !important;
+    transform: none !important;
+    inset: auto !important;
+    top: auto !important; left: auto !important;
+    right: auto !important; bottom: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide Radix Dialog overlay (the dimmed backdrop) */
+  [data-radix-dialog-overlay] {
+    display: none !important;
+  }
+
+  /* Print-root flows in normal document order; visibility (not display)
+     keeps Radix portals & focus management happy. */
   .print-root {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
+    position: static !important;
     width: 100% !important;
     max-width: none !important;
     height: auto !important;
