@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { PrintKopMadrasah, PrintTtdKepala } from '@/components/print/PrintKopMadrasah';
 import {
   PrintPreviewToolbar,
   PrintPreviewFrame,
@@ -30,15 +31,6 @@ interface Props {
 export function PPDBRekapPrintDialog({ open, onOpenChange, pendaftar }: Props) {
   const [preview, setPreview] = useState(true);
   const [orientation, setOrientation] = useState<PrintOrientation>('portrait');
-
-  const { data: madrasah } = useQuery({
-    queryKey: ['madrasah-settings-rekap-spmb'],
-    queryFn: async () => {
-      const { data } = await supabase.from('madrasah_settings').select('*').maybeSingle();
-      return data;
-    },
-    enabled: open,
-  });
 
   const groups = useMemo(() => {
     const mi: Pendaftar[] = [];
@@ -119,43 +111,7 @@ export function PPDBRekapPrintDialog({ open, onOpenChange, pendaftar }: Props) {
 
         <PrintPreviewFrame preview={preview} orientation={orientation}>
           <div className="space-y-3 text-black">
-            {/* Kop dengan logo madrasah (kiri) & logo Kemenag (kanan) */}
-            <div className="flex items-center gap-3 border-b-2 border-black pb-2">
-              <img
-                src="/logo-alwathoniyah.png"
-                alt="Logo Madrasah"
-                className="h-20 w-20 object-contain shrink-0"
-              />
-              <div className="flex-1 text-center">
-                <p className="text-[11px] font-semibold uppercase leading-tight">
-                  Kementerian Agama Republik Indonesia
-                </p>
-                <h2 className="text-base font-bold uppercase leading-tight">
-                  {madrasah?.nama_madrasah ?? 'MTs Al-Wathoniyah 43'}
-                </h2>
-                {madrasah?.alamat && (
-                  <p className="text-[11px] leading-tight">{madrasah.alamat}</p>
-                )}
-                {(madrasah?.npsn || madrasah?.nsm) && (
-                  <p className="text-[11px] leading-tight">
-                    {madrasah?.nsm && `NSM: ${madrasah.nsm}`}
-                    {madrasah?.nsm && madrasah?.npsn && ' • '}
-                    {madrasah?.npsn && `NPSN: ${madrasah.npsn}`}
-                  </p>
-                )}
-              </div>
-              <img
-                src="/logo-kemenag.png"
-                alt="Logo Kemenag"
-                className="h-20 w-20 object-contain shrink-0"
-              />
-            </div>
-
-            <div className="text-center">
-              <h3 className="text-sm font-bold uppercase">
-                Rekap Pendaftar SPMB
-              </h3>
-            </div>
+            <PrintKopMadrasah judul="Rekap Pendaftar SPMB" />
 
             {/* Ringkasan */}
             <div className="grid grid-cols-4 gap-2 text-xs">
@@ -217,15 +173,7 @@ export function PPDBRekapPrintDialog({ open, onOpenChange, pendaftar }: Props) {
             )}
 
             {/* TTD */}
-            <div className="flex justify-end pt-6 text-xs">
-              <div className="text-center w-64">
-                <p>Jakarta, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                <p>Kepala Madrasah</p>
-                <div className="h-16" />
-                <p className="font-semibold underline">{madrasah?.kepala_madrasah ?? '...........................'}</p>
-                {madrasah?.nip_kepala && <p>NIP. {madrasah.nip_kepala}</p>}
-              </div>
-            </div>
+            <PrintTtdKepala />
           </div>
         </PrintPreviewFrame>
       </DialogContent>
