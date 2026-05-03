@@ -152,7 +152,7 @@ function PrintOrientationStyle({ orientation }: { orientation: PrintOrientation 
   return (
     <style>{`
       @media print {
-        @page { size: A4 ${orientation}; margin: 12mm; }
+        @page { size: A4 ${orientation}; margin: 0; }
       }
     `}</style>
   );
