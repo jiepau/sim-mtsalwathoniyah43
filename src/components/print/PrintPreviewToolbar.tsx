@@ -92,19 +92,29 @@ export function PrintPreviewFrame({
   const pageW = isLandscape ? '297mm' : '210mm';
   const pageH = isLandscape ? '210mm' : '297mm';
 
-  // Tag the body-level portal that contains this print-root so CSS can
-  // selectively show ONLY this branch during print (no :has() needed).
+  // Tag every ancestor that contains this print-root so print CSS can remove
+  // siblings (dialog headers, app shell, toolbar) without breaking the path
+  // to the actual printable node.
   useEffect(() => {
     const node = rootRef.current;
     if (!node) return;
+
+    const marked: HTMLElement[] = [];
     let el: HTMLElement | null = node;
-    while (el && el.parentElement && el.parentElement !== document.body) {
+    while (el && el !== document.body) {
+      el.classList.add('print-ancestor');
+      marked.push(el);
       el = el.parentElement;
     }
-    if (el && el.parentElement === document.body) {
-      el.classList.add('print-portal');
-      return () => el?.classList.remove('print-portal');
+
+    const bodyChild = marked[marked.length - 1];
+    if (bodyChild?.parentElement === document.body) {
+      bodyChild.classList.add('print-portal');
     }
+
+    return () => {
+      marked.forEach((item) => item.classList.remove('print-ancestor', 'print-portal'));
+    };
   }, [preview]);
 
   if (!preview) {
@@ -142,7 +152,7 @@ function PrintOrientationStyle({ orientation }: { orientation: PrintOrientation 
   return (
     <style>{`
       @media print {
-        @page { size: A4 ${orientation}; margin: 12mm; }
+        @page { size: A4 ${orientation}; margin: 0; }
       }
     `}</style>
   );
