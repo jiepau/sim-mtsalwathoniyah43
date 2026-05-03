@@ -28,16 +28,22 @@
     padding: 0 !important;
   }
 
-  /* Hide everything by default, then display only the ancestor path to .print-root. */
+  /* Hide everything by default without changing element display type.
+     This keeps Tailwind flex/grid/table classes intact inside print content. */
   body * {
-    display: none !important;
+    visibility: hidden !important;
   }
 
   .print-ancestor,
   .print-root,
   .print-root * {
-    display: revert !important;
     visibility: visible !important;
+  }
+
+  /* Remove only direct non-print siblings along the ancestor path, so dialog
+     headers/toolbars do not consume page height while printable layout stays intact. */
+  .print-ancestor > :not(.print-ancestor):not(.print-root) {
+    display: none !important;
   }
 
   /* Neutralize Radix Dialog (and any portalled) ancestors so the print-root
@@ -81,7 +87,7 @@
   /* Lock printable content to the physical A4 page. Padding is owned here
      so dialogs/backdrops cannot add extra margins and push TTD to page 2. */
   .print-root {
-    position: absolute !important;
+    position: fixed !important;
     left: 0 !important;
     top: 0 !important;
     width: 210mm !important;
