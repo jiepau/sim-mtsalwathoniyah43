@@ -40,6 +40,24 @@
     visibility: visible !important;
   }
 
+  .print-ancestor:not(.print-root) {
+    position: static !important;
+    transform: none !important;
+    inset: auto !important;
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
   /* Remove non-print app chrome from physical pagination. The previous
      visibility-only approach left the hidden app shell in the print flow,
      which made Chrome count an extra blank sheet. */
