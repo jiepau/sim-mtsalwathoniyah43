@@ -100,7 +100,7 @@ export function PrintPreviewFrame({
     if (!node) return;
 
     const marked: HTMLElement[] = [];
-    let el: HTMLElement | null = node;
+    let el: HTMLElement | null = node.parentElement;
     while (el && el !== document.body) {
       el.classList.add('print-ancestor');
       marked.push(el);
