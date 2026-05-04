@@ -42,7 +42,7 @@
 
   /* Remove only direct non-print siblings along the ancestor path, so dialog
      headers/toolbars do not consume page height while printable layout stays intact. */
-  .print-ancestor > :not(.print-ancestor):not(.print-root) {
+  .print-ancestor:not(.print-root) > :not(.print-ancestor):not(.print-root) {
     display: none !important;
   }
 
