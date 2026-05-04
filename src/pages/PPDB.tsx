@@ -327,6 +327,18 @@ export default function PPDB() {
                   <ArrowRightCircle className="h-3.5 w-3.5 mr-1" /> Konversi ke Siswa ({selectedDiterima.length})
                 </Button>
               )}
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => {
+                  if (confirm(`Hapus permanen ${selected.length} data pendaftar SPMB?\n\nAksi ini tidak bisa dibatalkan.`)) {
+                    deleteMutation.mutate(selected);
+                  }
+                }}
+                disabled={deleteMutation.isPending}
+              >
+                <Trash2 className="h-3.5 w-3.5 mr-1" /> Hapus
+              </Button>
             </div>
           )}
 
@@ -346,16 +358,17 @@ export default function PPDB() {
                     <TableHead className="text-xs">WA Ortu</TableHead>
                     <TableHead className="text-xs">Tanggal Daftar</TableHead>
                     <TableHead className="text-xs">Status</TableHead>
+                    <TableHead className="text-xs text-right">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Memuat...</TableCell>
+                      <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Memuat...</TableCell>
                     </TableRow>
                   ) : filtered.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Belum ada pendaftar</TableCell>
+                      <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Belum ada pendaftar</TableCell>
                     </TableRow>
                   ) : (
                     filtered.map((p) => (
@@ -372,6 +385,22 @@ export default function PPDB() {
                         <TableCell className="text-xs">{formatDate(p.created_at)}</TableCell>
                         <TableCell>
                           <Badge className={`text-xs ${statusColors[p.status] ?? ''}`}>{statusLabels[p.status] ?? p.status}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => {
+                              if (confirm(`Hapus permanen data pendaftar ${p.nama}?\n\nAksi ini tidak bisa dibatalkan.`)) {
+                                deleteMutation.mutate([p.id]);
+                              }
+                            }}
+                            disabled={deleteMutation.isPending}
+                            title="Hapus pendaftar"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))
