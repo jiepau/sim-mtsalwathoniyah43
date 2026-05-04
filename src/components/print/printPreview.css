@@ -26,6 +26,11 @@
     background: #fff !important;
     margin: 0 !important;
     padding: 0 !important;
+    width: 210mm !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
   }
 
   /* Hide everything by default without changing element display type.
@@ -112,10 +117,11 @@
   /* Lock printable content to the physical A4 page. Use an inner max-height
      instead of min-height:297mm to avoid Chrome creating a second blank page. */
   .print-root {
-    position: fixed !important;
+    position: absolute !important;
     left: 0 !important;
     top: 0 !important;
     width: 210mm !important;
+    max-width: 210mm !important;
     max-width: none !important;
     min-height: 0 !important;
     height: auto !important;
@@ -128,10 +134,13 @@
     box-shadow: none !important;
     border: none !important;
     overflow: visible !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
   }
 
   .print-root[data-print-orientation="landscape"] {
     width: 297mm !important;
+    max-width: 297mm !important;
     max-height: 210mm !important;
   }
 
