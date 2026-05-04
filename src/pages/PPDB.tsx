@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { UserPlus, Search, Download, Upload, ArrowRightCircle, Check, X, ClipboardList, UserCheck, FileSpreadsheet, ChevronRight, Printer, UserX, Clock } from 'lucide-react';
+import { UserPlus, Search, Download, Upload, ArrowRightCircle, Check, X, ClipboardList, UserCheck, FileSpreadsheet, ChevronRight, Printer, UserX, Clock, Trash2 } from 'lucide-react';
 import { formatDate } from '@/lib/supabase-helpers';
 import { exportEmisCSV, parseEmisCSV } from '@/lib/emis-field-map';
 
@@ -91,6 +91,22 @@ export default function PPDB() {
       toast.success('Status pendaftar diperbarui');
     },
     onError: () => toast.error('Gagal mengubah status'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase
+        .from('ppdb_pendaftar')
+        .delete()
+        .in('id', ids);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['ppdb-pendaftar'] });
+      setSelected([]);
+      toast.success('Data pendaftar dihapus');
+    },
+    onError: () => toast.error('Gagal menghapus data pendaftar'),
   });
 
   const filtered = pendaftar.filter((p) => {
