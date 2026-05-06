@@ -131,7 +131,19 @@ export function BukuIndukPrint({ siswaList, mode, onClose, filterInfo }: Props) 
           html, body { margin: 0 !important; padding: 0 !important; background: white !important; }
           body * { visibility: hidden !important; }
           .buku-induk-print, .buku-induk-print * { visibility: visible !important; }
-          .buku-induk-print { position: absolute; left: 0; top: 0; width: 100%; }
+          /* Override global printPreview.css constraints so multi-page buku induk
+             can flow naturally instead of being clipped to a single A4 page. */
+          .buku-induk-print.print-root {
+            position: static !important;
+            width: auto !important;
+            max-width: none !important;
+            height: auto !important;
+            max-height: none !important;
+            min-height: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+          }
           @page { size: A4 portrait; margin: 12mm 14mm; }
           .no-print { display: none !important; }
           .page-break { page-break-after: always; break-after: page; }
