@@ -218,7 +218,7 @@ export function BukuIndukPrint({ siswaList, mode, onClose, filterInfo }: Props) 
         </div>
       </div>
 
-      <div className="buku-induk-print print-ancestor print-root">
+      <div className="buku-induk-print">
         {/* ========== MODE REKAP (TABEL) ========== */}
         {mode === "rekap" && (
           <div className="a4-page">
