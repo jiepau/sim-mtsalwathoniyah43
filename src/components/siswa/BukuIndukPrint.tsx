@@ -64,6 +64,23 @@ const getGender = (g: string | null) => genderLabel(g);
 export function BukuIndukPrint({ siswaList, mode, onClose, filterInfo }: Props) {
   const [madrasah, setMadrasah] = useState<MadrasahInfo | null>(null);
   const [ready, setReady] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // Mark ancestor chain so the global print CSS doesn't hide our printable content.
+  useEffect(() => {
+    const node = rootRef.current;
+    if (!node) return;
+    const marked: HTMLElement[] = [];
+    let el: HTMLElement | null = node.parentElement;
+    while (el && el !== document.body) {
+      el.classList.add("print-ancestor");
+      marked.push(el);
+      el = el.parentElement;
+    }
+    return () => {
+      marked.forEach((m) => m.classList.remove("print-ancestor"));
+    };
+  }, []);
 
   useEffect(() => {
     (async () => {
