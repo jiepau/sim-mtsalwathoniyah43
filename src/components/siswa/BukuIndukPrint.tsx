@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { normalizeGender, genderLabel } from "@/lib/supabase-helpers";
 const logoMadrasah = "/logo-alwathoniyah.png";
@@ -64,6 +64,23 @@ const getGender = (g: string | null) => genderLabel(g);
 export function BukuIndukPrint({ siswaList, mode, onClose, filterInfo }: Props) {
   const [madrasah, setMadrasah] = useState<MadrasahInfo | null>(null);
   const [ready, setReady] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // Mark ancestor chain so the global print CSS doesn't hide our printable content.
+  useEffect(() => {
+    const node = rootRef.current;
+    if (!node) return;
+    const marked: HTMLElement[] = [];
+    let el: HTMLElement | null = node.parentElement;
+    while (el && el !== document.body) {
+      el.classList.add("print-ancestor");
+      marked.push(el);
+      el = el.parentElement;
+    }
+    return () => {
+      marked.forEach((m) => m.classList.remove("print-ancestor"));
+    };
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -114,7 +131,19 @@ export function BukuIndukPrint({ siswaList, mode, onClose, filterInfo }: Props) 
           html, body { margin: 0 !important; padding: 0 !important; background: white !important; }
           body * { visibility: hidden !important; }
           .buku-induk-print, .buku-induk-print * { visibility: visible !important; }
-          .buku-induk-print { position: absolute; left: 0; top: 0; width: 100%; }
+          /* Override global printPreview.css constraints so multi-page buku induk
+             can flow naturally instead of being clipped to a single A4 page. */
+          .buku-induk-print.print-root {
+            position: static !important;
+            width: auto !important;
+            max-width: none !important;
+            height: auto !important;
+            max-height: none !important;
+            min-height: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+          }
           @page { size: A4 portrait; margin: 12mm 14mm; }
           .no-print { display: none !important; }
           .page-break { page-break-after: always; break-after: page; }
@@ -218,7 +247,7 @@ export function BukuIndukPrint({ siswaList, mode, onClose, filterInfo }: Props) 
         </div>
       </div>
 
-      <div className="buku-induk-print">
+      <div ref={rootRef} className="buku-induk-print print-root print-ancestor">
         {/* ========== MODE REKAP (TABEL) ========== */}
         {mode === "rekap" && (
           <div className="a4-page">
