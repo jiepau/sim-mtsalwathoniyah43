@@ -32,6 +32,7 @@ import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ImportDialog, ImportResult } from '@/components/import/ImportDialog';
 import { EmisImportWizard } from '@/components/siswa/EmisImportWizard';
+import { BulkPhotoUploadDialog } from '@/components/siswa/BulkPhotoUploadDialog';
 import { ExportButton } from '@/components/export/ExportButton';
 import { SiswaDetailDialog } from '@/components/siswa/SiswaDetailDialog';
 import { KartuPelajarPrint } from '@/components/siswa/KartuPelajarPrint';
@@ -102,6 +103,7 @@ export default function SiswaPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [emisImportOpen, setEmisImportOpen] = useState(false);
+  const [bulkPhotoOpen, setBulkPhotoOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedSiswa, setSelectedSiswa] = useState<Siswa | null>(null);
   const [editingSiswa, setEditingSiswa] = useState<Siswa | null>(null);
@@ -792,6 +794,10 @@ export default function SiswaPage() {
                       <Upload className="h-4 w-4 mr-2" />
                       Import CSV
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setBulkPhotoOpen(true)}>
+                      <Camera className="h-4 w-4 mr-2" />
+                      Upload Foto Massal
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                   </>
                 )}
@@ -1352,6 +1358,12 @@ export default function SiswaPage() {
         kelasList={kelas as any}
         taList={tahunAjaran as any}
         onSuccess={fetchData}
+      />
+
+      <BulkPhotoUploadDialog
+        open={bulkPhotoOpen}
+        onOpenChange={setBulkPhotoOpen}
+        onDone={fetchData}
       />
 
       {/* Detail Dialog */}
