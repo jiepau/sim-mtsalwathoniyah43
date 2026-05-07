@@ -1360,6 +1360,12 @@ export default function SiswaPage() {
         onSuccess={fetchData}
       />
 
+      <BulkPhotoUploadDialog
+        open={bulkPhotoOpen}
+        onOpenChange={setBulkPhotoOpen}
+        onDone={fetchData}
+      />
+
       {/* Detail Dialog */}
       <SiswaDetailDialog
         open={detailDialogOpen}
