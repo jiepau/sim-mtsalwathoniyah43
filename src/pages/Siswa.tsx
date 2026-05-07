@@ -32,6 +32,7 @@ import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ImportDialog, ImportResult } from '@/components/import/ImportDialog';
 import { EmisImportWizard } from '@/components/siswa/EmisImportWizard';
+import { BulkPhotoUploadDialog } from '@/components/siswa/BulkPhotoUploadDialog';
 import { ExportButton } from '@/components/export/ExportButton';
 import { SiswaDetailDialog } from '@/components/siswa/SiswaDetailDialog';
 import { KartuPelajarPrint } from '@/components/siswa/KartuPelajarPrint';
