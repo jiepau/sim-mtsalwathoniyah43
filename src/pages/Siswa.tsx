@@ -794,6 +794,10 @@ export default function SiswaPage() {
                       <Upload className="h-4 w-4 mr-2" />
                       Import CSV
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setBulkPhotoOpen(true)}>
+                      <Camera className="h-4 w-4 mr-2" />
+                      Upload Foto Massal
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                   </>
                 )}
