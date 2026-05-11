@@ -209,7 +209,7 @@ export default function EIjazah() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="E-Ijazah & Kelulusan" description="Kelola nilai akhir & status kelulusan siswa kelas 9" icon={GraduationCap} />
+      <PageHeader title="E-Ijazah & Kelulusan" description="Kelola nilai akhir & status kelulusan siswa kelas 9" icon={<GraduationCap className="h-6 w-6" />} />
 
       <Card>
         <CardContent className="pt-6 grid md:grid-cols-2 gap-4">
