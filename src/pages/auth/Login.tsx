@@ -181,6 +181,11 @@ export default function Login() {
             <p className="text-sm text-muted-foreground text-center">
               Hubungi administrator untuk mendapatkan akun.
             </p>
+            <div className="flex justify-center gap-3 text-xs">
+              <a href="/spmb/daftar" className="text-primary hover:underline">Daftar SPMB</a>
+              <span className="text-muted-foreground">·</span>
+              <a href="/kelulusan" className="text-primary hover:underline">Pengumuman Kelulusan</a>
+            </div>
           </CardFooter>
         </form>
       </Card>
