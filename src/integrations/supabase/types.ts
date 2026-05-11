@@ -776,6 +776,66 @@ export type Database = {
         }
         Relationships: []
       }
+      ijazah_mapel_settings: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          kode_mapel: string
+          nama_mapel: string
+          ta_id: string | null
+          urutan: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          kode_mapel: string
+          nama_mapel: string
+          ta_id?: string | null
+          urutan?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          kode_mapel?: string
+          nama_mapel?: string
+          ta_id?: string | null
+          urutan?: number
+        }
+        Relationships: []
+      }
+      ijazah_nilai: {
+        Row: {
+          created_at: string
+          id: string
+          kode_mapel: string
+          nilai: number | null
+          siswa_id: string
+          ta_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kode_mapel: string
+          nilai?: number | null
+          siswa_id: string
+          ta_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kode_mapel?: string
+          nilai?: number | null
+          siswa_id?: string
+          ta_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       jenis_tagihan: {
         Row: {
           created_at: string
@@ -831,6 +891,78 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      kelulusan: {
+        Row: {
+          catatan: string | null
+          created_at: string
+          id: string
+          nomor_sk: string | null
+          siswa_id: string
+          status: string
+          ta_id: string
+          tanggal_lulus: string | null
+          updated_at: string
+        }
+        Insert: {
+          catatan?: string | null
+          created_at?: string
+          id?: string
+          nomor_sk?: string | null
+          siswa_id: string
+          status?: string
+          ta_id: string
+          tanggal_lulus?: string | null
+          updated_at?: string
+        }
+        Update: {
+          catatan?: string | null
+          created_at?: string
+          id?: string
+          nomor_sk?: string | null
+          siswa_id?: string
+          status?: string
+          ta_id?: string
+          tanggal_lulus?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      kelulusan_settings: {
+        Row: {
+          created_at: string
+          id: string
+          is_published: boolean
+          judul_pengumuman: string | null
+          nomor_sk_format: string | null
+          pesan_ucapan: string | null
+          published_at: string | null
+          ta_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          judul_pengumuman?: string | null
+          nomor_sk_format?: string | null
+          pesan_ucapan?: string | null
+          published_at?: string | null
+          ta_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          judul_pengumuman?: string | null
+          nomor_sk_format?: string | null
+          pesan_ucapan?: string | null
+          published_at?: string | null
+          ta_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       kktp: {
         Row: {
