@@ -60,6 +60,8 @@ const ValidasiGtk = lazy(() => import("@/pages/ValidasiGtk"));
 const SPMBPage = lazy(() => import("@/pages/PPDB"));
 const SPMBDaftar = lazy(() => import("@/pages/PPDBDaftar"));
 const SPMBCekStatus = lazy(() => import("@/pages/PPDBCekStatus"));
+const EIjazah = lazy(() => import("@/pages/EIjazah"));
+const KelulusanPublik = lazy(() => import("@/pages/KelulusanPublik"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -104,6 +106,7 @@ const App = () => {
                 <Route path="/gtk/:id" element={<ValidasiGtk />} />
                 <Route path="/spmb/daftar" element={<SPMBDaftar />} />
                 <Route path="/spmb/cek-status" element={<SPMBCekStatus />} />
+                <Route path="/kelulusan" element={<KelulusanPublik />} />
                 <Route
                   element={
                     <ProtectedRoute>
@@ -121,6 +124,7 @@ const App = () => {
                   <Route path="/gtk-ptk" element={<ProtectedRoute allowedRoles={['admin','operator']}><GtkPtk /></ProtectedRoute>} />
                   <Route path="/naik-kelas" element={<ProtectedRoute allowedRoles={['admin','operator']}><NaikKelas /></ProtectedRoute>} />
                   <Route path="/alumni" element={<ProtectedRoute allowedRoles={['admin','operator']}><Alumni /></ProtectedRoute>} />
+                  <Route path="/e-ijazah" element={<ProtectedRoute allowedRoles={['admin','operator']}><EIjazah /></ProtectedRoute>} />
                   <Route path="/buku-induk" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><BukuInduk /></ProtectedRoute>} />
 
                   {/* Keuangan - admin/bendahara */}
