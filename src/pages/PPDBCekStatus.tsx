@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -63,10 +64,18 @@ export default function PPDBCekStatus() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background flex items-center justify-center p-4">
+      <Helmet>
+        <title>Cek Status SPMB — MTs Al Wathoniyah 43</title>
+        <meta name="description" content="Cek status seleksi pendaftaran murid baru (SPMB) MTs Al Wathoniyah 43 dengan memasukkan nomor pendaftaran Anda." />
+        <link rel="canonical" href="https://sim.mtsalwathoniyah43.com/spmb/cek-status" />
+        <meta property="og:title" content="Cek Status SPMB — MTs Al Wathoniyah 43" />
+        <meta property="og:description" content="Cek status seleksi pendaftaran murid baru MTs Al Wathoniyah 43." />
+        <meta property="og:url" content="https://sim.mtsalwathoniyah43.com/spmb/cek-status" />
+      </Helmet>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-2">
-          <img src="/logo-alwathoniyah.png" alt="Logo" className="h-16 mx-auto" />
-          <CardTitle className="text-lg">Cek Status Pendaftaran</CardTitle>
+          <img src="/logo-alwathoniyah.png" alt="Logo MTs Al Wathoniyah 43" className="h-16 mx-auto" />
+          <h1 className="text-lg font-semibold">Cek Status Pendaftaran SPMB</h1>
           <p className="text-sm text-muted-foreground">MTs Al-Wathoniyah 43</p>
         </CardHeader>
 
@@ -77,8 +86,9 @@ export default function PPDBCekStatus() {
               value={nomor}
               onChange={(e) => setNomor(e.target.value)}
               className="text-sm"
+              aria-label="Nomor pendaftaran SPMB"
             />
-            <Button type="submit" size="sm" disabled={isLoading || !nomor.trim()}>
+            <Button type="submit" size="sm" disabled={isLoading || !nomor.trim()} aria-label="Cari status pendaftaran">
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             </Button>
           </form>

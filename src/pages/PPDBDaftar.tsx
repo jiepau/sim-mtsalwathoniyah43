@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -90,7 +91,7 @@ function validateForm(form: FormData): string[] {
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <div className="pt-4 pb-2">
-      <h3 className="text-sm font-semibold text-primary">{children}</h3>
+      <h2 className="text-sm font-semibold text-primary">{children}</h2>
       <Separator className="mt-1" />
     </div>
   );
@@ -232,10 +233,18 @@ export default function PPDBDaftar() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background flex items-center justify-center p-4">
+      <Helmet>
+        <title>Pendaftaran SPMB — MTs Al Wathoniyah 43</title>
+        <meta name="description" content="Formulir pendaftaran murid baru (SPMB) MTs Al Wathoniyah 43 sesuai EMIS 4.0. Isi data calon siswa, orang tua, dan asal sekolah secara online." />
+        <link rel="canonical" href="https://sim.mtsalwathoniyah43.com/spmb/daftar" />
+        <meta property="og:title" content="Pendaftaran SPMB — MTs Al Wathoniyah 43" />
+        <meta property="og:description" content="Pendaftaran murid baru MTs Al Wathoniyah 43 secara online." />
+        <meta property="og:url" content="https://sim.mtsalwathoniyah43.com/spmb/daftar" />
+      </Helmet>
       <Card className="w-full max-w-2xl">
         <CardHeader className="text-center space-y-2">
-          <img src={logoImg} alt="Logo" className="h-16 mx-auto" />
-          <CardTitle className="text-lg">SPMB — Sistem Penerimaan Murid Baru</CardTitle>
+          <img src={logoImg} alt="Logo MTs Al Wathoniyah 43" className="h-16 mx-auto" />
+          <h1 className="text-lg font-semibold">SPMB — Sistem Penerimaan Murid Baru</h1>
           <p className="text-sm text-muted-foreground">
             MTs Al-Wathoniyah 43 — TA {settings?.tahun_ajaran ?? '-'}
           </p>

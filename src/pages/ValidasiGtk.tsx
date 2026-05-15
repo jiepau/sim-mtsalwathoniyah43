@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { UserCog, CheckCircle2, XCircle, Building2, GraduationCap, Briefcase } from 'lucide-react';
 
 interface GtkInfo {
@@ -93,6 +94,11 @@ export default function ValidasiGtk() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #d1fae5 100%)', fontFamily: 'system-ui, sans-serif', padding: '24px 16px' }}>
+      <Helmet>
+        <title>Validasi Kartu GTK — MTs Al Wathoniyah 43</title>
+        <meta name="description" content="Halaman verifikasi keabsahan Kartu Tanda Anggota (KTA) Guru dan Tenaga Kependidikan MTs Al Wathoniyah 43." />
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <div style={{ maxWidth: 480, margin: '0 auto' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
@@ -108,7 +114,7 @@ export default function ValidasiGtk() {
           <div style={{ background: '#1a5d3a', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 12 }}>
             <img
               src="/logo-alwathoniyah.png"
-              alt="Logo"
+              alt="Logo MTs Al Wathoniyah 43"
               style={{ width: 40, height: 40, objectFit: 'contain' }}
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />

@@ -89,9 +89,9 @@ export function TopBar() {
 
         {/* Title tengah */}
         <div className="hidden lg:flex items-center flex-1 min-w-0 px-4">
-          <h1 className="text-sm font-bold tracking-wide text-primary uppercase truncate">
+          <p className="text-sm font-bold tracking-wide text-primary uppercase truncate">
             Sistem Informasi Manajemen
-          </h1>
+          </p>
         </div>
 
         {/* Spacer mobile (tempat tombol toggle sidebar) */}
@@ -137,6 +137,7 @@ export function TopBar() {
                     variant="ghost"
                     size="icon"
                     title="Tema sidebar"
+                    aria-label="Pilih tema sidebar"
                     className="text-muted-foreground hover:text-primary hover:bg-primary/5 h-9 w-9 shrink-0"
                   >
                     <Palette className="h-4 w-4" />
@@ -168,7 +169,7 @@ export function TopBar() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary hover:bg-primary/5 h-9 w-9 shrink-0">
+              <Button variant="ghost" size="icon" aria-label="Notifikasi" className="text-muted-foreground hover:text-primary hover:bg-primary/5 h-9 w-9 shrink-0">
                 <Bell className="h-4 w-4" />
               </Button>
 
@@ -176,7 +177,7 @@ export function TopBar() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 px-1.5 sm:px-2 py-1.5 rounded-md hover:bg-primary/5 transition-colors min-w-0 max-w-[180px] sm:max-w-[240px]">
+                  <button aria-label="Menu akun pengguna" className="flex items-center gap-2 px-1.5 sm:px-2 py-1.5 rounded-md hover:bg-primary/5 transition-colors min-w-0 max-w-[180px] sm:max-w-[240px]">
                     <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
                       {initial}
                     </div>

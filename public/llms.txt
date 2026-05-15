@@ -1,0 +1,16 @@
+# SIM MTs Al Wathoniyah 43
+
+> Sistem Informasi Manajemen Madrasah Tsanawiyah Al Wathoniyah 43 — pengelolaan data siswa, GTK, keuangan, kurikulum, absensi, SPMB, e-ijazah, dan pengumuman kelulusan.
+
+Aplikasi internal madrasah dengan beberapa halaman publik untuk pendaftaran murid baru (SPMB), cek status pendaftaran, dan pengumuman kelulusan siswa.
+
+## Pages
+
+- [Masuk / Login](/login): Halaman login pengguna sistem (admin, guru, bendahara, operator, siswa).
+- [Pendaftaran SPMB](/spmb/daftar): Formulir pendaftaran murid baru MTs Al Wathoniyah 43 (sesuai EMIS 4.0).
+- [Cek Status SPMB](/spmb/cek-status): Cek status seleksi pendaftaran murid baru berdasarkan nomor pendaftaran.
+- [Pengumuman Kelulusan](/kelulusan): Cek hasil kelulusan siswa kelas 9 berdasarkan NISN dan tanggal lahir.
+
+## Optional
+
+- [Beranda](/): Diarahkan otomatis ke halaman login.
