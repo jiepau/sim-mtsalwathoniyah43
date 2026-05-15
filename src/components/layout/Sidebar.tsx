@@ -462,6 +462,8 @@ export function Sidebar() {
         size="icon"
         className="fixed top-4 left-4 z-50 lg:hidden"
         onClick={() => setMobileOpen(!mobileOpen)}
+        aria-label={mobileOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
+        aria-expanded={mobileOpen}
       >
         {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </Button>

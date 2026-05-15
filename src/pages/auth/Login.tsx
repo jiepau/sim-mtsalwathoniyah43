@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,6 +75,14 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gradient-hero islamic-pattern flex items-center justify-center p-4">
+      <Helmet>
+        <title>Masuk — SIM MTs Al Wathoniyah 43</title>
+        <meta name="description" content="Halaman masuk Sistem Informasi Manajemen MTs Al Wathoniyah 43 untuk admin, guru, bendahara, operator, dan siswa." />
+        <link rel="canonical" href="https://sim.mtsalwathoniyah43.com/login" />
+        <meta property="og:title" content="Masuk — SIM MTs Al Wathoniyah 43" />
+        <meta property="og:description" content="Halaman masuk Sistem Informasi Manajemen MTs Al Wathoniyah 43." />
+        <meta property="og:url" content="https://sim.mtsalwathoniyah43.com/login" />
+      </Helmet>
       <Card className="w-full max-w-md shadow-2xl border-0">
         <CardHeader className="text-center pb-2">
           <img 
@@ -81,7 +90,7 @@ export default function Login() {
             alt="Logo MTs Al Wathoniyah 43" 
             className="mx-auto h-20 w-20 rounded-2xl object-contain mb-4"
           />
-          <CardTitle className="text-2xl font-bold">Masuk</CardTitle>
+          <h1 className="text-2xl font-bold">Masuk SIM MTs Al Wathoniyah 43</h1>
           <CardDescription>Sistem Informasi Manajemen Madrasah </CardDescription>
           <CardDescription>MTS AL WATHONIYAH 43</CardDescription>
         </CardHeader>
@@ -118,6 +127,8 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                  aria-pressed={showPassword}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {showPassword ? (

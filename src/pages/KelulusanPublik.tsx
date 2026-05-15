@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -35,10 +36,18 @@ export default function KelulusanPublik() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/10 to-background p-4 flex items-center justify-center">
+      <Helmet>
+        <title>Pengumuman Kelulusan — MTs Al Wathoniyah 43</title>
+        <meta name="description" content="Cek hasil pengumuman kelulusan siswa kelas 9 MTs Al Wathoniyah 43 dengan memasukkan NISN dan tanggal lahir. Unduh Surat Keterangan Lulus (SKL) di sini." />
+        <link rel="canonical" href="https://sim.mtsalwathoniyah43.com/kelulusan" />
+        <meta property="og:title" content="Pengumuman Kelulusan — MTs Al Wathoniyah 43" />
+        <meta property="og:description" content="Cek hasil pengumuman kelulusan siswa MTs Al Wathoniyah 43." />
+        <meta property="og:url" content="https://sim.mtsalwathoniyah43.com/kelulusan" />
+      </Helmet>
       <Card className="w-full max-w-lg">
         <CardHeader className="text-center space-y-2">
-          <img src="/logo-alwathoniyah.png" alt="Logo" className="h-16 mx-auto" />
-          <CardTitle className="text-lg">Pengumuman Kelulusan</CardTitle>
+          <img src="/logo-alwathoniyah.png" alt="Logo MTs Al Wathoniyah 43" className="h-16 mx-auto" />
+          <h1 className="text-lg font-semibold">Pengumuman Kelulusan MTs Al Wathoniyah 43</h1>
           <p className="text-sm text-muted-foreground">MTs Al-Wathoniyah 43</p>
         </CardHeader>
         <CardContent className="space-y-4">
