@@ -62,6 +62,7 @@ const SPMBDaftar = lazy(() => import("@/pages/PPDBDaftar"));
 const SPMBCekStatus = lazy(() => import("@/pages/PPDBCekStatus"));
 const PDUM = lazy(() => import("@/pages/PDUM"));
 const KelulusanPublik = lazy(() => import("@/pages/KelulusanPublik"));
+const PetaSitus = lazy(() => import("@/pages/PetaSitus"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -167,8 +168,9 @@ const App = () => {
                   {/* Kalender - all roles incl. siswa */}
                   <Route path="/kalender-akademik" element={<KalenderAkademik />} />
 
-                  {/* Changelog - all roles */}
+                  {/* Changelog & Peta Situs - all roles */}
                   <Route path="/changelog" element={<Changelog />} />
+                  <Route path="/peta-situs" element={<PetaSitus />} />
 
                   {/* SPMB - admin only */}
                   <Route path="/spmb" element={<ProtectedRoute allowedRoles={['admin', 'panitia']}><SPMBPage /></ProtectedRoute>} />
