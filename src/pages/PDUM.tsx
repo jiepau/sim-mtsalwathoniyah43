@@ -852,9 +852,9 @@ function MapelPanel({ mapelList: _mapelList, onChanged }: { mapelList: Mapel[]; 
           <Select value={newKelompok} onValueChange={setNewKelompok}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="agama">Agama</SelectItem>
-              <SelectItem value="umum">Umum</SelectItem>
-              <SelectItem value="muatan_lokal">Muatan Lokal</SelectItem>
+              <SelectItem value="A">Kelompok A (Umum/Agama)</SelectItem>
+              <SelectItem value="B">Kelompok B</SelectItem>
+              <SelectItem value="mulok">Muatan Lokal</SelectItem>
             </SelectContent>
           </Select>
           <Button onClick={addMapel}>+ Tambah Mapel</Button>
