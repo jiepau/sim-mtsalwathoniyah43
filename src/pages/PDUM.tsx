@@ -90,8 +90,17 @@ export default function PDUMPage() {
         .select('id, nama, nis, nisn, kelas_id, jenis_kelamin, tempat_lahir, tanggal_lahir, nama_ayah_kandung, nama_ibu_kandung')
         .eq('ta_id', taId).in('kelas_id', kelasIds);
       if (kelasId !== 'all') q = q.eq('kelas_id', kelasId);
-      const { data } = await q.order('nama');
-      return (data || []) as Siswa[];
+      const { data } = await q;
+      // Urutkan: berdasarkan nama_kelas dulu, lalu nama siswa dalam kelas
+      const kelasOrder = new Map((kelasList || []).map((k, idx) => [k.id, { nama: k.nama_kelas || '', idx }]));
+      const sorted = (data || []).slice().sort((a: any, b: any) => {
+        const ka = kelasOrder.get(a.kelas_id);
+        const kb = kelasOrder.get(b.kelas_id);
+        const cmp = (ka?.nama || '').localeCompare(kb?.nama || '', 'id', { numeric: true });
+        if (cmp !== 0) return cmp;
+        return (a.nama || '').localeCompare(b.nama || '', 'id', { numeric: true });
+      });
+      return sorted as Siswa[];
     },
   });
 
