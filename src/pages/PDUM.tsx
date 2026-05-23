@@ -40,7 +40,8 @@ export default function PDUMPage() {
   const [editedRapor, setEditedRapor] = useState<Record<string, number | null>>({}); // key: siswa|kode|sem
   const [editedUm, setEditedUm] = useState<Record<string, number | null>>({}); // key: siswa|kode
   const [formSettings, setFormSettings] = useState<Partial<Settings>>({});
-  const fileRef = useRef<HTMLInputElement>(null);
+  const fileRaporRef = useRef<HTMLInputElement>(null);
+  const fileUmRef = useRef<HTMLInputElement>(null);
 
   // ============ Queries ============
   const { data: taList } = useQuery({
@@ -276,7 +277,8 @@ export default function PDUMPage() {
     } catch (err: any) {
       toast.error('Gagal import: ' + (err.message || String(err)));
     } finally {
-      if (fileRef.current) fileRef.current.value = '';
+      if (target === 'rapor' && fileRaporRef.current) fileRaporRef.current.value = '';
+      if (target === 'um' && fileUmRef.current) fileUmRef.current.value = '';
     }
   };
 
@@ -455,8 +457,8 @@ export default function PDUMPage() {
               <Save className="h-4 w-4 mr-2" />Simpan ({Object.keys(editedRapor).length})
             </Button>
             <Button variant="outline" onClick={() => downloadTemplate('rapor')}><Download className="h-4 w-4 mr-2" />Template</Button>
-            <Button variant="outline" onClick={() => fileRef.current?.click()}><Upload className="h-4 w-4 mr-2" />Import Excel</Button>
-            <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" onChange={(e) => handleImportNilai(e, 'rapor')} className="hidden" />
+            <Button variant="outline" onClick={() => fileRaporRef.current?.click()}><Upload className="h-4 w-4 mr-2" />Import Excel</Button>
+            <input ref={fileRaporRef} type="file" accept=".xlsx,.xls,.csv" onChange={(e) => handleImportNilai(e, 'rapor')} className="hidden" />
           </div>
           <NilaiTable
             siswaList={siswaList} mapelList={mapelList}
@@ -472,9 +474,8 @@ export default function PDUMPage() {
               <Save className="h-4 w-4 mr-2" />Simpan ({Object.keys(editedUm).length})
             </Button>
             <Button variant="outline" onClick={() => downloadTemplate('um')}><Download className="h-4 w-4 mr-2" />Template</Button>
-            <Button variant="outline" onClick={() => fileRef.current?.click()}><Upload className="h-4 w-4 mr-2" />Import Excel</Button>
-            <input type="file" accept=".xlsx,.xls,.csv" onChange={(e) => handleImportNilai(e, 'um')} className="hidden"
-              ref={(el) => { if (el) (fileRef as any).current = el; }} />
+            <Button variant="outline" onClick={() => fileUmRef.current?.click()}><Upload className="h-4 w-4 mr-2" />Import Excel</Button>
+            <input ref={fileUmRef} type="file" accept=".xlsx,.xls,.csv" onChange={(e) => handleImportNilai(e, 'um')} className="hidden" />
           </div>
           <NilaiTable
             siswaList={siswaList} mapelList={mapelList}
