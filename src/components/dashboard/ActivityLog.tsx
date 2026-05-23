@@ -42,15 +42,9 @@ export function ActivityLog() {
 
   useEffect(() => {
     fetchLogs();
-
-    const channel = supabase
-      .channel('activity-logs-realtime')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_logs' }, () => {
-        fetchLogs();
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
+    // Polling 20s — realtime dimatikan untuk privasi log aktivitas
+    const interval = setInterval(fetchLogs, 20000);
+    return () => clearInterval(interval);
   }, []);
 
   const getInitials = (name: string) => {

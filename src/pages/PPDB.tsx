@@ -64,17 +64,11 @@ export default function PPDB() {
   });
 
   useEffect(() => {
-    const channel = supabase
-      .channel('ppdb-realtime')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'ppdb_pendaftar' },
-        () => {
-          qc.invalidateQueries({ queryKey: ['ppdb-pendaftar'] });
-        }
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    // Polling 30s — realtime dimatikan untuk privasi data pendaftar
+    const interval = setInterval(() => {
+      qc.invalidateQueries({ queryKey: ['ppdb-pendaftar'] });
+    }, 30000);
+    return () => clearInterval(interval);
   }, [qc]);
 
   const updateStatusMutation = useMutation({

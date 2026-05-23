@@ -197,14 +197,9 @@ export function Sidebar() {
 
     fetchPendingCount();
 
-    // Listen for realtime changes
-    const channel = supabase
-      .channel('pending-approval-count')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchPendingCount())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'user_roles' }, () => fetchPendingCount())
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
+    // Polling 30s — realtime dimatikan untuk privasi data profil
+    const interval = setInterval(fetchPendingCount, 30000);
+    return () => clearInterval(interval);
   }, [isAdmin]);
   
   // Auto-expand menu based on current route
