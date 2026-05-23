@@ -385,7 +385,20 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 pb-3 space-y-1 overflow-y-auto scrollbar-thin">
-        {menuItems.map(item => renderMenuItem(item))}
+        {menuItems.map((item, idx) => {
+          const prevSection = idx > 0 ? menuItems[idx - 1].section : undefined;
+          const showLabel = item.section && item.section !== prevSection && !collapsed;
+          return (
+            <div key={item.title}>
+              {showLabel && (
+                <p className="px-4 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-white/60">
+                  {item.section}
+                </p>
+              )}
+              {renderMenuItem(item)}
+            </div>
+          );
+        })}
       </nav>
 
       {/* Footer — quick logout & info ringkas */}
