@@ -36,7 +36,10 @@ export default function KelulusanPublik() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/10 to-background p-4 flex items-center justify-center">
+    <div
+      className="min-h-screen p-4 flex items-center justify-center bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${loginBg})` }}
+    >
       <Helmet>
         <title>Pengumuman Kelulusan — MTs Al Wathoniyah 43</title>
         <meta name="description" content="Cek hasil pengumuman kelulusan siswa kelas 9 MTs Al Wathoniyah 43 dengan memasukkan NISN dan tanggal lahir. Unduh Surat Keterangan Lulus (SKL) di sini." />
