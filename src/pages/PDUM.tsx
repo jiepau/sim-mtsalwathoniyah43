@@ -671,7 +671,162 @@ export default function PDUMPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {printSiswaId && (
+        <CetakSKLDialog
+          open={!!printSiswaId}
+          onOpenChange={(o) => !o && setPrintSiswaId(null)}
+          siswaId={printSiswaId}
+          taId={taId}
+        />
+      )}
     </div>
+  );
+}
+
+// ============ Pengumuman Panel ============
+function PengumumanPanel({ taId }: { taId: string }) {
+  const qc = useQueryClient();
+  const { data: settings } = useQuery({
+    queryKey: ['kelulusan-settings', taId],
+    enabled: !!taId,
+    queryFn: async () => {
+      const { data } = await supabase.from('kelulusan_settings').select('*').eq('ta_id', taId).maybeSingle();
+      return data;
+    },
+  });
+  const [form, setForm] = useState<any>({});
+  const merged = { ...(settings || {}), ...form };
+
+  const save = async () => {
+    const payload = {
+      ta_id: taId,
+      is_published: merged.is_published ?? false,
+      published_at: merged.published_at || null,
+      judul_pengumuman: merged.judul_pengumuman || 'Pengumuman Kelulusan',
+      pesan_ucapan: merged.pesan_ucapan || '',
+      nomor_sk_format: merged.nomor_sk_format || 'SK-LULUS/MTs43/{tahun}',
+    };
+    const { error } = await supabase.from('kelulusan_settings').upsert(payload, { onConflict: 'ta_id' });
+    if (error) { toast.error(error.message); return; }
+    toast.success('Pengaturan tersimpan');
+    setForm({});
+    qc.invalidateQueries({ queryKey: ['kelulusan-settings'] });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Pengaturan Pengumuman Publik</CardTitle>
+        <CardDescription>Atur kapan halaman publik <code>/kelulusan</code> menampilkan hasil.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div>
+            <Label className="text-base">Buka Pengumuman</Label>
+            <p className="text-xs text-muted-foreground">Saat aktif, siswa bisa cek status di halaman publik.</p>
+          </div>
+          <Switch checked={merged.is_published ?? false}
+            onCheckedChange={(v) => setForm((f: any) => ({ ...f, is_published: v }))} />
+        </div>
+        <div>
+          <Label>Tanggal & Jam Pengumuman Aktif</Label>
+          <Input type="datetime-local"
+            value={merged.published_at ? new Date(merged.published_at).toISOString().slice(0, 16) : ''}
+            onChange={(e) => setForm((f: any) => ({ ...f, published_at: e.target.value ? new Date(e.target.value).toISOString() : null }))} />
+          <p className="text-xs text-muted-foreground mt-1">Sebelum waktu ini, halaman publik menampilkan "belum diumumkan".</p>
+        </div>
+        <div>
+          <Label>Judul Pengumuman</Label>
+          <Input value={merged.judul_pengumuman || ''} onChange={(e) => setForm((f: any) => ({ ...f, judul_pengumuman: e.target.value }))} />
+        </div>
+        <div>
+          <Label>Pesan Ucapan untuk yang LULUS</Label>
+          <Textarea rows={3} value={merged.pesan_ucapan || ''} onChange={(e) => setForm((f: any) => ({ ...f, pesan_ucapan: e.target.value }))} />
+        </div>
+        <div>
+          <Label>Format Nomor SK Kelulusan</Label>
+          <Input value={merged.nomor_sk_format || ''} onChange={(e) => setForm((f: any) => ({ ...f, nomor_sk_format: e.target.value }))} placeholder="SK-LULUS/MTs43/{tahun}" />
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={save}><Save className="h-4 w-4 mr-2" />Simpan</Button>
+          <Button variant="outline" asChild>
+            <a href="/kelulusan" target="_blank" rel="noopener"><FileText className="h-4 w-4 mr-2" />Buka Halaman Publik</a>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============ Mapel Panel ============
+function MapelPanel({ mapelList, onChanged }: { mapelList: Mapel[]; onChanged: () => void }) {
+  const [newName, setNewName] = useState('');
+  const [newKode, setNewKode] = useState('');
+  const [newKelompok, setNewKelompok] = useState('umum');
+
+  const addMapel = async () => {
+    if (!newName.trim() || !newKode.trim()) { toast.error('Nama & kode wajib'); return; }
+    const { error } = await supabase.from('pdum_mapel').insert({
+      nama_mapel: newName.trim(), kode_mapel: newKode.trim().toLowerCase(),
+      kelompok: newKelompok,
+      urutan: (mapelList[mapelList.length - 1]?.urutan ?? 0) + 1,
+    });
+    if (error) { toast.error(error.message); return; }
+    toast.success('Mapel ditambahkan');
+    setNewName(''); setNewKode(''); onChanged();
+  };
+
+  const toggle = async (m: Mapel) => {
+    await supabase.from('pdum_mapel').update({ is_active: !m.is_active }).eq('id', m.id);
+    onChanged();
+  };
+
+  const remove = async (m: Mapel) => {
+    if (!confirm(`Hapus mapel "${m.nama_mapel}"?`)) return;
+    await supabase.from('pdum_mapel').delete().eq('id', m.id);
+    onChanged();
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Daftar Mata Pelajaran PDUM/Ijazah</CardTitle>
+        <CardDescription>Mapel yang muncul di kolom nilai rapor, UM, dan export.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+          <Input placeholder="Nama Mapel" value={newName} onChange={(e) => setNewName(e.target.value)} />
+          <Input placeholder="Kode (mis. b_sunda)" value={newKode} onChange={(e) => setNewKode(e.target.value)} />
+          <Select value={newKelompok} onValueChange={setNewKelompok}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="agama">Agama</SelectItem>
+              <SelectItem value="umum">Umum</SelectItem>
+              <SelectItem value="muatan_lokal">Muatan Lokal</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={addMapel}>+ Tambah Mapel</Button>
+        </div>
+        <Table>
+          <TableHeader>
+            <TableRow><TableHead>#</TableHead><TableHead>Nama</TableHead><TableHead>Kode</TableHead><TableHead>Kelompok</TableHead><TableHead>Aktif</TableHead><TableHead>Aksi</TableHead></TableRow>
+          </TableHeader>
+          <TableBody>
+            {mapelList.map((m, i) => (
+              <TableRow key={m.id}>
+                <TableCell>{i + 1}</TableCell>
+                <TableCell>{m.nama_mapel}</TableCell>
+                <TableCell className="text-xs text-muted-foreground">{m.kode_mapel}</TableCell>
+                <TableCell className="text-xs">{m.kelompok}</TableCell>
+                <TableCell><Switch checked={m.is_active} onCheckedChange={() => toggle(m)} /></TableCell>
+                <TableCell><Button size="sm" variant="ghost" onClick={() => remove(m)}>Hapus</Button></TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 }
 
