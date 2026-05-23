@@ -28,9 +28,10 @@ export function CetakSKLDialog({ open, onOpenChange, siswaId, taId }: Props) {
     queryKey: ['skl-full', siswaId, taId],
     enabled: open && !!siswaId && !!taId,
     queryFn: async () => {
-      const [siswaRes, kelulusanRes, taRes, madrasahRes, pesertaRes, mapelRes, settingsRes, raporRes, umRes] = await Promise.all([
+      const [siswaRes, kelulusanRes, kelSetRes, taRes, madrasahRes, pesertaRes, mapelRes, settingsRes, raporRes, umRes] = await Promise.all([
         supabase.from('siswa').select('id, nama, nis, nisn, tempat_lahir, tanggal_lahir, kelas_id, nama_ayah_kandung, nama_ibu_kandung, foto_path').eq('id', siswaId).maybeSingle(),
         supabase.from('kelulusan').select('*').eq('siswa_id', siswaId).eq('ta_id', taId).maybeSingle(),
+        supabase.from('kelulusan_settings').select('*').eq('ta_id', taId).maybeSingle(),
         supabase.from('tahun_ajaran').select('nama_ta').eq('id', taId).maybeSingle(),
         supabase.from('madrasah_settings').select('*').maybeSingle(),
         supabase.from('pdum_peserta').select('*').eq('siswa_id', siswaId).eq('ta_id', taId).maybeSingle(),
@@ -52,6 +53,7 @@ export function CetakSKLDialog({ open, onOpenChange, siswaId, taId }: Props) {
         peserta: pesertaRes.data,
         mapelList: (mapelRes.data || []) as any[],
         settings: settingsRes.data,
+        kelSet: kelSetRes.data,
         rapor: (raporRes.data || []) as any[],
         um: (umRes.data || []) as any[],
         nama_kelas,
@@ -89,8 +91,9 @@ export function CetakSKLDialog({ open, onOpenChange, siswaId, taId }: Props) {
   const tglLahir = s.tanggal_lahir
     ? new Date(s.tanggal_lahir).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
     : '-';
-  const tglSk = k?.tanggal_lulus
-    ? new Date(k.tanggal_lulus).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
+  const tglSumber = (data as any).kelSet?.published_at || (data as any).kelSet?.tanggal_pengumuman || k?.tanggal_lulus;
+  const tglSk = tglSumber
+    ? new Date(tglSumber).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
     : new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 
   const namaOrtu = p?.nama_ayah_override || s.nama_ayah_kandung || p?.nama_ibu_override || s.nama_ibu_kandung || '-';
