@@ -40,6 +40,7 @@ import {
   Palette,
   UserPlus,
   BookCheck,
+  Map,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -55,11 +56,13 @@ interface MenuItem {
   path?: string;
   children?: MenuItem[];
   roles?: AppRole[]; // Which roles can see this menu
+  section?: string;  // Optional section label (rendered as header before this item)
 }
 
 // All menu items with role restrictions
 const allMenuItems: MenuItem[] = [
-  { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', roles: ['admin', 'operator', 'bendahara', 'guru', 'panitia'] },
+  { title: 'Peta Situs', icon: Map, path: '/peta-situs', section: 'Bantuan' },
+  { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', section: 'Menu Utama', roles: ['admin', 'operator', 'bendahara', 'guru', 'panitia'] },
   { title: 'Dashboard Siswa', icon: GraduationCap, path: '/e-learning/dashboard', roles: ['siswa'] },
   { title: 'Profil Saya', icon: User, path: '/profil-guru', roles: ['guru', 'bendahara'] },
   { title: 'Siswa', icon: Users, path: '/siswa', roles: ['admin', 'operator', 'bendahara'] },
