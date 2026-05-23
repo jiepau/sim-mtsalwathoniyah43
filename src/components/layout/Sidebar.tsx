@@ -475,7 +475,8 @@ export function Sidebar() {
       <aside
         data-intensity={gradientIntensity}
         className={cn(
-          'sidebar-aside fixed left-0 z-30 flex flex-col shadow-md',
+          'sidebar-aside fixed left-0 flex flex-col shadow-md',
+          'z-50 lg:z-30',
           'top-0 h-screen lg:top-14 lg:h-[calc(100vh-3.5rem)]',
           gradientClass,
           isKontras ? 'border-r-2 border-primary/70' : 'border-r-2 border-primary/30',
