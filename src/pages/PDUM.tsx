@@ -138,7 +138,7 @@ export default function PDUMPage() {
     queryKey: ['pdum-kelulusan', taId, idsKey],
     enabled: !!taId && siswaIds.length > 0,
     queryFn: async () => {
-      const { data } = await supabase.from('kelulusan').select('siswa_id, status').eq('ta_id', taId).in('siswa_id', siswaIds);
+      const { data } = await supabase.from('kelulusan').select('siswa_id, status, nomor_sk, tanggal_lulus').eq('ta_id', taId).in('siswa_id', siswaIds);
       return data || [];
     },
   });
