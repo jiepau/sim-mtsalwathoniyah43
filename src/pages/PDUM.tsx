@@ -350,8 +350,8 @@ export default function PDUMPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Olah Nilai Ijazah (PDUM)"
-        description="Olah nilai rapor 5 semester + UM → Nilai Akhir Ijazah & export format Kemenag"
+        title="Nilai Ijazah & Kelulusan (PDUM)"
+        description="Olah nilai rapor 5 sem + UM → Nilai Akhir Ijazah, cetak SKL & atur pengumuman kelulusan"
         icon={<FileSpreadsheet className="h-6 w-6" />}
       />
 
