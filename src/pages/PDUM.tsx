@@ -772,7 +772,7 @@ function PengumumanPanel({ taId }: { taId: string }) {
 function MapelPanel({ mapelList: _mapelList, onChanged }: { mapelList: Mapel[]; onChanged: () => void }) {
   const [newName, setNewName] = useState('');
   const [newKode, setNewKode] = useState('');
-  const [newKelompok, setNewKelompok] = useState('umum');
+  const [newKelompok, setNewKelompok] = useState('A');
   const [dragId, setDragId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
 
