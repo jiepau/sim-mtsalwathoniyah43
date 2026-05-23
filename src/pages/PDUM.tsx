@@ -385,6 +385,9 @@ export default function PDUMPage() {
           <TabsTrigger value="rapor">Nilai Rapor</TabsTrigger>
           <TabsTrigger value="um">Nilai UM</TabsTrigger>
           <TabsTrigger value="akhir">Nilai Akhir</TabsTrigger>
+          <TabsTrigger value="kelulusan">Kelulusan & SKL</TabsTrigger>
+          <TabsTrigger value="pengumuman">Pengumuman</TabsTrigger>
+          <TabsTrigger value="mapel">Mata Pelajaran</TabsTrigger>
           <TabsTrigger value="settings">Pengaturan</TabsTrigger>
         </TabsList>
 
