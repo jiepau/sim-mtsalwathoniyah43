@@ -1,11 +1,12 @@
 import { useState, useMemo, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { FileSpreadsheet, Save, Download, Upload, Loader2, Calculator, Settings as SettingsIcon } from 'lucide-react';
+import { FileSpreadsheet, Save, Download, Upload, Calculator, Printer, FileText } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
@@ -13,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { CetakSKLDialog } from '@/components/ijazah/CetakSKLDialog';
 import {
   SEMESTER_LIST, type RaporRow, type UmRow,
   rataRapor, nilaiAkhir, exportPDUMExcel, exportRekapNilaiAkhir, parseNilaiExcel,
