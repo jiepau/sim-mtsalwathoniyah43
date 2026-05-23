@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { FileSpreadsheet, Save, Download, Upload, Calculator, Printer, FileText } from 'lucide-react';
+import { FileSpreadsheet, Save, Download, Upload, Calculator, Printer, FileText, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
