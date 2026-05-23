@@ -131,8 +131,7 @@ const allMenuItems: MenuItem[] = [
   { title: 'Buku Induk', icon: BookMarked, path: '/buku-induk', roles: ['admin', 'bendahara'] },
   { title: 'Naik Kelas', icon: ArrowUpCircle, path: '/naik-kelas', roles: ['admin', 'operator'] },
   { title: 'Alumni', icon: GraduationCap, path: '/alumni', roles: ['admin', 'operator'] },
-  { title: 'E-Ijazah & Kelulusan', icon: BookCheck, path: '/e-ijazah', roles: ['admin', 'operator'] },
-  { title: 'Olah Nilai PDUM', icon: ClipboardList, path: '/pdum', roles: ['admin', 'operator'] },
+  { title: 'Nilai Ijazah & Kelulusan (PDUM)', icon: BookCheck, path: '/pdum', roles: ['admin', 'operator'] },
   { title: 'Kalender Akademik', icon: CalendarDays, path: '/kalender-akademik', roles: ['siswa'] },
   { title: 'SPMB (Penerimaan Murid Baru)', icon: UserPlus, path: '/spmb', roles: ['admin', 'panitia'] },
   { title: 'Riwayat Pembaruan', icon: History, path: '/changelog' }, // All roles
