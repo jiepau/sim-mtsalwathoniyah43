@@ -60,7 +60,6 @@ const ValidasiGtk = lazy(() => import("@/pages/ValidasiGtk"));
 const SPMBPage = lazy(() => import("@/pages/PPDB"));
 const SPMBDaftar = lazy(() => import("@/pages/PPDBDaftar"));
 const SPMBCekStatus = lazy(() => import("@/pages/PPDBCekStatus"));
-const EIjazah = lazy(() => import("@/pages/EIjazah"));
 const PDUM = lazy(() => import("@/pages/PDUM"));
 const KelulusanPublik = lazy(() => import("@/pages/KelulusanPublik"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
