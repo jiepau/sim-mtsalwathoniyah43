@@ -772,7 +772,7 @@ function PengumumanPanel({ taId }: { taId: string }) {
 function MapelPanel({ mapelList: _mapelList, onChanged }: { mapelList: Mapel[]; onChanged: () => void }) {
   const [newName, setNewName] = useState('');
   const [newKode, setNewKode] = useState('');
-  const [newKelompok, setNewKelompok] = useState('umum');
+  const [newKelompok, setNewKelompok] = useState('A');
   const [dragId, setDragId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
 
@@ -852,9 +852,9 @@ function MapelPanel({ mapelList: _mapelList, onChanged }: { mapelList: Mapel[]; 
           <Select value={newKelompok} onValueChange={setNewKelompok}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="agama">Agama</SelectItem>
-              <SelectItem value="umum">Umum</SelectItem>
-              <SelectItem value="muatan_lokal">Muatan Lokal</SelectItem>
+              <SelectItem value="A">Kelompok A (Umum/Agama)</SelectItem>
+              <SelectItem value="B">Kelompok B</SelectItem>
+              <SelectItem value="mulok">Muatan Lokal</SelectItem>
             </SelectContent>
           </Select>
           <Button onClick={addMapel}>+ Tambah Mapel</Button>
@@ -888,7 +888,22 @@ function MapelPanel({ mapelList: _mapelList, onChanged }: { mapelList: Mapel[]; 
                 <TableCell>{i + 1}</TableCell>
                 <TableCell>{m.nama_mapel}</TableCell>
                 <TableCell className="text-xs text-muted-foreground">{m.kode_mapel}</TableCell>
-                <TableCell className="text-xs">{m.kelompok}</TableCell>
+                <TableCell className="text-xs">
+                  <Select
+                    value={['A','B','mulok'].includes(m.kelompok) ? m.kelompok : (m.kelompok === 'muatan_lokal' ? 'mulok' : 'A')}
+                    onValueChange={async (v) => {
+                      await supabase.from('pdum_mapel').update({ kelompok: v }).eq('id', m.id);
+                      refresh();
+                    }}
+                  >
+                    <SelectTrigger className="h-7 w-28 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="A">Kelompok A</SelectItem>
+                      <SelectItem value="B">Kelompok B</SelectItem>
+                      <SelectItem value="mulok">Muatan Lokal</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </TableCell>
                 <TableCell>
                   <div className="flex gap-1">
                     <Button size="icon" variant="ghost" className="h-7 w-7" disabled={i === 0} onClick={() => moveItem(m.id, -1)}><ArrowUp className="h-3.5 w-3.5" /></Button>
