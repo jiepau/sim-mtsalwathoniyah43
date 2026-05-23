@@ -28,9 +28,10 @@ export function CetakSKLDialog({ open, onOpenChange, siswaId, taId }: Props) {
     queryKey: ['skl-full', siswaId, taId],
     enabled: open && !!siswaId && !!taId,
     queryFn: async () => {
-      const [siswaRes, kelulusanRes, taRes, madrasahRes, pesertaRes, mapelRes, settingsRes, raporRes, umRes] = await Promise.all([
+      const [siswaRes, kelulusanRes, kelSetRes, taRes, madrasahRes, pesertaRes, mapelRes, settingsRes, raporRes, umRes] = await Promise.all([
         supabase.from('siswa').select('id, nama, nis, nisn, tempat_lahir, tanggal_lahir, kelas_id, nama_ayah_kandung, nama_ibu_kandung, foto_path').eq('id', siswaId).maybeSingle(),
         supabase.from('kelulusan').select('*').eq('siswa_id', siswaId).eq('ta_id', taId).maybeSingle(),
+        supabase.from('kelulusan_settings').select('*').eq('ta_id', taId).maybeSingle(),
         supabase.from('tahun_ajaran').select('nama_ta').eq('id', taId).maybeSingle(),
         supabase.from('madrasah_settings').select('*').maybeSingle(),
         supabase.from('pdum_peserta').select('*').eq('siswa_id', siswaId).eq('ta_id', taId).maybeSingle(),
