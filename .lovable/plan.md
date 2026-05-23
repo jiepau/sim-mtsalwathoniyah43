@@ -1,108 +1,75 @@
-## Tujuan
 
-Menambah dua modul terkait kelulusan kelas 9 di SIM (bukan aplikasi terpisah):
+# Modul PDUM (Pengolah Data Ujian Madrasah) & Pengumuman Kelulusan
 
-1. **E-Ijazah** — pengolah nilai akhir per mapel untuk siap disalin ke blanko ijazah & SKL Kemenag (impor dari Excel/CSV).
-2. **Pengumuman Kelulusan publik** — halaman publik `/kelulusan` tanpa login, siswa cek status via NISN, bisa download Surat Kelulusan PDF.
+Modul ini melengkapi halaman **E-Ijazah** yang sudah ada — bukan menggantinya. Fokus: mengolah nilai rapor 5 semester + UM menjadi Nilai Akhir Ijazah, lalu menghasilkan file Excel siap upload ke aplikasi PDUM Kemenag, plus rekap & SKL.
 
-## Kenapa ditambah ke SIM (bukan app baru)
+## Alur Pengguna
 
-- Data siswa kelas 9, NIS/NISN, identitas madrasah, kepala madrasah & TTD sudah ada di sini.
-- 1 backend, 1 deploy, hemat biaya.
-- Halaman publik tetap bisa dibuat sebagai **route tanpa login** (`/kelulusan`) — pola yang sama sudah dipakai untuk `/spmb/daftar` dan `/spmb/cek-status`.
+1. Admin/Operator buka menu **Olah Nilai Ijazah (PDUM)**.
+2. Pilih Tahun Ajaran (default TA aktif) → sistem otomatis tarik semua siswa kelas 9.
+3. (Opsional) Klik **Import Excel PDUM** untuk override / isi kolom Nomor Peserta, Kelas Ujian, Nama Ayah/Ibu sekaligus (cocok via NISN).
+4. Buka tab per semester (7-Ganjil, 7-Genap, 8-Ganjil, 8-Genap, 9-Ganjil) → input manual ATAU import Excel per semester.
+5. Buka tab **UM** → input nilai Ujian Madrasah per mapel.
+6. Tab **Nilai Akhir** menampilkan otomatis: `NA = (rata 5 sem × 60%) + (UM × 40%)`. Bobot bisa diubah di Pengaturan.
+7. Klik **Tandai Lulus** (bulk) → otomatis isi tabel `kelulusan` yang sudah ada.
+8. Klik **Export Excel PDUM Kemenag** → file siap upload.
+9. Aktifkan pengumuman di tab Pengumuman → siswa cek di `/kelulusan` pakai NISN, bisa download SKL.
 
-## Lingkup fitur
+## Cakupan
 
-### A. Modul E-Ijazah (admin/operator)
-- Menu baru di sidebar grup **Akademik**: "E-Ijazah & Kelulusan".
-- Pilih Tahun Ajaran + Kelas 9 → tampil daftar siswa.
-- **Import nilai dari Excel/CSV**: template berisi kolom NISN/NIS + nilai per mapel (PAI, B.Arab, PKn, B.Indo, B.Ing, MTK, IPA, IPS, Seni, PJOK, Prakarya, Mulok, dst — daftar mapel bisa diatur).
-- Edit nilai inline per siswa (kalau perlu koreksi manual).
-- **Cetak rekap nilai** (untuk disalin ke blanko Kemenag) — format A4 portrait, 1 siswa per halaman atau tabel rekap semua siswa.
-- **Set status kelulusan** per siswa: `LULUS` / `TIDAK LULUS` / `BELUM DIUMUMKAN`.
-- **Pengaturan pengumuman**: tanggal & jam pengumuman aktif (sebelum waktu itu, halaman publik tampilkan "belum diumumkan"), nomor SK kelulusan, pesan ucapan selamat.
+**Yang dibangun:**
+- Tabel input nilai 5 semester + UM per siswa per mapel
+- Pengaturan bobot global (default 60/40)
+- Daftar mapel khusus PDUM (terpisah dari ijazah_mapel_settings agar tidak mengganggu)
+- Import Excel: daftar siswa PDUM (override), nilai per semester
+- Export Excel format DNT-PDUM Kemenag (kolom persis: No, Nomor Peserta, NISN, NAMA, JK, TTL, Kelas, Jurusan, dst + kolom nilai)
+- Rekap Nilai Akhir per kelas (PDF print + Excel)
+- Integrasi ke halaman SKL & Pengumuman Publik yang sudah ada
 
-### B. Halaman Publik Kelulusan (`/kelulusan`)
-- Tanpa login. Form input NISN (+ opsional tanggal lahir untuk verifikasi ganda).
-- Setelah submit:
-  - Jika belum waktunya → "Pengumuman belum dibuka. Akan diumumkan pada [tanggal jam]."
-  - Jika `LULUS` → tampil nama, NISN, kelas, ucapan selamat, **tombol Download Surat Kelulusan (PDF)**.
-  - Jika `TIDAK LULUS` → pesan netral & saran konsultasi ke madrasah (tidak menampilkan nilai).
-  - Jika NISN tidak ditemukan → pesan error.
-- Surat Kelulusan PDF: kop madrasah dua-logo (komponen `PrintKopMadrasah` sudah ada), nomor SK, identitas siswa, pernyataan LULUS, TTD Kepala Madrasah dari `madrasah_settings`.
+**Yang TIDAK dibangun (sesuai permintaan):**
+- Tidak menggantikan workflow Excel yang sudah berjalan untuk siswa kelas 7-8
+- Tidak generate ijazah cetak (blanko dari Kemenag)
+- Tidak otomatis impor rapor dari E-Learning
 
-### C. Cetak SKL & Rekap Nilai (admin)
-- Cetak SKL massal (per kelas) atau per siswa dari menu E-Ijazah.
-- Cetak rekap nilai per siswa (untuk pegangan sebelum mengisi blanko Kemenag).
+## Perubahan Database
 
-## Yang TIDAK termasuk (sesuai permintaan user)
+**Tabel baru:**
 
-- Tidak mencetak ijazah resmi (blanko Kemenag dicetak manual oleh admin).
-- Tidak ada modul rapor/penilaian harian (nilai diimpor dari Excel hasil olahan di luar sistem).
-- Tidak ada QR code verifikasi publik (bisa ditambah nanti kalau dibutuhkan).
+- `pdum_mapel` — daftar mapel PDUM (kode, nama, urutan, kelompok: agama/umum/mulok, kkm, is_aktif). Terpisah dari `ijazah_mapel_settings` agar bisa berbeda dengan SKL.
+- `pdum_nilai_rapor` — nilai per (siswa_id, ta_id, kode_mapel, semester) di mana semester ∈ {7g, 7n, 8g, 8n, 9g}.
+- `pdum_nilai_um` — nilai UM per (siswa_id, ta_id, kode_mapel).
+- `pdum_peserta` — data tambahan peserta UM: (siswa_id, ta_id, nomor_peserta, kelas_ujian, jurusan default 'UMUM', no_absen). Override-able via import.
+- `pdum_settings` — (ta_id, bobot_rapor default 60, bobot_um default 40, nsm, nama_madrasah_pdum, provinsi, kabupaten — cache dari madrasah_settings).
 
-## Detail teknis
+**RLS:** Admin & Operator full manage; Guru/Bendahara read-only via `has_any_role`.
 
-### Database (3 tabel baru)
+**Tabel existing yang dipakai ulang (tanpa perubahan):**
+- `siswa` (sumber data dasar), `kelas`, `tahun_ajaran`
+- `kelulusan` & `kelulusan_settings` (sudah ada → status lulus + pengumuman publik)
+- `ijazah_mapel_settings` & `ijazah_nilai` (tetap untuk SKL sederhana / nilai legacy)
 
-```text
-ijazah_mapel_settings
-  id, ta_id, urutan, nama_mapel, kode_mapel, is_active
+## Perubahan Kode
 
-ijazah_nilai
-  id, siswa_id, ta_id, mapel (text), nilai (numeric)
-  unique(siswa_id, ta_id, mapel)
+**Halaman & komponen baru:**
+- `src/pages/PDUM.tsx` — halaman utama dengan tabs: Peserta · Nilai Rapor (5 sub-tab) · Nilai UM · Nilai Akhir · Pengaturan
+- `src/components/pdum/PdumImportPesertaDialog.tsx` — import Excel DNT-PDUM (override kolom peserta)
+- `src/components/pdum/PdumImportNilaiDialog.tsx` — import nilai per semester
+- `src/components/pdum/PdumExportKemenag.tsx` — generator Excel format Kemenag
+- `src/components/pdum/PdumRekapPrint.tsx` — print rekap nilai akhir per kelas
+- `src/lib/pdum-calc.ts` — fungsi perhitungan NA (rata-rata 5 sem × bobot_rapor + UM × bobot_um)
 
-kelulusan
-  id, siswa_id, ta_id, status ('lulus'|'tidak_lulus'|'pending')
-  nomor_sk, tanggal_lulus, catatan
-  unique(siswa_id, ta_id)
+**Routing & navigasi:**
+- `src/App.tsx` — tambah route `/pdum`
+- `src/components/layout/Sidebar.tsx` — tambah menu "Olah Nilai PDUM" di grup Akademik / E-Ijazah, role: admin & operator
 
-kelulusan_settings
-  id (singleton), ta_id, is_published (bool), published_at (timestamp)
-  judul_pengumuman, pesan_ucapan, nomor_sk_format
-```
+**Reuse:**
+- `src/components/ijazah/CetakSKLDialog.tsx` — diperluas untuk membaca Nilai Akhir PDUM bila tersedia, fallback ke `ijazah_nilai`
+- `src/pages/KelulusanPublik.tsx` — tidak berubah (tetap pakai edge function `cek-kelulusan` & tabel `kelulusan`)
 
-### RLS
+## Catatan Teknis
 
-- `ijazah_*` & `kelulusan`: admin/operator manage; bendahara read.
-- `kelulusan_settings`: admin manage; **publik (anon) bisa SELECT** (untuk cek apakah pengumuman sudah aktif).
-- Untuk pengecekan publik NISN → buat **Edge Function `cek-kelulusan`** dengan service role key yang menerima NISN (+ tgl lahir), mengembalikan hanya field aman (nama, status, nomor_sk). Pola sama dengan `validate-gtk` yang sudah ada. Ini menghindari membuka tabel `siswa` ke anon.
-
-### Edge Functions (2 baru)
-
-- `cek-kelulusan` — input NISN/tgl lahir, output status + identitas terbatas.
-- `generate-surat-kelulusan` — input siswa_id, output PDF/HTML Surat Kelulusan dengan kop & TTD.
-
-### Frontend
-
-- `src/pages/EIjazah.tsx` — menu admin (manage nilai + status + import).
-- `src/components/ijazah/ImportNilaiDialog.tsx` — wizard upload Excel.
-- `src/components/ijazah/CetakSKLDialog.tsx` — preview & cetak SKL.
-- `src/pages/KelulusanPublik.tsx` — route publik `/kelulusan`.
-- Routing: tambah `/kelulusan` (publik) + `/e-ijazah` (admin/operator) di `App.tsx`.
-- Sidebar: tambah item di grup Akademik dengan ikon GraduationCap.
-
-### Format Excel import
-
-```text
-NISN | NAMA (read-only) | PAI | B.Arab | PKn | B.Indo | B.Ing | MTK | IPA | IPS | ...
-```
-
-Sistem download template per kelas (sudah terisi NISN & nama), admin tinggal isi nilai lalu upload.
-
-## Fase pengerjaan
-
-1. **Migrasi DB** + RLS + seed `ijazah_mapel_settings` default (12 mapel standar MTs).
-2. **Edge function** `cek-kelulusan`.
-3. **Halaman admin E-Ijazah**: list siswa kelas 9, edit nilai inline, set status.
-4. **Import Excel** + download template.
-5. **Halaman publik `/kelulusan`** + integrasi edge function.
-6. **Cetak SKL** (PDF dengan kop & TTD).
-7. **Cetak rekap nilai per siswa** (untuk panduan isi blanko Kemenag).
-8. Tambah link "Pengumuman Kelulusan" di halaman Login (mirip link SPMB) supaya mudah ditemukan.
-
-## Pertanyaan saat implementasi (kalau ada)
-
-- Daftar mapel default — saya pakai 12 mapel kurikulum MTs standar; user bisa edit di pengaturan.
-- Verifikasi publik: NISN saja, atau NISN + tanggal lahir? Saya default ke **NISN + tanggal lahir** untuk privasi (mencegah orang random cek status siswa lain).
+- **Excel parsing:** pakai library `xlsx` yang sudah ada di project (dipakai untuk EMIS Import siswa).
+- **Format Nomor Peserta:** otomatis di-generate `{NSM-pendek}-{kelas}-{urut4digit}` mengikuti pola contoh `26-09-02-2-0180-0001`, NSM/prefix diambil dari `pdum_settings`. Bisa di-override via import.
+- **Default mapel PDUM** akan di-seed mengikuti standar MTs Kemenag (Quran-Hadis, Aqidah-Akhlak, Fiqih, SKI, Bahasa Arab, PPKn, Bahasa Indonesia, Bahasa Inggris, Matematika, IPA, IPS, Penjasorkes, Seni Budaya, Informatika, Mulok).
+- **Validasi:** nilai 0–100, NA dibulatkan 2 desimal sesuai PDUM.
+- **Tidak ada perubahan auth/RLS untuk tabel publik** — halaman pengumuman tetap pakai edge function yang ada.

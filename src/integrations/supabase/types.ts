@@ -1288,6 +1288,177 @@ export type Database = {
         }
         Relationships: []
       }
+      pdum_mapel: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          kelompok: string
+          kkm: number | null
+          kode_mapel: string
+          nama_mapel: string
+          urutan: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          kelompok?: string
+          kkm?: number | null
+          kode_mapel: string
+          nama_mapel: string
+          urutan?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          kelompok?: string
+          kkm?: number | null
+          kode_mapel?: string
+          nama_mapel?: string
+          urutan?: number
+        }
+        Relationships: []
+      }
+      pdum_nilai_rapor: {
+        Row: {
+          created_at: string
+          id: string
+          kode_mapel: string
+          nilai: number | null
+          semester: string
+          siswa_id: string
+          ta_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kode_mapel: string
+          nilai?: number | null
+          semester: string
+          siswa_id: string
+          ta_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kode_mapel?: string
+          nilai?: number | null
+          semester?: string
+          siswa_id?: string
+          ta_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pdum_nilai_um: {
+        Row: {
+          created_at: string
+          id: string
+          kode_mapel: string
+          nilai: number | null
+          siswa_id: string
+          ta_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kode_mapel: string
+          nilai?: number | null
+          siswa_id: string
+          ta_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kode_mapel?: string
+          nilai?: number | null
+          siswa_id?: string
+          ta_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pdum_peserta: {
+        Row: {
+          created_at: string
+          id: string
+          jurusan: string | null
+          kelas_ujian: number | null
+          nama_ayah_override: string | null
+          nama_ibu_override: string | null
+          no_absen: number | null
+          nomor_peserta: string | null
+          siswa_id: string
+          ta_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          jurusan?: string | null
+          kelas_ujian?: number | null
+          nama_ayah_override?: string | null
+          nama_ibu_override?: string | null
+          no_absen?: number | null
+          nomor_peserta?: string | null
+          siswa_id: string
+          ta_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          jurusan?: string | null
+          kelas_ujian?: number | null
+          nama_ayah_override?: string | null
+          nama_ibu_override?: string | null
+          no_absen?: number | null
+          nomor_peserta?: string | null
+          siswa_id?: string
+          ta_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pdum_settings: {
+        Row: {
+          bobot_rapor: number
+          bobot_um: number
+          created_at: string
+          id: string
+          nomor_peserta_prefix: string | null
+          nsm: string | null
+          ta_id: string
+          updated_at: string
+        }
+        Insert: {
+          bobot_rapor?: number
+          bobot_um?: number
+          created_at?: string
+          id?: string
+          nomor_peserta_prefix?: string | null
+          nsm?: string | null
+          ta_id: string
+          updated_at?: string
+        }
+        Update: {
+          bobot_rapor?: number
+          bobot_um?: number
+          created_at?: string
+          id?: string
+          nomor_peserta_prefix?: string | null
+          nsm?: string | null
+          ta_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pembayaran: {
         Row: {
           bulan: number | null
