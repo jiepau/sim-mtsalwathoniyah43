@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { mapAuthError } from "@/lib/error-mapper";
 import { lovable } from "@/integrations/lovable/index";
 import { Separator } from "@/components/ui/separator";
+import loginBg from "@/assets/login-background.png";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -74,7 +75,10 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero islamic-pattern flex items-center justify-center p-4">
+    <div
+      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${loginBg})` }}
+    >
       <Helmet>
         <title>Masuk — SIM MTs Al Wathoniyah 43</title>
         <meta
@@ -86,7 +90,7 @@ export default function Login() {
         <meta property="og:description" content="Halaman masuk Sistem Informasi Manajemen MTs Al Wathoniyah 43." />
         <meta property="og:url" content="https://sim.mtsalwathoniyah43.com/login" />
       </Helmet>
-      <Card className="w-full max-w-md shadow-2xl border-0">
+      <Card className="w-full max-w-md shadow-2xl border-0 bg-background/85 backdrop-blur-md">
         <CardHeader className="text-center pb-2">
           <img
             src="/logo-alwathoniyah.png"
