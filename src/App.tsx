@@ -60,7 +60,6 @@ const ValidasiGtk = lazy(() => import("@/pages/ValidasiGtk"));
 const SPMBPage = lazy(() => import("@/pages/PPDB"));
 const SPMBDaftar = lazy(() => import("@/pages/PPDBDaftar"));
 const SPMBCekStatus = lazy(() => import("@/pages/PPDBCekStatus"));
-const EIjazah = lazy(() => import("@/pages/EIjazah"));
 const PDUM = lazy(() => import("@/pages/PDUM"));
 const KelulusanPublik = lazy(() => import("@/pages/KelulusanPublik"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
@@ -125,7 +124,7 @@ const App = () => {
                   <Route path="/gtk-ptk" element={<ProtectedRoute allowedRoles={['admin','operator']}><GtkPtk /></ProtectedRoute>} />
                   <Route path="/naik-kelas" element={<ProtectedRoute allowedRoles={['admin','operator']}><NaikKelas /></ProtectedRoute>} />
                   <Route path="/alumni" element={<ProtectedRoute allowedRoles={['admin','operator']}><Alumni /></ProtectedRoute>} />
-                  <Route path="/e-ijazah" element={<ProtectedRoute allowedRoles={['admin','operator']}><EIjazah /></ProtectedRoute>} />
+                  <Route path="/e-ijazah" element={<Navigate to="/pdum" replace />} />
                   <Route path="/pdum" element={<ProtectedRoute allowedRoles={['admin','operator']}><PDUM /></ProtectedRoute>} />
                   <Route path="/buku-induk" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><BukuInduk /></ProtectedRoute>} />
 
