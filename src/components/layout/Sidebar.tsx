@@ -476,7 +476,7 @@ export function Sidebar() {
       <aside
         data-intensity={gradientIntensity}
         className={cn(
-          'sidebar-aside fixed left-0 z-30 flex flex-col shadow-md relative overflow-hidden',
+          'sidebar-aside fixed left-0 z-30 flex flex-col shadow-md',
           'top-0 h-screen lg:top-14 lg:h-[calc(100vh-3.5rem)]',
           gradientClass,
           isKontras ? 'border-r-2 border-primary/70' : 'border-r-2 border-primary/30',
@@ -484,15 +484,7 @@ export function Sidebar() {
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
-        {/* Background image layer */}
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-cover bg-center opacity-25 mix-blend-overlay pointer-events-none"
-          style={{ backgroundImage: `url(${sideMenuBg})` }}
-        />
-        <div className="relative z-10 flex flex-col h-full min-h-0">
-          {sidebarContent}
-        </div>
+        {sidebarContent}
       </aside>
     </>
   );
