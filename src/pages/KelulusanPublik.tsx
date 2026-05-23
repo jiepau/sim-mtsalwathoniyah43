@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Search, CheckCircle2, XCircle, Clock, GraduationCap, Printer } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { CetakSKLDialog } from '@/components/ijazah/CetakSKLDialog';
+import loginBg from '@/assets/login-background.png';
 
 export default function KelulusanPublik() {
   const [nisn, setNisn] = useState('');
