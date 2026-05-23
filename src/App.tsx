@@ -168,8 +168,9 @@ const App = () => {
                   {/* Kalender - all roles incl. siswa */}
                   <Route path="/kalender-akademik" element={<KalenderAkademik />} />
 
-                  {/* Changelog - all roles */}
+                  {/* Changelog & Peta Situs - all roles */}
                   <Route path="/changelog" element={<Changelog />} />
+                  <Route path="/peta-situs" element={<PetaSitus />} />
 
                   {/* SPMB - admin only */}
                   <Route path="/spmb" element={<ProtectedRoute allowedRoles={['admin', 'panitia']}><SPMBPage /></ProtectedRoute>} />
