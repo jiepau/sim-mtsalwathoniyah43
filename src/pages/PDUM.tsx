@@ -335,6 +335,17 @@ export default function PDUMPage() {
     qc.invalidateQueries({ queryKey: ['pdum-kelulusan'] });
   };
 
+  const handleSetStatus = async (siswa_id: string, status: 'lulus' | 'tidak_lulus' | 'pending') => {
+    const existing = kelulusanFullMap[siswa_id];
+    const payload: any = {
+      siswa_id, ta_id: taId, status,
+      tanggal_lulus: status === 'lulus' ? (existing?.tanggal_lulus || new Date().toISOString().slice(0, 10)) : null,
+    };
+    const { error } = await supabase.from('kelulusan').upsert(payload, { onConflict: 'siswa_id,ta_id' });
+    if (error) { toast.error('Gagal: ' + error.message); return; }
+    qc.invalidateQueries({ queryKey: ['pdum-kelulusan'] });
+  };
+
   // ============ Render ============
   return (
     <div className="space-y-6">
