@@ -53,6 +53,7 @@ export function CetakSKLDialog({ open, onOpenChange, siswaId, taId }: Props) {
         peserta: pesertaRes.data,
         mapelList: (mapelRes.data || []) as any[],
         settings: settingsRes.data,
+        kelSet: kelSetRes.data,
         rapor: (raporRes.data || []) as any[],
         um: (umRes.data || []) as any[],
         nama_kelas,
