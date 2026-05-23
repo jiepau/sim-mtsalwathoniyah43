@@ -155,6 +155,7 @@ export default function PDUMPage() {
     return m;
   }, [umRows]);
   const kelulusanMap = useMemo(() => Object.fromEntries((kelulusanData as any[]).map(k => [k.siswa_id, k.status])), [kelulusanData]);
+  const kelulusanFullMap = useMemo(() => Object.fromEntries((kelulusanData as any[]).map(k => [k.siswa_id, k])), [kelulusanData]);
 
   const cur: Settings = { ...DEFAULT_SETTINGS, ...(settings || {}), ...formSettings };
 
