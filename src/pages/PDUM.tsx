@@ -569,6 +569,67 @@ export default function PDUMPage() {
         </TabsContent>
 
         {/* ===== SETTINGS ===== */}
+        {/* ===== KELULUSAN & SKL ===== */}
+        <TabsContent value="kelulusan" className="space-y-3">
+          <div className="flex gap-2">
+            <Button onClick={handleBulkLulus}>Tandai Semua LULUS</Button>
+          </div>
+          <Card>
+            <CardContent className="pt-6 overflow-x-auto">
+              {siswaList.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">Belum ada siswa.</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>No</TableHead>
+                      <TableHead>Nama</TableHead>
+                      <TableHead>NISN</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Aksi</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {siswaList.map((s, i) => {
+                      const k = kelulusanFullMap[s.id];
+                      return (
+                        <TableRow key={s.id}>
+                          <TableCell>{i + 1}</TableCell>
+                          <TableCell className="font-medium">{s.nama}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{s.nisn || '-'}</TableCell>
+                          <TableCell>
+                            <Badge variant={k?.status === 'lulus' ? 'default' : k?.status === 'tidak_lulus' ? 'destructive' : 'secondary'}>
+                              {k?.status === 'lulus' ? 'LULUS' : k?.status === 'tidak_lulus' ? 'TIDAK LULUS' : 'BELUM'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button size="sm" variant={k?.status === 'lulus' ? 'default' : 'outline'} onClick={() => handleSetStatus(s.id, 'lulus')}>Lulus</Button>
+                              <Button size="sm" variant={k?.status === 'tidak_lulus' ? 'destructive' : 'outline'} onClick={() => handleSetStatus(s.id, 'tidak_lulus')}>Tidak</Button>
+                              <Button size="sm" variant="outline" onClick={() => setPrintSiswaId(s.id)} title="Cetak SKL"><Printer className="h-3.5 w-3.5" /></Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ===== PENGUMUMAN ===== */}
+        <TabsContent value="pengumuman">
+          <PengumumanPanel taId={taId} />
+        </TabsContent>
+
+        {/* ===== MAPEL ===== */}
+        <TabsContent value="mapel">
+          <MapelPanel mapelList={mapelList} onChanged={() => qc.invalidateQueries({ queryKey: ['pdum-mapel'] })} />
+        </TabsContent>
+
+        {/* ===== SETTINGS ===== */}
         <TabsContent value="settings">
           <Card>
             <CardHeader>
