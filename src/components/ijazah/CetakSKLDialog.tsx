@@ -91,8 +91,9 @@ export function CetakSKLDialog({ open, onOpenChange, siswaId, taId }: Props) {
   const tglLahir = s.tanggal_lahir
     ? new Date(s.tanggal_lahir).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
     : '-';
-  const tglSk = k?.tanggal_lulus
-    ? new Date(k.tanggal_lulus).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
+  const tglSumber = (data as any).kelSet?.published_at || (data as any).kelSet?.tanggal_pengumuman || k?.tanggal_lulus;
+  const tglSk = tglSumber
+    ? new Date(tglSumber).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
     : new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 
   const namaOrtu = p?.nama_ayah_override || s.nama_ayah_kandung || p?.nama_ibu_override || s.nama_ibu_kandung || '-';
