@@ -124,7 +124,7 @@ const App = () => {
                   <Route path="/gtk-ptk" element={<ProtectedRoute allowedRoles={['admin','operator']}><GtkPtk /></ProtectedRoute>} />
                   <Route path="/naik-kelas" element={<ProtectedRoute allowedRoles={['admin','operator']}><NaikKelas /></ProtectedRoute>} />
                   <Route path="/alumni" element={<ProtectedRoute allowedRoles={['admin','operator']}><Alumni /></ProtectedRoute>} />
-                  <Route path="/e-ijazah" element={<ProtectedRoute allowedRoles={['admin','operator']}><EIjazah /></ProtectedRoute>} />
+                  <Route path="/e-ijazah" element={<Navigate to="/pdum" replace />} />
                   <Route path="/pdum" element={<ProtectedRoute allowedRoles={['admin','operator']}><PDUM /></ProtectedRoute>} />
                   <Route path="/buku-induk" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><BukuInduk /></ProtectedRoute>} />
 
