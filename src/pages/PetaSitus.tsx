@@ -226,7 +226,7 @@ export default function PetaSitus() {
       <PageHeader
         title="Peta Situs"
         description="Daftar semua menu dan panduan alur kerja yang tersedia untuk Anda."
-        icon={Map}
+        icon={<Map className="h-5 w-5" />}
       />
 
       <Tabs defaultValue="menu" className="space-y-4">
