@@ -44,13 +44,12 @@ export default function PPDBCekStatus() {
     queryKey: ['ppdb-cek-status', searchNomor],
     queryFn: async () => {
       if (!searchNomor) return null;
-      const { data, error } = await supabase
-        .from('ppdb_pendaftar')
-        .select('nomor_pendaftaran, nama, status')
-        .eq('nomor_pendaftaran', searchNomor.toUpperCase().trim())
-        .maybeSingle();
+      const { data, error } = await supabase.functions.invoke('cek-status-ppdb', {
+        body: { nomor_pendaftaran: searchNomor },
+      });
       if (error) throw error;
-      return data;
+      if (!data || data.status === 'not_found') return null;
+      return data as { nomor_pendaftaran: string; nama: string; status: string };
     },
     enabled: !!searchNomor,
   });
