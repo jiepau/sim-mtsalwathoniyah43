@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { FileSpreadsheet, Save, Download, Upload, Calculator, Printer, FileText } from 'lucide-react';
+import { FileSpreadsheet, Save, Download, Upload, Calculator, Printer, FileText, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -760,39 +760,81 @@ function PengumumanPanel({ taId }: { taId: string }) {
 }
 
 // ============ Mapel Panel ============
-function MapelPanel({ mapelList, onChanged }: { mapelList: Mapel[]; onChanged: () => void }) {
+function MapelPanel({ mapelList: _mapelList, onChanged }: { mapelList: Mapel[]; onChanged: () => void }) {
   const [newName, setNewName] = useState('');
   const [newKode, setNewKode] = useState('');
   const [newKelompok, setNewKelompok] = useState('umum');
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
+
+  const { data: allMapel = [], refetch } = useQuery({
+    queryKey: ['pdum-mapel-all'],
+    queryFn: async () => {
+      const { data } = await supabase.from('pdum_mapel').select('*').order('urutan');
+      return (data || []) as Mapel[];
+    },
+  });
+
+  const refresh = () => { refetch(); onChanged(); };
 
   const addMapel = async () => {
     if (!newName.trim() || !newKode.trim()) { toast.error('Nama & kode wajib'); return; }
     const { error } = await supabase.from('pdum_mapel').insert({
       nama_mapel: newName.trim(), kode_mapel: newKode.trim().toLowerCase(),
       kelompok: newKelompok,
-      urutan: (mapelList[mapelList.length - 1]?.urutan ?? 0) + 1,
+      urutan: (allMapel[allMapel.length - 1]?.urutan ?? 0) + 1,
     });
     if (error) { toast.error(error.message); return; }
     toast.success('Mapel ditambahkan');
-    setNewName(''); setNewKode(''); onChanged();
+    setNewName(''); setNewKode(''); refresh();
   };
 
   const toggle = async (m: Mapel) => {
     await supabase.from('pdum_mapel').update({ is_active: !m.is_active }).eq('id', m.id);
-    onChanged();
+    refresh();
   };
 
   const remove = async (m: Mapel) => {
     if (!confirm(`Hapus mapel "${m.nama_mapel}"?`)) return;
     await supabase.from('pdum_mapel').delete().eq('id', m.id);
-    onChanged();
+    refresh();
+  };
+
+  const persistOrder = async (ordered: Mapel[]) => {
+    const results = await Promise.all(
+      ordered.map((m, idx) => supabase.from('pdum_mapel').update({ urutan: idx + 1 }).eq('id', m.id))
+    );
+    const err = results.find(r => r.error);
+    if (err?.error) { toast.error(err.error.message); return; }
+    refresh();
+  };
+
+  const moveItem = (id: string, dir: -1 | 1) => {
+    const idx = allMapel.findIndex(m => m.id === id);
+    const target = idx + dir;
+    if (idx < 0 || target < 0 || target >= allMapel.length) return;
+    const next = [...allMapel];
+    [next[idx], next[target]] = [next[target], next[idx]];
+    persistOrder(next);
+  };
+
+  const handleDrop = (targetId: string) => {
+    if (!dragId || dragId === targetId) { setDragId(null); setOverId(null); return; }
+    const from = allMapel.findIndex(m => m.id === dragId);
+    const to = allMapel.findIndex(m => m.id === targetId);
+    if (from < 0 || to < 0) return;
+    const next = [...allMapel];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setDragId(null); setOverId(null);
+    persistOrder(next);
   };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Daftar Mata Pelajaran PDUM/Ijazah</CardTitle>
-        <CardDescription>Mapel yang muncul di kolom nilai rapor, UM, dan export.</CardDescription>
+        <CardDescription>Drag baris (ikon ⋮⋮) atau gunakan tombol panah untuk mengatur urutan.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
@@ -810,15 +852,40 @@ function MapelPanel({ mapelList, onChanged }: { mapelList: Mapel[]; onChanged: (
         </div>
         <Table>
           <TableHeader>
-            <TableRow><TableHead>#</TableHead><TableHead>Nama</TableHead><TableHead>Kode</TableHead><TableHead>Kelompok</TableHead><TableHead>Aktif</TableHead><TableHead>Aksi</TableHead></TableRow>
+            <TableRow>
+              <TableHead className="w-10"></TableHead>
+              <TableHead className="w-10">#</TableHead>
+              <TableHead>Nama</TableHead>
+              <TableHead>Kode</TableHead>
+              <TableHead>Kelompok</TableHead>
+              <TableHead>Urutkan</TableHead>
+              <TableHead>Aktif</TableHead>
+              <TableHead>Aksi</TableHead>
+            </TableRow>
           </TableHeader>
           <TableBody>
-            {mapelList.map((m, i) => (
-              <TableRow key={m.id}>
+            {allMapel.map((m, i) => (
+              <TableRow
+                key={m.id}
+                draggable
+                onDragStart={() => setDragId(m.id)}
+                onDragOver={(e) => { e.preventDefault(); setOverId(m.id); }}
+                onDragLeave={() => setOverId(prev => prev === m.id ? null : prev)}
+                onDrop={(e) => { e.preventDefault(); handleDrop(m.id); }}
+                onDragEnd={() => { setDragId(null); setOverId(null); }}
+                className={`${dragId === m.id ? 'opacity-50' : ''} ${overId === m.id && dragId !== m.id ? 'bg-accent/40' : ''} cursor-move`}
+              >
+                <TableCell className="text-muted-foreground"><GripVertical className="h-4 w-4" /></TableCell>
                 <TableCell>{i + 1}</TableCell>
                 <TableCell>{m.nama_mapel}</TableCell>
                 <TableCell className="text-xs text-muted-foreground">{m.kode_mapel}</TableCell>
                 <TableCell className="text-xs">{m.kelompok}</TableCell>
+                <TableCell>
+                  <div className="flex gap-1">
+                    <Button size="icon" variant="ghost" className="h-7 w-7" disabled={i === 0} onClick={() => moveItem(m.id, -1)}><ArrowUp className="h-3.5 w-3.5" /></Button>
+                    <Button size="icon" variant="ghost" className="h-7 w-7" disabled={i === allMapel.length - 1} onClick={() => moveItem(m.id, 1)}><ArrowDown className="h-3.5 w-3.5" /></Button>
+                  </div>
+                </TableCell>
                 <TableCell><Switch checked={m.is_active} onCheckedChange={() => toggle(m)} /></TableCell>
                 <TableCell><Button size="sm" variant="ghost" onClick={() => remove(m)}>Hapus</Button></TableCell>
               </TableRow>
