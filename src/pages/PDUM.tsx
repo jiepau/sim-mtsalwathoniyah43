@@ -741,7 +741,7 @@ function PengumumanPanel({ taId }: { taId: string }) {
         <div>
           <Label>Tanggal & Jam Pengumuman Aktif</Label>
           <Input type="datetime-local"
-            value={merged.published_at ? new Date(merged.published_at).toISOString().slice(0, 16) : ''}
+            value={merged.published_at ? (() => { const d = new Date(merged.published_at); const pad = (n: number) => String(n).padStart(2, '0'); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; })() : ''}
             onChange={(e) => setForm((f: any) => ({ ...f, published_at: e.target.value ? new Date(e.target.value).toISOString() : null }))} />
           <p className="text-xs text-muted-foreground mt-1">Sebelum waktu ini, halaman publik menampilkan "belum diumumkan".</p>
         </div>
