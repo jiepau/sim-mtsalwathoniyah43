@@ -93,7 +93,6 @@ export default function Login() {
             alt="Logo MTs Al Wathoniyah 43"
             className="mx-auto h-20 w-20 rounded-2xl object-contain mb-4"
           />
-          //
           <CardDescription>Sistem Informasi Manajemen Madrasah </CardDescription>
           <CardDescription>MTSS AL WATHONIYAH 43</CardDescription>
         </CardHeader>
