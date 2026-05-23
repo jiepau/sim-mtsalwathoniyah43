@@ -1,5 +1,28 @@
 import * as XLSX from 'xlsx';
 
+// ============ Terbilang per-digit (gaya SKL Kemenag) ============
+const _DIGIT_WORD = ['Nol', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan'];
+
+/** 85 → "Delapan Lima"; 100 → "Satu Nol Nol". */
+export function terbilangPerDigit(n: number | null | undefined): string {
+  if (n == null || isNaN(Number(n))) return '';
+  return String(Math.round(Number(n))).split('').map(d => _DIGIT_WORD[Number(d)]).join(' ');
+}
+
+/** 83.60 → "Delapan Tiga Koma Enam Nol". */
+export function terbilangDesimalPerDigit(n: number | null | undefined, decimals = 2): string {
+  if (n == null || isNaN(Number(n))) return '';
+  const num = Number(n);
+  const intPart = Math.floor(num);
+  const decPart = Math.round((num - intPart) * Math.pow(10, decimals));
+  const intWords = terbilangPerDigit(intPart);
+  if (decPart === 0) return intWords;
+  const decStr = String(decPart).padStart(decimals, '0');
+  const decWords = decStr.split('').map(d => _DIGIT_WORD[Number(d)]).join(' ');
+  return `${intWords} Koma ${decWords}`;
+}
+
+
 export const SEMESTER_LIST = [
   { kode: '7g', label: 'Kelas 7 Ganjil' },
   { kode: '7n', label: 'Kelas 7 Genap' },
