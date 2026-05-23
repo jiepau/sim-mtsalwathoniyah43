@@ -48,7 +48,7 @@ export default function KelulusanPublik() {
         <meta property="og:description" content="Cek hasil pengumuman kelulusan siswa MTs Al Wathoniyah 43." />
         <meta property="og:url" content="https://sim.mtsalwathoniyah43.com/kelulusan" />
       </Helmet>
-      <Card className="w-full max-w-lg">
+      <Card className="w-full max-w-lg shadow-2xl border-0 bg-background/85 backdrop-blur-md">
         <CardHeader className="text-center space-y-2">
           <img src="/logo-alwathoniyah.png" alt="Logo MTs Al Wathoniyah 43" className="h-16 mx-auto" />
           <h1 className="text-lg font-semibold">Pengumuman Kelulusan MTs Al Wathoniyah 43</h1>
