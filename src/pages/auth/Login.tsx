@@ -20,7 +20,7 @@ export default function Login() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const { signIn, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  
+
   // Redirect to dashboard if already logged in
   useEffect(() => {
     if (!authLoading && user) {
@@ -34,17 +34,17 @@ export default function Login() {
       const { error, redirected } = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
-      
+
       if (redirected) {
         return;
       }
-      
+
       if (error) {
         toast.error("Gagal masuk dengan Google. Silakan coba lagi.");
         setGoogleLoading(false);
         return;
       }
-      
+
       toast.success("Berhasil masuk dengan Google!");
       // Navigation will be handled by useEffect when user state updates
     } catch (error) {
@@ -77,7 +77,10 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-hero islamic-pattern flex items-center justify-center p-4">
       <Helmet>
         <title>Masuk — SIM MTs Al Wathoniyah 43</title>
-        <meta name="description" content="Halaman masuk Sistem Informasi Manajemen MTs Al Wathoniyah 43 untuk admin, guru, bendahara, operator, dan siswa." />
+        <meta
+          name="description"
+          content="Halaman masuk Sistem Informasi Manajemen MTs Al Wathoniyah 43 untuk admin, guru, bendahara, operator, dan siswa."
+        />
         <link rel="canonical" href="https://sim.mtsalwathoniyah43.com/login" />
         <meta property="og:title" content="Masuk — SIM MTs Al Wathoniyah 43" />
         <meta property="og:description" content="Halaman masuk Sistem Informasi Manajemen MTs Al Wathoniyah 43." />
@@ -85,14 +88,14 @@ export default function Login() {
       </Helmet>
       <Card className="w-full max-w-md shadow-2xl border-0">
         <CardHeader className="text-center pb-2">
-          <img 
-            src="/logo-alwathoniyah.png" 
-            alt="Logo MTs Al Wathoniyah 43" 
+          <img
+            src="/logo-alwathoniyah.png"
+            alt="Logo MTs Al Wathoniyah 43"
             className="mx-auto h-20 w-20 rounded-2xl object-contain mb-4"
           />
-          <h1 className="text-2xl font-bold">Masuk SIM MTs Al Wathoniyah 43</h1>
+          //
           <CardDescription>Sistem Informasi Manajemen Madrasah </CardDescription>
-          <CardDescription>MTS AL WATHONIYAH 43</CardDescription>
+          <CardDescription>MTSS AL WATHONIYAH 43</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -127,15 +130,11 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                  aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
                   aria-pressed={showPassword}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
@@ -145,18 +144,16 @@ export default function Login() {
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Masuk
             </Button>
-            
+
             <div className="relative w-full">
               <div className="absolute inset-0 flex items-center">
                 <Separator className="w-full" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Atau
-                </span>
+                <span className="bg-background px-2 text-muted-foreground">Atau</span>
               </div>
             </div>
-            
+
             <Button
               type="button"
               variant="outline"
@@ -188,14 +185,16 @@ export default function Login() {
               )}
               Masuk dengan Google
             </Button>
-            
-            <p className="text-sm text-muted-foreground text-center">
-              Hubungi administrator untuk mendapatkan akun.
-            </p>
+
+            <p className="text-sm text-muted-foreground text-center">Hubungi administrator untuk mendapatkan akun.</p>
             <div className="flex justify-center gap-3 text-xs">
-              <a href="/spmb/daftar" className="text-primary hover:underline">Daftar SPMB</a>
+              <a href="/spmb/daftar" className="text-primary hover:underline">
+                Daftar SPMB
+              </a>
               <span className="text-muted-foreground">·</span>
-              <a href="/kelulusan" className="text-primary hover:underline">Pengumuman Kelulusan</a>
+              <a href="/kelulusan" className="text-primary hover:underline">
+                Pengumuman Kelulusan
+              </a>
             </div>
           </CardFooter>
         </form>
