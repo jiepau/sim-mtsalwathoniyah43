@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Search, CheckCircle2, XCircle, Clock, GraduationCap, Printer } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { CetakSKLDialog } from '@/components/ijazah/CetakSKLDialog';
+import loginBg from '@/assets/login-background.png';
 
 export default function KelulusanPublik() {
   const [nisn, setNisn] = useState('');
@@ -35,7 +36,10 @@ export default function KelulusanPublik() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/10 to-background p-4 flex items-center justify-center">
+    <div
+      className="min-h-screen p-4 flex items-center justify-center bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${loginBg})` }}
+    >
       <Helmet>
         <title>Pengumuman Kelulusan — MTs Al Wathoniyah 43</title>
         <meta name="description" content="Cek hasil pengumuman kelulusan siswa kelas 9 MTs Al Wathoniyah 43 dengan memasukkan NISN dan tanggal lahir. Unduh Surat Keterangan Lulus (SKL) di sini." />
@@ -44,7 +48,7 @@ export default function KelulusanPublik() {
         <meta property="og:description" content="Cek hasil pengumuman kelulusan siswa MTs Al Wathoniyah 43." />
         <meta property="og:url" content="https://sim.mtsalwathoniyah43.com/kelulusan" />
       </Helmet>
-      <Card className="w-full max-w-lg">
+      <Card className="w-full max-w-lg shadow-2xl border-0 bg-background/85 backdrop-blur-md">
         <CardHeader className="text-center space-y-2">
           <img src="/logo-alwathoniyah.png" alt="Logo MTs Al Wathoniyah 43" className="h-16 mx-auto" />
           <h1 className="text-lg font-semibold">Pengumuman Kelulusan MTs Al Wathoniyah 43</h1>
