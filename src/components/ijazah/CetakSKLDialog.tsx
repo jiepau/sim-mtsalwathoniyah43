@@ -206,7 +206,7 @@ export function CetakSKLDialog({ open, onOpenChange, siswaId, taId }: Props) {
                   </tr>
                   <tr>
                     <td>nomor induk siswa</td><td>:</td>
-                    <td><span className="underline-dot">{s.nis || '-'}</span></td>
+                    <td><span className="underline-dot">{[m?.nsm, s.nis].filter(Boolean).join(' ') || '-'}</span></td>
                   </tr>
                   <tr>
                     <td>nomor induk siswa nasional</td><td>:</td>
@@ -273,7 +273,7 @@ export function CetakSKLDialog({ open, onOpenChange, siswaId, taId }: Props) {
                 </tr>
                 <tr>
                   <td>Nomor Induk Siswa</td><td>:</td>
-                  <td><span className="underline-dot">{s.nis || '-'}</span></td>
+                  <td><span className="underline-dot">{[m?.nsm, s.nis].filter(Boolean).join(' ') || '-'}</span></td>
                 </tr>
                 <tr>
                   <td>Nomor Induk Siswa Nasional</td><td>:</td>
