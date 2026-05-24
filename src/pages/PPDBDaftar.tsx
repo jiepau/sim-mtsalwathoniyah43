@@ -455,6 +455,9 @@ export default function PPDBDaftar() {
           )}
         </CardContent>
       </Card>
+      <div className="mt-4 text-center">
+        <Link to="/login" className="text-sm text-primary hover:underline">← Kembali ke Halaman Login</Link>
+      </div>
 
       {/* Preview Dialog */}
       <Dialog open={showPreview} onOpenChange={setShowPreview}>
