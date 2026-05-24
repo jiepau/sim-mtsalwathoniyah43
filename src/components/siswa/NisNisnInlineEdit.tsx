@@ -89,21 +89,28 @@ export function NisNisnInlineEdit({ siswaId, nis, nisn, onSaved }: Props) {
   if (editing) {
     return (
       <div ref={containerRef} className="flex flex-col gap-1" onClick={(e) => e.stopPropagation()}>
-        <Input
-          ref={nisRef}
-          value={draftNis}
-          onChange={(e) => setDraftNis(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="NIS"
-          className="h-7 w-28 text-xs font-mono"
-          disabled={saving}
-        />
+        <div className="flex items-center gap-1">
+          {nsm && (
+            <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground whitespace-nowrap" title="NSM Madrasah">
+              {nsm}
+            </span>
+          )}
+          <Input
+            ref={nisRef}
+            value={draftNis}
+            onChange={(e) => setDraftNis(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="NIS"
+            className="h-7 w-24 text-xs font-mono"
+            disabled={saving}
+          />
+        </div>
         <Input
           value={draftNisn}
           onChange={(e) => setDraftNisn(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="NISN"
-          className="h-7 w-28 text-xs font-mono"
+          className="h-7 w-32 text-xs font-mono"
           disabled={saving}
         />
         {saving && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />}
@@ -120,6 +127,11 @@ export function NisNisnInlineEdit({ siswaId, nis, nisn, onSaved }: Props) {
       }}
       title="Klik untuk edit NIS/NISN"
     >
+      {nsm && (
+        <span className="text-[10px] text-muted-foreground block leading-tight" title="NSM Madrasah">
+          NSM: {nsm}
+        </span>
+      )}
       <span className="font-semibold">{nis}</span>
       {nisn && <span className="text-muted-foreground block">{nisn}</span>}
       <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity inline-block ml-1" />
