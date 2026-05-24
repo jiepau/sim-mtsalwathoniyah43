@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Loader2, Eye, EyeOff, Megaphone, GraduationCap, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { mapAuthError } from "@/lib/error-mapper";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import loginBg from "@/assets/login-background.png";
 
 export default function Login() {
@@ -16,8 +17,23 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [announceOpen, setAnnounceOpen] = useState(false);
   const { signIn, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Show announcement popup once per session
+  useEffect(() => {
+    const dismissed = sessionStorage.getItem("login-announce-dismissed");
+    if (!dismissed) {
+      const t = setTimeout(() => setAnnounceOpen(true), 400);
+      return () => clearTimeout(t);
+    }
+  }, []);
+
+  const handleCloseAnnounce = () => {
+    sessionStorage.setItem("login-announce-dismissed", "1");
+    setAnnounceOpen(false);
+  };
 
   // Redirect to dashboard if already logged in
   useEffect(() => {
@@ -134,6 +150,60 @@ export default function Login() {
           </CardFooter>
         </form>
       </Card>
+
+      <Dialog open={announceOpen} onOpenChange={(o) => (o ? setAnnounceOpen(true) : handleCloseAnnounce())}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <Megaphone className="h-6 w-6 text-primary" />
+            </div>
+            <DialogTitle className="text-center text-lg">Pengumuman Madrasah</DialogTitle>
+            <DialogDescription className="text-center">
+              Informasi penting dari MTs Al Wathoniyah 43
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2">
+            <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
+              <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+              <div className="text-sm">
+                <p className="font-semibold text-foreground">SPMB Sedang Dibuka!</p>
+                <p className="text-muted-foreground">
+                  Pendaftaran Peserta Didik Baru tahun pelajaran ini sudah dibuka. Silakan daftar online.
+                </p>
+                <a
+                  href="/spmb/daftar"
+                  className="mt-1 inline-block text-xs font-medium text-primary hover:underline"
+                >
+                  → Daftar Sekarang
+                </a>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-3">
+              <GraduationCap className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+              <div className="text-sm">
+                <p className="font-semibold text-foreground">Pengumuman Kelulusan</p>
+                <p className="text-muted-foreground">
+                  Pengumuman kelulusan kelas 9 akan segera dibuka. Pantau terus halaman pengumuman.
+                </p>
+                <a
+                  href="/kelulusan"
+                  className="mt-1 inline-block text-xs font-medium text-primary hover:underline"
+                >
+                  → Cek Halaman Kelulusan
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button type="button" className="w-full" onClick={handleCloseAnnounce}>
+              Mengerti
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
