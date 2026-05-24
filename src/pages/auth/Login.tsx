@@ -27,30 +27,6 @@ export default function Login() {
     }
   }, [user, authLoading, navigate]);
 
-  const handleGoogleSignIn = async () => {
-    setGoogleLoading(true);
-    try {
-      const { error, redirected } = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
-
-      if (redirected) {
-        return;
-      }
-
-      if (error) {
-        toast.error("Gagal masuk dengan Google. Silakan coba lagi.");
-        setGoogleLoading(false);
-        return;
-      }
-
-      toast.success("Berhasil masuk dengan Google!");
-      // Navigation will be handled by useEffect when user state updates
-    } catch (error) {
-      toast.error("Terjadi kesalahan. Silakan coba lagi.");
-      setGoogleLoading(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
