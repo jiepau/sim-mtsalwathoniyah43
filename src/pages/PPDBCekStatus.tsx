@@ -124,6 +124,10 @@ export default function PPDBCekStatus() {
             <Link to="/spmb/daftar" className="text-primary hover:underline flex items-center gap-1">
               <ArrowLeft className="h-3.5 w-3.5" /> Daftar Baru
             </Link>
+            <span className="text-muted-foreground">·</span>
+            <Link to="/login" className="text-primary hover:underline flex items-center gap-1">
+              <ArrowLeft className="h-3.5 w-3.5" /> Kembali ke Login
+            </Link>
           </div>
         </CardContent>
       </Card>
