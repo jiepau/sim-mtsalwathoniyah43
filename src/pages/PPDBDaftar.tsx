@@ -258,9 +258,15 @@ export default function PPDBDaftar() {
               <p className="text-sm text-muted-foreground">Nomor pendaftaran Anda:</p>
               <p className="text-2xl font-mono font-bold text-primary">{submitted}</p>
               <p className="text-xs text-muted-foreground">Simpan nomor ini untuk pengecekan hasil seleksi.</p>
-              <Link to="/spmb/cek-status" className="inline-block mt-2 text-sm text-primary hover:underline font-medium">
-                Cek Status Pendaftaran →
-              </Link>
+              <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
+                <Link to="/spmb/cek-status" className="text-sm text-primary hover:underline font-medium">
+                  Cek Status Pendaftaran →
+                </Link>
+                <span className="text-muted-foreground text-xs">·</span>
+                <Link to="/login" className="text-sm text-primary hover:underline font-medium">
+                  ← Kembali ke Login
+                </Link>
+              </div>
               {settings?.pesan_selamat && <p className="text-sm mt-4">{settings.pesan_selamat}</p>}
             </div>
           ) : !isOpen ? (
