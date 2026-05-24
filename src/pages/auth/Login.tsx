@@ -9,8 +9,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { mapAuthError } from "@/lib/error-mapper";
-import { lovable } from "@/integrations/lovable/index";
-import { Separator } from "@/components/ui/separator";
 import loginBg from "@/assets/login-background.png";
 
 export default function Login() {
