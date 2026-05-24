@@ -17,8 +17,23 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [announceOpen, setAnnounceOpen] = useState(false);
   const { signIn, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Show announcement popup once per session
+  useEffect(() => {
+    const dismissed = sessionStorage.getItem("login-announce-dismissed");
+    if (!dismissed) {
+      const t = setTimeout(() => setAnnounceOpen(true), 400);
+      return () => clearTimeout(t);
+    }
+  }, []);
+
+  const handleCloseAnnounce = () => {
+    sessionStorage.setItem("login-announce-dismissed", "1");
+    setAnnounceOpen(false);
+  };
 
   // Redirect to dashboard if already logged in
   useEffect(() => {
