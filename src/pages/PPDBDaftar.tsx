@@ -232,7 +232,7 @@ export default function PPDBDaftar() {
   const isOpen = settings?.is_open ?? false;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background flex flex-col items-center justify-center p-4">
       <Helmet>
         <title>Pendaftaran SPMB — MTs Al Wathoniyah 43</title>
         <meta name="description" content="Formulir pendaftaran murid baru (SPMB) MTs Al Wathoniyah 43 sesuai EMIS 4.0. Isi data calon siswa, orang tua, dan asal sekolah secara online." />
