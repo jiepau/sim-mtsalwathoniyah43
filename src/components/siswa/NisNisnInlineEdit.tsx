@@ -19,6 +19,7 @@ export function NisNisnInlineEdit({ siswaId, nis, nisn, onSaved }: Props) {
   const [saving, setSaving] = useState(false);
   const nisRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { data: nsm } = useNsm();
 
   useEffect(() => {
     if (editing) {
