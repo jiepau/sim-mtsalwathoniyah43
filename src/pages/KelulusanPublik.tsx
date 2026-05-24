@@ -75,6 +75,10 @@ export default function KelulusanPublik() {
               <ResultView result={result} onPrintSKL={() => setShowSKL(true)} />
             </div>
           )}
+
+          <div className="flex justify-center pt-2">
+            <a href="/login" className="text-sm text-primary hover:underline">← Kembali ke Halaman Login</a>
+          </div>
         </CardContent>
       </Card>
 

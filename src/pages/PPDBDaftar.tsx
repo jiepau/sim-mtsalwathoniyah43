@@ -232,7 +232,7 @@ export default function PPDBDaftar() {
   const isOpen = settings?.is_open ?? false;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background flex flex-col items-center justify-center p-4">
       <Helmet>
         <title>Pendaftaran SPMB — MTs Al Wathoniyah 43</title>
         <meta name="description" content="Formulir pendaftaran murid baru (SPMB) MTs Al Wathoniyah 43 sesuai EMIS 4.0. Isi data calon siswa, orang tua, dan asal sekolah secara online." />
@@ -258,9 +258,15 @@ export default function PPDBDaftar() {
               <p className="text-sm text-muted-foreground">Nomor pendaftaran Anda:</p>
               <p className="text-2xl font-mono font-bold text-primary">{submitted}</p>
               <p className="text-xs text-muted-foreground">Simpan nomor ini untuk pengecekan hasil seleksi.</p>
-              <Link to="/spmb/cek-status" className="inline-block mt-2 text-sm text-primary hover:underline font-medium">
-                Cek Status Pendaftaran →
-              </Link>
+              <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
+                <Link to="/spmb/cek-status" className="text-sm text-primary hover:underline font-medium">
+                  Cek Status Pendaftaran →
+                </Link>
+                <span className="text-muted-foreground text-xs">·</span>
+                <Link to="/login" className="text-sm text-primary hover:underline font-medium">
+                  ← Kembali ke Login
+                </Link>
+              </div>
               {settings?.pesan_selamat && <p className="text-sm mt-4">{settings.pesan_selamat}</p>}
             </div>
           ) : !isOpen ? (
@@ -449,6 +455,9 @@ export default function PPDBDaftar() {
           )}
         </CardContent>
       </Card>
+      <div className="mt-4 text-center">
+        <Link to="/login" className="text-sm text-primary hover:underline">← Kembali ke Halaman Login</Link>
+      </div>
 
       {/* Preview Dialog */}
       <Dialog open={showPreview} onOpenChange={setShowPreview}>
