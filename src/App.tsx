@@ -62,6 +62,7 @@ const SPMBDaftar = lazy(() => import("@/pages/PPDBDaftar"));
 const SPMBCekStatus = lazy(() => import("@/pages/PPDBCekStatus"));
 const PDUM = lazy(() => import("@/pages/PDUM"));
 const KelulusanPublik = lazy(() => import("@/pages/KelulusanPublik"));
+const KartuUjian = lazy(() => import("@/pages/KartuUjian"));
 const PetaSitus = lazy(() => import("@/pages/PetaSitus"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
@@ -127,6 +128,7 @@ const App = () => {
                   <Route path="/alumni" element={<ProtectedRoute allowedRoles={['admin','operator']}><Alumni /></ProtectedRoute>} />
                   <Route path="/e-ijazah" element={<Navigate to="/pdum" replace />} />
                   <Route path="/pdum" element={<ProtectedRoute allowedRoles={['admin','operator']}><PDUM /></ProtectedRoute>} />
+                  <Route path="/kartu-ujian" element={<ProtectedRoute allowedRoles={['admin','operator']}><KartuUjian /></ProtectedRoute>} />
                   <Route path="/buku-induk" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><BukuInduk /></ProtectedRoute>} />
 
                   {/* Keuangan - admin/bendahara */}

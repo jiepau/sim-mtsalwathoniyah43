@@ -2287,6 +2287,149 @@ export type Database = {
         }
         Relationships: []
       }
+      ujian_peserta: {
+        Row: {
+          created_at: string
+          id: string
+          is_manual_override: boolean
+          kelas_asal_id: string | null
+          nomor_kursi: number | null
+          nomor_peserta: string
+          ruang_id: string | null
+          sesi_id: string
+          siswa_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_manual_override?: boolean
+          kelas_asal_id?: string | null
+          nomor_kursi?: number | null
+          nomor_peserta: string
+          ruang_id?: string | null
+          sesi_id: string
+          siswa_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_manual_override?: boolean
+          kelas_asal_id?: string | null
+          nomor_kursi?: number | null
+          nomor_peserta?: string
+          ruang_id?: string | null
+          sesi_id?: string
+          siswa_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ujian_peserta_ruang_id_fkey"
+            columns: ["ruang_id"]
+            isOneToOne: false
+            referencedRelation: "ujian_ruang"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ujian_peserta_sesi_id_fkey"
+            columns: ["sesi_id"]
+            isOneToOne: false
+            referencedRelation: "ujian_sesi"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ujian_ruang: {
+        Row: {
+          baris: number
+          created_at: string
+          id: string
+          kapasitas: number
+          kolom: number
+          lokasi: string | null
+          nama_ruang: string
+          sesi_id: string
+          urutan: number
+        }
+        Insert: {
+          baris?: number
+          created_at?: string
+          id?: string
+          kapasitas?: number
+          kolom?: number
+          lokasi?: string | null
+          nama_ruang: string
+          sesi_id: string
+          urutan?: number
+        }
+        Update: {
+          baris?: number
+          created_at?: string
+          id?: string
+          kapasitas?: number
+          kolom?: number
+          lokasi?: string | null
+          nama_ruang?: string
+          sesi_id?: string
+          urutan?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ujian_ruang_sesi_id_fkey"
+            columns: ["sesi_id"]
+            isOneToOne: false
+            referencedRelation: "ujian_sesi"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ujian_sesi: {
+        Row: {
+          created_at: string
+          id: string
+          jenis: string
+          kelas_ids: string[]
+          nama: string
+          nomor_peserta_prefix: string | null
+          semester: string | null
+          status: string
+          ta_id: string | null
+          tanggal_mulai: string | null
+          tanggal_selesai: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          jenis: string
+          kelas_ids?: string[]
+          nama: string
+          nomor_peserta_prefix?: string | null
+          semester?: string | null
+          status?: string
+          ta_id?: string | null
+          tanggal_mulai?: string | null
+          tanggal_selesai?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          jenis?: string
+          kelas_ids?: string[]
+          nama?: string
+          nomor_peserta_prefix?: string | null
+          semester?: string | null
+          status?: string
+          ta_id?: string | null
+          tanggal_mulai?: string | null
+          tanggal_selesai?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
