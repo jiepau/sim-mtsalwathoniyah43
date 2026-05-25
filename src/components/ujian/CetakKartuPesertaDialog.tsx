@@ -170,7 +170,7 @@ export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
                     </div>
 
                     <div className="flex gap-2 flex-1 items-stretch">
-                      <div className="flex-1 text-[9pt] flex flex-col justify-center">
+                      <div className="flex-1 text-[9pt] flex flex-col justify-center" style={{ paddingLeft: '3mm' }}>
                         <div className="mb-1">
                           <p className="text-[6pt] uppercase text-muted-foreground leading-none">No. Peserta</p>
                           <p className="font-bold font-mono text-[14pt] leading-tight">{p.nomor_peserta}</p>
@@ -191,19 +191,19 @@ export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
                     {/* Footer: Ruang (kiri-bawah) & TTD (kanan-bawah) */}
                     <div className="flex items-end justify-between gap-2 mt-1">
                       <div className="border-2 border-black flex flex-col items-center justify-center"
-                        style={{ width: '16mm', height: '16mm' }}>
+                        style={{ width: '19mm', height: '21mm' }}>
                         <p className="text-[6pt] uppercase leading-none">Ruang</p>
-                        <p className="font-bold leading-none mt-0.5" style={{ fontSize: '12pt' }}>{r?.nama_ruang || '-'}</p>
+                        <p className="font-bold leading-none mt-0.5" style={{ fontSize: '14pt' }}>{r?.nama_ruang || '-'}</p>
                       </div>
 
-                      <div className="text-center text-[7pt]" style={{ width: '42mm' }}>
+                      <div className="text-center text-[7pt]" style={{ width: '46mm' }}>
                         <p>Kepala Madrasah,</p>
-                        <div className="relative flex items-center justify-center" style={{ height: '13mm' }}>
+                        <div className="relative flex items-center justify-center" style={{ height: '18mm' }}>
                           {madrasah?.stempel_url && (
                             <img src={madrasah.stempel_url} alt=""
                               className="absolute left-1/2 top-1/2"
                               style={{
-                                height: '13mm',
+                                height: '18mm',
                                 opacity: 0.85,
                                 transform: 'translate(-50%, -50%)',
                                 mixBlendMode: 'multiply',
@@ -213,7 +213,7 @@ export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
                             <img src={madrasah.ttd_kepala_url} alt=""
                               className="absolute left-1/2 top-1/2"
                               style={{
-                                height: '11mm',
+                                height: '16mm',
                                 transform: 'translate(-50%, -50%)',
                                 mixBlendMode: 'multiply',
                               }} />
@@ -227,6 +227,7 @@ export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
                         )}
                       </div>
                     </div>
+
 
                   </div>
                 );
