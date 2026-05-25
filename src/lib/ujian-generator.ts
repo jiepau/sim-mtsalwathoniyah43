@@ -63,9 +63,12 @@ export function generatePesertaDistribusi(
   prefix: string,
   existing: ExistingPeserta[] = [],
 ): PesertaOutput[] {
-  // Sortir siswa: tingkat → nama
+  // Sortir siswa: tingkat → nama_kelas → nama
   const sorted = [...siswa].sort(
-    (a, b) => a.tingkat - b.tingkat || a.nama.localeCompare(b.nama, 'id'),
+    (a, b) =>
+      a.tingkat - b.tingkat ||
+      (a.nama_kelas || '').localeCompare(b.nama_kelas || '', 'id') ||
+      a.nama.localeCompare(b.nama, 'id'),
   );
 
   const existingMap = new Map(existing.map((e) => [e.siswa_id, e]));
@@ -86,7 +89,8 @@ export function generatePesertaDistribusi(
   let kursiNext = 1;
 
   const result: PesertaOutput[] = [];
-  let seq = 1;
+  // Sequence reset per-kelas
+  const seqPerKelas = new Map<string, number>();
 
   for (const s of sorted) {
     const ex = existingMap.get(s.id);
