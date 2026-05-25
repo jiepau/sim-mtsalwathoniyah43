@@ -86,6 +86,8 @@ export default function PengaturanMadrasahPage() {
           akreditasi: data.akreditasi || "",
           no_sk_pendirian: data.no_sk_pendirian || "",
           tanggal_sk_pendirian: data.tanggal_sk_pendirian || "",
+          ttd_kepala_url: (data as any).ttd_kepala_url || "",
+          stempel_url: (data as any).stempel_url || "",
         });
       }
     } catch (error) {
