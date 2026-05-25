@@ -119,6 +119,8 @@ export default function PengaturanMadrasahPage() {
         akreditasi: formData.akreditasi || null,
         no_sk_pendirian: formData.no_sk_pendirian || null,
         tanggal_sk_pendirian: formData.tanggal_sk_pendirian || null,
+        ttd_kepala_url: formData.ttd_kepala_url || null,
+        stempel_url: formData.stempel_url || null,
       };
 
       if (settings) {
