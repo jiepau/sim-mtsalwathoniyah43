@@ -60,18 +60,24 @@ interface MenuItem {
 }
 
 // All menu items with role restrictions
+// Diurutkan per SECTION agar label section muncul rapi (Sidebar render header saat section berubah)
 const allMenuItems: MenuItem[] = [
-  { title: 'Peta Situs', icon: Map, path: '/peta-situs', section: 'Bantuan' },
+  // ========== MENU UTAMA ==========
   { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', section: 'Menu Utama', roles: ['admin', 'operator', 'bendahara', 'guru', 'panitia'] },
-  { title: 'Dashboard Siswa', icon: GraduationCap, path: '/e-learning/dashboard', roles: ['siswa'] },
-  { title: 'Profil Saya', icon: User, path: '/profil-guru', roles: ['guru', 'bendahara'] },
-  { title: 'Siswa', icon: Users, path: '/siswa', roles: ['admin', 'operator', 'bendahara'] },
-  { title: 'Kelas', icon: School, path: '/kelas', roles: ['admin', 'operator'] },
-  { title: 'Tahun Ajaran', icon: Calendar, path: '/tahun-ajaran', roles: ['admin', 'operator'] },
-  { title: 'GTK/PTK', icon: UserCog, path: '/gtk-ptk', roles: ['admin', 'operator'] },
+  { title: 'Dashboard Siswa', icon: GraduationCap, path: '/e-learning/dashboard', section: 'Menu Utama', roles: ['siswa'] },
+  { title: 'Profil Saya', icon: User, path: '/profil-guru', section: 'Menu Utama', roles: ['guru', 'bendahara'] },
+
+  // ========== DATA MASTER ==========
+  { title: 'Siswa', icon: Users, path: '/siswa', section: 'Data Master', roles: ['admin', 'operator', 'bendahara'] },
+  { title: 'Kelas', icon: School, path: '/kelas', section: 'Data Master', roles: ['admin', 'operator'] },
+  { title: 'GTK/PTK', icon: UserCog, path: '/gtk-ptk', section: 'Data Master', roles: ['admin', 'operator'] },
+  { title: 'Tahun Ajaran', icon: Calendar, path: '/tahun-ajaran', section: 'Data Master', roles: ['admin', 'operator'] },
+
+  // ========== AKADEMIK ==========
   { 
     title: 'Absensi', 
     icon: ClipboardCheck,
+    section: 'Akademik',
     children: [
       { title: 'Absensi Siswa', icon: ClipboardCheck, path: '/absensi-siswa' },
       { title: 'Absensi GTK', icon: ClipboardList, path: '/absensi-gtk' },
@@ -82,17 +88,9 @@ const allMenuItems: MenuItem[] = [
     roles: ['admin', 'operator', 'guru']
   },
   { 
-    title: 'Surat Menyurat', 
-    icon: Mail,
-    children: [
-      { title: 'Surat Masuk', icon: MailOpen, path: '/surat-masuk' },
-      { title: 'Surat Keluar', icon: Send, path: '/surat-keluar' },
-    ],
-    roles: ['admin', 'operator']
-  },
-  { 
     title: 'Kurikulum', 
     icon: BookOpen,
+    section: 'Akademik',
     children: [
       { title: '📋 Panduan', icon: BookOpen, path: '/panduan-kurikulum' },
       { title: 'Template CP', icon: FileText, path: '/cp-templates' },
@@ -107,6 +105,7 @@ const allMenuItems: MenuItem[] = [
   { 
     title: 'E-Learning',
     icon: GraduationCap,
+    section: 'Akademik',
     children: [
       { title: 'Kelola Materi', icon: BookOpen, path: '/e-learning/materi-guru', roles: ['admin', 'operator', 'guru'] },
       { title: 'Kelola Tugas', icon: ClipboardList, path: '/e-learning/tugas-guru', roles: ['admin', 'operator', 'guru'] },
@@ -117,9 +116,21 @@ const allMenuItems: MenuItem[] = [
     ],
     roles: ['admin', 'operator', 'guru', 'siswa']
   },
+  { title: 'Kartu Ujian', icon: ClipboardList, path: '/kartu-ujian', section: 'Akademik', roles: ['admin', 'operator'] },
+  { title: 'Kalender Akademik', icon: CalendarDays, path: '/kalender-akademik', section: 'Akademik', roles: ['siswa'] },
+
+  // ========== KESISWAAN ==========
+  { title: 'Buku Induk', icon: BookMarked, path: '/buku-induk', section: 'Kesiswaan', roles: ['admin', 'bendahara'] },
+  { title: 'Naik Kelas', icon: ArrowUpCircle, path: '/naik-kelas', section: 'Kesiswaan', roles: ['admin', 'operator'] },
+  { title: 'Nilai Ijazah & Kelulusan (PDUM)', icon: BookCheck, path: '/pdum', section: 'Kesiswaan', roles: ['admin', 'operator'] },
+  { title: 'Alumni', icon: GraduationCap, path: '/alumni', section: 'Kesiswaan', roles: ['admin', 'operator'] },
+  { title: 'SPMB (Penerimaan Murid Baru)', icon: UserPlus, path: '/spmb', section: 'Kesiswaan', roles: ['admin', 'panitia'] },
+
+  // ========== KEUANGAN ==========
   { 
     title: 'Keuangan', 
     icon: Wallet,
+    section: 'Keuangan',
     children: [
       { title: 'Jenis Tagihan', icon: Receipt, path: '/jenis-tagihan' },
       { title: 'Pembayaran', icon: CreditCard, path: '/pembayaran' },
@@ -131,17 +142,27 @@ const allMenuItems: MenuItem[] = [
     ],
     roles: ['admin', 'bendahara']
   },
-  { title: 'Buku Induk', icon: BookMarked, path: '/buku-induk', roles: ['admin', 'bendahara'] },
-  { title: 'Naik Kelas', icon: ArrowUpCircle, path: '/naik-kelas', roles: ['admin', 'operator'] },
-  { title: 'Alumni', icon: GraduationCap, path: '/alumni', roles: ['admin', 'operator'] },
-  { title: 'Nilai Ijazah & Kelulusan (PDUM)', icon: BookCheck, path: '/pdum', roles: ['admin', 'operator'] },
-  { title: 'Kartu Ujian', icon: ClipboardList, path: '/kartu-ujian', roles: ['admin', 'operator'] },
-  { title: 'Kalender Akademik', icon: CalendarDays, path: '/kalender-akademik', roles: ['siswa'] },
-  { title: 'SPMB (Penerimaan Murid Baru)', icon: UserPlus, path: '/spmb', roles: ['admin', 'panitia'] },
-  { title: 'Riwayat Pembaruan', icon: History, path: '/changelog' }, // All roles
-  { title: 'Pengaturan Madrasah', icon: Settings, path: '/pengaturan-madrasah', roles: ['admin'] },
-  { title: 'Notifikasi WA', icon: MessageSquare, path: '/notifikasi-wa', roles: ['admin'] },
-  { title: 'Manajemen User', icon: Shield, path: '/user-management', roles: ['admin'] },
+
+  // ========== ADMINISTRASI ==========
+  { 
+    title: 'Surat Menyurat', 
+    icon: Mail,
+    section: 'Administrasi',
+    children: [
+      { title: 'Surat Masuk', icon: MailOpen, path: '/surat-masuk' },
+      { title: 'Surat Keluar', icon: Send, path: '/surat-keluar' },
+    ],
+    roles: ['admin', 'operator']
+  },
+  { title: 'Notifikasi WA', icon: MessageSquare, path: '/notifikasi-wa', section: 'Administrasi', roles: ['admin'] },
+
+  // ========== SISTEM ==========
+  { title: 'Pengaturan Madrasah', icon: Settings, path: '/pengaturan-madrasah', section: 'Sistem', roles: ['admin'] },
+  { title: 'Manajemen User', icon: Shield, path: '/user-management', section: 'Sistem', roles: ['admin'] },
+
+  // ========== BANTUAN ==========
+  { title: 'Peta Situs', icon: Map, path: '/peta-situs', section: 'Bantuan' },
+  { title: 'Riwayat Pembaruan', icon: History, path: '/changelog', section: 'Bantuan' },
 ];
 
 export function Sidebar() {
