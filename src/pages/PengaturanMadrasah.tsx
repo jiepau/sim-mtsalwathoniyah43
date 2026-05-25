@@ -28,6 +28,8 @@ interface MadrasahSettings {
   akreditasi: string | null;
   no_sk_pendirian: string | null;
   tanggal_sk_pendirian: string | null;
+  ttd_kepala_url: string | null;
+  stempel_url: string | null;
 }
 
 export default function PengaturanMadrasahPage() {
