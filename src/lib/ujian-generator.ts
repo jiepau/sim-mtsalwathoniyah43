@@ -10,6 +10,28 @@ export interface SiswaInput {
   nama: string;
   kelas_id: string | null;
   tingkat: number; // 7|8|9
+  nama_kelas?: string | null;
+}
+
+/**
+ * Ambil kode kelas numerik 2 digit dari nama kelas.
+ * "8-1" → "81", "VIII-2" → "82" (pakai tingkat + paralel),
+ * "7A" → "71" (A=1), fallback "{tingkat}0".
+ */
+export function kodeKelasFromNama(namaKelas: string | null | undefined, tingkat: number): string {
+  const t = String(tingkat || 0);
+  if (!namaKelas) return `${t}0`;
+  // Coba ambil digit terakhir sebagai paralel
+  const digits = namaKelas.replace(/\D/g, '');
+  if (digits.length >= 2) return digits.slice(-2);
+  if (digits.length === 1) return `${t}${digits}`;
+  // Tidak ada digit → coba huruf paralel (A=1, B=2, ...)
+  const m = namaKelas.match(/[A-Za-z]$/);
+  if (m) {
+    const idx = m[0].toUpperCase().charCodeAt(0) - 64; // A=1
+    if (idx >= 1 && idx <= 9) return `${t}${idx}`;
+  }
+  return `${t}0`;
 }
 
 export interface RuangInput {
