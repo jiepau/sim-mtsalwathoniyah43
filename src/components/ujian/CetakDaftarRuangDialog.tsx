@@ -28,10 +28,20 @@ export function CetakDaftarRuangDialog({ open, onOpenChange, sesi }: Props) {
     queryFn: async () => {
       const ids = peserta.map((p) => p.siswa_id);
       if (ids.length === 0) return [];
-      const { data } = await supabase.from("siswa").select("id, nis, nama, kelas:kelas_id(nama_kelas)").in("id", ids);
+      const { data } = await supabase.from("siswa").select("id, nis, nisn, nama, kelas:kelas_id(nama_kelas)").in("id", ids);
       return data || [];
     },
     enabled: open,
+  });
+
+  const { data: ta } = useQuery({
+    queryKey: ["ta-daftar-ruang", sesi.ta_id],
+    queryFn: async () => {
+      if (!sesi.ta_id) return null;
+      const { data } = await supabase.from("tahun_ajaran").select("nama_ta").eq("id", sesi.ta_id).maybeSingle();
+      return data;
+    },
+    enabled: !!sesi.ta_id && open,
   });
 
   const ruangFiltered = useMemo(
