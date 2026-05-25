@@ -15,6 +15,8 @@ interface Props { open: boolean; onOpenChange: (v: boolean) => void; sesi: Ujian
 interface MadrasahData {
   nama_madrasah: string; nsm: string | null; npsn: string | null;
   alamat: string | null; kepala_madrasah: string | null;
+  nip_kepala: string | null;
+  ttd_kepala_url: string | null; stempel_url: string | null;
 }
 
 export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
