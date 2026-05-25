@@ -107,7 +107,7 @@ export function CetakDaftarRuangDialog({ open, onOpenChange, sesi }: Props) {
                   <PrintKopMadrasah
                     judul="DAFTAR PESERTA"
                     subjudul={sesi.nama}
-                    periode={ta?.nama_ta ? `Tahun Ajaran ${ta.nama_ta} • Ruang: ${r.nama_ruang}${r.lokasi ? ` (${r.lokasi})` : ""}` : `Ruang: ${r.nama_ruang}${r.lokasi ? ` (${r.lokasi})` : ""}`}
+                    periode={ta?.nama_ta ? `Tahun Ajaran ${ta.nama_ta}` : undefined}
                   />
                   <Table className="mt-3 text-xs">
                     <TableHeader>
@@ -117,12 +117,13 @@ export function CetakDaftarRuangDialog({ open, onOpenChange, sesi }: Props) {
                         <TableHead className="border border-black text-black">Nama</TableHead>
                         <TableHead className="w-24 border border-black text-black">NISN</TableHead>
                         <TableHead className="w-24 border border-black text-black">Kelas</TableHead>
+                        <TableHead className="w-28 border border-black text-black">Ruang</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {list.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={5} className="text-center py-3 border border-black">
+                          <TableCell colSpan={6} className="text-center py-3 border border-black">
                             — Belum ada peserta —
                           </TableCell>
                         </TableRow>
@@ -134,6 +135,7 @@ export function CetakDaftarRuangDialog({ open, onOpenChange, sesi }: Props) {
                             <TableCell className="border border-black">{p.siswa.nama}</TableCell>
                             <TableCell className="border border-black font-mono">{p.siswa.nisn || "-"}</TableCell>
                             <TableCell className="border border-black">{p.siswa.kelas?.nama_kelas || "-"}</TableCell>
+                            <TableCell className="border border-black">{r.nama_ruang}{r.lokasi ? ` (${r.lokasi})` : ""}</TableCell>
                           </TableRow>
                         ))
                       )}
