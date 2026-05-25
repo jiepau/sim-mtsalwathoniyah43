@@ -52,7 +52,11 @@ export default function PengaturanMadrasahPage() {
     akreditasi: "",
     no_sk_pendirian: "",
     tanggal_sk_pendirian: "",
+    ttd_kepala_url: "",
+    stempel_url: "",
   });
+  const [uploadingTtd, setUploadingTtd] = useState(false);
+  const [uploadingStempel, setUploadingStempel] = useState(false);
 
   useEffect(() => {
     fetchSettings();
