@@ -25,7 +25,7 @@ export function CetakDaftarRuangDialog({ open, onOpenChange, sesi }: Props) {
       const ids = peserta.map((p) => p.siswa_id);
       if (ids.length === 0) return [];
       const { data } = await supabase.from('siswa')
-        .select('id, nis, nama, kelas:kelas_id(nama_kelas)').in('id', ids);
+        .select('id, nis, nisn, nama, kelas:kelas_id(nama_kelas)').in('id', ids);
       return data || [];
     },
     enabled: open,
@@ -80,36 +80,32 @@ export function CetakDaftarRuangDialog({ open, onOpenChange, sesi }: Props) {
               return (
                 <div key={r.id} style={{ pageBreakAfter: idx < ruangFiltered.length - 1 ? 'always' : 'auto' }}>
                   <PrintKopMadrasah
-                    judul={`DAFTAR PESERTA ${JENIS_UJIAN_LABEL[sesi.jenis]?.split(' ')[0] || 'UJIAN'}`}
-                    subjudul={`${sesi.nama} • Ruang: ${r.nama_ruang}${r.lokasi ? ` (${r.lokasi})` : ''}`}
+                    judul={`DAFTAR PESERTA — ${sesi.nama}`}
+                    subjudul={`Ruang: ${r.nama_ruang}${r.lokasi ? ` (${r.lokasi})` : ''}`}
                     periode={tglText ? `Tanggal: ${tglText}` : undefined}
                   />
                   <Table className="mt-3 text-xs">
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-8 border border-black text-black">No</TableHead>
-                        <TableHead className="w-16 border border-black text-black">Kursi</TableHead>
                         <TableHead className="w-28 border border-black text-black">No. Peserta</TableHead>
                         <TableHead className="border border-black text-black">Nama</TableHead>
-                        <TableHead className="w-20 border border-black text-black">NIS</TableHead>
+                        <TableHead className="w-24 border border-black text-black">NISN</TableHead>
                         <TableHead className="w-24 border border-black text-black">Kelas</TableHead>
-                        <TableHead className="w-32 border border-black text-black">Tanda Tangan</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {list.length === 0 ? (
-                        <TableRow><TableCell colSpan={7} className="text-center py-3 border border-black">
+                        <TableRow><TableCell colSpan={5} className="text-center py-3 border border-black">
                           — Belum ada peserta —
                         </TableCell></TableRow>
                       ) : list.map((p: any, i: number) => (
                         <TableRow key={p.id}>
                           <TableCell className="border border-black">{i + 1}</TableCell>
-                          <TableCell className="border border-black text-center font-semibold">{p.nomor_kursi || '-'}</TableCell>
                           <TableCell className="border border-black font-mono">{p.nomor_peserta}</TableCell>
                           <TableCell className="border border-black">{p.siswa.nama}</TableCell>
-                          <TableCell className="border border-black font-mono">{p.siswa.nis}</TableCell>
+                          <TableCell className="border border-black font-mono">{p.siswa.nisn || '-'}</TableCell>
                           <TableCell className="border border-black">{p.siswa.kelas?.nama_kelas || '-'}</TableCell>
-                          <TableCell className="border border-black" style={{ height: '8mm' }} />
                         </TableRow>
                       ))}
                     </TableBody>
