@@ -106,8 +106,10 @@ export function CetakDenahRuangDialog({ open, onOpenChange, sesi }: Props) {
                     </div>
                   </div>
 
+                  <div className="text-center text-sm font-semibold mb-2">
+                    Ruang: {r.nama_ruang}{r.lokasi ? ` (${r.lokasi})` : ""}
+                  </div>
                   <div
-                    Ruang: ${r.nama_ruang}${r.lokasi ? ` (${r.lokasi})` : ""}
                     className="grid gap-1 mx-auto"
                     style={{
                       gridTemplateColumns: `repeat(${r.kolom}, 1fr)`,
