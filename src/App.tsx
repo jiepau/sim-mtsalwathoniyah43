@@ -128,6 +128,7 @@ const App = () => {
                   <Route path="/alumni" element={<ProtectedRoute allowedRoles={['admin','operator']}><Alumni /></ProtectedRoute>} />
                   <Route path="/e-ijazah" element={<Navigate to="/pdum" replace />} />
                   <Route path="/pdum" element={<ProtectedRoute allowedRoles={['admin','operator']}><PDUM /></ProtectedRoute>} />
+                  <Route path="/kartu-ujian" element={<ProtectedRoute allowedRoles={['admin','operator']}><KartuUjian /></ProtectedRoute>} />
                   <Route path="/buku-induk" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><BukuInduk /></ProtectedRoute>} />
 
                   {/* Keuangan - admin/bendahara */}
