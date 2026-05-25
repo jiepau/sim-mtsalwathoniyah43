@@ -32,7 +32,7 @@ export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
       const ids = peserta.map((p) => p.siswa_id);
       if (ids.length === 0) return [];
       const { data } = await supabase.from('siswa')
-        .select('id, nis, nama, foto_path, tempat_lahir, tanggal_lahir, kelas:kelas_id(nama_kelas)')
+        .select('id, nis, nisn, nama, tempat_lahir, tanggal_lahir, kelas:kelas_id(nama_kelas)')
         .in('id', ids);
       return data || [];
     },
@@ -45,6 +45,16 @@ export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
       const { data } = await supabase.from('madrasah_settings').select('*').maybeSingle();
       return data as MadrasahData | null;
     },
+  });
+
+  const { data: ta } = useQuery({
+    queryKey: ['ta-ujian', sesi.ta_id],
+    queryFn: async () => {
+      if (!sesi.ta_id) return null;
+      const { data } = await supabase.from('tahun_ajaran').select('nama_ta').eq('id', sesi.ta_id).maybeSingle();
+      return data;
+    },
+    enabled: !!sesi.ta_id,
   });
 
   const filtered = useMemo(() => {
@@ -126,80 +136,66 @@ export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
           />
 
           <PrintPreviewFrame preview={preview} orientation={orientation}>
-            <div className="grid grid-cols-2 gap-3" style={{ fontSize: '10pt', color: '#000' }}>
-              {filtered.map(({ p, s, r }, idx) => {
-                const fotoUrl = (s as any).foto_path
-                  ? supabase.storage.from('siswa-photos').getPublicUrl((s as any).foto_path).data.publicUrl
-                  : null;
+            <div className="flex flex-wrap gap-[3mm]" style={{ fontSize: '9pt', color: '#000' }}>
+              {filtered.map(({ p, s, r }) => {
                 return (
-                  <div key={p.id} className="border-2 border-black p-2 avoid-break"
-                    style={{ pageBreakInside: 'avoid', minHeight: '125mm', display: 'flex', flexDirection: 'column' }}>
+                  <div key={p.id} className="border-2 border-black avoid-break"
+                    style={{ pageBreakInside: 'avoid', width: '90mm', height: '80mm', padding: '2mm', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
                     {/* Header */}
-                    <div className="flex items-center gap-2 border-b border-black pb-1 mb-2">
-                      <img src="/logo-alwathoniyah.png" alt="" style={{ width: '12mm', height: '12mm', objectFit: 'contain' }} />
+                    <div className="flex items-center gap-2 border-b border-black pb-1 mb-1">
+                      <img src="/logo-alwathoniyah.png" alt="" style={{ width: '10mm', height: '10mm', objectFit: 'contain' }} />
                       <div className="flex-1 text-center">
-                        <p className="text-[8pt] font-semibold uppercase leading-tight">Kementerian Agama RI</p>
-                        <p className="text-[10pt] font-bold uppercase leading-tight">{madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43'}</p>
-                        {madrasah?.nsm && <p className="text-[7pt] leading-tight">NSM: {madrasah.nsm}</p>}
+                        <p className="text-[7pt] font-semibold uppercase leading-tight">Kementerian Agama RI</p>
+                        <p className="text-[9pt] font-bold uppercase leading-tight">{madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43'}</p>
+                        {madrasah?.nsm && <p className="text-[6pt] leading-tight">NSM: {madrasah.nsm}</p>}
                       </div>
-                      <img src="/logo-kemenag.png" alt="" style={{ width: '12mm', height: '12mm', objectFit: 'contain' }} />
+                      <img src="/logo-kemenag.png" alt="" style={{ width: '10mm', height: '10mm', objectFit: 'contain' }} />
                     </div>
 
-                    <div className="text-center mb-2">
-                      <p className="font-bold text-[11pt] uppercase">Kartu Peserta {JENIS_UJIAN_LABEL[sesi.jenis]?.split(' ')[0] || 'Ujian'}</p>
-                      <p className="text-[9pt]">{sesi.nama}</p>
+                    <div className="text-center mb-1">
+                      <p className="font-bold text-[10pt] uppercase leading-tight">Kartu Peserta</p>
+                      <p className="text-[8pt] leading-tight">{sesi.nama}</p>
+                      {ta?.nama_ta && <p className="text-[7pt] leading-tight">Tahun Ajaran {ta.nama_ta}</p>}
                     </div>
 
-                    <div className="flex gap-3 flex-1">
-                      <div style={{ width: '28mm' }} className="flex flex-col items-center">
-                        <div className="border border-black bg-muted flex items-center justify-center overflow-hidden"
-                          style={{ width: '28mm', height: '36mm' }}>
-                          {fotoUrl ? <img src={fotoUrl} alt="" className="w-full h-full object-cover" />
-                            : <span className="text-[8pt] text-muted-foreground text-center">Foto<br />3×4</span>}
-                        </div>
+                    <div className="flex gap-2 flex-1 items-stretch">
+                      {/* Ruang besar pengganti foto */}
+                      <div className="border-2 border-black flex flex-col items-center justify-center"
+                        style={{ width: '24mm' }}>
+                        <p className="text-[7pt] uppercase leading-none">Ruang</p>
+                        <p className="font-bold leading-none" style={{ fontSize: '20pt' }}>{r?.nama_ruang || '-'}</p>
                       </div>
-                      <div className="flex-1 text-[9pt] space-y-1">
-                        <div>
-                          <p className="text-[7pt] uppercase text-muted-foreground">No. Peserta</p>
-                          <p className="font-bold font-mono text-[14pt] leading-tight">{p.nomor_peserta}</p>
+                      <div className="flex-1 text-[8pt] flex flex-col justify-center">
+                        <div className="mb-1">
+                          <p className="text-[6pt] uppercase text-muted-foreground leading-none">No. Peserta</p>
+                          <p className="font-bold font-mono text-[13pt] leading-tight">{p.nomor_peserta}</p>
                         </div>
-                        <div className="grid grid-cols-[auto_1fr] gap-x-2">
-                          <span className="text-[7pt] uppercase">Nama</span>
+                        <div className="grid grid-cols-[auto_1fr] gap-x-1 leading-tight">
+                          <span className="text-[6pt] uppercase">Nama</span>
                           <span className="font-semibold">: {(s as any).nama}</span>
-                          <span className="text-[7pt] uppercase">NIS</span>
-                          <span>: {(s as any).nis}</span>
-                          <span className="text-[7pt] uppercase">Kelas</span>
+                          <span className="text-[6pt] uppercase">NISN</span>
+                          <span>: {(s as any).nisn || '-'}</span>
+                          <span className="text-[6pt] uppercase">Kelas</span>
                           <span>: {(s as any).kelas?.nama_kelas || '-'}</span>
-                          <span className="text-[7pt] uppercase">Ruang</span>
-                          <span className="font-semibold">: {r?.nama_ruang || '-'}</span>
-                          <span className="text-[7pt] uppercase">No. Kursi</span>
-                          <span className="font-semibold">: {p.nomor_kursi || '-'}</span>
-                          <span className="text-[7pt] uppercase">Tanggal</span>
-                          <span className="text-[8pt]">: {tanggalText}</span>
+                          <span className="text-[6pt] uppercase">Tanggal</span>
+                          <span className="text-[7pt]">: {tanggalText}</span>
                         </div>
                       </div>
                     </div>
 
                     {/* TTD */}
-                    <div className="grid grid-cols-2 mt-auto pt-2 text-[8pt]">
-                      <div className="text-center">
-                        <p>Peserta,</p>
-                        <div style={{ height: '12mm' }} />
-                        <p className="border-t border-black pt-0.5">{(s as any).nama}</p>
-                      </div>
-                      <div className="text-center">
-                        <p>Kepala Madrasah,</p>
-                        <div style={{ height: '12mm' }} />
-                        <p className="border-t border-black pt-0.5 font-semibold">
-                          {madrasah?.kepala_madrasah || '...........................'}
-                        </p>
-                      </div>
+                    <div className="text-center text-[7pt] mt-1">
+                      <p>Kepala Madrasah,</p>
+                      <div style={{ height: '7mm' }} />
+                      <p className="font-semibold leading-none">
+                        {madrasah?.kepala_madrasah || '...........................'}
+                      </p>
                     </div>
                   </div>
                 );
               })}
               {filtered.length === 0 && (
-                <div className="col-span-2 text-center text-sm text-muted-foreground py-12">
+                <div className="w-full text-center text-sm text-muted-foreground py-12">
                   Tidak ada peserta untuk dicetak.
                 </div>
               )}
