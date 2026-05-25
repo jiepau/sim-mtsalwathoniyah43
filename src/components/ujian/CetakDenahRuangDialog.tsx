@@ -100,15 +100,18 @@ export function CetakDenahRuangDialog({ open, onOpenChange, sesi }: Props) {
                     subjudul={`${sesi.nama}`}
                   />
 
-                  <div className="mt-3 flex items-center justify-center gap-3">
-                    <div className="inline-block border-2 border-black px-8 py-1 text-xs font-bold uppercase">
-                      ↑ Depan Ruang (Pengawas)
-                    </div>
-                    <div className="text-sm font-bold uppercase">
+                  <div className="mt-3 grid grid-cols-3 items-center mb-3">
+                    <div className="text-sm font-bold uppercase text-left">
                       {r.nama_ruang}{r.lokasi ? ` (${r.lokasi})` : ""}
                     </div>
+                    <div className="text-center">
+                      <div className="inline-block border-2 border-black px-8 py-1 text-xs font-bold uppercase">
+                        ↑ Depan Ruang (Pengawas)
+                      </div>
+                    </div>
+                    <div />
                   </div>
-                  <div className="mb-3" />
+
 
 
                   <div
