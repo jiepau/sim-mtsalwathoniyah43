@@ -62,6 +62,7 @@ const SPMBDaftar = lazy(() => import("@/pages/PPDBDaftar"));
 const SPMBCekStatus = lazy(() => import("@/pages/PPDBCekStatus"));
 const PDUM = lazy(() => import("@/pages/PDUM"));
 const KelulusanPublik = lazy(() => import("@/pages/KelulusanPublik"));
+const KartuUjian = lazy(() => import("@/pages/KartuUjian"));
 const PetaSitus = lazy(() => import("@/pages/PetaSitus"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
