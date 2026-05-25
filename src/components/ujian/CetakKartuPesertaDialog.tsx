@@ -189,7 +189,7 @@ export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
                     </div>
 
                     {/* Footer: Ruang (kiri-bawah) & TTD (kanan-bawah) */}
-                    <div className="flex items-end justify-between gap-2 mt-1" style={{ marginBottom: '3mm' }}>
+                    <div className="flex items-end justify-between gap-2" style={{ marginBottom: '6mm', marginTop: '2mm' }}>
                       <div className="border-2 border-black flex flex-col items-center justify-center"
                         style={{ width: '19mm', height: '21mm' }}>
                         <p className="text-[6pt] uppercase leading-none">Ruang</p>
