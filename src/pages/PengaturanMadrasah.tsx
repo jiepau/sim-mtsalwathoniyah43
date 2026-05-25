@@ -140,6 +140,27 @@ export default function PengaturanMadrasahPage() {
     }
   };
 
+  const handleUpload = async (file: File, kind: 'ttd' | 'stempel') => {
+    if (!file.type.startsWith('image/')) { toast.error('File harus berupa gambar'); return; }
+    if (file.size > 2 * 1024 * 1024) { toast.error('Ukuran maks 2MB'); return; }
+    const setBusy = kind === 'ttd' ? setUploadingTtd : setUploadingStempel;
+    setBusy(true);
+    try {
+      const ext = file.name.split('.').pop() || 'png';
+      const path = `${kind}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from('madrasah-assets').upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from('madrasah-assets').getPublicUrl(path);
+      const field = kind === 'ttd' ? 'ttd_kepala_url' : 'stempel_url';
+      setFormData((p) => ({ ...p, [field]: publicUrl }));
+      toast.success('Berhasil diunggah. Klik Simpan Pengaturan untuk menyimpan.');
+    } catch (e: any) {
+      toast.error(mapDatabaseError(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="animate-fadeIn">
