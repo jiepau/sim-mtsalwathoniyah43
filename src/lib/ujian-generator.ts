@@ -100,10 +100,12 @@ export function generatePesertaDistribusi(
     if (ex?.is_manual_override) {
       nomor = ex.nomor_peserta;
     } else {
-      // Cari nomor berikutnya yang belum dipakai
+      // Format: {prefix}{kodeKelas}{NNN} — seq reset per-kelas
+      const kodeKelas = kodeKelasFromNama(s.nama_kelas, s.tingkat);
       do {
-        nomor = `${prefix}-${String(seq).padStart(4, '0')}`;
-        seq++;
+        const seq = (seqPerKelas.get(kodeKelas) || 0) + 1;
+        seqPerKelas.set(kodeKelas, seq);
+        nomor = `${prefix}${kodeKelas}${String(seq).padStart(3, '0')}`;
       } while (numbersTaken.has(nomor));
     }
 
