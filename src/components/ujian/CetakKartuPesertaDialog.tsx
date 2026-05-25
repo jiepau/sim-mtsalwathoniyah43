@@ -159,11 +159,11 @@ export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
                     </div>
 
                     <div className="flex gap-2 flex-1 items-stretch">
-                      {/* Ruang besar pengganti foto */}
+                      {/* Ruang pengganti foto - lebih kecil */}
                       <div className="border-2 border-black flex flex-col items-center justify-center"
-                        style={{ width: '24mm' }}>
-                        <p className="text-[7pt] uppercase leading-none">Ruang</p>
-                        <p className="font-bold leading-none" style={{ fontSize: '20pt' }}>{r?.nama_ruang || '-'}</p>
+                        style={{ width: '16mm' }}>
+                        <p className="text-[6pt] uppercase leading-none">Ruang</p>
+                        <p className="font-bold leading-none" style={{ fontSize: '14pt' }}>{r?.nama_ruang || '-'}</p>
                       </div>
                       <div className="flex-1 text-[8pt] flex flex-col justify-center">
                         <div className="mb-1">
@@ -183,8 +183,8 @@ export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
                       </div>
                     </div>
 
-                    {/* TTD */}
-                    <div className="text-center text-[7pt] mt-1">
+                    {/* TTD - rata kanan */}
+                    <div className="text-right text-[7pt] mt-1" style={{ width: '40mm', marginLeft: 'auto' }}>
                       <p>Kepala Madrasah,</p>
                       <div style={{ height: '7mm' }} />
                       <p className="font-semibold leading-none">
