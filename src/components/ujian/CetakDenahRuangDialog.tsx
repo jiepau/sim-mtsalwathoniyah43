@@ -97,7 +97,7 @@ export function CetakDenahRuangDialog({ open, onOpenChange, sesi }: Props) {
                 <div key={r.id} style={{ pageBreakAfter: idx < ruangFiltered.length - 1 ? "always" : "auto" }}>
                   <PrintKopMadrasah
                     judul={`DENAH TEMPAT DUDUK — ${JENIS_UJIAN_LABEL[sesi.jenis]?.split(" ")[0] || "UJIAN"}`}
-                    subjudul={`${sesi.nama} • Ruang: ${r.nama_ruang}${r.lokasi ? ` (${r.lokasi})` : ""}`}
+                    subjudul={`${sesi.nama}`}
                   />
 
                   <div className="mt-3 text-center">
@@ -107,6 +107,7 @@ export function CetakDenahRuangDialog({ open, onOpenChange, sesi }: Props) {
                   </div>
 
                   <div
+                    Ruang: ${r.nama_ruang}${r.lokasi ? ` (${r.lokasi})` : ""}
                     className="grid gap-1 mx-auto"
                     style={{
                       gridTemplateColumns: `repeat(${r.kolom}, 1fr)`,
