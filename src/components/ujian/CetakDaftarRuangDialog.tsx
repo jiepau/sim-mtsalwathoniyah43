@@ -25,7 +25,7 @@ export function CetakDaftarRuangDialog({ open, onOpenChange, sesi }: Props) {
       const ids = peserta.map((p) => p.siswa_id);
       if (ids.length === 0) return [];
       const { data } = await supabase.from('siswa')
-        .select('id, nis, nama, kelas:kelas_id(nama_kelas)').in('id', ids);
+        .select('id, nis, nisn, nama, kelas:kelas_id(nama_kelas)').in('id', ids);
       return data || [];
     },
     enabled: open,
