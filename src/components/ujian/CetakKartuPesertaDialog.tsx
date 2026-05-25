@@ -15,6 +15,8 @@ interface Props { open: boolean; onOpenChange: (v: boolean) => void; sesi: Ujian
 interface MadrasahData {
   nama_madrasah: string; nsm: string | null; npsn: string | null;
   alamat: string | null; kepala_madrasah: string | null;
+  nip_kepala: string | null;
+  ttd_kepala_url: string | null; stempel_url: string | null;
 }
 
 export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
@@ -147,7 +149,13 @@ export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
                       <div className="flex-1 text-center">
                         <p className="text-[7pt] font-semibold uppercase leading-tight">Kementerian Agama RI</p>
                         <p className="text-[9pt] font-bold uppercase leading-tight">{madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43'}</p>
-                        {madrasah?.nsm && <p className="text-[6pt] leading-tight">NSM: {madrasah.nsm}</p>}
+                        {(madrasah?.nsm || madrasah?.npsn) && (
+                          <p className="text-[6pt] leading-tight">
+                            {madrasah?.nsm && <>NSM: {madrasah.nsm}</>}
+                            {madrasah?.nsm && madrasah?.npsn && <> &nbsp;•&nbsp; </>}
+                            {madrasah?.npsn && <>NPSN: {madrasah.npsn}</>}
+                          </p>
+                        )}
                       </div>
                       <img src="/logo-kemenag.png" alt="" style={{ width: '10mm', height: '10mm', objectFit: 'contain' }} />
                     </div>
@@ -159,11 +167,11 @@ export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
                     </div>
 
                     <div className="flex gap-2 flex-1 items-stretch">
-                      {/* Ruang pengganti foto - lebih kecil */}
+                      {/* Ruang - kotak persegi */}
                       <div className="border-2 border-black flex flex-col items-center justify-center"
-                        style={{ width: '16mm' }}>
+                        style={{ width: '18mm', height: '18mm', alignSelf: 'center' }}>
                         <p className="text-[6pt] uppercase leading-none">Ruang</p>
-                        <p className="font-bold leading-none" style={{ fontSize: '14pt' }}>{r?.nama_ruang || '-'}</p>
+                        <p className="font-bold leading-none mt-0.5" style={{ fontSize: '13pt' }}>{r?.nama_ruang || '-'}</p>
                       </div>
                       <div className="flex-1 text-[8pt] flex flex-col justify-center">
                         <div className="mb-1">
@@ -183,13 +191,25 @@ export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
                       </div>
                     </div>
 
-                    {/* TTD - rata kanan */}
-                    <div className="text-right text-[7pt] mt-1" style={{ width: '40mm', marginLeft: 'auto' }}>
+                    {/* TTD - rata kanan dengan TTD digital & stempel */}
+                    <div className="text-center text-[7pt] mt-1" style={{ width: '42mm', marginLeft: 'auto' }}>
                       <p>Kepala Madrasah,</p>
-                      <div style={{ height: '7mm' }} />
-                      <p className="font-semibold leading-none">
+                      <div className="relative flex items-center justify-center" style={{ height: '12mm' }}>
+                        {madrasah?.stempel_url && (
+                          <img src={madrasah.stempel_url} alt="" className="absolute"
+                            style={{ height: '12mm', opacity: 0.7, left: '2mm' }} />
+                        )}
+                        {madrasah?.ttd_kepala_url && (
+                          <img src={madrasah.ttd_kepala_url} alt="" className="absolute"
+                            style={{ height: '10mm', right: '2mm' }} />
+                        )}
+                      </div>
+                      <p className="font-semibold leading-tight" style={{ textDecoration: 'underline' }}>
                         {madrasah?.kepala_madrasah || '...........................'}
                       </p>
+                      {madrasah?.nip_kepala && (
+                        <p className="text-[6pt] leading-tight">NIP. {madrasah.nip_kepala}</p>
+                      )}
                     </div>
                   </div>
                 );

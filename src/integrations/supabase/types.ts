@@ -1100,7 +1100,9 @@ export type Database = {
           npsn: string | null
           nsm: string | null
           provinsi: string | null
+          stempel_url: string | null
           tanggal_sk_pendirian: string | null
+          ttd_kepala_url: string | null
           updated_at: string
           website: string | null
         }
@@ -1120,7 +1122,9 @@ export type Database = {
           npsn?: string | null
           nsm?: string | null
           provinsi?: string | null
+          stempel_url?: string | null
           tanggal_sk_pendirian?: string | null
+          ttd_kepala_url?: string | null
           updated_at?: string
           website?: string | null
         }
@@ -1140,7 +1144,9 @@ export type Database = {
           npsn?: string | null
           nsm?: string | null
           provinsi?: string | null
+          stempel_url?: string | null
           tanggal_sk_pendirian?: string | null
+          ttd_kepala_url?: string | null
           updated_at?: string
           website?: string | null
         }
