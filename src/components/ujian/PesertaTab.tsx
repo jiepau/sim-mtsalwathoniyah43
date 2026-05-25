@@ -42,6 +42,7 @@ export function PesertaTab({ sesi }: Props) {
     const sInput = siswaList.map((s: any) => ({
       id: s.id, nama: s.nama, kelas_id: s.kelas_id,
       tingkat: s.kelas?.tingkat ?? 99,
+      nama_kelas: s.kelas?.nama_kelas ?? null,
     }));
     const rInput = ruang.map((r) => ({ id: r.id, kapasitas: r.kapasitas, urutan: r.urutan }));
     const existing = peserta.map((p) => ({

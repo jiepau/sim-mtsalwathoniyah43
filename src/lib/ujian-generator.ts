@@ -10,6 +10,28 @@ export interface SiswaInput {
   nama: string;
   kelas_id: string | null;
   tingkat: number; // 7|8|9
+  nama_kelas?: string | null;
+}
+
+/**
+ * Ambil kode kelas numerik 2 digit dari nama kelas.
+ * "8-1" → "81", "VIII-2" → "82" (pakai tingkat + paralel),
+ * "7A" → "71" (A=1), fallback "{tingkat}0".
+ */
+export function kodeKelasFromNama(namaKelas: string | null | undefined, tingkat: number): string {
+  const t = String(tingkat || 0);
+  if (!namaKelas) return `${t}0`;
+  // Coba ambil digit terakhir sebagai paralel
+  const digits = namaKelas.replace(/\D/g, '');
+  if (digits.length >= 2) return digits.slice(-2);
+  if (digits.length === 1) return `${t}${digits}`;
+  // Tidak ada digit → coba huruf paralel (A=1, B=2, ...)
+  const m = namaKelas.match(/[A-Za-z]$/);
+  if (m) {
+    const idx = m[0].toUpperCase().charCodeAt(0) - 64; // A=1
+    if (idx >= 1 && idx <= 9) return `${t}${idx}`;
+  }
+  return `${t}0`;
 }
 
 export interface RuangInput {
@@ -41,9 +63,12 @@ export function generatePesertaDistribusi(
   prefix: string,
   existing: ExistingPeserta[] = [],
 ): PesertaOutput[] {
-  // Sortir siswa: tingkat → nama
+  // Sortir siswa: tingkat → nama_kelas → nama
   const sorted = [...siswa].sort(
-    (a, b) => a.tingkat - b.tingkat || a.nama.localeCompare(b.nama, 'id'),
+    (a, b) =>
+      a.tingkat - b.tingkat ||
+      (a.nama_kelas || '').localeCompare(b.nama_kelas || '', 'id') ||
+      a.nama.localeCompare(b.nama, 'id'),
   );
 
   const existingMap = new Map(existing.map((e) => [e.siswa_id, e]));
@@ -64,7 +89,8 @@ export function generatePesertaDistribusi(
   let kursiNext = 1;
 
   const result: PesertaOutput[] = [];
-  let seq = 1;
+  // Sequence reset per-kelas
+  const seqPerKelas = new Map<string, number>();
 
   for (const s of sorted) {
     const ex = existingMap.get(s.id);
@@ -74,10 +100,12 @@ export function generatePesertaDistribusi(
     if (ex?.is_manual_override) {
       nomor = ex.nomor_peserta;
     } else {
-      // Cari nomor berikutnya yang belum dipakai
+      // Format: {prefix}{kodeKelas}{NNN} — seq reset per-kelas
+      const kodeKelas = kodeKelasFromNama(s.nama_kelas, s.tingkat);
       do {
-        nomor = `${prefix}-${String(seq).padStart(4, '0')}`;
-        seq++;
+        const seq = (seqPerKelas.get(kodeKelas) || 0) + 1;
+        seqPerKelas.set(kodeKelas, seq);
+        nomor = `${prefix}${kodeKelas}${String(seq).padStart(3, '0')}`;
       } while (numbersTaken.has(nomor));
     }
 

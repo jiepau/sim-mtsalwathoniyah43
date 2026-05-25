@@ -160,7 +160,13 @@ export function SesiFormDialog({ open, onOpenChange, initial }: Props) {
             <div>
               <Label>Prefix Nomor Peserta</Label>
               <Input value={prefix} onChange={(e) => setPrefix(e.target.value.toUpperCase())}
-                placeholder="mis. PAS25" />
+                placeholder="mis. 260220180" />
+              <p className="text-[10pt] text-muted-foreground mt-1 leading-tight">
+                Format final: <span className="font-mono">{`{prefix}{kodeKelas}{NNN}`}</span><br />
+                Contoh prefix <span className="font-mono">260220180</span> (tahun+kab+kota+sekolah),
+                kelas <span className="font-mono">8-1</span> → <span className="font-mono">26022018081001</span>.
+                Kode kelas & urutan diisi otomatis per-kelas.
+              </p>
             </div>
           </div>
 
