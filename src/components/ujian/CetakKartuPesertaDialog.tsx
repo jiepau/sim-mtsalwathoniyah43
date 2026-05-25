@@ -32,7 +32,7 @@ export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
       const ids = peserta.map((p) => p.siswa_id);
       if (ids.length === 0) return [];
       const { data } = await supabase.from('siswa')
-        .select('id, nis, nama, foto_path, tempat_lahir, tanggal_lahir, kelas:kelas_id(nama_kelas)')
+        .select('id, nis, nisn, nama, tempat_lahir, tanggal_lahir, kelas:kelas_id(nama_kelas)')
         .in('id', ids);
       return data || [];
     },
@@ -45,6 +45,16 @@ export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
       const { data } = await supabase.from('madrasah_settings').select('*').maybeSingle();
       return data as MadrasahData | null;
     },
+  });
+
+  const { data: ta } = useQuery({
+    queryKey: ['ta-ujian', sesi.ta_id],
+    queryFn: async () => {
+      if (!sesi.ta_id) return null;
+      const { data } = await supabase.from('tahun_ajaran').select('nama_ta').eq('id', sesi.ta_id).maybeSingle();
+      return data;
+    },
+    enabled: !!sesi.ta_id,
   });
 
   const filtered = useMemo(() => {
