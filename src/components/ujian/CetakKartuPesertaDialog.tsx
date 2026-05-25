@@ -170,50 +170,64 @@ export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
                     </div>
 
                     <div className="flex gap-2 flex-1 items-stretch">
-                      {/* Ruang - kotak persegi */}
-                      <div className="border-2 border-black flex flex-col items-center justify-center"
-                        style={{ width: '18mm', height: '18mm', alignSelf: 'center' }}>
-                        <p className="text-[6pt] uppercase leading-none">Ruang</p>
-                        <p className="font-bold leading-none mt-0.5" style={{ fontSize: '13pt' }}>{r?.nama_ruang || '-'}</p>
-                      </div>
-                      <div className="flex-1 text-[8pt] flex flex-col justify-center">
+                      <div className="flex-1 text-[9pt] flex flex-col justify-center">
                         <div className="mb-1">
                           <p className="text-[6pt] uppercase text-muted-foreground leading-none">No. Peserta</p>
-                          <p className="font-bold font-mono text-[13pt] leading-tight">{p.nomor_peserta}</p>
+                          <p className="font-bold font-mono text-[14pt] leading-tight">{p.nomor_peserta}</p>
                         </div>
-                        <div className="grid grid-cols-[auto_1fr] gap-x-1 leading-tight">
-                          <span className="text-[6pt] uppercase">Nama</span>
-                          <span className="font-semibold">: {(s as any).nama}</span>
-                          <span className="text-[6pt] uppercase">NISN</span>
-                          <span>: {(s as any).nisn || '-'}</span>
-                          <span className="text-[6pt] uppercase">Kelas</span>
-                          <span>: {(s as any).kelas?.nama_kelas || '-'}</span>
-                          <span className="text-[6pt] uppercase">Tanggal</span>
+                        <div className="grid grid-cols-[auto_1fr] gap-x-1 gap-y-0.5 leading-tight">
+                          <span className="text-[7pt] uppercase">Nama</span>
+                          <span className="font-semibold text-[9pt]">: {(s as any).nama}</span>
+                          <span className="text-[7pt] uppercase">NISN</span>
+                          <span className="text-[8pt]">: {(s as any).nisn || '-'}</span>
+                          <span className="text-[7pt] uppercase">Kelas</span>
+                          <span className="text-[8pt]">: {(s as any).kelas?.nama_kelas || '-'}</span>
+                          <span className="text-[7pt] uppercase">Tanggal</span>
                           <span className="text-[7pt]">: {tanggalText}</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* TTD - rata kanan dengan TTD digital & stempel */}
-                    <div className="text-center text-[7pt] mt-1" style={{ width: '42mm', marginLeft: 'auto' }}>
-                      <p>Kepala Madrasah,</p>
-                      <div className="relative flex items-center justify-center" style={{ height: '12mm' }}>
-                        {madrasah?.stempel_url && (
-                          <img src={madrasah.stempel_url} alt="" className="absolute"
-                            style={{ height: '12mm', opacity: 0.7, left: '2mm' }} />
-                        )}
-                        {madrasah?.ttd_kepala_url && (
-                          <img src={madrasah.ttd_kepala_url} alt="" className="absolute"
-                            style={{ height: '10mm', right: '2mm' }} />
+                    {/* Footer: Ruang (kiri-bawah) & TTD (kanan-bawah) */}
+                    <div className="flex items-end justify-between gap-2 mt-1">
+                      <div className="border-2 border-black flex flex-col items-center justify-center"
+                        style={{ width: '16mm', height: '16mm' }}>
+                        <p className="text-[6pt] uppercase leading-none">Ruang</p>
+                        <p className="font-bold leading-none mt-0.5" style={{ fontSize: '12pt' }}>{r?.nama_ruang || '-'}</p>
+                      </div>
+
+                      <div className="text-center text-[7pt]" style={{ width: '42mm' }}>
+                        <p>Kepala Madrasah,</p>
+                        <div className="relative flex items-center justify-center" style={{ height: '13mm' }}>
+                          {madrasah?.stempel_url && (
+                            <img src={madrasah.stempel_url} alt=""
+                              className="absolute left-1/2 top-1/2"
+                              style={{
+                                height: '13mm',
+                                opacity: 0.85,
+                                transform: 'translate(-50%, -50%)',
+                                mixBlendMode: 'multiply',
+                              }} />
+                          )}
+                          {madrasah?.ttd_kepala_url && (
+                            <img src={madrasah.ttd_kepala_url} alt=""
+                              className="absolute left-1/2 top-1/2"
+                              style={{
+                                height: '11mm',
+                                transform: 'translate(-50%, -50%)',
+                                mixBlendMode: 'multiply',
+                              }} />
+                          )}
+                        </div>
+                        <p className="font-semibold leading-tight" style={{ textDecoration: 'underline' }}>
+                          {madrasah?.kepala_madrasah || '...........................'}
+                        </p>
+                        {madrasah?.nip_kepala && (
+                          <p className="text-[6pt] leading-tight">NIP. {madrasah.nip_kepala}</p>
                         )}
                       </div>
-                      <p className="font-semibold leading-tight" style={{ textDecoration: 'underline' }}>
-                        {madrasah?.kepala_madrasah || '...........................'}
-                      </p>
-                      {madrasah?.nip_kepala && (
-                        <p className="text-[6pt] leading-tight">NIP. {madrasah.nip_kepala}</p>
-                      )}
                     </div>
+
                   </div>
                 );
               })}
