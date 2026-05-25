@@ -96,15 +96,20 @@ export function CetakDenahRuangDialog({ open, onOpenChange, sesi }: Props) {
               return (
                 <div key={r.id} style={{ pageBreakAfter: idx < ruangFiltered.length - 1 ? "always" : "auto" }}>
                   <PrintKopMadrasah
-                    judul={`DENAH TEMPAT DUDUK — ${r.nama_ruang}${r.lokasi ? ` (${r.lokasi})` : ""}`}
+                    judul={`DENAH TEMPAT DUDUK — ${JENIS_UJIAN_LABEL[sesi.jenis]?.split(" ")[0] || "UJIAN"}`}
                     subjudul={`${sesi.nama}`}
                   />
 
-                  <div className="mt-3 text-center">
-                    <div className="inline-block border-2 border-black px-8 py-1 text-xs font-bold uppercase mb-3">
+                  <div className="mt-3 flex items-center justify-center gap-3">
+                    <div className="inline-block border-2 border-black px-8 py-1 text-xs font-bold uppercase">
                       ↑ Depan Ruang (Pengawas)
                     </div>
+                    <div className="text-sm font-bold uppercase">
+                      {r.nama_ruang}{r.lokasi ? ` (${r.lokasi})` : ""}
+                    </div>
                   </div>
+                  <div className="mb-3" />
+
 
                   <div
                     className="grid gap-1 mx-auto"
