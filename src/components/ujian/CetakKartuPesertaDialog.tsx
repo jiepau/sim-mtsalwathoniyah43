@@ -42,11 +42,14 @@ export function CetakKartuPesertaDialog({ open, onOpenChange, sesi }: Props) {
   });
 
   const { data: madrasah } = useQuery({
-    queryKey: ['madrasah-cetak'],
+    queryKey: ['madrasah-cetak-kartu', open],
     queryFn: async () => {
       const { data } = await supabase.from('madrasah_settings').select('*').maybeSingle();
       return data as MadrasahData | null;
     },
+    enabled: open,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   const { data: ta } = useQuery({
