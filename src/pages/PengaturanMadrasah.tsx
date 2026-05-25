@@ -357,6 +357,47 @@ export default function PengaturanMadrasahPage() {
                 />
               </div>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div className="space-y-2">
+                <Label>Tanda Tangan Kepala Madrasah</Label>
+                <div className="border rounded-md p-3 flex flex-col items-center gap-2 bg-muted/30">
+                  {formData.ttd_kepala_url ? (
+                    <img src={formData.ttd_kepala_url} alt="TTD" className="h-24 object-contain bg-white p-1 rounded" />
+                  ) : (
+                    <div className="h-24 w-full flex items-center justify-center text-xs text-muted-foreground">Belum ada TTD</div>
+                  )}
+                  <div className="flex gap-2 w-full">
+                    <Input type="file" accept="image/*" disabled={uploadingTtd}
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f, 'ttd'); e.target.value = ''; }} />
+                    {formData.ttd_kepala_url && (
+                      <Button type="button" variant="outline" size="sm"
+                        onClick={() => setFormData({ ...formData, ttd_kepala_url: '' })}>Hapus</Button>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">PNG transparan disarankan. Maks 2MB.</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Stempel Sekolah</Label>
+                <div className="border rounded-md p-3 flex flex-col items-center gap-2 bg-muted/30">
+                  {formData.stempel_url ? (
+                    <img src={formData.stempel_url} alt="Stempel" className="h-24 object-contain bg-white p-1 rounded" />
+                  ) : (
+                    <div className="h-24 w-full flex items-center justify-center text-xs text-muted-foreground">Belum ada Stempel</div>
+                  )}
+                  <div className="flex gap-2 w-full">
+                    <Input type="file" accept="image/*" disabled={uploadingStempel}
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f, 'stempel'); e.target.value = ''; }} />
+                    {formData.stempel_url && (
+                      <Button type="button" variant="outline" size="sm"
+                        onClick={() => setFormData({ ...formData, stempel_url: '' })}>Hapus</Button>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">PNG transparan disarankan. Maks 2MB.</p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
