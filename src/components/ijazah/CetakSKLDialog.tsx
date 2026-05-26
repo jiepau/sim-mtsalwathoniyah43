@@ -11,6 +11,7 @@ interface Props {
   onOpenChange: (o: boolean) => void;
   siswaId: string;
   taId: string;
+  publicMode?: boolean;
 }
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
@@ -21,13 +22,21 @@ function normalKelompok(k: string): 'A' | 'B' | 'mulok' {
   return 'A';
 }
 
-export function CetakSKLDialog({ open, onOpenChange, siswaId, taId }: Props) {
+export function CetakSKLDialog({ open, onOpenChange, siswaId, taId, publicMode = false }: Props) {
   const printRef = useRef<HTMLDivElement>(null);
 
   const { data } = useQuery({
-    queryKey: ['skl-full', siswaId, taId],
+    queryKey: ['skl-full', siswaId, taId, publicMode],
     enabled: open && !!siswaId && !!taId,
     queryFn: async () => {
+      if (publicMode) {
+        const { data: res, error } = await supabase.functions.invoke('get-skl-publik', {
+          body: { siswa_id: siswaId, ta_id: taId },
+        });
+        if (error) throw error;
+        if (res?.error) throw new Error(res.error);
+        return res;
+      }
       const [siswaRes, kelulusanRes, kelSetRes, taRes, madrasahRes, pesertaRes, mapelRes, settingsRes, raporRes, umRes] = await Promise.all([
         supabase.from('siswa').select('id, nama, nis, nisn, tempat_lahir, tanggal_lahir, kelas_id, nama_ayah_kandung, nama_ibu_kandung, foto_path').eq('id', siswaId).maybeSingle(),
         supabase.from('kelulusan').select('*').eq('siswa_id', siswaId).eq('ta_id', taId).maybeSingle(),
