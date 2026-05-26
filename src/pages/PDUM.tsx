@@ -108,10 +108,10 @@ export default function PDUMPage() {
   const idsKey = siswaIds.join(',');
 
   const { data: rapor = [] } = useQuery({
-    queryKey: ['pdum-rapor', taId, idsKey],
+    queryKey: ['pdum-rapor', taId, idsKey, activeSemester],
     enabled: !!taId && siswaIds.length > 0,
     queryFn: async () => {
-      const { data } = await supabase.from('pdum_nilai_rapor').select('siswa_id, kode_mapel, semester, nilai').eq('ta_id', taId).in('siswa_id', siswaIds).limit(100000);
+      const { data } = await supabase.from('pdum_nilai_rapor').select('siswa_id, kode_mapel, semester, nilai').eq('ta_id', taId).eq('semester', activeSemester).in('siswa_id', siswaIds);
       return (data || []) as RaporRow[];
     },
   });
