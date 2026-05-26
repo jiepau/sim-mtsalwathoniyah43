@@ -327,7 +327,7 @@ export default function PDUMPage() {
       namaMadrasah: madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43',
       provinsi: madrasah?.provinsi || '',
       kabupaten: madrasah?.kabupaten_kota || '',
-      siswaList, pesertaMap, mapelList, rapor, um: umRows,
+      siswaList, pesertaMap, mapelList, rapor: raporAll, um: umRows,
       bobotRapor: cur.bobot_rapor, bobotUm: cur.bobot_um,
     });
     toast.success('File Excel PDUM Kemenag dibuat');
