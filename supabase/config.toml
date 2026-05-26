@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.cek-status-ppdb]
 verify_jwt = false
+
+[functions.get-skl-publik]
+verify_jwt = false

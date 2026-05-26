@@ -98,7 +98,7 @@ export default function KelulusanPublik() {
       </Card>
 
       {showSKL && result?.siswa?.id && taIdForSKL && (
-        <CetakSKLDialog open={showSKL} onOpenChange={setShowSKL} siswaId={result.siswa.id} taId={taIdForSKL} />
+        <CetakSKLDialog open={showSKL} onOpenChange={setShowSKL} siswaId={result.siswa.id} taId={taIdForSKL} publicMode />
       )}
     </div>
   );
