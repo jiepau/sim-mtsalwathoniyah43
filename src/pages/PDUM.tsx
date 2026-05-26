@@ -116,6 +116,16 @@ export default function PDUMPage() {
     },
   });
 
+  // Rapor SEMUA semester — dipakai untuk Nilai Akhir (samakan dengan SKL)
+  const { data: raporAll = [] } = useQuery({
+    queryKey: ['pdum-rapor-all', taId, idsKey],
+    enabled: !!taId && siswaIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from('pdum_nilai_rapor').select('siswa_id, kode_mapel, semester, nilai').eq('ta_id', taId).in('siswa_id', siswaIds).limit(100000);
+      return (data || []) as RaporRow[];
+    },
+  });
+
   const { data: umRows = [] } = useQuery({
     queryKey: ['pdum-um', taId, idsKey],
     enabled: !!taId && siswaIds.length > 0,
