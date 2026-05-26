@@ -69,7 +69,7 @@ export function CetakSKLDialog({ open, onOpenChange, siswaId, taId }: Props) {
     w.document.write(`<!DOCTYPE html><html><head><title>SKL ${data?.siswa?.nama}</title>
       <script src="https://cdn.tailwindcss.com"></script>
       <style>
-        @page { size: A4; margin: 18mm 18mm 14mm 18mm; }
+        @page { size: 215mm 330mm; margin: 18mm 18mm 14mm 18mm; }
         body { font-family: 'Times New Roman', serif; color: #000; }
         .skl-page { page-break-after: always; }
         .skl-page:last-child { page-break-after: auto; }
