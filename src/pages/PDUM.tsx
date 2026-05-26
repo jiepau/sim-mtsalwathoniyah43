@@ -116,6 +116,16 @@ export default function PDUMPage() {
     },
   });
 
+  // Rapor SEMUA semester — dipakai untuk Nilai Akhir (samakan dengan SKL)
+  const { data: raporAll = [] } = useQuery({
+    queryKey: ['pdum-rapor-all', taId, idsKey],
+    enabled: !!taId && siswaIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from('pdum_nilai_rapor').select('siswa_id, kode_mapel, semester, nilai').eq('ta_id', taId).in('siswa_id', siswaIds).limit(100000);
+      return (data || []) as RaporRow[];
+    },
+  });
+
   const { data: umRows = [] } = useQuery({
     queryKey: ['pdum-um', taId, idsKey],
     enabled: !!taId && siswaIds.length > 0,
@@ -317,7 +327,7 @@ export default function PDUMPage() {
       namaMadrasah: madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43',
       provinsi: madrasah?.provinsi || '',
       kabupaten: madrasah?.kabupaten_kota || '',
-      siswaList, pesertaMap, mapelList, rapor, um: umRows,
+      siswaList, pesertaMap, mapelList, rapor: raporAll, um: umRows,
       bobotRapor: cur.bobot_rapor, bobotUm: cur.bobot_um,
     });
     toast.success('File Excel PDUM Kemenag dibuat');
@@ -328,7 +338,7 @@ export default function PDUMPage() {
     const kelasNama = kelasId === 'all' ? 'Semua Kelas 9' : kelasList?.find(k => k.id === kelasId)?.nama_kelas;
     exportRekapNilaiAkhir({
       namaMadrasah: madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43',
-      siswaList: siswaList as any, mapelList, rapor, um: umRows,
+      siswaList: siswaList as any, mapelList, rapor: raporAll, um: umRows,
       bobotRapor: cur.bobot_rapor, bobotUm: cur.bobot_um, kelasNama,
     });
   };
@@ -549,7 +559,7 @@ export default function PDUMPage() {
                             <div className="text-xs text-muted-foreground">{s.nisn || s.nis}</div>
                           </TableCell>
                           {mapelList.map(m => {
-                            const rata = rataRapor(rapor, s.id, m.kode_mapel);
+                            const rata = rataRapor(raporAll, s.id, m.kode_mapel);
                             const umVal = umMap[`${s.id}|${m.kode_mapel}`] ?? null;
                             const na = nilaiAkhir(rata, umVal, cur.bobot_rapor, cur.bobot_um);
                             if (na != null) naList.push(na);
