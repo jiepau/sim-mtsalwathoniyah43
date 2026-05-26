@@ -2459,7 +2459,54 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      madrasah_settings_public: {
+        Row: {
+          akreditasi: string | null
+          alamat: string | null
+          id: string | null
+          kabupaten_kota: string | null
+          kepala_madrasah: string | null
+          kode_pos: string | null
+          nama_madrasah: string | null
+          no_sk_pendirian: string | null
+          npsn: string | null
+          nsm: string | null
+          provinsi: string | null
+          tanggal_sk_pendirian: string | null
+          website: string | null
+        }
+        Insert: {
+          akreditasi?: string | null
+          alamat?: string | null
+          id?: string | null
+          kabupaten_kota?: string | null
+          kepala_madrasah?: string | null
+          kode_pos?: string | null
+          nama_madrasah?: string | null
+          no_sk_pendirian?: string | null
+          npsn?: string | null
+          nsm?: string | null
+          provinsi?: string | null
+          tanggal_sk_pendirian?: string | null
+          website?: string | null
+        }
+        Update: {
+          akreditasi?: string | null
+          alamat?: string | null
+          id?: string | null
+          kabupaten_kota?: string | null
+          kepala_madrasah?: string | null
+          kode_pos?: string | null
+          nama_madrasah?: string | null
+          no_sk_pendirian?: string | null
+          npsn?: string | null
+          nsm?: string | null
+          provinsi?: string | null
+          tanggal_sk_pendirian?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       generate_nomor_ppdb: { Args: never; Returns: string }
