@@ -559,7 +559,7 @@ export default function PDUMPage() {
                             <div className="text-xs text-muted-foreground">{s.nisn || s.nis}</div>
                           </TableCell>
                           {mapelList.map(m => {
-                            const rata = rataRapor(rapor, s.id, m.kode_mapel);
+                            const rata = rataRapor(raporAll, s.id, m.kode_mapel);
                             const umVal = umMap[`${s.id}|${m.kode_mapel}`] ?? null;
                             const na = nilaiAkhir(rata, umVal, cur.bobot_rapor, cur.bobot_um);
                             if (na != null) naList.push(na);
