@@ -338,7 +338,7 @@ export default function PDUMPage() {
     const kelasNama = kelasId === 'all' ? 'Semua Kelas 9' : kelasList?.find(k => k.id === kelasId)?.nama_kelas;
     exportRekapNilaiAkhir({
       namaMadrasah: madrasah?.nama_madrasah || 'MTs Al-Wathoniyah 43',
-      siswaList: siswaList as any, mapelList, rapor, um: umRows,
+      siswaList: siswaList as any, mapelList, rapor: raporAll, um: umRows,
       bobotRapor: cur.bobot_rapor, bobotUm: cur.bobot_um, kelasNama,
     });
   };
