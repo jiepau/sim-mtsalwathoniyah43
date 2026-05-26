@@ -120,7 +120,7 @@ export default function PDUMPage() {
     queryKey: ['pdum-um', taId, idsKey],
     enabled: !!taId && siswaIds.length > 0,
     queryFn: async () => {
-      const { data } = await supabase.from('pdum_nilai_um').select('siswa_id, kode_mapel, nilai').eq('ta_id', taId).in('siswa_id', siswaIds);
+      const { data } = await supabase.from('pdum_nilai_um').select('siswa_id, kode_mapel, nilai').eq('ta_id', taId).in('siswa_id', siswaIds).limit(100000);
       return (data || []) as UmRow[];
     },
   });
