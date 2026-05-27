@@ -307,6 +307,28 @@ export default function PDUMPage() {
     }
   };
 
+  const handleHapusNilai = async (target: 'rapor' | 'um') => {
+    if (!taId) return;
+    const sids = siswaList.map(s => s.id);
+    if (!sids.length) { toast.error('Tidak ada siswa'); return; }
+    const scope = kelasId === 'all' ? 'SEMUA KELAS' : (kelasList?.find(k => k.id === kelasId)?.nama_kelas || 'kelas ini');
+    const label = target === 'rapor' ? `Nilai Rapor semester ${SEMESTER_LIST.find(s => s.kode === activeSemester)?.label}` : 'Nilai UM';
+    if (!confirm(`HAPUS ${label} untuk ${scope} (${sids.length} siswa)?\n\nTindakan ini tidak bisa dibatalkan.`)) return;
+    try {
+      const table = target === 'rapor' ? 'pdum_nilai_rapor' : 'pdum_nilai_um';
+      let q = supabase.from(table).delete().eq('ta_id', taId).in('siswa_id', sids);
+      if (target === 'rapor') q = q.eq('semester', activeSemester);
+      const { error } = await q;
+      if (error) { toast.error(error.message); return; }
+      setEditedRapor({}); setEditedUm({});
+      toast.success(`${label} dihapus untuk ${scope}`);
+      qc.invalidateQueries({ queryKey: [target === 'rapor' ? 'pdum-rapor' : 'pdum-um'] });
+      if (target === 'rapor') qc.invalidateQueries({ queryKey: ['pdum-rapor-all'] });
+    } catch (err: any) {
+      toast.error('Gagal hapus: ' + (err.message || String(err)));
+    }
+  };
+
   const downloadTemplate = (target: 'rapor' | 'um') => {
     const headers = ['NISN', 'NIS', 'NAMA', ...mapelList.map(m => m.nama_mapel)];
     const rows = siswaList.map(s => [s.nisn || '', s.nis, s.nama, ...mapelList.map(m => {
