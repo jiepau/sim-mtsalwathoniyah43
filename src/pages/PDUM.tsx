@@ -298,6 +298,7 @@ export default function PDUMPage() {
       if (error) { toast.error(error.message); return; }
       toast.success(`Import OK: ${insertRows.length} nilai (${matched} siswa cocok${skipped ? `, ${skipped} dilewati` : ''})`);
       qc.invalidateQueries({ queryKey: [target === 'rapor' ? 'pdum-rapor' : 'pdum-um'] });
+      if (target === 'rapor') qc.invalidateQueries({ queryKey: ['pdum-rapor-all'] });
     } catch (err: any) {
       toast.error('Gagal import: ' + (err.message || String(err)));
     } finally {
