@@ -209,6 +209,7 @@ export default function PDUMPage() {
     toast.success(`Tersimpan ${rows.length} nilai rapor`);
     setEditedRapor({});
     qc.invalidateQueries({ queryKey: ['pdum-rapor'] });
+    qc.invalidateQueries({ queryKey: ['pdum-rapor-all'] });
   };
 
   const saveUm = async () => {
