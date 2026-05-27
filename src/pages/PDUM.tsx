@@ -537,6 +537,7 @@ export default function PDUMPage() {
             </Button>
             <Button variant="outline" onClick={() => downloadTemplate('um')}><Download className="h-4 w-4 mr-2" />Template</Button>
             <Button variant="outline" onClick={() => fileUmRef.current?.click()}><Upload className="h-4 w-4 mr-2" />Import Excel</Button>
+            <Button variant="destructive" onClick={() => handleHapusNilai('um')}><Trash2 className="h-4 w-4 mr-2" />Hapus Nilai UM</Button>
             <input ref={fileUmRef} type="file" accept=".xlsx,.xls,.csv" onChange={(e) => handleImportNilai(e, 'um')} className="hidden" />
           </div>
           <NilaiTable
