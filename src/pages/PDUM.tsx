@@ -519,6 +519,7 @@ export default function PDUMPage() {
             </Button>
             <Button variant="outline" onClick={() => downloadTemplate('rapor')}><Download className="h-4 w-4 mr-2" />Template</Button>
             <Button variant="outline" onClick={() => fileRaporRef.current?.click()}><Upload className="h-4 w-4 mr-2" />Import Excel</Button>
+            <Button variant="destructive" onClick={() => handleHapusNilai('rapor')}><Trash2 className="h-4 w-4 mr-2" />Hapus Nilai Semester Ini</Button>
             <input ref={fileRaporRef} type="file" accept=".xlsx,.xls,.csv" onChange={(e) => handleImportNilai(e, 'rapor')} className="hidden" />
           </div>
           <NilaiTable
