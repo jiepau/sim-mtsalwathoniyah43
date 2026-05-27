@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { FileSpreadsheet, Save, Download, Upload, Calculator, Printer, FileText, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
+import { FileSpreadsheet, Save, Download, Upload, Calculator, Printer, FileText, GripVertical, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -307,6 +307,28 @@ export default function PDUMPage() {
     }
   };
 
+  const handleHapusNilai = async (target: 'rapor' | 'um') => {
+    if (!taId) return;
+    const sids = siswaList.map(s => s.id);
+    if (!sids.length) { toast.error('Tidak ada siswa'); return; }
+    const scope = kelasId === 'all' ? 'SEMUA KELAS' : (kelasList?.find(k => k.id === kelasId)?.nama_kelas || 'kelas ini');
+    const label = target === 'rapor' ? `Nilai Rapor semester ${SEMESTER_LIST.find(s => s.kode === activeSemester)?.label}` : 'Nilai UM';
+    if (!confirm(`HAPUS ${label} untuk ${scope} (${sids.length} siswa)?\n\nTindakan ini tidak bisa dibatalkan.`)) return;
+    try {
+      const table = target === 'rapor' ? 'pdum_nilai_rapor' : 'pdum_nilai_um';
+      let q: any = supabase.from(table).delete().eq('ta_id', taId).in('siswa_id', sids);
+      if (target === 'rapor') q = q.eq('semester', activeSemester);
+      const { error } = await q;
+      if (error) { toast.error(error.message); return; }
+      setEditedRapor({}); setEditedUm({});
+      toast.success(`${label} dihapus untuk ${scope}`);
+      qc.invalidateQueries({ queryKey: [target === 'rapor' ? 'pdum-rapor' : 'pdum-um'] });
+      if (target === 'rapor') qc.invalidateQueries({ queryKey: ['pdum-rapor-all'] });
+    } catch (err: any) {
+      toast.error('Gagal hapus: ' + (err.message || String(err)));
+    }
+  };
+
   const downloadTemplate = (target: 'rapor' | 'um') => {
     const headers = ['NISN', 'NIS', 'NAMA', ...mapelList.map(m => m.nama_mapel)];
     const rows = siswaList.map(s => [s.nisn || '', s.nis, s.nama, ...mapelList.map(m => {
@@ -497,6 +519,7 @@ export default function PDUMPage() {
             </Button>
             <Button variant="outline" onClick={() => downloadTemplate('rapor')}><Download className="h-4 w-4 mr-2" />Template</Button>
             <Button variant="outline" onClick={() => fileRaporRef.current?.click()}><Upload className="h-4 w-4 mr-2" />Import Excel</Button>
+            <Button variant="destructive" onClick={() => handleHapusNilai('rapor')}><Trash2 className="h-4 w-4 mr-2" />Hapus Nilai Semester Ini</Button>
             <input ref={fileRaporRef} type="file" accept=".xlsx,.xls,.csv" onChange={(e) => handleImportNilai(e, 'rapor')} className="hidden" />
           </div>
           <NilaiTable
@@ -514,6 +537,7 @@ export default function PDUMPage() {
             </Button>
             <Button variant="outline" onClick={() => downloadTemplate('um')}><Download className="h-4 w-4 mr-2" />Template</Button>
             <Button variant="outline" onClick={() => fileUmRef.current?.click()}><Upload className="h-4 w-4 mr-2" />Import Excel</Button>
+            <Button variant="destructive" onClick={() => handleHapusNilai('um')}><Trash2 className="h-4 w-4 mr-2" />Hapus Nilai UM</Button>
             <input ref={fileUmRef} type="file" accept=".xlsx,.xls,.csv" onChange={(e) => handleImportNilai(e, 'um')} className="hidden" />
           </div>
           <NilaiTable
