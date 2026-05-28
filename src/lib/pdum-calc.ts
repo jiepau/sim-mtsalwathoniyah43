@@ -37,10 +37,14 @@ export interface RaporRow { siswa_id: string; kode_mapel: string; semester: stri
 export interface UmRow { siswa_id: string; kode_mapel: string; nilai: number | null; }
 
 export function rataRapor(rows: RaporRow[], siswa_id: string, kode_mapel: string): number | null {
-  const nilais = rows
-    .filter(r => r.siswa_id === siswa_id && r.kode_mapel === kode_mapel && r.nilai != null)
-    .map(r => Number(r.nilai));
-  if (!nilais.length) return null;
+  const requiredSemesters = SEMESTER_LIST.map(s => s.kode);
+  const nilaiBySemester = new Map(
+    rows
+      .filter(r => r.siswa_id === siswa_id && r.kode_mapel === kode_mapel && requiredSemesters.includes(r.semester as any) && r.nilai != null)
+      .map(r => [r.semester, Number(r.nilai)]),
+  );
+  const nilais = requiredSemesters.map(semester => nilaiBySemester.get(semester));
+  if (nilais.some(nilai => nilai == null || Number.isNaN(Number(nilai)))) return null;
   return nilais.reduce((a, b) => a + b, 0) / nilais.length;
 }
 
@@ -50,12 +54,9 @@ export function nilaiAkhir(
   bobotRapor: number,
   bobotUm: number,
 ): number | null {
-  if (rata == null && um == null) return null;
+  if (rata == null || um == null) return null;
   const totalBobot = bobotRapor + bobotUm;
   if (totalBobot === 0) return null;
-  // Bila salah satu null, pakai yang ada
-  if (rata == null) return Number(um);
-  if (um == null) return Number(rata);
   return Math.round(((rata * bobotRapor + um * bobotUm) / totalBobot) * 100) / 100;
 }
 
