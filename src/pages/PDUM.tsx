@@ -367,6 +367,17 @@ export default function PDUMPage() {
     });
   };
 
+  const handleRecalculate = async () => {
+    await Promise.all([
+      qc.invalidateQueries({ queryKey: ['pdum-rapor'] }),
+      qc.invalidateQueries({ queryKey: ['pdum-rapor-all'] }),
+      qc.invalidateQueries({ queryKey: ['pdum-um'] }),
+    ]);
+    setEditedRapor({});
+    setEditedUm({});
+    toast.success('Nilai Akhir dihitung ulang dari data terbaru');
+  };
+
   const handleBulkLulus = async () => {
     if (!siswaList.length) return;
     if (!confirm(`Tandai ${siswaList.length} siswa sebagai LULUS?`)) return;
