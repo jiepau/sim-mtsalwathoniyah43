@@ -725,10 +725,6 @@ export default function PDUMPage() {
           })()}
         </TabsContent>
 
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         {/* ===== SETTINGS ===== */}
         {/* ===== KELULUSAN & SKL ===== */}
         <TabsContent value="kelulusan" className="space-y-3">
