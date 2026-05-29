@@ -41,6 +41,8 @@ export default function PDUMPage() {
   const [activeSemester, setActiveSemester] = useState<string>('7g');
   const [editedRapor, setEditedRapor] = useState<Record<string, number | null>>({}); // key: siswa|kode|sem
   const [editedUm, setEditedUm] = useState<Record<string, number | null>>({}); // key: siswa|kode
+  const [showOnlyIncomplete, setShowOnlyIncomplete] = useState(false);
+  const [ignoreEmptyMapel, setIgnoreEmptyMapel] = useState(true);
   const [formSettings, setFormSettings] = useState<Partial<Settings>>({});
   const [printSiswaId, setPrintSiswaId] = useState<string | null>(null);
   const fileRaporRef = useRef<HTMLInputElement>(null);
