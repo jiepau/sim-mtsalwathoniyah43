@@ -562,10 +562,34 @@ export default function PDUMPage() {
         <TabsContent value="akhir" className="space-y-3">
           <div className="flex flex-wrap gap-2 items-center">
             <Badge variant="secondary">Rumus: ({cur.bobot_rapor}% × rata 5 sem) + ({cur.bobot_um}% × UM)</Badge>
+            <Button variant="outline" onClick={handleRecalculate}><RefreshCw className="h-4 w-4 mr-2" />Hitung Ulang Nilai</Button>
             <Button variant="outline" onClick={handleExportRekap}><Download className="h-4 w-4 mr-2" />Export Rekap NA</Button>
             <Button variant="outline" onClick={handleExportPDUM}><FileSpreadsheet className="h-4 w-4 mr-2" />Export PDUM Kemenag</Button>
             <Button onClick={handleBulkLulus}>Tandai Semua LULUS</Button>
           </div>
+          {(() => {
+            const semKodes = SEMESTER_LIST.map(s => s.kode);
+            let incomplete = 0;
+            siswaList.forEach(s => {
+              for (const m of mapelList) {
+                const missingSem = semKodes.some(sk => {
+                  const v = raporAll.find(r => r.siswa_id === s.id && r.kode_mapel === m.kode_mapel && r.semester === sk)?.nilai;
+                  return v == null;
+                });
+                const umMissing = (umMap[`${s.id}|${m.kode_mapel}`] ?? null) == null;
+                if (missingSem || umMissing) { incomplete++; break; }
+              }
+            });
+            if (incomplete === 0 || siswaList.length === 0) return null;
+            return (
+              <div className="flex items-start gap-2 p-3 rounded-md border border-amber-500/40 bg-amber-500/10 text-sm">
+                <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                <div>
+                  <b>{incomplete}</b> dari <b>{siswaList.length}</b> siswa belum lengkap (ada semester rapor atau nilai UM yang kosong). NA hanya muncul jika semua 5 semester + UM terisi. Hover baris untuk detail.
+                </div>
+              </div>
+            );
+          })()}
           <Card>
             <CardContent className="pt-6 overflow-x-auto">
               {siswaList.length === 0 ? (
@@ -582,17 +606,37 @@ export default function PDUMPage() {
                         </TableHead>
                       ))}
                       <TableHead className="text-center">Rata NA</TableHead>
+                      <TableHead className="text-center">Kelengkapan</TableHead>
                       <TableHead className="text-center">Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {siswaList.map((s, i) => {
                       const naList: number[] = [];
+                      const semKodes = SEMESTER_LIST.map(sm => sm.kode);
+                      const missingSemSet = new Set<string>();
+                      const missingUmSet = new Set<string>();
+                      mapelList.forEach(m => {
+                        semKodes.forEach(sk => {
+                          const v = raporAll.find(r => r.siswa_id === s.id && r.kode_mapel === m.kode_mapel && r.semester === sk)?.nilai;
+                          if (v == null) missingSemSet.add(`${m.nama_mapel} (${SEMESTER_LIST.find(x => x.kode === sk)?.label})`);
+                        });
+                        if ((umMap[`${s.id}|${m.kode_mapel}`] ?? null) == null) missingUmSet.add(m.nama_mapel);
+                      });
+                      const missingTotal = missingSemSet.size + missingUmSet.size;
+                      const tooltip = missingTotal === 0 ? 'Lengkap' :
+                        [
+                          missingSemSet.size ? `Rapor kosong:\n- ${Array.from(missingSemSet).join('\n- ')}` : '',
+                          missingUmSet.size ? `UM kosong:\n- ${Array.from(missingUmSet).join('\n- ')}` : '',
+                        ].filter(Boolean).join('\n\n');
                       return (
-                        <TableRow key={s.id}>
+                        <TableRow key={s.id} className={missingTotal > 0 ? 'bg-amber-500/5' : ''}>
                           <TableCell>{i + 1}</TableCell>
                           <TableCell>
-                            <div className="font-medium text-sm">{s.nama}</div>
+                            <div className="font-medium text-sm flex items-center gap-1">
+                              {missingTotal > 0 && <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0" />}
+                              {s.nama}
+                            </div>
                             <div className="text-xs text-muted-foreground">{s.nisn || s.nis}</div>
                           </TableCell>
                           {mapelList.map(m => {
@@ -600,14 +644,29 @@ export default function PDUMPage() {
                             const umVal = umMap[`${s.id}|${m.kode_mapel}`] ?? null;
                             const na = nilaiAkhir(rata, umVal, cur.bobot_rapor, cur.bobot_um);
                             if (na != null) naList.push(na);
+                            const cellMissing = rata == null || umVal == null;
+                            const cellTitle = cellMissing
+                              ? `${m.nama_mapel}: ${rata == null ? 'rapor belum lengkap' : 'OK'}${umVal == null ? ', UM kosong' : ''}`
+                              : `${m.nama_mapel}: rata ${rata?.toFixed(2)} | UM ${umVal}`;
                             return (
-                              <TableCell key={m.kode_mapel} className="text-center text-sm">
-                                {na != null ? na.toFixed(2) : '-'}
+                              <TableCell key={m.kode_mapel} className={`text-center text-sm ${cellMissing ? 'text-amber-700' : ''}`} title={cellTitle}>
+                                {na != null ? na.toFixed(2) : '—'}
                               </TableCell>
                             );
                           })}
                           <TableCell className="text-center font-semibold">
                             {naList.length ? (naList.reduce((a, b) => a + b, 0) / naList.length).toFixed(2) : '-'}
+                          </TableCell>
+                          <TableCell className="text-center" title={tooltip}>
+                            {missingTotal === 0 ? (
+                              <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-600">Lengkap</Badge>
+                            ) : (
+                              <Badge variant="outline" className="border-amber-500 text-amber-700">
+                                {missingSemSet.size > 0 && `${missingSemSet.size} rapor`}
+                                {missingSemSet.size > 0 && missingUmSet.size > 0 && ' · '}
+                                {missingUmSet.size > 0 && `${missingUmSet.size} UM`}
+                              </Badge>
+                            )}
                           </TableCell>
                           <TableCell className="text-center">
                             <Badge variant={kelulusanMap[s.id] === 'lulus' ? 'default' : kelulusanMap[s.id] === 'tidak_lulus' ? 'destructive' : 'secondary'}>
