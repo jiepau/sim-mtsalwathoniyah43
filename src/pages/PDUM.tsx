@@ -326,6 +326,7 @@ export default function PDUMPage() {
       toast.success(`${label} dihapus untuk ${scope}`);
       qc.invalidateQueries({ queryKey: [target === 'rapor' ? 'pdum-rapor' : 'pdum-um'] });
       if (target === 'rapor') qc.invalidateQueries({ queryKey: ['pdum-rapor-all'] });
+      qc.invalidateQueries({ queryKey: ['skl-full'] });
     } catch (err: any) {
       toast.error('Gagal hapus: ' + (err.message || String(err)));
     }
