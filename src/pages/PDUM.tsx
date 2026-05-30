@@ -42,13 +42,13 @@ async function fetchAllRaporRows(taId: string, siswaIds: string[], semester?: st
       .from('pdum_nilai_rapor')
       .select('siswa_id, kode_mapel, semester, nilai')
       .eq('ta_id', taId)
-      .in('siswa_id', siswaIds)
+      .in('siswa_id', siswaIds);
+    if (semester) q = q.eq('semester', semester);
+    const { data, error } = await q
       .order('siswa_id')
       .order('kode_mapel')
       .order('semester')
       .range(from, from + PDUM_PAGE_SIZE - 1);
-    if (semester) q = q.eq('semester', semester);
-    const { data, error } = await q;
     if (error) throw error;
     rows.push(...((data || []) as RaporRow[]));
     if (!data || data.length < PDUM_PAGE_SIZE) break;
