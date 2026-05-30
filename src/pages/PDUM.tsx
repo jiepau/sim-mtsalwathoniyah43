@@ -33,6 +33,46 @@ interface Settings { id?: string; ta_id?: string; bobot_rapor: number; bobot_um:
 interface Madrasah { nama_madrasah: string; provinsi: string | null; kabupaten_kota: string | null; nsm: string | null }
 
 const DEFAULT_SETTINGS: Settings = { bobot_rapor: 60, bobot_um: 40, nsm: null, nomor_peserta_prefix: null };
+const PDUM_PAGE_SIZE = 1000;
+
+async function fetchAllRaporRows(taId: string, siswaIds: string[], semester?: string): Promise<RaporRow[]> {
+  const rows: RaporRow[] = [];
+  for (let from = 0; ; from += PDUM_PAGE_SIZE) {
+    let q = supabase
+      .from('pdum_nilai_rapor')
+      .select('siswa_id, kode_mapel, semester, nilai')
+      .eq('ta_id', taId)
+      .in('siswa_id', siswaIds);
+    if (semester) q = q.eq('semester', semester);
+    const { data, error } = await q
+      .order('siswa_id')
+      .order('kode_mapel')
+      .order('semester')
+      .range(from, from + PDUM_PAGE_SIZE - 1);
+    if (error) throw error;
+    rows.push(...((data || []) as RaporRow[]));
+    if (!data || data.length < PDUM_PAGE_SIZE) break;
+  }
+  return rows;
+}
+
+async function fetchAllUmRows(taId: string, siswaIds: string[]): Promise<UmRow[]> {
+  const rows: UmRow[] = [];
+  for (let from = 0; ; from += PDUM_PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from('pdum_nilai_um')
+      .select('siswa_id, kode_mapel, nilai')
+      .eq('ta_id', taId)
+      .in('siswa_id', siswaIds)
+      .order('siswa_id')
+      .order('kode_mapel')
+      .range(from, from + PDUM_PAGE_SIZE - 1);
+    if (error) throw error;
+    rows.push(...((data || []) as UmRow[]));
+    if (!data || data.length < PDUM_PAGE_SIZE) break;
+  }
+  return rows;
+}
 
 export default function PDUMPage() {
   const qc = useQueryClient();
@@ -113,8 +153,7 @@ export default function PDUMPage() {
     queryKey: ['pdum-rapor', taId, idsKey, activeSemester],
     enabled: !!taId && siswaIds.length > 0,
     queryFn: async () => {
-      const { data } = await supabase.from('pdum_nilai_rapor').select('siswa_id, kode_mapel, semester, nilai').eq('ta_id', taId).eq('semester', activeSemester).in('siswa_id', siswaIds);
-      return (data || []) as RaporRow[];
+      return fetchAllRaporRows(taId, siswaIds, activeSemester);
     },
   });
 
@@ -123,8 +162,7 @@ export default function PDUMPage() {
     queryKey: ['pdum-rapor-all', taId, idsKey],
     enabled: !!taId && siswaIds.length > 0,
     queryFn: async () => {
-      const { data } = await supabase.from('pdum_nilai_rapor').select('siswa_id, kode_mapel, semester, nilai').eq('ta_id', taId).in('siswa_id', siswaIds).limit(100000);
-      return (data || []) as RaporRow[];
+      return fetchAllRaporRows(taId, siswaIds);
     },
   });
 
@@ -132,8 +170,7 @@ export default function PDUMPage() {
     queryKey: ['pdum-um', taId, idsKey],
     enabled: !!taId && siswaIds.length > 0,
     queryFn: async () => {
-      const { data } = await supabase.from('pdum_nilai_um').select('siswa_id, kode_mapel, nilai').eq('ta_id', taId).in('siswa_id', siswaIds).limit(100000);
-      return (data || []) as UmRow[];
+      return fetchAllUmRows(taId, siswaIds);
     },
   });
 
