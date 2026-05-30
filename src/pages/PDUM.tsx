@@ -375,6 +375,8 @@ export default function PDUMPage() {
       qc.invalidateQueries({ queryKey: ['pdum-rapor'] }),
       qc.invalidateQueries({ queryKey: ['pdum-rapor-all'] }),
       qc.invalidateQueries({ queryKey: ['pdum-um'] }),
+      qc.invalidateQueries({ queryKey: ['skl-full'] }),
+      qc.invalidateQueries({ queryKey: ['pdum-kelulusan'] }),
     ]);
     setEditedRapor({});
     setEditedUm({});
