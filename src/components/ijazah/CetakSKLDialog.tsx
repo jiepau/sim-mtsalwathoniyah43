@@ -28,6 +28,8 @@ export function CetakSKLDialog({ open, onOpenChange, siswaId, taId, publicMode =
   const { data } = useQuery({
     queryKey: ['skl-full', siswaId, taId, publicMode],
     enabled: open && !!siswaId && !!taId,
+    staleTime: 0,
+    refetchOnMount: 'always',
     queryFn: async () => {
       if (publicMode) {
         const { data: res, error } = await supabase.functions.invoke('get-skl-publik', {
