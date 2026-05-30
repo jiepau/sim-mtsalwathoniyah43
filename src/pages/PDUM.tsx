@@ -1073,10 +1073,11 @@ function MapelPanel({ mapelList: _mapelList, onChanged }: { mapelList: Mapel[]; 
 }
 
 // ============ Reusable Nilai Table ============
-function NilaiTable({ siswaList, mapelList, getValue, setValue }: {
+function NilaiTable({ siswaList, mapelList, getValue, setValue, showCompleteness = true }: {
   siswaList: Siswa[]; mapelList: Mapel[];
   getValue: (sid: string, kode: string) => number | null;
   setValue: (sid: string, kode: string, v: string) => void;
+  showCompleteness?: boolean;
 }) {
   return (
     <Card>
@@ -1094,26 +1095,53 @@ function NilaiTable({ siswaList, mapelList, getValue, setValue }: {
                     {m.nama_mapel.length > 12 ? m.nama_mapel.substring(0, 10) + '…' : m.nama_mapel}
                   </TableHead>
                 ))}
+                {showCompleteness && <TableHead className="text-center min-w-[110px]">Kelengkapan</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {siswaList.map((s, i) => (
-                <TableRow key={s.id}>
-                  <TableCell>{i + 1}</TableCell>
-                  <TableCell>
-                    <div className="font-medium text-sm">{s.nama}</div>
-                    <div className="text-xs text-muted-foreground">{s.nisn || s.nis}</div>
-                  </TableCell>
-                  {mapelList.map(m => (
-                    <TableCell key={m.kode_mapel}>
-                      <Input type="number" min={0} max={100} step="0.01"
-                        value={getValue(s.id, m.kode_mapel) ?? ''}
-                        onChange={(e) => setValue(s.id, m.kode_mapel, e.target.value)}
-                        className="h-8 w-16 text-center text-sm px-1" />
+              {siswaList.map((s, i) => {
+                const missing = mapelList.filter(m => {
+                  const v = getValue(s.id, m.kode_mapel);
+                  return v == null || Number.isNaN(Number(v));
+                });
+                const isIncomplete = missing.length > 0;
+                return (
+                  <TableRow key={s.id} className={isIncomplete ? 'bg-amber-500/5' : undefined}>
+                    <TableCell>{i + 1}</TableCell>
+                    <TableCell>
+                      <div className="font-medium text-sm flex items-center gap-1">
+                        {isIncomplete && <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />}
+                        {s.nama}
+                      </div>
+                      <div className="text-xs text-muted-foreground">{s.nisn || s.nis}</div>
                     </TableCell>
-                  ))}
-                </TableRow>
-              ))}
+                    {mapelList.map(m => {
+                      const v = getValue(s.id, m.kode_mapel);
+                      const empty = v == null;
+                      return (
+                        <TableCell key={m.kode_mapel}>
+                          <Input type="number" min={0} max={100} step="0.01"
+                            value={v ?? ''}
+                            onChange={(e) => setValue(s.id, m.kode_mapel, e.target.value)}
+                            className={`h-8 w-16 text-center text-sm px-1 ${empty ? 'border-amber-500/60' : ''}`} />
+                        </TableCell>
+                      );
+                    })}
+                    {showCompleteness && (
+                      <TableCell className="text-center">
+                        {isIncomplete ? (
+                          <Badge variant="outline" className="border-amber-500/60 text-amber-700 dark:text-amber-400"
+                            title={`Belum diisi: ${missing.map(m => m.nama_mapel).join(', ')}`}>
+                            {mapelList.length - missing.length}/{mapelList.length}
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary">Lengkap</Badge>
+                        )}
+                      </TableCell>
+                    )}
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         )}
