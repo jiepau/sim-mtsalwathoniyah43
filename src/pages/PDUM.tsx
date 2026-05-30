@@ -538,6 +538,21 @@ export default function PDUMPage() {
             <Button variant="destructive" onClick={() => handleHapusNilai('rapor')}><Trash2 className="h-4 w-4 mr-2" />Hapus Nilai Semester Ini</Button>
             <input ref={fileRaporRef} type="file" accept=".xlsx,.xls,.csv" onChange={(e) => handleImportNilai(e, 'rapor')} className="hidden" />
           </div>
+          {(() => {
+            const incomplete = siswaList.filter(s => mapelList.some(m => getRapor(s.id, m.kode_mapel, activeSemester) == null));
+            if (!incomplete.length || !siswaList.length) return null;
+            return (
+              <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+                <div className="flex items-center gap-2 font-medium text-amber-800 dark:text-amber-300">
+                  <AlertTriangle className="h-4 w-4" />
+                  {incomplete.length} siswa belum lengkap nilai rapor semester ini
+                </div>
+                <div className="text-xs text-amber-900/80 dark:text-amber-200/80 mt-1">
+                  {incomplete.slice(0, 20).map(s => s.nama).join(', ')}{incomplete.length > 20 ? `, … (+${incomplete.length - 20} lainnya)` : ''}
+                </div>
+              </div>
+            );
+          })()}
           <NilaiTable
             siswaList={siswaList} mapelList={mapelList}
             getValue={(sid, kode) => getRapor(sid, kode, activeSemester)}
@@ -556,6 +571,21 @@ export default function PDUMPage() {
             <Button variant="destructive" onClick={() => handleHapusNilai('um')}><Trash2 className="h-4 w-4 mr-2" />Hapus Nilai UM</Button>
             <input ref={fileUmRef} type="file" accept=".xlsx,.xls,.csv" onChange={(e) => handleImportNilai(e, 'um')} className="hidden" />
           </div>
+          {(() => {
+            const incomplete = siswaList.filter(s => mapelList.some(m => getUm(s.id, m.kode_mapel) == null));
+            if (!incomplete.length || !siswaList.length) return null;
+            return (
+              <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+                <div className="flex items-center gap-2 font-medium text-amber-800 dark:text-amber-300">
+                  <AlertTriangle className="h-4 w-4" />
+                  {incomplete.length} siswa belum lengkap nilai UM
+                </div>
+                <div className="text-xs text-amber-900/80 dark:text-amber-200/80 mt-1">
+                  {incomplete.slice(0, 20).map(s => s.nama).join(', ')}{incomplete.length > 20 ? `, … (+${incomplete.length - 20} lainnya)` : ''}
+                </div>
+              </div>
+            );
+          })()}
           <NilaiTable
             siswaList={siswaList} mapelList={mapelList}
             getValue={(sid, kode) => getUm(sid, kode)}
