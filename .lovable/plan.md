@@ -1,73 +1,72 @@
+## Modul Gaji Guru
 
-# Modul Kartu Ujian & Denah Ruang
+Menu baru **Keuangan → Gaji Guru** untuk mengelola penggajian bulanan: master komponen per guru, generate gaji bulanan dengan kehadiran auto dari Absensi GTK (bisa diedit), potongan, dan cetak slip PDF. Guru bisa lihat slip gajinya sendiri di halaman Profil Guru.
 
-Menu baru: **Akademik → Kartu Ujian**. Memanfaatkan data `siswa` + `kelas` + `madrasah_settings` yang sudah ada. Tidak menyentuh modul PDUM/SKL.
+### Alur penggunaan
 
-## Alur singkat
+1. **Setup master gaji** (sekali per guru) — Bendahara buka tab "Master Gaji", isi gaji pokok + tunjangan tetap per guru (wali kelas, ekskul, dansos, piket, transport, dll). Komponen bisa custom (tidak hardcode).
+2. **Tarif kehadiran** — Set tarif default per hari hadir / potongan per alpa / potongan per izin di tab "Pengaturan".
+3. **Generate gaji bulanan** — Pilih bulan & tahun → klik "Generate" → sistem buat baris untuk semua guru aktif, isi otomatis: komponen dari master + jumlah hadir/izin/sakit/alpa dari `absensi_gtk` bulan tsb.
+4. **Review & edit** — Bendahara bisa edit nominal komponen, tambah potongan (kasbon, dll), atau ubah jumlah hadir bila perlu.
+5. **Finalisasi & cetak slip** — Klik "Finalkan" → status jadi `final`, slip PDF bisa dicetak (kop madrasah + ttd kepala/bendahara). Setelah final, guru bisa lihat slipnya di Profil Guru.
 
-1. Admin/operator buat **Sesi Ujian** (jenis PTS/PAS/PAT/UM, TA, nama, tanggal mulai–selesai, kelas peserta).
-2. Sistem auto-generate **nomor peserta** & auto-bagi ke **ruang** sesuai kapasitas. Admin bisa edit per-siswa.
-3. Cetak: **Kartu Peserta** (per siswa / massal), **Daftar Peserta per Ruang** (tempel pintu), **Layout Tempat Duduk** (grid kursi).
+### Halaman & UI
 
-## Database (3 tabel baru)
+- **`/gaji-guru`** (admin, bendahara) — 4 tab:
+  - **Daftar Gaji**: filter bulan/tahun, tabel guru × komponen + total, badge status (draft/final/dibayar), tombol Generate, Edit, Cetak Slip, Tandai Dibayar.
+  - **Master Gaji**: per-guru, daftar komponen tetap (nama, nominal, kategori). Tambah/edit/hapus komponen.
+  - **Pengaturan**: tarif default kehadiran, format nomor slip, header slip.
+  - **Rekap**: total gaji per bulan/tahun untuk laporan keuangan.
+- **Profil Guru** (guru sendiri) — tab baru "Slip Gaji Saya" yang list slip berstatus `final`/`dibayar`, tombol unduh PDF.
+- **Sidebar** — item "Gaji Guru" di group Keuangan (admin + bendahara); item "Slip Gaji" di Profil Guru untuk role guru.
 
-**`ujian_sesi`** — header sesi
-- jenis (`pts`|`pas`|`pat`|`um`), nama, ta_id, semester (`ganjil`|`genap`), tanggal_mulai, tanggal_selesai, status (`draft`|`aktif`|`selesai`), nomor_peserta_prefix, kelas_ids (array uuid)
+### Cetak slip PDF
 
-**`ujian_ruang`** — ruang yang dipakai sesi
-- sesi_id, nama_ruang (mis. "R-01"), lokasi (opsional), kapasitas, baris, kolom, urutan
+Layout A5 portrait: kop madrasah + logo, identitas guru (nama, NIP/NUPTK, jabatan), periode, ringkasan kehadiran, rincian pendapatan (gaji pokok + tunjangan), rincian potongan, total bersih (terbilang), ttd kepala madrasah & bendahara. Menggunakan komponen `PrintKopMadrasah` yang sudah ada.
 
-**`ujian_peserta`** — penempatan + nomor peserta
-- sesi_id, siswa_id, kelas_asal_id, nomor_peserta (text, unik per sesi), ruang_id, nomor_kursi (int), is_manual_override (boolean)
-- unique(sesi_id, siswa_id), unique(sesi_id, nomor_peserta)
+### Detail teknis
 
-RLS: admin+operator manage, semua authenticated view (mengikuti pola `pdum_*`).
+**Database (4 tabel baru):**
 
-## UI / Halaman
+- `gaji_komponen_master` — komponen tetap per guru
+  - `gtk_id` (uuid), `nama_komponen` (text), `kategori` (`pendapatan`|`potongan`), `nominal` (numeric), `is_active` (bool)
+- `gaji_settings` — tarif & header slip (single row)
+  - `tarif_per_hadir`, `potongan_per_alpa`, `potongan_per_izin`, `potongan_per_sakit`, `format_nomor_slip`, `judul_slip`
+- `gaji_periode` — header gaji bulanan per guru
+  - `gtk_id`, `bulan` (int), `tahun` (int), `jumlah_hadir`, `jumlah_izin`, `jumlah_sakit`, `jumlah_alpa`, `hari_kerja`, `total_pendapatan`, `total_potongan`, `total_bersih`, `status` (`draft`|`final`|`dibayar`), `tanggal_bayar`, `nomor_slip`, `catatan`
+  - Unique: `(gtk_id, bulan, tahun)`
+- `gaji_detail` — baris komponen per slip (snapshot agar histori aman saat master diubah)
+  - `gaji_periode_id`, `nama_komponen`, `kategori`, `nominal`
 
-**`/kartu-ujian`** — daftar sesi (card per sesi: jenis, periode, jumlah peserta, jumlah ruang). Tombol **+ Sesi Baru**.
+**RLS:**
+- 3 tabel pertama: admin + bendahara full CRUD; guru tidak akses.
+- `gaji_periode` & `gaji_detail`: admin + bendahara full; **guru SELECT hanya baris miliknya sendiri** (`gtk_id IN (SELECT id FROM gtk_ptk WHERE user_id = auth.uid())`) dan **hanya yang status `final`/`dibayar`**.
+- Semua tabel: GRANT sesuai aturan project.
 
-**Detail Sesi** (dialog/halaman) dengan 4 tab:
-1. **Pengaturan** — edit header sesi, prefix nomor peserta, regenerate.
-2. **Ruang** — CRUD ruang (nama, kapasitas, grid baris×kolom). Tombol "Auto-buat dari kelas" (1 ruang per kelas).
-3. **Peserta** — tabel siswa (No Peserta, Nama, NIS, Kelas Asal, Ruang, Kursi). Inline-edit Ruang & Kursi. Tombol "Distribusi Otomatis".
-4. **Cetak** — 3 pilihan output (lihat di bawah).
+**Integrasi Absensi GTK:** Saat Generate, query `absensi_gtk` filter `tanggal` di bulan target, group by `gtk_id` & `status`, hitung jumlah per status. Hari kerja dihitung dari jumlah hari di bulan tsb dikurangi `hari_libur` (Sabtu/Minggu sesuai kebijakan; bisa dikonfirmasi nanti).
 
-## Logika auto-generate
+**Files baru:**
+- `src/pages/GajiGuru.tsx` (halaman utama 4 tab)
+- `src/components/gaji/MasterGajiTab.tsx`
+- `src/components/gaji/DaftarGajiTab.tsx`
+- `src/components/gaji/PengaturanGajiTab.tsx`
+- `src/components/gaji/RekapGajiTab.tsx`
+- `src/components/gaji/GenerateGajiDialog.tsx`
+- `src/components/gaji/EditGajiDialog.tsx`
+- `src/components/gaji/SlipGajiPrint.tsx`
+- `src/components/gaji/SlipGajiSayaTab.tsx` (untuk Profil Guru)
 
-**Nomor peserta**: `{prefix}-{NNNN}`, default prefix `PTS25` / `PAS25` / `UM25` (turunan jenis+tahun). Urut: kelas (7→9) → nomor absen/nama. Disimpan ke kolom `nomor_peserta`. Admin edit manual → set `is_manual_override=true` agar regenerate tidak menimpa.
+**Files diubah:**
+- `src/App.tsx` — route `/gaji-guru` (admin, bendahara)
+- `src/components/layout/Sidebar.tsx` — menu baru di group Keuangan
+- `src/pages/ProfilGuru.tsx` — tab "Slip Gaji Saya"
+- `src/pages/PetaSitus.tsx` — daftarkan menu baru
 
-**Penempatan ruang**: ambil semua peserta urut, isi ruang berurutan sampai kapasitas penuh, lanjut ruang berikutnya. Kursi 1..kapasitas. Override manual juga dihormati saat regenerate.
+### Yang tidak termasuk (bisa fase berikutnya)
 
-## Cetak (pakai `PrintPreviewToolbar` + `PrintKopMadrasah` yang sudah ada)
+- Integrasi bank/transfer otomatis
+- BPJS / pajak PPh21
+- Slip via WhatsApp otomatis (bisa tambah pakai Fonnte nanti)
+- Lembur per jam
 
-1. **Kartu Peserta** — A4 portrait, 4 kartu per halaman. Tiap kartu: kop kecil, foto siswa, Nama, NIS, Kelas Asal, **No Peserta** (besar), **Ruang**, jadwal singkat, TTD kepala. Pilih single/multi siswa.
-2. **Daftar Peserta per Ruang** — A4 portrait, 1 halaman per ruang: kop + judul ruang + tabel (No Peserta, Nama, Kelas Asal, Tanda Tangan). Untuk tempel pintu/absensi.
-3. **Denah/Layout Tempat Duduk** — A4 landscape: kop + grid baris×kolom, tiap sel = kotak berisi No Peserta + Nama (font kecil) + kursi #. 1 halaman per ruang.
-
-## File yang akan dibuat
-
-```
-src/pages/KartuUjian.tsx                        # daftar sesi
-src/components/ujian/SesiFormDialog.tsx
-src/components/ujian/SesiDetailDialog.tsx       # 4 tab
-src/components/ujian/RuangTab.tsx
-src/components/ujian/PesertaTab.tsx
-src/components/ujian/CetakTab.tsx
-src/components/ujian/CetakKartuPesertaDialog.tsx
-src/components/ujian/CetakDaftarRuangDialog.tsx
-src/components/ujian/CetakDenahRuangDialog.tsx
-src/hooks/useUjianSesi.ts
-src/lib/ujian-generator.ts                      # logika nomor + distribusi
-```
-
-## Integrasi
-
-- Sidebar **Akademik**: tambah item "Kartu Ujian" (icon `IdCard` / `ClipboardList`), akses `admin`, `operator`.
-- Route di `App.tsx` di group ProtectedRoute.
-- Menyimpan memori baru: `mem://features/kartu-ujian`.
-
-## Catatan
-
-- Tidak mengubah modul PDUM/SKL. Sesi UM di sini hanya kartu+denah, nilai tetap di PDUM.
-- Jika siswa pindah/keluar setelah generate, hapus dari tab Peserta lalu klik "Rapatkan kursi" (opsional).
+Konfirmasi plan ini untuk saya mulai bangun.

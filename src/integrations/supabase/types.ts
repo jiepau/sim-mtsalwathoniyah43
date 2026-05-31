@@ -674,6 +674,182 @@ export type Database = {
           },
         ]
       }
+      gaji_detail: {
+        Row: {
+          created_at: string
+          gaji_periode_id: string
+          id: string
+          kategori: string
+          nama_komponen: string
+          nominal: number
+          urutan: number
+        }
+        Insert: {
+          created_at?: string
+          gaji_periode_id: string
+          id?: string
+          kategori: string
+          nama_komponen: string
+          nominal?: number
+          urutan?: number
+        }
+        Update: {
+          created_at?: string
+          gaji_periode_id?: string
+          id?: string
+          kategori?: string
+          nama_komponen?: string
+          nominal?: number
+          urutan?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gaji_detail_gaji_periode_id_fkey"
+            columns: ["gaji_periode_id"]
+            isOneToOne: false
+            referencedRelation: "gaji_periode"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gaji_komponen_master: {
+        Row: {
+          created_at: string
+          gtk_id: string
+          id: string
+          is_active: boolean
+          kategori: string
+          nama_komponen: string
+          nominal: number
+          updated_at: string
+          urutan: number
+        }
+        Insert: {
+          created_at?: string
+          gtk_id: string
+          id?: string
+          is_active?: boolean
+          kategori: string
+          nama_komponen: string
+          nominal?: number
+          updated_at?: string
+          urutan?: number
+        }
+        Update: {
+          created_at?: string
+          gtk_id?: string
+          id?: string
+          is_active?: boolean
+          kategori?: string
+          nama_komponen?: string
+          nominal?: number
+          updated_at?: string
+          urutan?: number
+        }
+        Relationships: []
+      }
+      gaji_periode: {
+        Row: {
+          bulan: number
+          catatan: string | null
+          created_at: string
+          gtk_id: string
+          hari_kerja: number
+          id: string
+          jumlah_alpa: number
+          jumlah_hadir: number
+          jumlah_izin: number
+          jumlah_sakit: number
+          nomor_slip: string | null
+          status: string
+          tahun: number
+          tanggal_bayar: string | null
+          total_bersih: number
+          total_pendapatan: number
+          total_potongan: number
+          updated_at: string
+        }
+        Insert: {
+          bulan: number
+          catatan?: string | null
+          created_at?: string
+          gtk_id: string
+          hari_kerja?: number
+          id?: string
+          jumlah_alpa?: number
+          jumlah_hadir?: number
+          jumlah_izin?: number
+          jumlah_sakit?: number
+          nomor_slip?: string | null
+          status?: string
+          tahun: number
+          tanggal_bayar?: string | null
+          total_bersih?: number
+          total_pendapatan?: number
+          total_potongan?: number
+          updated_at?: string
+        }
+        Update: {
+          bulan?: number
+          catatan?: string | null
+          created_at?: string
+          gtk_id?: string
+          hari_kerja?: number
+          id?: string
+          jumlah_alpa?: number
+          jumlah_hadir?: number
+          jumlah_izin?: number
+          jumlah_sakit?: number
+          nomor_slip?: string | null
+          status?: string
+          tahun?: number
+          tanggal_bayar?: string | null
+          total_bersih?: number
+          total_pendapatan?: number
+          total_potongan?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gaji_settings: {
+        Row: {
+          created_at: string
+          format_nomor_slip: string
+          hari_kerja_per_minggu: number
+          id: string
+          judul_slip: string
+          potongan_per_alpa: number
+          potongan_per_izin: number
+          potongan_per_sakit: number
+          tarif_per_hadir: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          format_nomor_slip?: string
+          hari_kerja_per_minggu?: number
+          id?: string
+          judul_slip?: string
+          potongan_per_alpa?: number
+          potongan_per_izin?: number
+          potongan_per_sakit?: number
+          tarif_per_hadir?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          format_nomor_slip?: string
+          hari_kerja_per_minggu?: number
+          id?: string
+          judul_slip?: string
+          potongan_per_alpa?: number
+          potongan_per_izin?: number
+          potongan_per_sakit?: number
+          tarif_per_hadir?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       gtk_ptk: {
         Row: {
           alamat: string | null
