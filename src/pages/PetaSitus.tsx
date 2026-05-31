@@ -85,6 +85,7 @@ const groups: MenuGroup[] = [
       { title: 'Tunggakan', path: '/tunggakan', desc: 'Pantau tunggakan & kirim reminder WA', icon: AlertTriangle, roles: ['admin','bendahara'] },
       { title: 'Laporan Keuangan', path: '/laporan-keuangan', desc: 'Laporan kas masuk/keluar per periode', icon: FileText, roles: ['admin','bendahara'] },
       { title: 'Tutup Buku', path: '/tutup-buku', desc: 'Tutup buku per TA', icon: BookCheck, roles: ['admin','bendahara'] },
+      { title: 'Gaji Guru', path: '/gaji-guru', desc: 'Penggajian bulanan + kehadiran auto + slip PDF', icon: UserCog, roles: ['admin','bendahara'] },
       { title: 'Buku Induk', path: '/buku-induk', desc: 'Riwayat lengkap pembayaran per siswa', icon: BookMarked, roles: ['admin','bendahara'] },
     ],
   },

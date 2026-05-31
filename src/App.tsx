@@ -61,6 +61,7 @@ const SPMBPage = lazy(() => import("@/pages/PPDB"));
 const SPMBDaftar = lazy(() => import("@/pages/PPDBDaftar"));
 const SPMBCekStatus = lazy(() => import("@/pages/PPDBCekStatus"));
 const PDUM = lazy(() => import("@/pages/PDUM"));
+const GajiGuru = lazy(() => import("@/pages/GajiGuru"));
 const KelulusanPublik = lazy(() => import("@/pages/KelulusanPublik"));
 const KartuUjian = lazy(() => import("@/pages/KartuUjian"));
 const PetaSitus = lazy(() => import("@/pages/PetaSitus"));
@@ -139,6 +140,7 @@ const App = () => {
                   <Route path="/tunggakan" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><Tunggakan /></ProtectedRoute>} />
                   <Route path="/laporan-keuangan" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><LaporanKeuangan /></ProtectedRoute>} />
                   <Route path="/tutup-buku" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><TutupBuku /></ProtectedRoute>} />
+                  <Route path="/gaji-guru" element={<ProtectedRoute allowedRoles={['admin','bendahara']}><GajiGuru /></ProtectedRoute>} />
 
                   {/* Kurikulum - admin/operator/guru */}
                   <Route path="/atp" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><ATP /></ProtectedRoute>} />
