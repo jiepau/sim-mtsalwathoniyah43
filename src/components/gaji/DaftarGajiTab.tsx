@@ -43,12 +43,14 @@ export function DaftarGajiTab() {
     queryKey: ['gaji-periode', bulan, tahun],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('gaji_periode')
-        .select('*, gtk_ptk:gtk_id(nama,jabatan)')
-        .eq('bulan', bulan).eq('tahun', tahun)
-        .order('nomor_slip');
+        .from('gaji_periode').select('*')
+        .eq('bulan', bulan).eq('tahun', tahun).order('nomor_slip');
       if (error) throw error;
-      return (data || []) as Row[];
+      const ids = Array.from(new Set((data || []).map((r) => r.gtk_id)));
+      if (ids.length === 0) return [] as Row[];
+      const { data: gtk } = await supabase.from('gtk_ptk').select('id,nama,jabatan').in('id', ids);
+      const m = new Map((gtk || []).map((g) => [g.id, g]));
+      return (data || []).map((r) => ({ ...r, gtk_ptk: m.get(r.gtk_id) || null })) as Row[];
     },
   });
 
