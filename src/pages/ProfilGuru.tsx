@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SlipGajiSayaTab } from "@/components/gaji/SlipGajiSayaTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -240,6 +242,15 @@ export default function ProfilGuru() {
         icon={<User className="h-6 w-6" />}
       />
 
+      <Tabs defaultValue="profil" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="profil">Data Profil</TabsTrigger>
+          <TabsTrigger value="slip">Slip Gaji Saya</TabsTrigger>
+        </TabsList>
+        <TabsContent value="slip">
+          <SlipGajiSayaTab />
+        </TabsContent>
+        <TabsContent value="profil">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Photo Section */}
         <Card>
@@ -489,6 +500,8 @@ export default function ProfilGuru() {
           </Button>
         </div>
       </form>
+        </TabsContent>
+      </Tabs>
 
       {/* Meta info */}
       <div className="mt-6 text-sm text-muted-foreground">
