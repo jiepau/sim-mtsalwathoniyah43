@@ -288,6 +288,7 @@ export function MasterGajiTab() {
               </CardContent>
             </Card>
           </div>
+          </>
         )}
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
