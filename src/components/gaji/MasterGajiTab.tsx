@@ -9,9 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, CalendarRange } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/supabase-helpers';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface Komponen {
   id: string;
