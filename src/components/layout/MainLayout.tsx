@@ -2,8 +2,10 @@ import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Footer } from './Footer';
 import { TopBar } from './TopBar';
+import { useIdleLogout } from '@/hooks/useIdleLogout';
 
 export function MainLayout() {
+  useIdleLogout();
   return (
     <div className="min-h-screen bg-background">
       <TopBar />
