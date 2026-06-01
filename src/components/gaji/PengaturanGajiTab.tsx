@@ -13,6 +13,7 @@ export function PengaturanGajiTab() {
   const [form, setForm] = useState({
     id: '',
     tarif_per_hadir: '0',
+    potongan_per_tidak_masuk: '0',
     potongan_per_alpa: '0',
     potongan_per_izin: '0',
     potongan_per_sakit: '0',
@@ -36,6 +37,7 @@ export function PengaturanGajiTab() {
       setForm({
         id: data.id,
         tarif_per_hadir: String(data.tarif_per_hadir),
+        potongan_per_tidak_masuk: String((data as any).potongan_per_tidak_masuk ?? 0),
         potongan_per_alpa: String(data.potongan_per_alpa),
         potongan_per_izin: String(data.potongan_per_izin),
         potongan_per_sakit: String(data.potongan_per_sakit),
@@ -51,6 +53,7 @@ export function PengaturanGajiTab() {
     try {
       const payload = {
         tarif_per_hadir: Number(form.tarif_per_hadir) || 0,
+        potongan_per_tidak_masuk: Number(form.potongan_per_tidak_masuk) || 0,
         potongan_per_alpa: Number(form.potongan_per_alpa) || 0,
         potongan_per_izin: Number(form.potongan_per_izin) || 0,
         potongan_per_sakit: Number(form.potongan_per_sakit) || 0,
