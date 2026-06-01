@@ -62,12 +62,8 @@ export function MasterGajiTab() {
   const [hariSpesifik, setHariSpesifik] = useState<number[]>([]);
   const [savingHari, setSavingHari] = useState(false);
 
-  // Sync state saat GTK berubah
-  useState(() => 0); // dummy
-  // gunakan useEffect via inline init
-  if (selectedGtkData && hariPerMinggu === '' && hariSpesifik.length === 0) {
-    // initial load only — handled in handleSelectGtk
-  }
+
+
 
   const handleSelectGtk = (id: string) => {
     setSelectedGtk(id);
