@@ -500,6 +500,8 @@ export default function ProfilGuru() {
           </Button>
         </div>
       </form>
+        </TabsContent>
+      </Tabs>
 
       {/* Meta info */}
       <div className="mt-6 text-sm text-muted-foreground">
