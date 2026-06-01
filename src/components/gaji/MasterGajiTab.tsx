@@ -159,7 +159,7 @@ export function MasterGajiTab() {
         <div className="flex flex-col sm:flex-row gap-3 items-end">
           <div className="flex-1 space-y-1.5">
             <Label>Pilih Guru / Tenaga Kependidikan</Label>
-            <Select value={selectedGtk || 'none'} onValueChange={(v) => setSelectedGtk(v === 'none' ? '' : v)}>
+            <Select value={selectedGtk || 'none'} onValueChange={(v) => handleSelectGtk(v === 'none' ? '' : v)}>
               <SelectTrigger><SelectValue placeholder="-- Pilih guru --" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">-- Pilih guru --</SelectItem>
@@ -181,6 +181,48 @@ export function MasterGajiTab() {
         ) : isLoading ? (
           <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin" /></div>
         ) : (
+          <>
+            {/* Override hari kerja per GTK */}
+            <Card className="border-primary/30 bg-primary/5">
+              <CardHeader className="py-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <CalendarRange className="h-4 w-4" /> Pengaturan Hari Kerja — {selectedGtkData?.nama}
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  Khusus guru yang tidak mengajar setiap hari (mis. hanya 3 hari/minggu). Kosongkan untuk pakai default global.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Jumlah Hari per Minggu (override)</Label>
+                    <Input
+                      type="number" min={1} max={7}
+                      placeholder="kosong = pakai default global"
+                      value={hariPerMinggu}
+                      onChange={(e) => setHariPerMinggu(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Atau pilih hari spesifik (lebih akurat)</Label>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {NAMA_HARI.map((nm, idx) => (
+                        <label key={idx} className="flex items-center gap-1.5 cursor-pointer text-xs">
+                          <Checkbox checked={hariSpesifik.includes(idx)} onCheckedChange={() => toggleHari(idx)} />
+                          {nm}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <Button size="sm" onClick={saveHariKerja} disabled={savingHari}>
+                    {savingHari ? 'Menyimpan...' : 'Simpan Hari Kerja'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
           <div className="grid md:grid-cols-2 gap-4">
             <Card>
               <CardHeader className="py-3">
