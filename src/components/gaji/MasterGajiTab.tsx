@@ -32,14 +32,18 @@ export function MasterGajiTab() {
   const [form, setForm] = useState({ nama_komponen: '', kategori: 'pendapatan' as 'pendapatan' | 'potongan', nominal: '' });
 
   const { data: gtkList = [] } = useQuery({
-    queryKey: ['gtk-list-aktif'],
+    queryKey: ['gtk-list-aktif-gaji'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('gtk_ptk').select('id,nama,jabatan').eq('status_aktif', 'aktif').order('nama');
+        .from('gtk_ptk')
+        .select('id,nama,jabatan,hari_kerja_per_minggu,hari_kerja_hari')
+        .eq('status_aktif', 'aktif').order('nama');
       if (error) throw error;
-      return data as { id: string; nama: string; jabatan: string | null }[];
+      return data as { id: string; nama: string; jabatan: string | null; hari_kerja_per_minggu: number | null; hari_kerja_hari: number[] | null }[];
     },
   });
+
+  const selectedGtkData = gtkList.find((g) => g.id === selectedGtk);
 
   const { data: komponen = [], isLoading } = useQuery({
     queryKey: ['gaji-komponen', selectedGtk],
@@ -52,6 +56,51 @@ export function MasterGajiTab() {
     },
     enabled: !!selectedGtk,
   });
+
+  // State untuk override hari kerja
+  const [hariPerMinggu, setHariPerMinggu] = useState<string>('');
+  const [hariSpesifik, setHariSpesifik] = useState<number[]>([]);
+  const [savingHari, setSavingHari] = useState(false);
+
+  // Sync state saat GTK berubah
+  useState(() => 0); // dummy
+  // gunakan useEffect via inline init
+  if (selectedGtkData && hariPerMinggu === '' && hariSpesifik.length === 0) {
+    // initial load only — handled in handleSelectGtk
+  }
+
+  const handleSelectGtk = (id: string) => {
+    setSelectedGtk(id);
+    const g = gtkList.find((x) => x.id === id);
+    setHariPerMinggu(g?.hari_kerja_per_minggu != null ? String(g.hari_kerja_per_minggu) : '');
+    setHariSpesifik(Array.isArray(g?.hari_kerja_hari) ? (g!.hari_kerja_hari as number[]) : []);
+  };
+
+  const toggleHari = (d: number) => {
+    setHariSpesifik((prev) => prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d].sort());
+  };
+
+  const saveHariKerja = async () => {
+    if (!selectedGtk) return;
+    setSavingHari(true);
+    try {
+      const payload: any = {
+        hari_kerja_per_minggu: hariPerMinggu.trim() === '' ? null : Number(hariPerMinggu) || null,
+        hari_kerja_hari: hariSpesifik.length > 0 ? hariSpesifik : null,
+      };
+      const { error } = await supabase.from('gtk_ptk').update(payload).eq('id', selectedGtk);
+      if (error) throw error;
+      toast.success('Pengaturan hari kerja disimpan');
+      qc.invalidateQueries({ queryKey: ['gtk-list-aktif-gaji'] });
+    } catch (err) {
+      toast.error('Gagal: ' + (err as Error).message);
+    } finally {
+      setSavingHari(false);
+    }
+  };
+
+  const NAMA_HARI = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+
 
   const openCreate = () => {
     setEditing(null);
