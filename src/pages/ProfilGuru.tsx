@@ -242,6 +242,15 @@ export default function ProfilGuru() {
         icon={<User className="h-6 w-6" />}
       />
 
+      <Tabs defaultValue="profil" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="profil">Data Profil</TabsTrigger>
+          <TabsTrigger value="slip">Slip Gaji Saya</TabsTrigger>
+        </TabsList>
+        <TabsContent value="slip">
+          <SlipGajiSayaTab />
+        </TabsContent>
+        <TabsContent value="profil">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Photo Section */}
         <Card>
