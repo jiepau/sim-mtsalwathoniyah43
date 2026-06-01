@@ -13,6 +13,7 @@ export function PengaturanGajiTab() {
   const [form, setForm] = useState({
     id: '',
     tarif_per_hadir: '0',
+    potongan_per_tidak_masuk: '0',
     potongan_per_alpa: '0',
     potongan_per_izin: '0',
     potongan_per_sakit: '0',
@@ -36,6 +37,7 @@ export function PengaturanGajiTab() {
       setForm({
         id: data.id,
         tarif_per_hadir: String(data.tarif_per_hadir),
+        potongan_per_tidak_masuk: String((data as any).potongan_per_tidak_masuk ?? 0),
         potongan_per_alpa: String(data.potongan_per_alpa),
         potongan_per_izin: String(data.potongan_per_izin),
         potongan_per_sakit: String(data.potongan_per_sakit),
@@ -51,6 +53,7 @@ export function PengaturanGajiTab() {
     try {
       const payload = {
         tarif_per_hadir: Number(form.tarif_per_hadir) || 0,
+        potongan_per_tidak_masuk: Number(form.potongan_per_tidak_masuk) || 0,
         potongan_per_alpa: Number(form.potongan_per_alpa) || 0,
         potongan_per_izin: Number(form.potongan_per_izin) || 0,
         potongan_per_sakit: Number(form.potongan_per_sakit) || 0,
@@ -91,16 +94,23 @@ export function PengaturanGajiTab() {
             <Input type="number" min={1} max={7} value={form.hari_kerja_per_minggu} onChange={(e) => setForm({ ...form, hari_kerja_per_minggu: e.target.value })} />
             <p className="text-xs text-muted-foreground">Untuk hitung jumlah hari kerja bulan ini (default 6 = Sen–Sab).</p>
           </div>
+          <div className="space-y-1.5 md:col-span-2 p-3 rounded-md border border-primary/30 bg-primary/5">
+            <Label className="font-semibold">Potongan per Hari Tidak Masuk (Rp) — disarankan</Label>
+            <Input type="number" value={form.potongan_per_tidak_masuk} onChange={(e) => setForm({ ...form, potongan_per_tidak_masuk: e.target.value })} />
+            <p className="text-xs text-muted-foreground">
+              Alpa + Izin + Sakit digabung dianggap "tidak masuk". Jika field ini &gt; 0, akan menggantikan 3 potongan terpisah di bawah.
+            </p>
+          </div>
           <div className="space-y-1.5">
-            <Label>Potongan per Alpa (Rp)</Label>
+            <Label className="text-muted-foreground">Potongan per Alpa (Rp)</Label>
             <Input type="number" value={form.potongan_per_alpa} onChange={(e) => setForm({ ...form, potongan_per_alpa: e.target.value })} />
           </div>
           <div className="space-y-1.5">
-            <Label>Potongan per Izin (Rp)</Label>
+            <Label className="text-muted-foreground">Potongan per Izin (Rp)</Label>
             <Input type="number" value={form.potongan_per_izin} onChange={(e) => setForm({ ...form, potongan_per_izin: e.target.value })} />
           </div>
           <div className="space-y-1.5">
-            <Label>Potongan per Sakit (Rp)</Label>
+            <Label className="text-muted-foreground">Potongan per Sakit (Rp)</Label>
             <Input type="number" value={form.potongan_per_sakit} onChange={(e) => setForm({ ...form, potongan_per_sakit: e.target.value })} />
           </div>
           <div className="space-y-1.5">

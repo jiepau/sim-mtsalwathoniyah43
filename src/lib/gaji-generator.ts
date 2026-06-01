@@ -12,20 +12,38 @@ interface Settings {
   potongan_per_alpa: number;
   potongan_per_izin: number;
   potongan_per_sakit: number;
+  potongan_per_tidak_masuk: number;
   format_nomor_slip: string;
   hari_kerja_per_minggu: number;
 }
 
-function hitungHariKerja(bulan: number, tahun: number, hariKerjaPerMinggu: number): number {
-  // bulan 1-12. hariKerjaPerMinggu: 5=Sen-Jum, 6=Sen-Sab, 7=tiap hari
+/**
+ * Hitung hari kerja dalam bulan tertentu.
+ * - Jika `hariSpesifik` diisi (array 0=Min..6=Sab), dihitung berdasarkan hari spesifik tsb.
+ * - Jika tidak, gunakan `hariKerjaPerMinggu` (5=Sen-Jum, 6=Sen-Sab, 7=tiap hari).
+ * - Tanggal yang ada di `liburSet` (format YYYY-MM-DD) tidak dihitung sebagai hari kerja.
+ */
+function hitungHariKerja(
+  bulan: number,
+  tahun: number,
+  hariKerjaPerMinggu: number,
+  hariSpesifik: number[] | null,
+  liburSet: Set<string>,
+): number {
   const daysInMonth = new Date(tahun, bulan, 0).getDate();
   let count = 0;
   for (let d = 1; d <= daysInMonth; d++) {
-    const dow = new Date(tahun, bulan - 1, d).getDay(); // 0=Min, 6=Sab
-    if (hariKerjaPerMinggu === 7) count++;
-    else if (hariKerjaPerMinggu === 6 && dow !== 0) count++;
-    else if (hariKerjaPerMinggu === 5 && dow !== 0 && dow !== 6) count++;
-    else if (hariKerjaPerMinggu < 5 && dow >= 1 && dow <= hariKerjaPerMinggu) count++;
+    const tgl = `${tahun}-${String(bulan).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    if (liburSet.has(tgl)) continue;
+    const dow = new Date(tahun, bulan - 1, d).getDay();
+    if (hariSpesifik && hariSpesifik.length > 0) {
+      if (hariSpesifik.includes(dow)) count++;
+    } else {
+      if (hariKerjaPerMinggu === 7) count++;
+      else if (hariKerjaPerMinggu === 6 && dow !== 0) count++;
+      else if (hariKerjaPerMinggu === 5 && dow !== 0 && dow !== 6) count++;
+      else if (hariKerjaPerMinggu < 5 && dow >= 1 && dow <= hariKerjaPerMinggu) count++;
+    }
   }
   return count;
 }
@@ -40,15 +58,22 @@ function applyFormat(fmt: string, bulan: number, tahun: number, seq: number): st
 export async function generateGajiBulanan({ bulan, tahun, overwrite }: GenerateOptions) {
   // 1. Ambil settings
   const { data: settings } = await supabase.from('gaji_settings').select('*').limit(1).maybeSingle();
-  const s: Settings = settings ?? {
-    tarif_per_hadir: 0, potongan_per_alpa: 0, potongan_per_izin: 0,
-    potongan_per_sakit: 0, format_nomor_slip: 'SLIP/{bulan}/{tahun}/{seq}',
-    hari_kerja_per_minggu: 6,
+  const s: Settings = {
+    tarif_per_hadir: Number(settings?.tarif_per_hadir ?? 0),
+    potongan_per_alpa: Number(settings?.potongan_per_alpa ?? 0),
+    potongan_per_izin: Number(settings?.potongan_per_izin ?? 0),
+    potongan_per_sakit: Number(settings?.potongan_per_sakit ?? 0),
+    potongan_per_tidak_masuk: Number((settings as any)?.potongan_per_tidak_masuk ?? 0),
+    format_nomor_slip: settings?.format_nomor_slip ?? 'SLIP/{bulan}/{tahun}/{seq}',
+    hari_kerja_per_minggu: Number(settings?.hari_kerja_per_minggu ?? 6),
   };
 
-  // 2. Ambil semua GTK aktif
+  // 2. Ambil semua GTK aktif (termasuk override hari kerja per GTK)
   const { data: gtkList, error: e1 } = await supabase
-    .from('gtk_ptk').select('id,nama').eq('status_aktif', 'aktif').order('nama');
+    .from('gtk_ptk')
+    .select('id,nama,hari_kerja_per_minggu,hari_kerja_hari')
+    .eq('status_aktif', 'aktif')
+    .order('nama');
   if (e1) throw e1;
   if (!gtkList || gtkList.length === 0) throw new Error('Tidak ada GTK aktif');
 
@@ -57,7 +82,7 @@ export async function generateGajiBulanan({ bulan, tahun, overwrite }: GenerateO
     .from('gaji_periode').select('id,gtk_id,status').eq('bulan', bulan).eq('tahun', tahun);
   const existingMap = new Map((existing || []).map((r) => [r.gtk_id, r]));
 
-  // 4. Ambil absensi bulan ini (1 query, group sendiri)
+  // 4. Ambil absensi bulan ini
   const startDate = `${tahun}-${String(bulan).padStart(2, '0')}-01`;
   const endDate = `${tahun}-${String(bulan).padStart(2, '0')}-${String(new Date(tahun, bulan, 0).getDate()).padStart(2, '0')}`;
   const { data: absensi } = await supabase
@@ -73,6 +98,11 @@ export async function generateGajiBulanan({ bulan, tahun, overwrite }: GenerateO
     absenMap.set(a.gtk_id, m);
   }
 
+  // 4b. Ambil hari libur bulan ini
+  const { data: liburRows } = await supabase
+    .from('hari_libur').select('tanggal').gte('tanggal', startDate).lte('tanggal', endDate);
+  const liburSet = new Set<string>((liburRows || []).map((r: any) => r.tanggal));
+
   // 5. Ambil komponen master
   const gtkIds = gtkList.map((g) => g.id);
   const { data: komponenAll } = await supabase
@@ -84,13 +114,12 @@ export async function generateGajiBulanan({ bulan, tahun, overwrite }: GenerateO
     komponenMap.set(k.gtk_id, arr);
   }
 
-  const hariKerja = hitungHariKerja(bulan, tahun, s.hari_kerja_per_minggu);
   let seq = 1;
   let created = 0;
   let skipped = 0;
   let updated = 0;
 
-  for (const g of gtkList) {
+  for (const g of gtkList as any[]) {
     const ex = existingMap.get(g.id);
     if (ex && !overwrite) { skipped++; continue; }
     if (ex && ex.status !== 'draft' && !overwrite) { skipped++; continue; }
@@ -98,7 +127,15 @@ export async function generateGajiBulanan({ bulan, tahun, overwrite }: GenerateO
     const a = absenMap.get(g.id) || { hadir: 0, izin: 0, sakit: 0, alpa: 0 };
     const komponen = komponenMap.get(g.id) || [];
 
-    // Bangun detail: master + auto kehadiran (tarif & potongan otomatis)
+    // Hari kerja per GTK: override → global
+    const hkPerMinggu = g.hari_kerja_per_minggu ?? s.hari_kerja_per_minggu;
+    const hariSpesifik: number[] | null = Array.isArray(g.hari_kerja_hari) && g.hari_kerja_hari.length > 0
+      ? g.hari_kerja_hari : null;
+    const hariKerja = hitungHariKerja(bulan, tahun, hkPerMinggu, hariSpesifik, liburSet);
+
+    // Total tidak masuk (alpa+izin+sakit digabung)
+    const tidakMasuk = a.alpa + a.izin + a.sakit;
+
     const detailRows: { nama_komponen: string; kategori: 'pendapatan' | 'potongan'; nominal: number; urutan: number }[] = [];
     let urutan = 0;
     for (const k of komponen) {
@@ -107,17 +144,28 @@ export async function generateGajiBulanan({ bulan, tahun, overwrite }: GenerateO
         nominal: Number(k.nominal), urutan: urutan++,
       });
     }
-    if (Number(s.tarif_per_hadir) > 0 && a.hadir > 0) {
-      detailRows.push({ nama_komponen: `Insentif Kehadiran (${a.hadir} hari)`, kategori: 'pendapatan', nominal: a.hadir * Number(s.tarif_per_hadir), urutan: urutan++ });
+    if (s.tarif_per_hadir > 0 && a.hadir > 0) {
+      detailRows.push({ nama_komponen: `Insentif Kehadiran (${a.hadir} hari)`, kategori: 'pendapatan', nominal: a.hadir * s.tarif_per_hadir, urutan: urutan++ });
     }
-    if (Number(s.potongan_per_alpa) > 0 && a.alpa > 0) {
-      detailRows.push({ nama_komponen: `Potongan Alpa (${a.alpa} hari)`, kategori: 'potongan', nominal: a.alpa * Number(s.potongan_per_alpa), urutan: urutan++ });
-    }
-    if (Number(s.potongan_per_izin) > 0 && a.izin > 0) {
-      detailRows.push({ nama_komponen: `Potongan Izin (${a.izin} hari)`, kategori: 'potongan', nominal: a.izin * Number(s.potongan_per_izin), urutan: urutan++ });
-    }
-    if (Number(s.potongan_per_sakit) > 0 && a.sakit > 0) {
-      detailRows.push({ nama_komponen: `Potongan Sakit (${a.sakit} hari)`, kategori: 'potongan', nominal: a.sakit * Number(s.potongan_per_sakit), urutan: urutan++ });
+
+    // Potongan terpadu vs terpisah
+    if (s.potongan_per_tidak_masuk > 0 && tidakMasuk > 0) {
+      detailRows.push({
+        nama_komponen: `Potongan Tidak Masuk (${tidakMasuk} hari)`,
+        kategori: 'potongan',
+        nominal: tidakMasuk * s.potongan_per_tidak_masuk,
+        urutan: urutan++,
+      });
+    } else {
+      if (s.potongan_per_alpa > 0 && a.alpa > 0) {
+        detailRows.push({ nama_komponen: `Potongan Alpa (${a.alpa} hari)`, kategori: 'potongan', nominal: a.alpa * s.potongan_per_alpa, urutan: urutan++ });
+      }
+      if (s.potongan_per_izin > 0 && a.izin > 0) {
+        detailRows.push({ nama_komponen: `Potongan Izin (${a.izin} hari)`, kategori: 'potongan', nominal: a.izin * s.potongan_per_izin, urutan: urutan++ });
+      }
+      if (s.potongan_per_sakit > 0 && a.sakit > 0) {
+        detailRows.push({ nama_komponen: `Potongan Sakit (${a.sakit} hari)`, kategori: 'potongan', nominal: a.sakit * s.potongan_per_sakit, urutan: urutan++ });
+      }
     }
 
     const totalPendapatan = detailRows.filter((d) => d.kategori === 'pendapatan').reduce((x, y) => x + y.nominal, 0);

@@ -9,9 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, CalendarRange } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/supabase-helpers';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface Komponen {
   id: string;
@@ -31,14 +32,18 @@ export function MasterGajiTab() {
   const [form, setForm] = useState({ nama_komponen: '', kategori: 'pendapatan' as 'pendapatan' | 'potongan', nominal: '' });
 
   const { data: gtkList = [] } = useQuery({
-    queryKey: ['gtk-list-aktif'],
+    queryKey: ['gtk-list-aktif-gaji'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('gtk_ptk').select('id,nama,jabatan').eq('status_aktif', 'aktif').order('nama');
+        .from('gtk_ptk')
+        .select('id,nama,jabatan,hari_kerja_per_minggu,hari_kerja_hari')
+        .eq('status_aktif', 'aktif').order('nama');
       if (error) throw error;
-      return data as { id: string; nama: string; jabatan: string | null }[];
+      return data as { id: string; nama: string; jabatan: string | null; hari_kerja_per_minggu: number | null; hari_kerja_hari: number[] | null }[];
     },
   });
+
+  const selectedGtkData = gtkList.find((g) => g.id === selectedGtk);
 
   const { data: komponen = [], isLoading } = useQuery({
     queryKey: ['gaji-komponen', selectedGtk],
@@ -51,6 +56,47 @@ export function MasterGajiTab() {
     },
     enabled: !!selectedGtk,
   });
+
+  // State untuk override hari kerja
+  const [hariPerMinggu, setHariPerMinggu] = useState<string>('');
+  const [hariSpesifik, setHariSpesifik] = useState<number[]>([]);
+  const [savingHari, setSavingHari] = useState(false);
+
+
+
+
+  const handleSelectGtk = (id: string) => {
+    setSelectedGtk(id);
+    const g = gtkList.find((x) => x.id === id);
+    setHariPerMinggu(g?.hari_kerja_per_minggu != null ? String(g.hari_kerja_per_minggu) : '');
+    setHariSpesifik(Array.isArray(g?.hari_kerja_hari) ? (g!.hari_kerja_hari as number[]) : []);
+  };
+
+  const toggleHari = (d: number) => {
+    setHariSpesifik((prev) => prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d].sort());
+  };
+
+  const saveHariKerja = async () => {
+    if (!selectedGtk) return;
+    setSavingHari(true);
+    try {
+      const payload: any = {
+        hari_kerja_per_minggu: hariPerMinggu.trim() === '' ? null : Number(hariPerMinggu) || null,
+        hari_kerja_hari: hariSpesifik.length > 0 ? hariSpesifik : null,
+      };
+      const { error } = await supabase.from('gtk_ptk').update(payload).eq('id', selectedGtk);
+      if (error) throw error;
+      toast.success('Pengaturan hari kerja disimpan');
+      qc.invalidateQueries({ queryKey: ['gtk-list-aktif-gaji'] });
+    } catch (err) {
+      toast.error('Gagal: ' + (err as Error).message);
+    } finally {
+      setSavingHari(false);
+    }
+  };
+
+  const NAMA_HARI = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+
 
   const openCreate = () => {
     setEditing(null);
@@ -113,7 +159,7 @@ export function MasterGajiTab() {
         <div className="flex flex-col sm:flex-row gap-3 items-end">
           <div className="flex-1 space-y-1.5">
             <Label>Pilih Guru / Tenaga Kependidikan</Label>
-            <Select value={selectedGtk || 'none'} onValueChange={(v) => setSelectedGtk(v === 'none' ? '' : v)}>
+            <Select value={selectedGtk || 'none'} onValueChange={(v) => handleSelectGtk(v === 'none' ? '' : v)}>
               <SelectTrigger><SelectValue placeholder="-- Pilih guru --" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">-- Pilih guru --</SelectItem>
@@ -135,6 +181,48 @@ export function MasterGajiTab() {
         ) : isLoading ? (
           <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin" /></div>
         ) : (
+          <>
+            {/* Override hari kerja per GTK */}
+            <Card className="border-primary/30 bg-primary/5">
+              <CardHeader className="py-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <CalendarRange className="h-4 w-4" /> Pengaturan Hari Kerja — {selectedGtkData?.nama}
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  Khusus guru yang tidak mengajar setiap hari (mis. hanya 3 hari/minggu). Kosongkan untuk pakai default global.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Jumlah Hari per Minggu (override)</Label>
+                    <Input
+                      type="number" min={1} max={7}
+                      placeholder="kosong = pakai default global"
+                      value={hariPerMinggu}
+                      onChange={(e) => setHariPerMinggu(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Atau pilih hari spesifik (lebih akurat)</Label>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {NAMA_HARI.map((nm, idx) => (
+                        <label key={idx} className="flex items-center gap-1.5 cursor-pointer text-xs">
+                          <Checkbox checked={hariSpesifik.includes(idx)} onCheckedChange={() => toggleHari(idx)} />
+                          {nm}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <Button size="sm" onClick={saveHariKerja} disabled={savingHari}>
+                    {savingHari ? 'Menyimpan...' : 'Simpan Hari Kerja'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
           <div className="grid md:grid-cols-2 gap-4">
             <Card>
               <CardHeader className="py-3">
@@ -200,6 +288,7 @@ export function MasterGajiTab() {
               </CardContent>
             </Card>
           </div>
+          </>
         )}
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

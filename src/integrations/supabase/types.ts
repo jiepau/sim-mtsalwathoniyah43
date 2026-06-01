@@ -821,6 +821,7 @@ export type Database = {
           potongan_per_alpa: number
           potongan_per_izin: number
           potongan_per_sakit: number
+          potongan_per_tidak_masuk: number
           tarif_per_hadir: number
           updated_at: string
         }
@@ -833,6 +834,7 @@ export type Database = {
           potongan_per_alpa?: number
           potongan_per_izin?: number
           potongan_per_sakit?: number
+          potongan_per_tidak_masuk?: number
           tarif_per_hadir?: number
           updated_at?: string
         }
@@ -845,6 +847,7 @@ export type Database = {
           potongan_per_alpa?: number
           potongan_per_izin?: number
           potongan_per_sakit?: number
+          potongan_per_tidak_masuk?: number
           tarif_per_hadir?: number
           updated_at?: string
         }
@@ -856,6 +859,8 @@ export type Database = {
           created_at: string
           email: string | null
           foto_path: string | null
+          hari_kerja_hari: number[] | null
+          hari_kerja_per_minggu: number | null
           id: string
           jabatan: string | null
           jenis_kelamin: string | null
@@ -881,6 +886,8 @@ export type Database = {
           created_at?: string
           email?: string | null
           foto_path?: string | null
+          hari_kerja_hari?: number[] | null
+          hari_kerja_per_minggu?: number | null
           id?: string
           jabatan?: string | null
           jenis_kelamin?: string | null
@@ -906,6 +913,8 @@ export type Database = {
           created_at?: string
           email?: string | null
           foto_path?: string | null
+          hari_kerja_hari?: number[] | null
+          hari_kerja_per_minggu?: number | null
           id?: string
           jabatan?: string | null
           jenis_kelamin?: string | null
