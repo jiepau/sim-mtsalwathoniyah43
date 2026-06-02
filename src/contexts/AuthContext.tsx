@@ -18,6 +18,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const IDLE_ACTIVITY_STORAGE_KEY = 'lastActivityAt';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -206,6 +207,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     console.log('signIn: Starting...');
     isSigningIn.current = true;
+    localStorage.setItem(IDLE_ACTIVITY_STORAGE_KEY, String(Date.now()));
     
     // Reset state before signing in
     setRoles([]);
