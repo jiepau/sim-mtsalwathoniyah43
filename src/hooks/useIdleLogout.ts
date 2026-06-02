@@ -23,7 +23,8 @@ export function useIdleLogout() {
         await signOut();
       } finally {
         // Reload supaya semua cache React Query bersih
-        setTimeout(() => window.location.replace('/auth/login'), 300);
+        localStorage.removeItem(STORAGE_KEY);
+        setTimeout(() => window.location.replace('/login'), 300);
       }
     };
 
