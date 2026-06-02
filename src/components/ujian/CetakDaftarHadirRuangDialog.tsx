@@ -196,7 +196,7 @@ export function CetakDaftarHadirRuangDialog({ open, onOpenChange, sesi }: Props)
                       ) : list.map((p: any, i: number) => (
                         <tr key={p.id}>
                           <td className="border border-black text-center h-[8mm]">{i + 1}</td>
-                          <td className="border border-black px-1 font-semibold uppercase truncate">{p.siswa.nama}</td>
+                          <td className="border border-black px-1 font-semibold uppercase leading-tight">{p.siswa.nama}</td>
                           <td className="border border-black text-center">{p.siswa.kelas?.nama_kelas || '-'}</td>
                           {tanggalUjian.flatMap((tgl) => activeSesiLabels.map((label) => (
                             <td key={`${p.id}-${tgl}-${label}`} className="border border-black" />
