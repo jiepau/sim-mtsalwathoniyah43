@@ -1,9 +1,12 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { FileSpreadsheet } from "lucide-react";
 import { PrintKopMadrasah } from "@/components/print/PrintKopMadrasah";
 import { PrintPreviewToolbar, PrintPreviewFrame, type PrintOrientation } from "@/components/print/PrintPreviewToolbar";
 import { useUjianRuang, useUjianPeserta, type UjianSesi } from "@/hooks/useUjianSesi";
@@ -90,13 +93,39 @@ export function CetakDaftarRuangDialog({ open, onOpenChange, sesi }: Props) {
           </select>
         </div>
 
-        <PrintPreviewToolbar
-          preview={preview}
-          onTogglePreview={setPreview}
-          orientation={orientation}
-          onOrientationChange={setOrientation}
-          onPrint={() => window.print()}
-        />
+        <div className="no-print flex items-center justify-between gap-2 flex-wrap">
+          <PrintPreviewToolbar
+            preview={preview}
+            onTogglePreview={setPreview}
+            orientation={orientation}
+            onOrientationChange={setOrientation}
+            onPrint={() => window.print()}
+          />
+          <Button variant="outline" size="sm" onClick={() => {
+            const wb = XLSX.utils.book_new();
+            ruangFiltered.forEach((r) => {
+              const list = pesertaPerRuang.get(r.id) || [];
+              const aoa: (string | number)[][] = [
+                [`DAFTAR PESERTA ${sesi.nama}`],
+                [ta?.nama_ta ? `Tahun Ajaran ${ta.nama_ta}` : ""],
+                [`Ruang: ${r.nama_ruang}${r.lokasi ? ` (${r.lokasi})` : ""}`],
+                [],
+                ["No", "No. Peserta", "Nama", "NISN", "Kelas", "Ruang", "Tanda Tangan"],
+                ...list.map((p: any, i: number) => [
+                  i + 1, p.nomor_peserta, p.siswa.nama, p.siswa.nisn || "-",
+                  p.siswa.kelas?.nama_kelas || "-",
+                  `${r.nama_ruang}${r.lokasi ? ` (${r.lokasi})` : ""}`, "",
+                ]),
+              ];
+              const ws = XLSX.utils.aoa_to_sheet(aoa);
+              ws["!cols"] = [{ wch: 4 }, { wch: 14 }, { wch: 32 }, { wch: 14 }, { wch: 10 }, { wch: 14 }, { wch: 20 }];
+              XLSX.utils.book_append_sheet(wb, ws, r.nama_ruang.slice(0, 31));
+            });
+            XLSX.writeFile(wb, `Daftar-Peserta-${sesi.nama.replace(/\s+/g, "_")}.xlsx`);
+          }}>
+            <FileSpreadsheet className="h-4 w-4 mr-1" />Download Excel
+          </Button>
+        </div>
 
         <PrintPreviewFrame preview={preview} orientation={orientation}>
           <div className="space-y-6">
