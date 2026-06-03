@@ -157,15 +157,46 @@ export function CetakDaftarHadirRuangDialog({ open, onOpenChange, sesi }: Props)
           </div>
         </div>
 
-        <PrintPreviewToolbar
-          preview={preview}
-          onTogglePreview={setPreview}
-          orientation={orientation}
-          onOrientationChange={setOrientation}
-          onPrint={() => window.print()}
-          disabled={tanggalUjian.length === 0}
-          hint="Format mengikuti lampiran: 1 ruang per halaman, kolom tanggal dan sesi untuk tanda hadir."
-        />
+        <div className="no-print flex items-center justify-between gap-2 flex-wrap">
+          <PrintPreviewToolbar
+            preview={preview}
+            onTogglePreview={setPreview}
+            orientation={orientation}
+            onOrientationChange={setOrientation}
+            onPrint={() => window.print()}
+            disabled={tanggalUjian.length === 0}
+            hint="Format mengikuti lampiran: 1 ruang per halaman, kolom tanggal dan sesi untuk tanda hadir."
+          />
+          <Button variant="outline" size="sm" disabled={tanggalUjian.length === 0} onClick={() => {
+            const wb = XLSX.utils.book_new();
+            ruangFiltered.forEach((r) => {
+              const list = pesertaPerRuang.get(r.id) || [];
+              const header1: string[] = ['No', 'Nama', 'Kelas'];
+              const header2: string[] = ['', '', ''];
+              tanggalUjian.forEach((tgl) => {
+                activeSesiLabels.forEach((label, i) => {
+                  header1.push(i === 0 ? formatDate(tgl) : '');
+                  header2.push(label);
+                });
+              });
+              const aoa: (string | number)[][] = [
+                [judul], [madrasah?.nama_madrasah || ''], [tahunAjaran],
+                [`Ruang: ${r.nama_ruang}`], [], header1, header2,
+                ...list.map((p: any, i: number) => {
+                  const row: (string | number)[] = [i + 1, p.siswa.nama, p.siswa.kelas?.nama_kelas || '-'];
+                  tanggalUjian.forEach(() => activeSesiLabels.forEach(() => row.push('')));
+                  return row;
+                }),
+              ];
+              const ws = XLSX.utils.aoa_to_sheet(aoa);
+              ws['!cols'] = [{ wch: 4 }, { wch: 30 }, { wch: 10 }, ...header1.slice(3).map(() => ({ wch: 6 }))];
+              XLSX.utils.book_append_sheet(wb, ws, r.nama_ruang.slice(0, 31));
+            });
+            XLSX.writeFile(wb, `Daftar-Hadir-${sesi.nama.replace(/\s+/g, '_')}.xlsx`);
+          }}>
+            <FileSpreadsheet className="h-4 w-4 mr-1" />Download Excel
+          </Button>
+        </div>
 
         <PrintPreviewFrame preview={preview} orientation={orientation}>
           <div className="space-y-6" style={{ color: '#000', fontFamily: 'Arial, sans-serif' }}>
