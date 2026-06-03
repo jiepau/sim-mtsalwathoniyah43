@@ -49,8 +49,10 @@ export function CetakDaftarHadirRuangDialog({ open, onOpenChange, sesi }: Props)
   const [startDate, setStartDate] = useState(sesi.tanggal_mulai || '');
   const [endDate, setEndDate] = useState(sesi.tanggal_selesai || sesi.tanggal_mulai || '');
   const [sesiPerHari, setSesiPerHari] = useState(3);
-  const [ketuaPelaksana, setKetuaPelaksana] = useState('');
-  const [nipKetua, setNipKetua] = useState('');
+  const [ketuaPelaksana, setKetuaPelaksanaState] = useState(() => localStorage.getItem('ujian.ketuaPelaksana') || '');
+  const [nipKetua, setNipKetuaState] = useState(() => localStorage.getItem('ujian.nipKetua') || '');
+  const setKetuaPelaksana = (v: string) => { setKetuaPelaksanaState(v); localStorage.setItem('ujian.ketuaPelaksana', v); };
+  const setNipKetua = (v: string) => { setNipKetuaState(v); localStorage.setItem('ujian.nipKetua', v); };
 
   const { data: ruang = [] } = useUjianRuang(sesi.id);
   const { data: peserta = [] } = useUjianPeserta(sesi.id);
