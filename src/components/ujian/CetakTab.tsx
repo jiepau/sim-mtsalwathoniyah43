@@ -52,6 +52,21 @@ export function CetakTab({ sesi }: Props) {
             Format absen seperti lampiran: kolom tanggal dan sesi, 1 ruang per halaman.
           </p>
         </button>
+        <button onClick={() => setMejaOpen(true)}
+          className="border-2 rounded-lg p-4 text-left hover:border-primary hover:bg-primary/5 transition">
+          <StickyNote className="h-8 w-8 text-primary mb-2" />
+          <h4 className="font-semibold">Kartu Meja Siswa</h4>
+          <p className="text-xs text-muted-foreground mt-1">
+            Ditempel di meja peserta. Berisi ruang, no peserta, dan nama siswa. 4 per A4.
+          </p>
+        </button>
+      </div>
+
+      <CetakKartuPesertaDialog open={kartuOpen} onOpenChange={setKartuOpen} sesi={sesi} />
+      <CetakDaftarRuangDialog open={daftarOpen} onOpenChange={setDaftarOpen} sesi={sesi} />
+      <CetakDenahRuangDialog open={denahOpen} onOpenChange={setDenahOpen} sesi={sesi} />
+      <CetakDaftarHadirRuangDialog open={hadirOpen} onOpenChange={setHadirOpen} sesi={sesi} />
+      <CetakKartuMejaDialog open={mejaOpen} onOpenChange={setMejaOpen} sesi={sesi} />
       </div>
 
       <CetakKartuPesertaDialog open={kartuOpen} onOpenChange={setKartuOpen} sesi={sesi} />
