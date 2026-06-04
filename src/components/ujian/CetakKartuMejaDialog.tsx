@@ -15,6 +15,15 @@ export function CetakKartuMejaDialog({ open, onOpenChange, sesi }: Props) {
   const [orientation] = useState<PrintOrientation>('portrait');
   const [filterRuang, setFilterRuang] = useState<string>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [cardW, setCardW] = useState<number>(() => Number(localStorage.getItem('ujian.kartuMeja.w')) || 95);
+  const [cardH, setCardH] = useState<number>(() => Number(localStorage.getItem('ujian.kartuMeja.h')) || 65);
+  const [padding, setPadding] = useState<number>(() => Number(localStorage.getItem('ujian.kartuMeja.pad')) || 4);
+  const [gap, setGap] = useState<number>(() => Number(localStorage.getItem('ujian.kartuMeja.gap')) || 5);
+  const updateNum = (key: string, setter: (n: number) => void, min: number, max: number) => (v: string) => {
+    const n = Math.max(min, Math.min(max, Number(v) || min));
+    setter(n);
+    localStorage.setItem(`ujian.kartuMeja.${key}`, String(n));
+  };
 
   const { data: ruang = [] } = useUjianRuang(sesi.id);
   const { data: peserta = [] } = useUjianPeserta(sesi.id);
@@ -96,8 +105,35 @@ export function CetakKartuMejaDialog({ open, onOpenChange, sesi }: Props) {
             })}
           </div>
 
+          <div className="no-print grid grid-cols-2 md:grid-cols-4 gap-2 p-3 rounded-lg border bg-card">
+            <div>
+              <Label className="text-xs">Lebar (mm)</Label>
+              <input type="number" min={70} max={120} value={cardW}
+                onChange={(e) => updateNum('w', setCardW, 70, 120)(e.target.value)}
+                className="h-9 w-full border rounded-md px-2 text-sm" />
+            </div>
+            <div>
+              <Label className="text-xs">Tinggi (mm)</Label>
+              <input type="number" min={40} max={100} value={cardH}
+                onChange={(e) => updateNum('h', setCardH, 40, 100)(e.target.value)}
+                className="h-9 w-full border rounded-md px-2 text-sm" />
+            </div>
+            <div>
+              <Label className="text-xs">Padding (mm)</Label>
+              <input type="number" min={0} max={15} value={padding}
+                onChange={(e) => updateNum('pad', setPadding, 0, 15)(e.target.value)}
+                className="h-9 w-full border rounded-md px-2 text-sm" />
+            </div>
+            <div>
+              <Label className="text-xs">Jarak antar kartu (mm)</Label>
+              <input type="number" min={0} max={20} value={gap}
+                onChange={(e) => updateNum('gap', setGap, 0, 20)(e.target.value)}
+                className="h-9 w-full border rounded-md px-2 text-sm" />
+            </div>
+          </div>
+
           <p className="no-print text-xs text-muted-foreground">
-            Ukuran kartu ±9.5cm × 6.5cm — 4 kartu per halaman A4 (2 kolom × 2 baris). Lipat di garis tengah agar berdiri seperti tenda meja.
+            Ukuran kartu {cardW}mm × {cardH}mm. Sesuaikan agar pas dengan printer/kertas Anda. Lipat di garis tengah agar berdiri seperti tenda meja.
           </p>
 
           <PrintPreviewToolbar
@@ -107,14 +143,14 @@ export function CetakKartuMejaDialog({ open, onOpenChange, sesi }: Props) {
           />
 
           <PrintPreviewFrame preview={preview} orientation={orientation}>
-            <div className="flex flex-wrap gap-[5mm]" style={{ fontSize: '10pt', color: '#000' }}>
+            <div className="flex flex-wrap" style={{ fontSize: '10pt', color: '#000', gap: `${gap}mm` }}>
               {filtered.map(({ p, s, r }) => (
                 <div key={p.id} className="border-2 border-black avoid-break"
                   style={{
                     pageBreakInside: 'avoid',
-                    width: '95mm',
-                    height: '65mm',
-                    padding: '4mm',
+                    width: `${cardW}mm`,
+                    height: `${cardH}mm`,
+                    padding: `${padding}mm`,
                     display: 'flex',
                     flexDirection: 'column',
                     boxSizing: 'border-box',
