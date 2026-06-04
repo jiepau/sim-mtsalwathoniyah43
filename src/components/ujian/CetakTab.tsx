@@ -67,13 +67,8 @@ export function CetakTab({ sesi }: Props) {
       <CetakDenahRuangDialog open={denahOpen} onOpenChange={setDenahOpen} sesi={sesi} />
       <CetakDaftarHadirRuangDialog open={hadirOpen} onOpenChange={setHadirOpen} sesi={sesi} />
       <CetakKartuMejaDialog open={mejaOpen} onOpenChange={setMejaOpen} sesi={sesi} />
-      </div>
-
-      <CetakKartuPesertaDialog open={kartuOpen} onOpenChange={setKartuOpen} sesi={sesi} />
-      <CetakDaftarRuangDialog open={daftarOpen} onOpenChange={setDaftarOpen} sesi={sesi} />
-      <CetakDenahRuangDialog open={denahOpen} onOpenChange={setDenahOpen} sesi={sesi} />
-      <CetakDaftarHadirRuangDialog open={hadirOpen} onOpenChange={setHadirOpen} sesi={sesi} />
     </>
+
   );
 }
 
