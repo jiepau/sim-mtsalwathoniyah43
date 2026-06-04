@@ -108,26 +108,26 @@ export function CetakKartuMejaDialog({ open, onOpenChange, sesi }: Props) {
           <div className="no-print grid grid-cols-2 md:grid-cols-4 gap-2 p-3 rounded-lg border bg-card">
             <div>
               <Label className="text-xs">Lebar (mm)</Label>
-              <input type="number" min={70} max={120} value={cardW}
-                onChange={(e) => updateNum('w', setCardW, 70, 120)(e.target.value)}
+              <input type="number" min={30} max={210} value={cardW}
+                onChange={(e) => updateNum('w', setCardW, 30, 210)(e.target.value)}
                 className="h-9 w-full border rounded-md px-2 text-sm" />
             </div>
             <div>
               <Label className="text-xs">Tinggi (mm)</Label>
-              <input type="number" min={40} max={100} value={cardH}
-                onChange={(e) => updateNum('h', setCardH, 40, 100)(e.target.value)}
+              <input type="number" min={20} max={297} value={cardH}
+                onChange={(e) => updateNum('h', setCardH, 20, 297)(e.target.value)}
                 className="h-9 w-full border rounded-md px-2 text-sm" />
             </div>
             <div>
               <Label className="text-xs">Padding (mm)</Label>
-              <input type="number" min={0} max={15} value={padding}
-                onChange={(e) => updateNum('pad', setPadding, 0, 15)(e.target.value)}
+              <input type="number" min={0} max={50} value={padding}
+                onChange={(e) => updateNum('pad', setPadding, 0, 50)(e.target.value)}
                 className="h-9 w-full border rounded-md px-2 text-sm" />
             </div>
             <div>
               <Label className="text-xs">Jarak antar kartu (mm)</Label>
-              <input type="number" min={0} max={20} value={gap}
-                onChange={(e) => updateNum('gap', setGap, 0, 20)(e.target.value)}
+              <input type="number" min={0} max={50} value={gap}
+                onChange={(e) => updateNum('gap', setGap, 0, 50)(e.target.value)}
                 className="h-9 w-full border rounded-md px-2 text-sm" />
             </div>
           </div>
