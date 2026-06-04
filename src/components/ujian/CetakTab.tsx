@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { IdCard, ClipboardList, LayoutGrid, ClipboardCheck } from 'lucide-react';
+import { IdCard, ClipboardList, LayoutGrid, ClipboardCheck, StickyNote } from 'lucide-react';
 import type { UjianSesi } from '@/hooks/useUjianSesi';
 import { CetakKartuPesertaDialog } from './CetakKartuPesertaDialog';
 import { CetakDaftarRuangDialog } from './CetakDaftarRuangDialog';
 import { CetakDenahRuangDialog } from './CetakDenahRuangDialog';
 import { CetakDaftarHadirRuangDialog } from './CetakDaftarHadirRuangDialog';
+import { CetakKartuMejaDialog } from './CetakKartuMejaDialog';
 
 interface Props { sesi: UjianSesi; }
 
@@ -14,6 +15,7 @@ export function CetakTab({ sesi }: Props) {
   const [daftarOpen, setDaftarOpen] = useState(false);
   const [denahOpen, setDenahOpen] = useState(false);
   const [hadirOpen, setHadirOpen] = useState(false);
+  const [mejaOpen, setMejaOpen] = useState(false);
 
   return (
     <>
