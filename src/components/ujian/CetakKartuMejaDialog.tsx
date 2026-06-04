@@ -143,46 +143,59 @@ export function CetakKartuMejaDialog({ open, onOpenChange, sesi }: Props) {
           />
 
           <PrintPreviewFrame preview={preview} orientation={orientation}>
-            <div className="flex flex-wrap" style={{ fontSize: '10pt', color: '#000', gap: `${gap}mm` }}>
-              {filtered.map(({ p, s, r }) => (
-                <div key={p.id} className="border-2 border-black avoid-break"
-                  style={{
-                    pageBreakInside: 'avoid',
-                    width: `${cardW}mm`,
-                    height: `${cardH}mm`,
-                    padding: `${padding}mm`,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    boxSizing: 'border-box',
-                    textAlign: 'center',
-                  }}>
-                  <div className="flex items-center justify-between border-b border-black pb-1 mb-2">
-                    <span className="text-[8pt] uppercase font-semibold">Ruang</span>
-                    <span className="font-bold text-[14pt] leading-none">{r?.nama_ruang || '-'}</span>
-                  </div>
+            {(() => {
+              // Scale font sizes proportional to card height (baseline: 65mm)
+              const scale = cardH / 65;
+              const fsLabel = Math.max(5, 8 * scale);
+              const fsRuang = Math.max(8, 14 * scale);
+              const fsNomor = Math.max(12, 26 * scale);
+              const fsNama = Math.max(8, 14 * scale);
+              const fsKelas = Math.max(6, 9 * scale);
+              return (
+                <div className="flex flex-wrap" style={{ color: '#000', gap: `${gap}mm` }}>
+                  {filtered.map(({ p, s, r }) => (
+                    <div key={p.id} className="border-2 border-black avoid-break"
+                      style={{
+                        pageBreakInside: 'avoid',
+                        width: `${cardW}mm`,
+                        height: `${cardH}mm`,
+                        padding: `${padding}mm`,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        boxSizing: 'border-box',
+                        textAlign: 'center',
+                        overflow: 'hidden',
+                      }}>
+                      <div className="flex items-center justify-between border-b border-black"
+                        style={{ paddingBottom: `${1 * scale}mm`, marginBottom: `${1.5 * scale}mm` }}>
+                        <span className="uppercase font-semibold leading-none" style={{ fontSize: `${fsLabel}pt` }}>Ruang</span>
+                        <span className="font-bold leading-none" style={{ fontSize: `${fsRuang}pt` }}>{r?.nama_ruang || '-'}</span>
+                      </div>
 
-                  <div className="flex-1 flex flex-col items-center justify-center">
-                    <p className="text-[8pt] uppercase text-gray-600 leading-none mb-1">No. Peserta</p>
-                    <p className="font-bold font-mono leading-none" style={{ fontSize: '26pt' }}>
-                      {p.nomor_peserta}
-                    </p>
-                    <p className="font-semibold mt-3 leading-tight" style={{ fontSize: '14pt' }}>
-                      {(s as any).nama}
-                    </p>
-                    {(s as any).kelas?.nama_kelas && (
-                      <p className="text-[9pt] text-gray-700 leading-none mt-1">
-                        {(s as any).kelas.nama_kelas}
-                      </p>
-                    )}
-                  </div>
+                      <div className="flex-1 flex flex-col items-center justify-center min-h-0">
+                        <p className="uppercase text-gray-600 leading-none" style={{ fontSize: `${fsLabel}pt`, marginBottom: `${0.8 * scale}mm` }}>No. Peserta</p>
+                        <p className="font-bold font-mono leading-none break-all" style={{ fontSize: `${fsNomor}pt` }}>
+                          {p.nomor_peserta}
+                        </p>
+                        <p className="font-semibold leading-tight" style={{ fontSize: `${fsNama}pt`, marginTop: `${2 * scale}mm` }}>
+                          {(s as any).nama}
+                        </p>
+                        {(s as any).kelas?.nama_kelas && (
+                          <p className="text-gray-700 leading-none" style={{ fontSize: `${fsKelas}pt`, marginTop: `${0.8 * scale}mm` }}>
+                            {(s as any).kelas.nama_kelas}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {filtered.length === 0 && (
+                    <div className="w-full text-center text-sm text-muted-foreground py-12">
+                      Tidak ada peserta untuk dicetak.
+                    </div>
+                  )}
                 </div>
-              ))}
-              {filtered.length === 0 && (
-                <div className="w-full text-center text-sm text-muted-foreground py-12">
-                  Tidak ada peserta untuk dicetak.
-                </div>
-              )}
-            </div>
+              );
+            })()}
           </PrintPreviewFrame>
         </div>
       </DialogContent>
