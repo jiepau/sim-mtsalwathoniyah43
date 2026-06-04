@@ -15,6 +15,15 @@ export function CetakKartuMejaDialog({ open, onOpenChange, sesi }: Props) {
   const [orientation] = useState<PrintOrientation>('portrait');
   const [filterRuang, setFilterRuang] = useState<string>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [cardW, setCardW] = useState<number>(() => Number(localStorage.getItem('ujian.kartuMeja.w')) || 95);
+  const [cardH, setCardH] = useState<number>(() => Number(localStorage.getItem('ujian.kartuMeja.h')) || 65);
+  const [padding, setPadding] = useState<number>(() => Number(localStorage.getItem('ujian.kartuMeja.pad')) || 4);
+  const [gap, setGap] = useState<number>(() => Number(localStorage.getItem('ujian.kartuMeja.gap')) || 5);
+  const updateNum = (key: string, setter: (n: number) => void, min: number, max: number) => (v: string) => {
+    const n = Math.max(min, Math.min(max, Number(v) || min));
+    setter(n);
+    localStorage.setItem(`ujian.kartuMeja.${key}`, String(n));
+  };
 
   const { data: ruang = [] } = useUjianRuang(sesi.id);
   const { data: peserta = [] } = useUjianPeserta(sesi.id);
