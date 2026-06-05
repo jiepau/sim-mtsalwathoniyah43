@@ -1,5 +1,5 @@
 import { Building2, Heart } from "lucide-react";
-import { APP_VERSION } from "@/config/version";
+import { APP_VERSION, APP_BUILD_DATE } from "@/config/version";
 
 const APP_YEAR = "2026";
 
