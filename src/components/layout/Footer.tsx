@@ -20,7 +20,7 @@ export function Footer() {
             <span>
               <span className="font-medium text-foreground">© {APP_YEAR} MTs AL WATHONIYAH 43</span>
               <span className="mx-2 text-border">|</span>
-              <span className="text-xs">v{APP_VERSION}</span>
+              <span className="text-xs">v{APP_VERSION} · {buildDateLabel}</span>
             </span>
           </div>
 
