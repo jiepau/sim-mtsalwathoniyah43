@@ -1,8 +1,8 @@
 // Centralized version configuration
 // Update this file when releasing new versions
 
-export const APP_VERSION = "3.0.0";
-export const APP_BUILD_DATE = "2026-04-29";
+export const APP_VERSION = "3.5.0";
+export const APP_BUILD_DATE = "2026-06-05";
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,65 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "3.5.0",
+    date: "2026-06-05",
+    changes: [
+      "🎟️ Modul Kartu Ujian: pengelolaan Sesi Ujian (PTS/PAS/PAT/UM) lengkap dengan peserta, ruang, dan jadwal",
+      "Distribusi peserta ke ruang otomatis dengan nomor peserta berurutan",
+      "Cetak Kartu Peserta Ujian, Daftar Hadir per Ruang, Daftar Ruang, dan Denah Ruang siap pakai",
+      "Kartu Meja Siswa baru — ditempel di meja, berisi nama ruang, nama siswa, dan nomor peserta",
+      "Opsi ukuran & margin Kartu Meja fleksibel (lebar/tinggi/padding/jarak) dengan font auto-scale mengikuti ukuran kartu",
+      "Pengaturan cetak (orientasi, ukuran kertas) tersimpan otomatis — tidak perlu mengatur ulang setiap kali mencetak",
+      "Perbaikan keamanan: penguatan RLS dan policy pada tabel ujian",
+    ],
+  },
+  {
+    version: "3.4.0",
+    date: "2026-05-28",
+    changes: [
+      "📜 Modul PDUM Pengolah Nilai Ijazah: olah nilai rapor 5 semester + Ujian Madrasah dengan bobot 60/40",
+      "Export Excel format resmi Kemenag siap unggah ke aplikasi PDUM",
+      "Cetak SKL (Surat Keterangan Lulus) 2 halaman gaya Kemenag — surat resmi + daftar nilai Kelompok A/B/Mulok",
+      "QR Code validasi & foto siswa otomatis pada SKL",
+      "Halaman publik cek kelulusan untuk siswa/wali murid",
+      "Halaman Validasi GTK publik dengan scan QR pada Kartu Tanda Anggota",
+    ],
+  },
+  {
+    version: "3.3.0",
+    date: "2026-05-20",
+    changes: [
+      "🎓 Modul SPMB (sebelumnya PPDB): pendaftaran peserta didik baru dengan field EMIS 4.0 lengkap",
+      "Form pendaftaran online publik untuk calon siswa/wali",
+      "Halaman cek status pendaftaran mandiri menggunakan nomor pendaftaran",
+      "Input offline oleh panitia + konversi otomatis ke data Siswa setelah diterima",
+      "Rekap pendaftar dengan grafik asal sekolah dan cetak laporan",
+      "Pengaturan SPMB (kuota, tanggal, biaya pendaftaran) per tahun ajaran",
+    ],
+  },
+  {
+    version: "3.2.0",
+    date: "2026-05-12",
+    changes: [
+      "✉️ Modul Surat Menyurat: pengelolaan Surat Masuk dan Surat Keluar lengkap dengan lampiran",
+      "Penomoran surat otomatis sesuai format madrasah",
+      "Export surat ke Word (.docx) dengan kop madrasah resmi",
+      "Upload lampiran ke storage privat (surat-lampiran) dengan kontrol akses",
+      "Pencarian & filter surat berdasarkan tanggal, perihal, dan pengirim/penerima",
+    ],
+  },
+  {
+    version: "3.1.0",
+    date: "2026-05-05",
+    changes: [
+      "💰 Modul Gaji Guru: master gaji, pengaturan komponen (gaji pokok, tunjangan, potongan)",
+      "Generator gaji bulanan otomatis berdasarkan kehadiran dan jam mengajar",
+      "Cetak Slip Gaji per GTK dengan format profesional siap print A4/A5",
+      "Tab Slip Gaji Saya untuk guru melihat & cetak slip pribadi",
+      "Rekap gaji bulanan/tahunan dengan ringkasan total per kategori",
+    ],
+  },
   {
     version: "3.0.0",
     date: "2026-04-29",
