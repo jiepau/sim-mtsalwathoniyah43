@@ -92,7 +92,7 @@ const groups: MenuGroup[] = [
   {
     kategori: 'Akhir Tahun', icon: ArrowUpCircle, items: [
       { title: 'Naik Kelas', path: '/naik-kelas', desc: 'Promosi siswa ke kelas berikutnya (bulk)', icon: ArrowUpCircle, roles: ['admin','operator'] },
-      { title: 'Nilai Ijazah & Kelulusan (PDUM)', path: '/pdum', desc: 'Olah nilai rapor 5 sem + UM, cetak SKL', icon: BookCheck, roles: ['admin','operator'] },
+      { title: 'Nilai Ijazah & Kelulusan (PDUM)', path: '/pdum', desc: 'Olah nilai rapor 6 sem + UM, cetak SKL', icon: BookCheck, roles: ['admin','operator'] },
       { title: 'Alumni', path: '/alumni', desc: 'Data lulusan & riwayat pembayarannya', icon: GraduationCap, roles: ['admin','operator'] },
     ],
   },
@@ -176,7 +176,7 @@ const flows = [
     desc: 'Olah nilai sampai cetak SKL.',
     roles: ['admin','operator'] as AppRole[],
     steps: [
-      { label: 'Input nilai rapor 5 sem + UM (PDUM)', path: '/pdum' },
+      { label: 'Input nilai rapor 6 sem + UM (PDUM)', path: '/pdum' },
       { label: 'Set pengumuman & tanggal kelulusan', path: '/pdum' },
       { label: 'Cetak SKL gaya Kemenag', path: '/pdum' },
       { label: 'Konversi ke Alumni', path: '/alumni' },

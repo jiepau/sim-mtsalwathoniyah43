@@ -447,7 +447,7 @@ export default function PDUMPage() {
     <div className="space-y-6">
       <PageHeader
         title="Nilai Ijazah & Kelulusan (PDUM)"
-        description="Olah nilai rapor 5 sem + UM → Nilai Akhir Ijazah, cetak SKL & atur pengumuman kelulusan"
+        description="Olah nilai rapor 6 sem + UM → Nilai Akhir Ijazah, cetak SKL & atur pengumuman kelulusan"
         icon={<FileSpreadsheet className="h-6 w-6" />}
       />
 
@@ -631,7 +631,7 @@ export default function PDUMPage() {
         </TabsContent>
         <TabsContent value="akhir" className="space-y-3">
           <div className="flex flex-wrap gap-2 items-center">
-            <Badge variant="secondary">Rumus: ({cur.bobot_rapor}% × rata 5 sem) + ({cur.bobot_um}% × UM)</Badge>
+            <Badge variant="secondary">Rumus: ({cur.bobot_rapor}% × rata 6 sem) + ({cur.bobot_um}% × UM)</Badge>
             <Button variant="outline" onClick={handleRecalculate}><RefreshCw className="h-4 w-4 mr-2" />Hitung Ulang Nilai</Button>
             <Button variant="outline" onClick={handleExportRekap}><Download className="h-4 w-4 mr-2" />Export Rekap NA</Button>
             <Button variant="outline" onClick={handleExportPDUM}><FileSpreadsheet className="h-4 w-4 mr-2" />Export PDUM Kemenag</Button>
@@ -675,7 +675,7 @@ export default function PDUMPage() {
                     <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
                     <div className="flex-1 space-y-1">
                       <div>
-                        <b>{incompleteCount}</b> dari <b>{siswaList.length}</b> siswa belum lengkap (ada semester rapor atau nilai UM yang kosong). NA hanya muncul jika semua 5 semester + UM terisi.
+                        <b>{incompleteCount}</b> dari <b>{siswaList.length}</b> siswa belum lengkap (ada semester rapor atau nilai UM yang kosong). NA hanya muncul jika semua 6 semester + UM terisi.
                       </div>
                       {mapelTerlewat > 0 && (
                         <div className="text-xs text-amber-700">
@@ -877,7 +877,7 @@ export default function PDUMPage() {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                Rumus: NA = (rata-rata 5 sem × bobot rapor + UM × bobot UM) / (bobot rapor + bobot UM). Default 60/40.
+                Rumus: NA = (rata-rata 6 sem × bobot rapor + UM × bobot UM) / (bobot rapor + bobot UM). Default 60/40.
               </p>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
