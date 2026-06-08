@@ -29,6 +29,7 @@ export const SEMESTER_LIST = [
   { kode: '8g', label: 'Kelas 8 Ganjil' },
   { kode: '8n', label: 'Kelas 8 Genap' },
   { kode: '9g', label: 'Kelas 9 Ganjil' },
+  { kode: '9n', label: 'Kelas 9 Genap' },
 ] as const;
 
 export type SemesterKode = typeof SEMESTER_LIST[number]['kode'];
