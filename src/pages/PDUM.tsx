@@ -475,6 +475,31 @@ export default function PDUMPage() {
         </CardContent>
       </Card>
 
+      {(() => {
+        if (!siswaList.length || !mapelList.length) return null;
+        const present = new Set(raporAll.filter(r => r.nilai != null).map(r => `${r.siswa_id}|${r.kode_mapel}|${r.semester}`));
+        const incompleteSemesters = SEMESTER_LIST.map(sem => {
+          const studentsMissing = siswaList.filter(s => mapelList.some(m => !present.has(`${s.id}|${m.kode_mapel}|${sem.kode}`))).length;
+          return { ...sem, studentsMissing };
+        }).filter(s => s.studentsMissing > 0);
+        if (!incompleteSemesters.length) return null;
+        return (
+          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+            <div className="flex items-center gap-2 font-medium text-amber-800 dark:text-amber-300">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              Ada semester rapor yang belum lengkap:
+            </div>
+            <ul className="mt-1.5 ml-6 space-y-0.5 text-amber-900/80 dark:text-amber-200/80">
+              {incompleteSemesters.map(sem => (
+                <li key={sem.kode}>
+                  <b>{sem.label}</b> — {sem.studentsMissing} siswa belum lengkap
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })()}
+
       <Tabs defaultValue="peserta">
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="peserta">Peserta UM</TabsTrigger>
