@@ -28,7 +28,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: "3.4.0",
     date: "2026-05-28",
     changes: [
-      "📜 Modul PDUM Pengolah Nilai Ijazah: olah nilai rapor 5 semester + Ujian Madrasah dengan bobot 60/40",
+      "📜 Modul PDUM Pengolah Nilai Ijazah: olah nilai rapor 6 semester + Ujian Madrasah dengan bobot 60/40",
       "Export Excel format resmi Kemenag siap unggah ke aplikasi PDUM",
       "Cetak SKL (Surat Keterangan Lulus) 2 halaman gaya Kemenag — surat resmi + daftar nilai Kelompok A/B/Mulok",
       "QR Code validasi & foto siswa otomatis pada SKL",
