@@ -98,6 +98,7 @@ const allMenuItems: MenuItem[] = [
       { title: 'KKTP', icon: Target, path: '/kktp' },
       { title: 'Prota', icon: Calendar, path: '/prota' },
       { title: 'Promes', icon: CalendarDays, path: '/promes' },
+      { title: 'Jadwal Pelajaran', icon: CalendarDays, path: '/jadwal' },
       { title: 'Generator RPP', icon: Sparkles, path: '/generator-rpp' },
     ],
     roles: ['admin', 'operator', 'guru']
