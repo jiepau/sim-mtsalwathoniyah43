@@ -937,6 +937,57 @@ export type Database = {
         }
         Relationships: []
       }
+      guru_unavailable: {
+        Row: {
+          alasan: string | null
+          created_at: string
+          gtk_id: string
+          hari: number
+          id: string
+          jam_ke: number | null
+          semester: string
+          ta_id: string
+          updated_at: string
+        }
+        Insert: {
+          alasan?: string | null
+          created_at?: string
+          gtk_id: string
+          hari: number
+          id?: string
+          jam_ke?: number | null
+          semester: string
+          ta_id: string
+          updated_at?: string
+        }
+        Update: {
+          alasan?: string | null
+          created_at?: string
+          gtk_id?: string
+          hari?: number
+          id?: string
+          jam_ke?: number | null
+          semester?: string
+          ta_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guru_unavailable_gtk_id_fkey"
+            columns: ["gtk_id"]
+            isOneToOne: false
+            referencedRelation: "gtk_ptk"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guru_unavailable_ta_id_fkey"
+            columns: ["ta_id"]
+            isOneToOne: false
+            referencedRelation: "tahun_ajaran"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hari_libur: {
         Row: {
           created_at: string
@@ -1020,6 +1071,120 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      jadwal_jam: {
+        Row: {
+          created_at: string
+          hari: number
+          id: string
+          is_istirahat: boolean
+          jam_ke: number
+          jam_mulai: string
+          jam_selesai: string
+          label: string | null
+          ta_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          hari: number
+          id?: string
+          is_istirahat?: boolean
+          jam_ke: number
+          jam_mulai: string
+          jam_selesai: string
+          label?: string | null
+          ta_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          hari?: number
+          id?: string
+          is_istirahat?: boolean
+          jam_ke?: number
+          jam_mulai?: string
+          jam_selesai?: string
+          label?: string | null
+          ta_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jadwal_jam_ta_id_fkey"
+            columns: ["ta_id"]
+            isOneToOne: false
+            referencedRelation: "tahun_ajaran"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jadwal_pelajaran: {
+        Row: {
+          catatan: string | null
+          created_at: string
+          gtk_id: string | null
+          hari: number
+          id: string
+          jam_ke: number
+          kelas_id: string
+          mapel: string
+          ruang: string | null
+          semester: string
+          ta_id: string
+          updated_at: string
+        }
+        Insert: {
+          catatan?: string | null
+          created_at?: string
+          gtk_id?: string | null
+          hari: number
+          id?: string
+          jam_ke: number
+          kelas_id: string
+          mapel: string
+          ruang?: string | null
+          semester: string
+          ta_id: string
+          updated_at?: string
+        }
+        Update: {
+          catatan?: string | null
+          created_at?: string
+          gtk_id?: string | null
+          hari?: number
+          id?: string
+          jam_ke?: number
+          kelas_id?: string
+          mapel?: string
+          ruang?: string | null
+          semester?: string
+          ta_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jadwal_pelajaran_gtk_id_fkey"
+            columns: ["gtk_id"]
+            isOneToOne: false
+            referencedRelation: "gtk_ptk"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jadwal_pelajaran_kelas_id_fkey"
+            columns: ["kelas_id"]
+            isOneToOne: false
+            referencedRelation: "kelas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jadwal_pelajaran_ta_id_fkey"
+            columns: ["ta_id"]
+            isOneToOne: false
+            referencedRelation: "tahun_ajaran"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       jenis_tagihan: {
         Row: {
