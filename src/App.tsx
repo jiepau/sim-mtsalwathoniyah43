@@ -37,6 +37,7 @@ const GeneratorRPP = lazy(() => import("@/pages/GeneratorRPP"));
 const Prota = lazy(() => import("@/pages/Prota"));
 const Promes = lazy(() => import("@/pages/Promes"));
 const PanduanKurikulum = lazy(() => import("@/pages/PanduanKurikulum"));
+const Jadwal = lazy(() => import("@/pages/Jadwal"));
 const PengaturanMadrasah = lazy(() => import("@/pages/PengaturanMadrasah"));
 const SuratMasuk = lazy(() => import("@/pages/SuratMasuk"));
 const SuratKeluar = lazy(() => import("@/pages/SuratKeluar"));
