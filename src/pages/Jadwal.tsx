@@ -28,7 +28,7 @@ const DAYS = [1, 2, 3, 4, 5, 6];
 const db = supabase as any;
 
 export default function JadwalPage() {
-  const { userRoles } = useAuth();
+  const { roles: userRoles } = useAuth();
   const canEdit = userRoles.includes("admin") || userRoles.includes("operator");
 
   const [taList, setTaList] = useState<TA[]>([]);
@@ -300,7 +300,7 @@ export default function JadwalPage() {
           )}
 
           <div id="print-kelas" className="overflow-auto">
-            <PrintKopMadrasah subtitle={`JADWAL PELAJARAN ${semester.toUpperCase()} — ${kelasList.find(k => k.id === kelasId)?.nama_kelas || ""}`} />
+            <PrintKopMadrasah judul="Jadwal" subjudul={`JADWAL PELAJARAN ${semester.toUpperCase()} — ${kelasList.find(k => k.id === kelasId)?.nama_kelas || ""}`} />
             <table className="w-full border text-sm">
               <thead>
                 <tr>
@@ -367,7 +367,7 @@ export default function JadwalPage() {
           </div>
 
           <div id="print-guru" className="overflow-auto">
-            <PrintKopMadrasah subtitle={`JADWAL MENGAJAR ${semester.toUpperCase()} — ${gtkList.find(g => g.id === gtkId)?.nama || ""}`} />
+            <PrintKopMadrasah judul="Jadwal" subjudul={`JADWAL MENGAJAR ${semester.toUpperCase()} — ${gtkList.find(g => g.id === gtkId)?.nama || ""}`} />
             <table className="w-full border text-sm">
               <thead>
                 <tr>
