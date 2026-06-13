@@ -206,6 +206,67 @@ export default function JadwalPage() {
     else { toast.success("Dihapus"); loadAll(); }
   }
 
+  // Drag-and-drop: drop from palette (create) or from another cell (move/swap)
+  async function handleDrop(hari: number, jam_ke: number) {
+    if (!dragData || !kelasId) return;
+    const targetCell = jadwalByKelas.get(`${kelasId}-${hari}-${jam_ke}`);
+    const jam = jamByDayKe.get(`${hari}-${jam_ke}`);
+    if (jam?.is_istirahat) { toast.error("Slot istirahat tidak bisa diisi"); setDragData(null); return; }
+
+    if (dragData.kind === "palette") {
+      // Cek bentrok guru
+      if (dragData.gtk_id) {
+        const clash = jadwalList.find(j => j.gtk_id === dragData.gtk_id && j.hari === hari && j.jam_ke === jam_ke);
+        if (clash) {
+          const k = kelasList.find(x => x.id === clash.kelas_id);
+          toast.error(`Bentrok: guru sudah mengajar di ${k?.nama_kelas}`); setDragData(null); return;
+        }
+        const unav = (unavByGuru.get(`${dragData.gtk_id}-${hari}`) || []).find(u => u.jam_ke == null || u.jam_ke === jam_ke);
+        if (unav && !confirm(`Guru tercatat tidak tersedia (${unav.alasan || "preferensi"}). Tetap simpan?`)) { setDragData(null); return; }
+      }
+      if (targetCell) {
+        // Replace
+        const { error } = await db.from("jadwal_pelajaran").update({ mapel: dragData.mapel, gtk_id: dragData.gtk_id }).eq("id", targetCell.id);
+        if (error) toast.error(error.message); else { toast.success("Diganti"); loadAll(); }
+      } else {
+        const { error } = await db.from("jadwal_pelajaran").insert({
+          ta_id: taId, semester, kelas_id: kelasId, hari, jam_ke,
+          mapel: dragData.mapel, gtk_id: dragData.gtk_id,
+        });
+        if (error) toast.error(error.message); else { toast.success("Ditambahkan"); loadAll(); }
+      }
+    } else {
+      // Cell -> Cell: move or swap
+      if (dragData.id === targetCell?.id) { setDragData(null); return; }
+      if (targetCell) {
+        // Swap: temporarily move source to placeholder slot using two updates is tricky w/ unique index.
+        // Strategi: hapus target, pindah source ke slot target, lalu insert ulang target ke slot source.
+        const src = dragData;
+        const srcCell = jadwalList.find(j => j.id === src.id)!;
+        const { error: e1 } = await db.from("jadwal_pelajaran").delete().eq("id", targetCell.id);
+        if (e1) { toast.error(e1.message); return; }
+        const { error: e2 } = await db.from("jadwal_pelajaran").update({ hari, jam_ke }).eq("id", src.id);
+        if (e2) { toast.error(e2.message); loadAll(); return; }
+        const { error: e3 } = await db.from("jadwal_pelajaran").insert({
+          ta_id: taId, semester, kelas_id: kelasId, hari: srcCell.hari, jam_ke: srcCell.jam_ke,
+          mapel: targetCell.mapel, gtk_id: targetCell.gtk_id, ruang: targetCell.ruang, catatan: targetCell.catatan,
+        });
+        if (e3) toast.error(e3.message); else toast.success("Ditukar");
+        loadAll();
+      } else {
+        // Move
+        if (dragData.gtk_id) {
+          const clash = jadwalList.find(j => j.gtk_id === dragData.gtk_id && j.hari === hari && j.jam_ke === jam_ke && j.id !== dragData.id);
+          if (clash) { toast.error("Bentrok guru di slot tujuan"); setDragData(null); return; }
+        }
+        const { error } = await db.from("jadwal_pelajaran").update({ hari, jam_ke }).eq("id", dragData.id);
+        if (error) toast.error(error.message); else { toast.success("Dipindah"); loadAll(); }
+      }
+    }
+    setDragData(null);
+  }
+
+
   // -------- UNAV CRUD --------
   async function saveUnav(row: Partial<Unav>) {
     if (!row.gtk_id || !row.hari) { toast.error("Lengkapi guru & hari"); return; }
