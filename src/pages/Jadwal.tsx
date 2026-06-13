@@ -74,7 +74,7 @@ export default function JadwalPage() {
     try {
       const [k, g, j, jp, u] = await Promise.all([
         db.from("kelas").select("id, nama_kelas, tingkat").order("tingkat").order("nama_kelas"),
-        db.from("gtk_ptk").select("id, nama, mapel").eq("status_aktif", true).order("nama"),
+        db.from("gtk_ptk").select("id, nama, mapel").eq("status_aktif", "aktif").order("nama"),
         db.from("jadwal_jam").select("*").eq("ta_id", taId).order("hari").order("jam_ke"),
         db.from("jadwal_pelajaran").select("*").eq("ta_id", taId).eq("semester", semester),
         db.from("guru_unavailable").select("*").eq("ta_id", taId).eq("semester", semester),
