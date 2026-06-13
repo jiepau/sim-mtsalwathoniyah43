@@ -1,8 +1,8 @@
 // Centralized version configuration
 // Update this file when releasing new versions
 
-export const APP_VERSION = "3.5.0";
-export const APP_BUILD_DATE = "2026-06-05";
+export const APP_VERSION = "3.6.0";
+export const APP_BUILD_DATE = "2026-06-13";
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,17 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "3.6.0",
+    date: "2026-06-13",
+    changes: [
+      "🎓 Finalisasi SPMB: tombol Tutup & Finalisasi SPMB untuk mengarsipkan pendaftaran akhir tahun ajaran",
+      "Bulk konversi pendaftar diterima ke siswa dengan auto-distribusi ke kelas 7 multi-rombel",
+      "Generate akun siswa massal langsung saat konversi dari SPMB",
+      "Notifikasi WhatsApp Selamat Datang ke ortu pendaftar diterima (template dikustomisasi)",
+      "Tambah template notifikasi WA untuk 'spmb_diterima' di halaman Pengaturan Notifikasi",
+    ],
+  },
   {
     version: "3.5.0",
     date: "2026-06-05",

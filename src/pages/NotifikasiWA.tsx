@@ -35,6 +35,7 @@ const JENIS_LABELS: Record<string, string> = {
   absensi_siang: 'Pengingat Absensi Siang (GTK)',
   absensi_siswa_alfa: 'Notifikasi Wali — Siswa Alfa/Sakit/Izin',
   tunggakan: 'Pengingat Tunggakan',
+  spmb_diterima: 'Notifikasi SPMB — Pendaftar Diterima',
 };
 
 const JENIS_DESCRIPTIONS: Record<string, string> = {
@@ -42,6 +43,7 @@ const JENIS_DESCRIPTIONS: Record<string, string> = {
   absensi_siang: 'Pengingat siang untuk guru yang belum absen',
   absensi_siswa_alfa: 'Kirim ke wali siswa setiap hari setelah absensi diisi. Variabel: {nama_siswa}, {kelas}, {tanggal}, {status_label}, {keterangan}',
   tunggakan: 'Pengingat tunggakan SPP ke wali murid',
+  spmb_diterima: 'Kirim ke ortu saat pendaftar dikonversi ke siswa. Variabel: {nama_siswa}, {tahun_ajaran}, {no_pendaftaran}, {nis}, {email}, {password}, {link_app}',
 };
 
 export default function NotifikasiWA() {

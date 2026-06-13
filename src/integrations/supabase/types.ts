@@ -2135,7 +2135,10 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_finalized: boolean | null
           is_open: boolean
+          finalized_at: string | null
+          finalized_by: string | null
           pesan_selamat: string | null
           tahun_ajaran: string | null
           updated_at: string
@@ -2143,7 +2146,10 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_finalized?: boolean | null
           is_open?: boolean
+          finalized_at?: string | null
+          finalized_by?: string | null
           pesan_selamat?: string | null
           tahun_ajaran?: string | null
           updated_at?: string
@@ -2151,7 +2157,10 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_finalized?: boolean | null
           is_open?: boolean
+          finalized_at?: string | null
+          finalized_by?: string | null
           pesan_selamat?: string | null
           tahun_ajaran?: string | null
           updated_at?: string
