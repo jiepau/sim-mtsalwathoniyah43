@@ -45,6 +45,11 @@ export default function JadwalPage() {
   const [gtkId, setGtkId] = useState<string>("");
 
   const [loading, setLoading] = useState(false);
+  const [dragData, setDragData] = useState<
+    | { kind: "palette"; mapel: string; gtk_id: string | null }
+    | { kind: "cell"; id: string; mapel: string; gtk_id: string | null; ruang: string | null; catatan: string | null }
+    | null
+  >(null);
 
   // dialogs
   const [jamDialog, setJamDialog] = useState<{ open: boolean; row?: Partial<Jam> }>({ open: false });
