@@ -455,6 +455,158 @@ export default function JadwalPage() {
                       const items = (jadwalByGuru.get(`${gtkId}-${d}-${jk}`) || []);
                       const unav = (unavByGuru.get(`${gtkId}-${d}`) || []).find(u => u.jam_ke == null || u.jam_ke === jk);
                       const clash = items.length > 1;
+        {/* PER KELAS */}
+        <TabsContent value="kelas" className="space-y-3">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="space-y-1">
+              <Label>Kelas</Label>
+              <Select value={kelasId} onValueChange={setKelasId}>
+                <SelectTrigger className="w-64"><SelectValue placeholder="Pilih kelas" /></SelectTrigger>
+                <SelectContent>
+                  {kelasList.map(k => <SelectItem key={k.id} value={k.id}>{k.nama_kelas}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button variant="outline" onClick={() => printArea("print-kelas")}><Printer className="h-4 w-4 mr-1" />Cetak</Button>
+          </div>
+
+          {canEdit && (
+            <Alert>
+              <AlertTitle className="text-sm">Cara pakai</AlertTitle>
+              <AlertDescription className="text-xs">
+                <b>Klik</b> sel kosong → form tambah. <b>Klik</b> sel berisi → edit/hapus.
+                <b> Tarik</b> kartu guru dari panel kanan ke sel untuk menempatkan cepat.
+                <b> Tarik</b> antar sel untuk memindah atau menukar jadwal. Sel merah = bentrok guru.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {jamKeList.length === 0 && (
+            <Alert><AlertTriangle className="h-4 w-4" /><AlertTitle>Belum ada slot jam</AlertTitle>
+              <AlertDescription>Atur dulu di tab "Jam Pelajaran".</AlertDescription></Alert>
+          )}
+          {gtkList.length === 0 && (
+            <Alert variant="destructive"><AlertTriangle className="h-4 w-4" /><AlertTitle>Belum ada data guru aktif</AlertTitle>
+              <AlertDescription>Tambahkan/aktifkan GTK di menu GTK/PTK terlebih dahulu.</AlertDescription></Alert>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-3">
+            <div id="print-kelas" className="overflow-auto">
+              <PrintKopMadrasah judul="Jadwal" subjudul={`JADWAL PELAJARAN ${semester.toUpperCase()} — ${kelasList.find(k => k.id === kelasId)?.nama_kelas || ""}`} />
+              <table className="w-full border text-sm">
+                <thead>
+                  <tr>
+                    <th className="border bg-muted p-2 w-24">Jam</th>
+                    {DAYS.map(d => <th key={d} className="border bg-muted p-2">{HARI_LABEL[d]}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {jamKeList.map(jk => (
+                    <tr key={jk}>
+                      <td className="border p-2 text-center align-top">
+                        <div className="font-semibold">Ke-{jk}</div>
+                        {(() => {
+                          const j = jamList.find(x => x.jam_ke === jk);
+                          return j ? <div className="text-xs text-muted-foreground">{j.jam_mulai.slice(0,5)}–{j.jam_selesai.slice(0,5)}</div> : null;
+                        })()}
+                      </td>
+                      {DAYS.map(d => {
+                        const jam = jamByDayKe.get(`${d}-${jk}`);
+                        if (jam?.is_istirahat) {
+                          return <td key={d} className="border p-2 text-center italic bg-amber-50 dark:bg-amber-950/30 text-xs">{jam.label || "Istirahat"}</td>;
+                        }
+                        const cell = jadwalByKelas.get(`${kelasId}-${d}-${jk}`);
+                        const guru = cell?.gtk_id ? gtkList.find(g => g.id === cell.gtk_id) : null;
+                        const guruClash = cell?.gtk_id ? (jadwalByGuru.get(`${cell.gtk_id}-${d}-${jk}`) || []).length > 1 : false;
+                        return (
+                          <td key={d}
+                            className={`border p-2 align-top text-xs hover:bg-muted/50 ${canEdit ? "cursor-pointer" : ""} ${guruClash ? "bg-red-50 dark:bg-red-950/30" : ""} ${dragData ? "outline-dashed outline-1 outline-primary/30" : ""}`}
+                            draggable={canEdit && !!cell}
+                            onDragStart={() => cell && setDragData({ kind: "cell", id: cell.id, mapel: cell.mapel, gtk_id: cell.gtk_id, ruang: cell.ruang, catatan: cell.catatan })}
+                            onDragOver={(e) => { if (canEdit && dragData) e.preventDefault(); }}
+                            onDrop={(e) => { e.preventDefault(); handleDrop(d, jk); }}
+                            onClick={() => canEdit && kelasId && setCellDialog({ open: true, hari: d, jam_ke: jk, existing: cell })}
+                          >
+                            {cell ? (
+                              <div>
+                                <div className="font-semibold">{cell.mapel}</div>
+                                <div className="text-muted-foreground">{guru?.nama || <span className="italic">tanpa guru</span>}</div>
+                                {cell.ruang && <div className="text-[10px]">R: {cell.ruang}</div>}
+                                {guruClash && <Badge variant="destructive" className="mt-1 text-[10px]">Bentrok</Badge>}
+                              </div>
+                            ) : (
+                              canEdit ? <span className="text-muted-foreground">+ Tambah</span> : <span className="text-muted-foreground">-</span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {canEdit && (
+              <aside className="border rounded-md p-2 space-y-2 h-fit sticky top-2 bg-card">
+                <div className="text-xs font-semibold text-muted-foreground px-1">Palette Guru (drag ke sel)</div>
+                <div className="max-h-[60vh] overflow-auto space-y-1">
+                  {gtkList.length === 0 && <div className="text-xs text-muted-foreground p-2">Tidak ada guru aktif.</div>}
+                  {gtkList.map(g => (
+                    <div key={g.id}
+                      draggable
+                      onDragStart={() => setDragData({ kind: "palette", mapel: g.mapel || "", gtk_id: g.id })}
+                      onDragEnd={() => setDragData(null)}
+                      className="border rounded p-2 text-xs cursor-grab active:cursor-grabbing hover:bg-muted/50"
+                      title="Tarik ke sel jadwal"
+                    >
+                      <div className="font-semibold truncate">{g.nama}</div>
+                      <div className="text-muted-foreground truncate">{g.mapel || <span className="italic">— belum set mapel —</span>}</div>
+                    </div>
+                  ))}
+                </div>
+              </aside>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* PER GURU */}
+        <TabsContent value="guru" className="space-y-3">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="space-y-1">
+              <Label>Guru</Label>
+              <Select value={gtkId} onValueChange={setGtkId}>
+                <SelectTrigger className="w-72"><SelectValue placeholder="Pilih guru" /></SelectTrigger>
+                <SelectContent>
+                  {gtkList.map(g => <SelectItem key={g.id} value={g.id}>{g.nama}{g.mapel ? ` — ${g.mapel}` : ""}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button variant="outline" onClick={() => printArea("print-guru")}><Printer className="h-4 w-4 mr-1" />Cetak</Button>
+          </div>
+
+          <div id="print-guru" className="overflow-auto">
+            <PrintKopMadrasah judul="Jadwal" subjudul={`JADWAL MENGAJAR ${semester.toUpperCase()} — ${gtkList.find(g => g.id === gtkId)?.nama || ""}`} />
+            <table className="w-full border text-sm">
+              <thead>
+                <tr>
+                  <th className="border bg-muted p-2 w-24">Jam</th>
+                  {DAYS.map(d => <th key={d} className="border bg-muted p-2">{HARI_LABEL[d]}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {jamKeList.map(jk => (
+                  <tr key={jk}>
+                    <td className="border p-2 text-center align-top">
+                      <div className="font-semibold">Ke-{jk}</div>
+                      {(() => {
+                        const j = jamList.find(x => x.jam_ke === jk);
+                        return j ? <div className="text-xs text-muted-foreground">{j.jam_mulai.slice(0,5)}–{j.jam_selesai.slice(0,5)}</div> : null;
+                      })()}
+                    </td>
+                    {DAYS.map(d => {
+                      const items = (jadwalByGuru.get(`${gtkId}-${d}-${jk}`) || []);
+                      const unav = (unavByGuru.get(`${gtkId}-${d}`) || []).find(u => u.jam_ke == null || u.jam_ke === jk);
+                      const clash = items.length > 1;
                       return (
                         <td key={d} className={`border p-2 align-top text-xs ${clash ? "bg-red-50 dark:bg-red-950/30" : unav ? "bg-amber-50 dark:bg-amber-950/30" : ""}`}>
                           {items.length === 0 ? (
@@ -478,6 +630,7 @@ export default function JadwalPage() {
             </table>
           </div>
         </TabsContent>
+
 
         {/* JAM PELAJARAN */}
         <TabsContent value="jam" className="space-y-3">
