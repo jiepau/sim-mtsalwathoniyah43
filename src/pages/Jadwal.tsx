@@ -45,6 +45,11 @@ export default function JadwalPage() {
   const [gtkId, setGtkId] = useState<string>("");
 
   const [loading, setLoading] = useState(false);
+  const [dragData, setDragData] = useState<
+    | { kind: "palette"; mapel: string; gtk_id: string | null }
+    | { kind: "cell"; id: string; mapel: string; gtk_id: string | null; ruang: string | null; catatan: string | null }
+    | null
+  >(null);
 
   // dialogs
   const [jamDialog, setJamDialog] = useState<{ open: boolean; row?: Partial<Jam> }>({ open: false });
@@ -74,7 +79,7 @@ export default function JadwalPage() {
     try {
       const [k, g, j, jp, u] = await Promise.all([
         db.from("kelas").select("id, nama_kelas, tingkat").order("tingkat").order("nama_kelas"),
-        db.from("gtk_ptk").select("id, nama, mapel").eq("status_aktif", true).order("nama"),
+        db.from("gtk_ptk").select("id, nama, mapel").eq("status_aktif", "aktif").order("nama"),
         db.from("jadwal_jam").select("*").eq("ta_id", taId).order("hari").order("jam_ke"),
         db.from("jadwal_pelajaran").select("*").eq("ta_id", taId).eq("semester", semester),
         db.from("guru_unavailable").select("*").eq("ta_id", taId).eq("semester", semester),
@@ -201,6 +206,67 @@ export default function JadwalPage() {
     else { toast.success("Dihapus"); loadAll(); }
   }
 
+  // Drag-and-drop: drop from palette (create) or from another cell (move/swap)
+  async function handleDrop(hari: number, jam_ke: number) {
+    if (!dragData || !kelasId) return;
+    const targetCell = jadwalByKelas.get(`${kelasId}-${hari}-${jam_ke}`);
+    const jam = jamByDayKe.get(`${hari}-${jam_ke}`);
+    if (jam?.is_istirahat) { toast.error("Slot istirahat tidak bisa diisi"); setDragData(null); return; }
+
+    if (dragData.kind === "palette") {
+      // Cek bentrok guru
+      if (dragData.gtk_id) {
+        const clash = jadwalList.find(j => j.gtk_id === dragData.gtk_id && j.hari === hari && j.jam_ke === jam_ke);
+        if (clash) {
+          const k = kelasList.find(x => x.id === clash.kelas_id);
+          toast.error(`Bentrok: guru sudah mengajar di ${k?.nama_kelas}`); setDragData(null); return;
+        }
+        const unav = (unavByGuru.get(`${dragData.gtk_id}-${hari}`) || []).find(u => u.jam_ke == null || u.jam_ke === jam_ke);
+        if (unav && !confirm(`Guru tercatat tidak tersedia (${unav.alasan || "preferensi"}). Tetap simpan?`)) { setDragData(null); return; }
+      }
+      if (targetCell) {
+        // Replace
+        const { error } = await db.from("jadwal_pelajaran").update({ mapel: dragData.mapel, gtk_id: dragData.gtk_id }).eq("id", targetCell.id);
+        if (error) toast.error(error.message); else { toast.success("Diganti"); loadAll(); }
+      } else {
+        const { error } = await db.from("jadwal_pelajaran").insert({
+          ta_id: taId, semester, kelas_id: kelasId, hari, jam_ke,
+          mapel: dragData.mapel, gtk_id: dragData.gtk_id,
+        });
+        if (error) toast.error(error.message); else { toast.success("Ditambahkan"); loadAll(); }
+      }
+    } else {
+      // Cell -> Cell: move or swap
+      if (dragData.id === targetCell?.id) { setDragData(null); return; }
+      if (targetCell) {
+        // Swap: temporarily move source to placeholder slot using two updates is tricky w/ unique index.
+        // Strategi: hapus target, pindah source ke slot target, lalu insert ulang target ke slot source.
+        const src = dragData;
+        const srcCell = jadwalList.find(j => j.id === src.id)!;
+        const { error: e1 } = await db.from("jadwal_pelajaran").delete().eq("id", targetCell.id);
+        if (e1) { toast.error(e1.message); return; }
+        const { error: e2 } = await db.from("jadwal_pelajaran").update({ hari, jam_ke }).eq("id", src.id);
+        if (e2) { toast.error(e2.message); loadAll(); return; }
+        const { error: e3 } = await db.from("jadwal_pelajaran").insert({
+          ta_id: taId, semester, kelas_id: kelasId, hari: srcCell.hari, jam_ke: srcCell.jam_ke,
+          mapel: targetCell.mapel, gtk_id: targetCell.gtk_id, ruang: targetCell.ruang, catatan: targetCell.catatan,
+        });
+        if (e3) toast.error(e3.message); else toast.success("Ditukar");
+        loadAll();
+      } else {
+        // Move
+        if (dragData.gtk_id) {
+          const clash = jadwalList.find(j => j.gtk_id === dragData.gtk_id && j.hari === hari && j.jam_ke === jam_ke && j.id !== dragData.id);
+          if (clash) { toast.error("Bentrok guru di slot tujuan"); setDragData(null); return; }
+        }
+        const { error } = await db.from("jadwal_pelajaran").update({ hari, jam_ke }).eq("id", dragData.id);
+        if (error) toast.error(error.message); else { toast.success("Dipindah"); loadAll(); }
+      }
+    }
+    setDragData(null);
+  }
+
+
   // -------- UNAV CRUD --------
   async function saveUnav(row: Partial<Unav>) {
     if (!row.gtk_id || !row.hari) { toast.error("Lengkapi guru & hari"); return; }
@@ -294,60 +360,102 @@ export default function JadwalPage() {
             <Button variant="outline" onClick={() => printArea("print-kelas")}><Printer className="h-4 w-4 mr-1" />Cetak</Button>
           </div>
 
+          {canEdit && (
+            <Alert>
+              <AlertTitle className="text-sm">Cara pakai</AlertTitle>
+              <AlertDescription className="text-xs">
+                <b>Klik</b> sel kosong → form tambah. <b>Klik</b> sel berisi → edit/hapus.
+                <b> Tarik</b> kartu guru dari panel kanan ke sel untuk menempatkan cepat.
+                <b> Tarik</b> antar sel untuk memindah atau menukar jadwal. Sel merah = bentrok guru.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {jamKeList.length === 0 && (
             <Alert><AlertTriangle className="h-4 w-4" /><AlertTitle>Belum ada slot jam</AlertTitle>
               <AlertDescription>Atur dulu di tab "Jam Pelajaran".</AlertDescription></Alert>
           )}
+          {gtkList.length === 0 && (
+            <Alert variant="destructive"><AlertTriangle className="h-4 w-4" /><AlertTitle>Belum ada data guru aktif</AlertTitle>
+              <AlertDescription>Tambahkan/aktifkan GTK di menu GTK/PTK terlebih dahulu.</AlertDescription></Alert>
+          )}
 
-          <div id="print-kelas" className="overflow-auto">
-            <PrintKopMadrasah judul="Jadwal" subjudul={`JADWAL PELAJARAN ${semester.toUpperCase()} — ${kelasList.find(k => k.id === kelasId)?.nama_kelas || ""}`} />
-            <table className="w-full border text-sm">
-              <thead>
-                <tr>
-                  <th className="border bg-muted p-2 w-24">Jam</th>
-                  {DAYS.map(d => <th key={d} className="border bg-muted p-2">{HARI_LABEL[d]}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {jamKeList.map(jk => (
-                  <tr key={jk}>
-                    <td className="border p-2 text-center align-top">
-                      <div className="font-semibold">Ke-{jk}</div>
-                      {(() => {
-                        const j = jamList.find(x => x.jam_ke === jk);
-                        return j ? <div className="text-xs text-muted-foreground">{j.jam_mulai.slice(0,5)}–{j.jam_selesai.slice(0,5)}</div> : null;
-                      })()}
-                    </td>
-                    {DAYS.map(d => {
-                      const jam = jamByDayKe.get(`${d}-${jk}`);
-                      if (jam?.is_istirahat) {
-                        return <td key={d} className="border p-2 text-center italic bg-amber-50 dark:bg-amber-950/30 text-xs">{jam.label || "Istirahat"}</td>;
-                      }
-                      const cell = jadwalByKelas.get(`${kelasId}-${d}-${jk}`);
-                      const guru = cell?.gtk_id ? gtkList.find(g => g.id === cell.gtk_id) : null;
-                      const guruClash = cell?.gtk_id ? (jadwalByGuru.get(`${cell.gtk_id}-${d}-${jk}`) || []).length > 1 : false;
-                      return (
-                        <td key={d}
-                          className={`border p-2 align-top text-xs cursor-pointer hover:bg-muted/50 ${guruClash ? "bg-red-50 dark:bg-red-950/30" : ""}`}
-                          onClick={() => canEdit && kelasId && setCellDialog({ open: true, hari: d, jam_ke: jk, existing: cell })}
-                        >
-                          {cell ? (
-                            <div>
-                              <div className="font-semibold">{cell.mapel}</div>
-                              <div className="text-muted-foreground">{guru?.nama || <span className="italic">tanpa guru</span>}</div>
-                              {cell.ruang && <div className="text-[10px]">R: {cell.ruang}</div>}
-                              {guruClash && <Badge variant="destructive" className="mt-1 text-[10px]">Bentrok</Badge>}
-                            </div>
-                          ) : (
-                            canEdit ? <span className="text-muted-foreground">+ Tambah</span> : <span className="text-muted-foreground">-</span>
-                          )}
-                        </td>
-                      );
-                    })}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-3">
+            <div id="print-kelas" className="overflow-auto">
+              <PrintKopMadrasah judul="Jadwal" subjudul={`JADWAL PELAJARAN ${semester.toUpperCase()} — ${kelasList.find(k => k.id === kelasId)?.nama_kelas || ""}`} />
+              <table className="w-full border text-sm">
+                <thead>
+                  <tr>
+                    <th className="border bg-muted p-2 w-24">Jam</th>
+                    {DAYS.map(d => <th key={d} className="border bg-muted p-2">{HARI_LABEL[d]}</th>)}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {jamKeList.map(jk => (
+                    <tr key={jk}>
+                      <td className="border p-2 text-center align-top">
+                        <div className="font-semibold">Ke-{jk}</div>
+                        {(() => {
+                          const j = jamList.find(x => x.jam_ke === jk);
+                          return j ? <div className="text-xs text-muted-foreground">{j.jam_mulai.slice(0,5)}–{j.jam_selesai.slice(0,5)}</div> : null;
+                        })()}
+                      </td>
+                      {DAYS.map(d => {
+                        const jam = jamByDayKe.get(`${d}-${jk}`);
+                        if (jam?.is_istirahat) {
+                          return <td key={d} className="border p-2 text-center italic bg-amber-50 dark:bg-amber-950/30 text-xs">{jam.label || "Istirahat"}</td>;
+                        }
+                        const cell = jadwalByKelas.get(`${kelasId}-${d}-${jk}`);
+                        const guru = cell?.gtk_id ? gtkList.find(g => g.id === cell.gtk_id) : null;
+                        const guruClash = cell?.gtk_id ? (jadwalByGuru.get(`${cell.gtk_id}-${d}-${jk}`) || []).length > 1 : false;
+                        return (
+                          <td key={d}
+                            className={`border p-2 align-top text-xs hover:bg-muted/50 ${canEdit ? "cursor-pointer" : ""} ${guruClash ? "bg-red-50 dark:bg-red-950/30" : ""} ${dragData ? "outline-dashed outline-1 outline-primary/30" : ""}`}
+                            draggable={canEdit && !!cell}
+                            onDragStart={() => cell && setDragData({ kind: "cell", id: cell.id, mapel: cell.mapel, gtk_id: cell.gtk_id, ruang: cell.ruang, catatan: cell.catatan })}
+                            onDragOver={(e) => { if (canEdit && dragData) e.preventDefault(); }}
+                            onDrop={(e) => { e.preventDefault(); handleDrop(d, jk); }}
+                            onClick={() => canEdit && kelasId && setCellDialog({ open: true, hari: d, jam_ke: jk, existing: cell })}
+                          >
+                            {cell ? (
+                              <div>
+                                <div className="font-semibold">{cell.mapel}</div>
+                                <div className="text-muted-foreground">{guru?.nama || <span className="italic">tanpa guru</span>}</div>
+                                {cell.ruang && <div className="text-[10px]">R: {cell.ruang}</div>}
+                                {guruClash && <Badge variant="destructive" className="mt-1 text-[10px]">Bentrok</Badge>}
+                              </div>
+                            ) : (
+                              canEdit ? <span className="text-muted-foreground">+ Tambah</span> : <span className="text-muted-foreground">-</span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {canEdit && (
+              <aside className="border rounded-md p-2 space-y-2 h-fit sticky top-2 bg-card">
+                <div className="text-xs font-semibold text-muted-foreground px-1">Palette Guru (drag ke sel)</div>
+                <div className="max-h-[60vh] overflow-auto space-y-1">
+                  {gtkList.length === 0 && <div className="text-xs text-muted-foreground p-2">Tidak ada guru aktif.</div>}
+                  {gtkList.map(g => (
+                    <div key={g.id}
+                      draggable
+                      onDragStart={() => setDragData({ kind: "palette", mapel: g.mapel || "", gtk_id: g.id })}
+                      onDragEnd={() => setDragData(null)}
+                      className="border rounded p-2 text-xs cursor-grab active:cursor-grabbing hover:bg-muted/50"
+                      title="Tarik ke sel jadwal"
+                    >
+                      <div className="font-semibold truncate">{g.nama}</div>
+                      <div className="text-muted-foreground truncate">{g.mapel || <span className="italic">— belum set mapel —</span>}</div>
+                    </div>
+                  ))}
+                </div>
+              </aside>
+            )}
           </div>
         </TabsContent>
 
@@ -412,6 +520,7 @@ export default function JadwalPage() {
             </table>
           </div>
         </TabsContent>
+
 
         {/* JAM PELAJARAN */}
         <TabsContent value="jam" className="space-y-3">
