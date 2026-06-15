@@ -1082,7 +1082,6 @@ export type Database = {
           jam_mulai: string
           jam_selesai: string
           label: string | null
-          model_id: string | null
           ta_id: string
           updated_at: string
         }
@@ -1095,7 +1094,6 @@ export type Database = {
           jam_mulai: string
           jam_selesai: string
           label?: string | null
-          model_id?: string | null
           ta_id: string
           updated_at?: string
         }
@@ -1108,64 +1106,12 @@ export type Database = {
           jam_mulai?: string
           jam_selesai?: string
           label?: string | null
-          model_id?: string | null
           ta_id?: string
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "jadwal_jam_model_id_fkey"
-            columns: ["model_id"]
-            isOneToOne: false
-            referencedRelation: "jadwal_model"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "jadwal_jam_ta_id_fkey"
-            columns: ["ta_id"]
-            isOneToOne: false
-            referencedRelation: "tahun_ajaran"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      jadwal_model: {
-        Row: {
-          created_at: string
-          hari_libur: string[]
-          id: string
-          is_active: boolean
-          keterangan: string | null
-          max_jam_per_hari: number
-          nama: string
-          ta_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          hari_libur?: string[]
-          id?: string
-          is_active?: boolean
-          keterangan?: string | null
-          max_jam_per_hari?: number
-          nama: string
-          ta_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          hari_libur?: string[]
-          id?: string
-          is_active?: boolean
-          keterangan?: string | null
-          max_jam_per_hari?: number
-          nama?: string
-          ta_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "jadwal_model_ta_id_fkey"
             columns: ["ta_id"]
             isOneToOne: false
             referencedRelation: "tahun_ajaran"
@@ -1183,7 +1129,6 @@ export type Database = {
           jam_ke: number
           kelas_id: string
           mapel: string
-          model_id: string | null
           ruang: string | null
           semester: string
           ta_id: string
@@ -1198,7 +1143,6 @@ export type Database = {
           jam_ke: number
           kelas_id: string
           mapel: string
-          model_id?: string | null
           ruang?: string | null
           semester: string
           ta_id: string
@@ -1213,7 +1157,6 @@ export type Database = {
           jam_ke?: number
           kelas_id?: string
           mapel?: string
-          model_id?: string | null
           ruang?: string | null
           semester?: string
           ta_id?: string
@@ -1232,13 +1175,6 @@ export type Database = {
             columns: ["kelas_id"]
             isOneToOne: false
             referencedRelation: "kelas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "jadwal_pelajaran_model_id_fkey"
-            columns: ["model_id"]
-            isOneToOne: false
-            referencedRelation: "jadwal_model"
             referencedColumns: ["id"]
           },
           {
@@ -2199,7 +2135,10 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_finalized: boolean | null
           is_open: boolean
+          finalized_at: string | null
+          finalized_by: string | null
           pesan_selamat: string | null
           tahun_ajaran: string | null
           updated_at: string
@@ -2207,7 +2146,10 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_finalized?: boolean | null
           is_open?: boolean
+          finalized_at?: string | null
+          finalized_by?: string | null
           pesan_selamat?: string | null
           tahun_ajaran?: string | null
           updated_at?: string
@@ -2215,7 +2157,10 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_finalized?: boolean | null
           is_open?: boolean
+          finalized_at?: string | null
+          finalized_by?: string | null
           pesan_selamat?: string | null
           tahun_ajaran?: string | null
           updated_at?: string
