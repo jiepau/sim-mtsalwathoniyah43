@@ -965,8 +965,6 @@ function KelasTab({
       <div id="jadwal-print-area">
         <div className="hidden print:block mb-4">
           <PrintKopMadrasah judul={`Jadwal Pelajaran — ${kelas?.nama_kelas || ""}`} subjudul={`Semester ${semester.toUpperCase()}${activeModel ? ` — ${activeModel.nama}` : ""}`} />
-          <h2 className="text-center font-bold text-lg mt-2">JADWAL PELAJARAN — {kelas?.nama_kelas || ""}</h2>
-          <p className="text-center text-sm">Semester {semester.toUpperCase()}{activeModel ? ` — ${activeModel.nama}` : ""}</p>
         </div>
 
         <Card>
