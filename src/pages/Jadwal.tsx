@@ -142,7 +142,7 @@ export default function JadwalPage() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Jadwal Pelajaran" description="Pengaturan model jadwal, jadwal mengajar PTK, dan jadwal per kelas." icon={LayoutGrid} />
+      <PageHeader title="Jadwal Pelajaran" description="Pengaturan model jadwal, jadwal mengajar PTK, dan jadwal per kelas." icon={<LayoutGrid className="h-5 w-5" />} />
 
       <Card>
         <CardContent className="pt-6 flex flex-wrap gap-3 items-end">
