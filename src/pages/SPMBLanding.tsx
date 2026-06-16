@@ -67,7 +67,7 @@ export default function SPMBLanding() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('ppdb_settings')
-        .select('is_open, tahun_ajaran, is_finalized')
+        .select('*')
         .maybeSingle();
       if (error) throw error;
       return data;
