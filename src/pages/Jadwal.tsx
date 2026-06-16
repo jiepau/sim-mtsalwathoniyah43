@@ -12,8 +12,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { AlertTriangle, Plus, Printer, Trash2, Pencil, Clock, Calendar as CalIcon } from "lucide-react";
+import { AlertTriangle, Plus, Printer, Trash2, Pencil, Clock, Calendar as CalIcon, Wand2, Users } from "lucide-react";
 import { PrintKopMadrasah } from "@/components/print/PrintKopMadrasah";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 
 type TA = { id: string; nama_ta: string; is_active: boolean | null };
 type Kelas = { id: string; nama_kelas: string; tingkat: number | null };
@@ -21,6 +23,7 @@ type Gtk = { id: string; nama: string; mapel: string | null };
 type Jam = { id: string; ta_id: string; hari: number; jam_ke: number; jam_mulai: string; jam_selesai: string; is_istirahat: boolean; label: string | null };
 type Jadwal = { id: string; ta_id: string; semester: string; kelas_id: string; hari: number; jam_ke: number; mapel: string; gtk_id: string | null; ruang: string | null; catatan: string | null };
 type Unav = { id: string; ta_id: string; semester: string; gtk_id: string; hari: number; jam_ke: number | null; alasan: string | null };
+type Piket = { id: string; ta_id: string; semester: string; hari: number; gtk_id: string; catatan: string | null };
 
 const HARI_LABEL = ["", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Ahad"];
 const DAYS = [1, 2, 3, 4, 5, 6];
