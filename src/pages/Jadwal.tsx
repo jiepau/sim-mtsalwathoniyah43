@@ -875,3 +875,89 @@ function CellForm({ initial, hari, jam_ke, gtkList, onCancel, onSave, onDelete }
     </div>
   );
 }
+
+function JamGenerator({ onGenerate }: { onGenerate: (opts: { days: number[]; jamMulai: string; jumlahJam: number; durasiMenit: number; istirahat: { afterJamKe: number; durasiMenit: number; label: string }[]; replaceExisting: boolean }) => void }) {
+  const [days, setDays] = useState<number[]>([1, 2, 3, 4, 5, 6]);
+  const [jamMulai, setJamMulai] = useState("07:00");
+  const [jumlahJam, setJumlahJam] = useState(9);
+  const [durasiMenit, setDurasiMenit] = useState(40);
+  const [replaceExisting, setReplaceExisting] = useState(true);
+  const [istirahat, setIstirahat] = useState<{ afterJamKe: number; durasiMenit: number; label: string }[]>([
+    { afterJamKe: 3, durasiMenit: 15, label: "Istirahat" },
+    { afterJamKe: 6, durasiMenit: 30, label: "Sholat & Istirahat" },
+  ]);
+
+  function toggleDay(d: number) {
+    setDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d].sort());
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2"><Wand2 className="h-4 w-4" />Generator Jam Pelajaran</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <Label className="text-xs">Hari aktif</Label>
+          <div className="flex flex-wrap gap-3 mt-1">
+            {[1, 2, 3, 4, 5, 6, 7].map(d => (
+              <label key={d} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                <Checkbox checked={days.includes(d)} onCheckedChange={() => toggleDay(d)} />
+                {HARI_LABEL[d]}
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div><Label className="text-xs">Jam Mulai</Label><Input type="time" value={jamMulai} onChange={e => setJamMulai(e.target.value)} /></div>
+          <div><Label className="text-xs">Jumlah Jam KBM</Label><Input type="number" min={1} max={20} value={jumlahJam} onChange={e => setJumlahJam(Number(e.target.value))} /></div>
+          <div><Label className="text-xs">Durasi/Jam (menit)</Label><Input type="number" min={5} max={120} value={durasiMenit} onChange={e => setDurasiMenit(Number(e.target.value))} /></div>
+          <div className="flex items-end"><label className="flex items-center gap-2 text-sm"><Checkbox checked={replaceExisting} onCheckedChange={v => setReplaceExisting(!!v)} />Ganti slot lama di hari terpilih</label></div>
+        </div>
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <Label className="text-xs">Jeda / Istirahat</Label>
+            <Button size="sm" variant="outline" onClick={() => setIstirahat(p => [...p, { afterJamKe: 1, durasiMenit: 15, label: "Istirahat" }])}>
+              <Plus className="h-3 w-3 mr-1" />Tambah Istirahat
+            </Button>
+          </div>
+          <div className="space-y-2">
+            {istirahat.length === 0 && <div className="text-xs text-muted-foreground italic">Belum ada jeda. (Misal: setelah jam ke-3 ada istirahat 15 menit.)</div>}
+            {istirahat.map((x, i) => (
+              <div key={i} className="grid grid-cols-12 gap-2 items-end">
+                <div className="col-span-3"><Label className="text-[10px]">Setelah jam ke-</Label><Input type="number" min={1} value={x.afterJamKe} onChange={e => setIstirahat(p => p.map((y, idx) => idx === i ? { ...y, afterJamKe: Number(e.target.value) } : y))} /></div>
+                <div className="col-span-3"><Label className="text-[10px]">Durasi (menit)</Label><Input type="number" min={1} value={x.durasiMenit} onChange={e => setIstirahat(p => p.map((y, idx) => idx === i ? { ...y, durasiMenit: Number(e.target.value) } : y))} /></div>
+                <div className="col-span-5"><Label className="text-[10px]">Label</Label><Input value={x.label} onChange={e => setIstirahat(p => p.map((y, idx) => idx === i ? { ...y, label: e.target.value } : y))} placeholder="Istirahat / Sholat Dhuha" /></div>
+                <div className="col-span-1"><Button size="icon" variant="ghost" onClick={() => setIstirahat(p => p.filter((_, idx) => idx !== i))}><Trash2 className="h-4 w-4" /></Button></div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="flex justify-end">
+          <Button onClick={() => onGenerate({ days, jamMulai, jumlahJam, durasiMenit, istirahat, replaceExisting })}>
+            <Wand2 className="h-4 w-4 mr-1" />Generate Slot Jam
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PiketAddForm({ gtkList, onAdd }: { gtkList: Gtk[]; onAdd: (gtk_id: string, catatan?: string) => void }) {
+  const [gtk, setGtk] = useState<string>("");
+  const [catatan, setCatatan] = useState("");
+  return (
+    <div className="border-t pt-2 space-y-2">
+      <Select value={gtk} onValueChange={setGtk}>
+        <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="+ Tambah petugas" /></SelectTrigger>
+        <SelectContent>{gtkList.map(g => <SelectItem key={g.id} value={g.id}>{g.nama}</SelectItem>)}</SelectContent>
+      </Select>
+      {gtk && (
+        <>
+          <Input className="h-8 text-xs" placeholder="Catatan (opsional)" value={catatan} onChange={e => setCatatan(e.target.value)} />
+          <Button size="sm" className="w-full h-7" onClick={() => { onAdd(gtk, catatan); setGtk(""); setCatatan(""); }}>Simpan</Button>
+        </>
+      )}
+    </div>
+  );
+}
