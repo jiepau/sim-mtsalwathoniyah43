@@ -583,6 +583,8 @@ export default function JadwalPage() {
 
         {/* JAM PELAJARAN */}
         <TabsContent value="jam" className="space-y-3">
+          {canEdit && <JamGenerator onGenerate={generateJamPelajaran} />}
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-base">Slot Jam Pelajaran ({taList.find(t => t.id === taId)?.nama_ta})</CardTitle>
