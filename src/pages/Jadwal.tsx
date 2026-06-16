@@ -81,18 +81,20 @@ export default function JadwalPage() {
   async function loadAll() {
     setLoading(true);
     try {
-      const [k, g, j, jp, u] = await Promise.all([
+      const [k, g, j, jp, u, p] = await Promise.all([
         db.from("kelas").select("id, nama_kelas, tingkat").order("tingkat").order("nama_kelas"),
         db.from("gtk_ptk").select("id, nama, mapel").eq("status_aktif", "aktif").order("nama"),
         db.from("jadwal_jam").select("*").eq("ta_id", taId).order("hari").order("jam_ke"),
         db.from("jadwal_pelajaran").select("*").eq("ta_id", taId).eq("semester", semester),
         db.from("guru_unavailable").select("*").eq("ta_id", taId).eq("semester", semester),
+        db.from("guru_piket").select("*").eq("ta_id", taId).eq("semester", semester).order("hari"),
       ]);
       setKelasList((k.data || []) as Kelas[]);
       setGtkList((g.data || []) as Gtk[]);
       setJamList((j.data || []) as Jam[]);
       setJadwalList((jp.data || []) as Jadwal[]);
       setUnavList((u.data || []) as Unav[]);
+      setPiketList((p.data || []) as Piket[]);
       if (!kelasId && k.data?.[0]) setKelasId(k.data[0].id);
       if (!gtkId && g.data?.[0]) setGtkId(g.data[0].id);
     } finally {
