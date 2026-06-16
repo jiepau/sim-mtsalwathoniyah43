@@ -12,8 +12,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { AlertTriangle, Plus, Printer, Trash2, Pencil, Clock, Calendar as CalIcon } from "lucide-react";
+import { AlertTriangle, Plus, Printer, Trash2, Pencil, Clock, Calendar as CalIcon, Wand2, Users } from "lucide-react";
 import { PrintKopMadrasah } from "@/components/print/PrintKopMadrasah";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 
 type TA = { id: string; nama_ta: string; is_active: boolean | null };
 type Kelas = { id: string; nama_kelas: string; tingkat: number | null };
@@ -21,6 +23,7 @@ type Gtk = { id: string; nama: string; mapel: string | null };
 type Jam = { id: string; ta_id: string; hari: number; jam_ke: number; jam_mulai: string; jam_selesai: string; is_istirahat: boolean; label: string | null };
 type Jadwal = { id: string; ta_id: string; semester: string; kelas_id: string; hari: number; jam_ke: number; mapel: string; gtk_id: string | null; ruang: string | null; catatan: string | null };
 type Unav = { id: string; ta_id: string; semester: string; gtk_id: string; hari: number; jam_ke: number | null; alasan: string | null };
+type Piket = { id: string; ta_id: string; semester: string; hari: number; gtk_id: string; catatan: string | null };
 
 const HARI_LABEL = ["", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Ahad"];
 const DAYS = [1, 2, 3, 4, 5, 6];
@@ -40,6 +43,7 @@ export default function JadwalPage() {
   const [jamList, setJamList] = useState<Jam[]>([]);
   const [jadwalList, setJadwalList] = useState<Jadwal[]>([]);
   const [unavList, setUnavList] = useState<Unav[]>([]);
+  const [piketList, setPiketList] = useState<Piket[]>([]);
 
   const [kelasId, setKelasId] = useState<string>("");
   const [gtkId, setGtkId] = useState<string>("");
@@ -77,18 +81,20 @@ export default function JadwalPage() {
   async function loadAll() {
     setLoading(true);
     try {
-      const [k, g, j, jp, u] = await Promise.all([
+      const [k, g, j, jp, u, p] = await Promise.all([
         db.from("kelas").select("id, nama_kelas, tingkat").order("tingkat").order("nama_kelas"),
         db.from("gtk_ptk").select("id, nama, mapel").eq("status_aktif", "aktif").order("nama"),
         db.from("jadwal_jam").select("*").eq("ta_id", taId).order("hari").order("jam_ke"),
         db.from("jadwal_pelajaran").select("*").eq("ta_id", taId).eq("semester", semester),
         db.from("guru_unavailable").select("*").eq("ta_id", taId).eq("semester", semester),
+        db.from("guru_piket").select("*").eq("ta_id", taId).eq("semester", semester).order("hari"),
       ]);
       setKelasList((k.data || []) as Kelas[]);
       setGtkList((g.data || []) as Gtk[]);
       setJamList((j.data || []) as Jam[]);
       setJadwalList((jp.data || []) as Jadwal[]);
       setUnavList((u.data || []) as Unav[]);
+      setPiketList((p.data || []) as Piket[]);
       if (!kelasId && k.data?.[0]) setKelasId(k.data[0].id);
       if (!gtkId && g.data?.[0]) setGtkId(g.data[0].id);
     } finally {
@@ -283,6 +289,58 @@ export default function JadwalPage() {
     if (error) toast.error(error.message); else { toast.success("Dihapus"); loadAll(); }
   }
 
+  // -------- PIKET CRUD --------
+  async function savePiket(hari: number, gtk_id: string, catatan?: string) {
+    if (!gtk_id) { toast.error("Pilih guru piket"); return; }
+    const existing = piketList.find(p => p.hari === hari && p.gtk_id === gtk_id);
+    if (existing) { toast.error("Guru tersebut sudah terdaftar piket di hari ini"); return; }
+    const { error } = await db.from("guru_piket").insert({ ta_id: taId, semester, hari, gtk_id, catatan: catatan || null });
+    if (error) toast.error(error.message); else { toast.success("Disimpan"); loadAll(); }
+  }
+
+  async function deletePiket(id: string) {
+    const { error } = await db.from("guru_piket").delete().eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Dihapus"); loadAll(); }
+  }
+
+  // -------- GENERATOR JAM PELAJARAN --------
+  async function generateJamPelajaran(opts: {
+    days: number[]; jamMulai: string; jumlahJam: number; durasiMenit: number;
+    istirahat: { afterJamKe: number; durasiMenit: number; label: string }[];
+    replaceExisting: boolean;
+  }) {
+    if (!taId) { toast.error("Pilih Tahun Ajaran"); return; }
+    if (opts.days.length === 0) { toast.error("Pilih minimal 1 hari"); return; }
+    if (opts.jumlahJam < 1) { toast.error("Jumlah jam minimal 1"); return; }
+
+    const toMin = (t: string) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+    const toTime = (mins: number) => `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
+
+    const rows: any[] = [];
+    for (const hari of opts.days) {
+      let cursor = toMin(opts.jamMulai);
+      let jamKe = 1;
+      for (let i = 1; i <= opts.jumlahJam; i++) {
+        const start = cursor;
+        const end = cursor + opts.durasiMenit;
+        rows.push({ ta_id: taId, hari, jam_ke: jamKe++, jam_mulai: toTime(start), jam_selesai: toTime(end), is_istirahat: false, label: null });
+        cursor = end;
+        const ist = opts.istirahat.filter(x => x.afterJamKe === i);
+        for (const x of ist) {
+          rows.push({ ta_id: taId, hari, jam_ke: jamKe++, jam_mulai: toTime(cursor), jam_selesai: toTime(cursor + x.durasiMenit), is_istirahat: true, label: x.label || "Istirahat" });
+          cursor += x.durasiMenit;
+        }
+      }
+    }
+
+    if (opts.replaceExisting) {
+      const { error: delErr } = await db.from("jadwal_jam").delete().eq("ta_id", taId).in("hari", opts.days);
+      if (delErr) { toast.error(delErr.message); return; }
+    }
+    const { error } = await db.from("jadwal_jam").insert(rows);
+    if (error) toast.error(error.message); else { toast.success(`${rows.length} slot dibuat`); loadAll(); }
+  }
+
   function printArea(id: string) {
     const node = document.getElementById(id);
     if (!node) return;
@@ -342,6 +400,7 @@ export default function JadwalPage() {
           <TabsTrigger value="kelas">Per Kelas</TabsTrigger>
           <TabsTrigger value="guru">Per Guru</TabsTrigger>
           <TabsTrigger value="jam"><Clock className="h-4 w-4 mr-1" />Jam Pelajaran</TabsTrigger>
+          <TabsTrigger value="piket"><Users className="h-4 w-4 mr-1" />Guru Piket</TabsTrigger>
           <TabsTrigger value="unav"><CalIcon className="h-4 w-4 mr-1" />Preferensi Guru</TabsTrigger>
         </TabsList>
 
@@ -524,6 +583,8 @@ export default function JadwalPage() {
 
         {/* JAM PELAJARAN */}
         <TabsContent value="jam" className="space-y-3">
+          {canEdit && <JamGenerator onGenerate={generateJamPelajaran} />}
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-base">Slot Jam Pelajaran ({taList.find(t => t.id === taId)?.nama_ta})</CardTitle>
@@ -568,6 +629,45 @@ export default function JadwalPage() {
                   {jamList.length === 0 && <tr><td colSpan={7} className="text-center text-muted-foreground p-4">Belum ada slot jam.</td></tr>}
                 </tbody>
               </table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* GURU PIKET */}
+        <TabsContent value="piket" className="space-y-3">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Jadwal Guru Piket — {semester === "ganjil" ? "Ganjil" : "Genap"}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {DAYS.map(d => {
+                  const items = piketList.filter(p => p.hari === d);
+                  return (
+                    <Card key={d} className="border">
+                      <CardHeader className="pb-2"><CardTitle className="text-sm">{HARI_LABEL[d]}</CardTitle></CardHeader>
+                      <CardContent className="space-y-2">
+                        {items.length === 0 && <div className="text-xs text-muted-foreground italic">Belum ada petugas.</div>}
+                        {items.map(it => {
+                          const g = gtkList.find(x => x.id === it.gtk_id);
+                          return (
+                            <div key={it.id} className="flex items-center justify-between gap-2 text-sm border rounded p-2">
+                              <div>
+                                <div className="font-medium">{g?.nama || "—"}</div>
+                                {it.catatan && <div className="text-xs text-muted-foreground">{it.catatan}</div>}
+                              </div>
+                              {canEdit && <Button size="icon" variant="ghost" onClick={() => deletePiket(it.id)}><Trash2 className="h-4 w-4" /></Button>}
+                            </div>
+                          );
+                        })}
+                        {canEdit && (
+                          <PiketAddForm gtkList={gtkList} onAdd={(gtk_id, catatan) => savePiket(d, gtk_id, catatan)} />
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -772,6 +872,92 @@ function CellForm({ initial, hari, jam_ke, gtkList, onCancel, onSave, onDelete }
         <Button variant="outline" onClick={onCancel}>Batal</Button>
         <Button onClick={() => onSave({ id: initial?.id, hari, jam_ke, mapel, gtk_id: gtk === "none" ? null : gtk, ruang, catatan })}>Simpan</Button>
       </DialogFooter>
+    </div>
+  );
+}
+
+function JamGenerator({ onGenerate }: { onGenerate: (opts: { days: number[]; jamMulai: string; jumlahJam: number; durasiMenit: number; istirahat: { afterJamKe: number; durasiMenit: number; label: string }[]; replaceExisting: boolean }) => void }) {
+  const [days, setDays] = useState<number[]>([1, 2, 3, 4, 5, 6]);
+  const [jamMulai, setJamMulai] = useState("07:00");
+  const [jumlahJam, setJumlahJam] = useState(9);
+  const [durasiMenit, setDurasiMenit] = useState(40);
+  const [replaceExisting, setReplaceExisting] = useState(true);
+  const [istirahat, setIstirahat] = useState<{ afterJamKe: number; durasiMenit: number; label: string }[]>([
+    { afterJamKe: 3, durasiMenit: 15, label: "Istirahat" },
+    { afterJamKe: 6, durasiMenit: 30, label: "Sholat & Istirahat" },
+  ]);
+
+  function toggleDay(d: number) {
+    setDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d].sort());
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2"><Wand2 className="h-4 w-4" />Generator Jam Pelajaran</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <Label className="text-xs">Hari aktif</Label>
+          <div className="flex flex-wrap gap-3 mt-1">
+            {[1, 2, 3, 4, 5, 6, 7].map(d => (
+              <label key={d} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                <Checkbox checked={days.includes(d)} onCheckedChange={() => toggleDay(d)} />
+                {HARI_LABEL[d]}
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div><Label className="text-xs">Jam Mulai</Label><Input type="time" value={jamMulai} onChange={e => setJamMulai(e.target.value)} /></div>
+          <div><Label className="text-xs">Jumlah Jam KBM</Label><Input type="number" min={1} max={20} value={jumlahJam} onChange={e => setJumlahJam(Number(e.target.value))} /></div>
+          <div><Label className="text-xs">Durasi/Jam (menit)</Label><Input type="number" min={5} max={120} value={durasiMenit} onChange={e => setDurasiMenit(Number(e.target.value))} /></div>
+          <div className="flex items-end"><label className="flex items-center gap-2 text-sm"><Checkbox checked={replaceExisting} onCheckedChange={v => setReplaceExisting(!!v)} />Ganti slot lama di hari terpilih</label></div>
+        </div>
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <Label className="text-xs">Jeda / Istirahat</Label>
+            <Button size="sm" variant="outline" onClick={() => setIstirahat(p => [...p, { afterJamKe: 1, durasiMenit: 15, label: "Istirahat" }])}>
+              <Plus className="h-3 w-3 mr-1" />Tambah Istirahat
+            </Button>
+          </div>
+          <div className="space-y-2">
+            {istirahat.length === 0 && <div className="text-xs text-muted-foreground italic">Belum ada jeda. (Misal: setelah jam ke-3 ada istirahat 15 menit.)</div>}
+            {istirahat.map((x, i) => (
+              <div key={i} className="grid grid-cols-12 gap-2 items-end">
+                <div className="col-span-3"><Label className="text-[10px]">Setelah jam ke-</Label><Input type="number" min={1} value={x.afterJamKe} onChange={e => setIstirahat(p => p.map((y, idx) => idx === i ? { ...y, afterJamKe: Number(e.target.value) } : y))} /></div>
+                <div className="col-span-3"><Label className="text-[10px]">Durasi (menit)</Label><Input type="number" min={1} value={x.durasiMenit} onChange={e => setIstirahat(p => p.map((y, idx) => idx === i ? { ...y, durasiMenit: Number(e.target.value) } : y))} /></div>
+                <div className="col-span-5"><Label className="text-[10px]">Label</Label><Input value={x.label} onChange={e => setIstirahat(p => p.map((y, idx) => idx === i ? { ...y, label: e.target.value } : y))} placeholder="Istirahat / Sholat Dhuha" /></div>
+                <div className="col-span-1"><Button size="icon" variant="ghost" onClick={() => setIstirahat(p => p.filter((_, idx) => idx !== i))}><Trash2 className="h-4 w-4" /></Button></div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="flex justify-end">
+          <Button onClick={() => onGenerate({ days, jamMulai, jumlahJam, durasiMenit, istirahat, replaceExisting })}>
+            <Wand2 className="h-4 w-4 mr-1" />Generate Slot Jam
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PiketAddForm({ gtkList, onAdd }: { gtkList: Gtk[]; onAdd: (gtk_id: string, catatan?: string) => void }) {
+  const [gtk, setGtk] = useState<string>("");
+  const [catatan, setCatatan] = useState("");
+  return (
+    <div className="border-t pt-2 space-y-2">
+      <Select value={gtk} onValueChange={setGtk}>
+        <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="+ Tambah petugas" /></SelectTrigger>
+        <SelectContent>{gtkList.map(g => <SelectItem key={g.id} value={g.id}>{g.nama}</SelectItem>)}</SelectContent>
+      </Select>
+      {gtk && (
+        <>
+          <Input className="h-8 text-xs" placeholder="Catatan (opsional)" value={catatan} onChange={e => setCatatan(e.target.value)} />
+          <Button size="sm" className="w-full h-7" onClick={() => { onAdd(gtk, catatan); setGtk(""); setCatatan(""); }}>Simpan</Button>
+        </>
+      )}
     </div>
   );
 }

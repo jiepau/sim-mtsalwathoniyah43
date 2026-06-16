@@ -937,6 +937,54 @@ export type Database = {
         }
         Relationships: []
       }
+      guru_piket: {
+        Row: {
+          catatan: string | null
+          created_at: string
+          gtk_id: string
+          hari: number
+          id: string
+          semester: string
+          ta_id: string
+          updated_at: string
+        }
+        Insert: {
+          catatan?: string | null
+          created_at?: string
+          gtk_id: string
+          hari: number
+          id?: string
+          semester?: string
+          ta_id: string
+          updated_at?: string
+        }
+        Update: {
+          catatan?: string | null
+          created_at?: string
+          gtk_id?: string
+          hari?: number
+          id?: string
+          semester?: string
+          ta_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guru_piket_gtk_id_fkey"
+            columns: ["gtk_id"]
+            isOneToOne: false
+            referencedRelation: "gtk_ptk"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guru_piket_ta_id_fkey"
+            columns: ["ta_id"]
+            isOneToOne: false
+            referencedRelation: "tahun_ajaran"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guru_unavailable: {
         Row: {
           alasan: string | null
