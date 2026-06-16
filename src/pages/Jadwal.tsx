@@ -289,6 +289,58 @@ export default function JadwalPage() {
     if (error) toast.error(error.message); else { toast.success("Dihapus"); loadAll(); }
   }
 
+  // -------- PIKET CRUD --------
+  async function savePiket(hari: number, gtk_id: string, catatan?: string) {
+    if (!gtk_id) { toast.error("Pilih guru piket"); return; }
+    const existing = piketList.find(p => p.hari === hari && p.gtk_id === gtk_id);
+    if (existing) { toast.error("Guru tersebut sudah terdaftar piket di hari ini"); return; }
+    const { error } = await db.from("guru_piket").insert({ ta_id: taId, semester, hari, gtk_id, catatan: catatan || null });
+    if (error) toast.error(error.message); else { toast.success("Disimpan"); loadAll(); }
+  }
+
+  async function deletePiket(id: string) {
+    const { error } = await db.from("guru_piket").delete().eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Dihapus"); loadAll(); }
+  }
+
+  // -------- GENERATOR JAM PELAJARAN --------
+  async function generateJamPelajaran(opts: {
+    days: number[]; jamMulai: string; jumlahJam: number; durasiMenit: number;
+    istirahat: { afterJamKe: number; durasiMenit: number; label: string }[];
+    replaceExisting: boolean;
+  }) {
+    if (!taId) { toast.error("Pilih Tahun Ajaran"); return; }
+    if (opts.days.length === 0) { toast.error("Pilih minimal 1 hari"); return; }
+    if (opts.jumlahJam < 1) { toast.error("Jumlah jam minimal 1"); return; }
+
+    const toMin = (t: string) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+    const toTime = (mins: number) => `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
+
+    const rows: any[] = [];
+    for (const hari of opts.days) {
+      let cursor = toMin(opts.jamMulai);
+      let jamKe = 1;
+      for (let i = 1; i <= opts.jumlahJam; i++) {
+        const start = cursor;
+        const end = cursor + opts.durasiMenit;
+        rows.push({ ta_id: taId, hari, jam_ke: jamKe++, jam_mulai: toTime(start), jam_selesai: toTime(end), is_istirahat: false, label: null });
+        cursor = end;
+        const ist = opts.istirahat.filter(x => x.afterJamKe === i);
+        for (const x of ist) {
+          rows.push({ ta_id: taId, hari, jam_ke: jamKe++, jam_mulai: toTime(cursor), jam_selesai: toTime(cursor + x.durasiMenit), is_istirahat: true, label: x.label || "Istirahat" });
+          cursor += x.durasiMenit;
+        }
+      }
+    }
+
+    if (opts.replaceExisting) {
+      const { error: delErr } = await db.from("jadwal_jam").delete().eq("ta_id", taId).in("hari", opts.days);
+      if (delErr) { toast.error(delErr.message); return; }
+    }
+    const { error } = await db.from("jadwal_jam").insert(rows);
+    if (error) toast.error(error.message); else { toast.success(`${rows.length} slot dibuat`); loadAll(); }
+  }
+
   function printArea(id: string) {
     const node = document.getElementById(id);
     if (!node) return;
