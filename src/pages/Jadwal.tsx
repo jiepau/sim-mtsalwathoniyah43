@@ -633,6 +633,45 @@ export default function JadwalPage() {
           </Card>
         </TabsContent>
 
+        {/* GURU PIKET */}
+        <TabsContent value="piket" className="space-y-3">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Jadwal Guru Piket — {semester === "ganjil" ? "Ganjil" : "Genap"}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {DAYS.map(d => {
+                  const items = piketList.filter(p => p.hari === d);
+                  return (
+                    <Card key={d} className="border">
+                      <CardHeader className="pb-2"><CardTitle className="text-sm">{HARI_LABEL[d]}</CardTitle></CardHeader>
+                      <CardContent className="space-y-2">
+                        {items.length === 0 && <div className="text-xs text-muted-foreground italic">Belum ada petugas.</div>}
+                        {items.map(it => {
+                          const g = gtkList.find(x => x.id === it.gtk_id);
+                          return (
+                            <div key={it.id} className="flex items-center justify-between gap-2 text-sm border rounded p-2">
+                              <div>
+                                <div className="font-medium">{g?.nama || "—"}</div>
+                                {it.catatan && <div className="text-xs text-muted-foreground">{it.catatan}</div>}
+                              </div>
+                              {canEdit && <Button size="icon" variant="ghost" onClick={() => deletePiket(it.id)}><Trash2 className="h-4 w-4" /></Button>}
+                            </div>
+                          );
+                        })}
+                        {canEdit && (
+                          <PiketAddForm gtkList={gtkList} onAdd={(gtk_id, catatan) => savePiket(d, gtk_id, catatan)} />
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* UNAVAILABLE */}
         <TabsContent value="unav" className="space-y-3">
           <Card>
