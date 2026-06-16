@@ -43,6 +43,7 @@ export default function JadwalPage() {
   const [jamList, setJamList] = useState<Jam[]>([]);
   const [jadwalList, setJadwalList] = useState<Jadwal[]>([]);
   const [unavList, setUnavList] = useState<Unav[]>([]);
+  const [piketList, setPiketList] = useState<Piket[]>([]);
 
   const [kelasId, setKelasId] = useState<string>("");
   const [gtkId, setGtkId] = useState<string>("");
