@@ -400,6 +400,7 @@ export default function JadwalPage() {
           <TabsTrigger value="kelas">Per Kelas</TabsTrigger>
           <TabsTrigger value="guru">Per Guru</TabsTrigger>
           <TabsTrigger value="jam"><Clock className="h-4 w-4 mr-1" />Jam Pelajaran</TabsTrigger>
+          <TabsTrigger value="piket"><Users className="h-4 w-4 mr-1" />Guru Piket</TabsTrigger>
           <TabsTrigger value="unav"><CalIcon className="h-4 w-4 mr-1" />Preferensi Guru</TabsTrigger>
         </TabsList>
 
