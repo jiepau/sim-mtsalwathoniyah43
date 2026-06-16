@@ -61,6 +61,7 @@ const ValidasiGtk = lazy(() => import("@/pages/ValidasiGtk"));
 const SPMBPage = lazy(() => import("@/pages/PPDB"));
 const SPMBDaftar = lazy(() => import("@/pages/PPDBDaftar"));
 const SPMBCekStatus = lazy(() => import("@/pages/PPDBCekStatus"));
+const SPMBLanding = lazy(() => import("@/pages/SPMBLanding"));
 const PDUM = lazy(() => import("@/pages/PDUM"));
 const GajiGuru = lazy(() => import("@/pages/GajiGuru"));
 const KelulusanPublik = lazy(() => import("@/pages/KelulusanPublik"));
@@ -108,6 +109,7 @@ const App = () => {
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/gtk/:id" element={<ValidasiGtk />} />
+                <Route path="/spmb" element={<SPMBLanding />} />
                 <Route path="/spmb/daftar" element={<SPMBDaftar />} />
                 <Route path="/spmb/cek-status" element={<SPMBCekStatus />} />
                 <Route path="/kelulusan" element={<KelulusanPublik />} />
@@ -180,7 +182,7 @@ const App = () => {
                   <Route path="/peta-situs" element={<PetaSitus />} />
 
                   {/* SPMB - admin only */}
-                  <Route path="/spmb" element={<ProtectedRoute allowedRoles={['admin', 'panitia']}><SPMBPage /></ProtectedRoute>} />
+                  <Route path="/admin/spmb" element={<ProtectedRoute allowedRoles={['admin', 'panitia']}><SPMBPage /></ProtectedRoute>} />
 
                   {/* E-Learning - guru side */}
                   <Route path="/e-learning/materi-guru" element={<ProtectedRoute allowedRoles={['admin','operator','guru']}><MateriGuru /></ProtectedRoute>} />

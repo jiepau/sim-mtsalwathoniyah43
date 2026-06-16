@@ -1,47 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Users, 
-  School, 
-  Calendar, 
-  CalendarDays,
-  UserCog,
-  Wallet,
-  Receipt,
-  CreditCard,
-  TrendingUp,
-  TrendingDown,
-  AlertTriangle,
-  LogOut,
-  ChevronDown,
-  ChevronRight,
-  Menu,
-  X,
-  Building2,
-  ArrowUpCircle,
-  GraduationCap,
-  Shield,
-  BookOpen,
-  Target,
-  FileText,
-  Settings,
-  Sparkles,
-  Mail,
-  MailOpen,
-  Send,
-  BookMarked,
-  User,
-  ClipboardCheck,
-  ClipboardList,
-  BarChart3,
-  MessageSquare,
-  History,
-  Palette,
-  UserPlus,
-  BookCheck,
-  Map,
-} from 'lucide-react';
+import { LayoutDashboard, Users, School, Calendar, CalendarDays, UserCog, Wallet, Receipt, CreditCard, TrendingUp, TrendingDown, TriangleAlert as AlertTriangle, LogOut, ChevronDown, ChevronRight, Menu, X, Building2, CircleArrowUp as ArrowUpCircle, GraduationCap, Shield, BookOpen, Target, FileText, Settings, Sparkles, Mail, MailOpen, Send, BookMarked, User, ClipboardCheck, ClipboardList, ChartBar as BarChart3, MessageSquare, History, Palette, UserPlus, BookCheck, Map } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -125,7 +84,7 @@ const allMenuItems: MenuItem[] = [
   { title: 'Naik Kelas', icon: ArrowUpCircle, path: '/naik-kelas', section: 'Kesiswaan', roles: ['admin', 'operator'] },
   { title: 'Nilai Ijazah & Kelulusan (PDUM)', icon: BookCheck, path: '/pdum', section: 'Kesiswaan', roles: ['admin', 'operator'] },
   { title: 'Alumni', icon: GraduationCap, path: '/alumni', section: 'Kesiswaan', roles: ['admin', 'operator'] },
-  { title: 'SPMB (Penerimaan Murid Baru)', icon: UserPlus, path: '/spmb', section: 'Kesiswaan', roles: ['admin', 'panitia'] },
+  { title: 'SPMB (Penerimaan Murid Baru)', icon: UserPlus, path: '/admin/spmb', section: 'Kesiswaan', roles: ['admin', 'panitia'] },
 
   // ========== KEUANGAN ==========
   { 
