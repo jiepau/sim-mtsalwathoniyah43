@@ -230,7 +230,8 @@ export default function PPDBDaftar() {
     );
   }
 
-  const isOpen = settings?.is_open ?? false;
+  const isOpen = settings?.is_open === true;
+  const hasSettings = !!settings;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background flex flex-col items-center justify-center p-4">
