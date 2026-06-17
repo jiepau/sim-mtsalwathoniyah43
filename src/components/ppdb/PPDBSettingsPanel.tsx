@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Switch } from '@/components/ui/switch';
@@ -58,9 +58,10 @@ export function PPDBSettingsPanel() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['ppdb-settings'] });
+      qc.invalidateQueries({ queryKey: ['ppdb-settings-public'] });
       toast.success('Pengaturan SPMB disimpan');
     },
-    onError: () => toast.error('Gagal menyimpan pengaturan'),
+    onError: (e: Error) => toast.error(`Gagal menyimpan: ${e.message}`),
   });
 
   const finalizeMutation = useMutation({
@@ -80,13 +81,17 @@ export function PPDBSettingsPanel() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['ppdb-settings'] });
+      qc.invalidateQueries({ queryKey: ['ppdb-settings-public'] });
       qc.invalidateQueries({ queryKey: ['ppdb-pendaftar'] });
       toast.success('SPMB telah difinalisasi. Pendaftaran ditutup.');
     },
-    onError: () => toast.error('Gagal finalisasi SPMB'),
+    onError: (e: Error) => toast.error(`Gagal finalisasi: ${e.message}`),
   });
 
   const [editTA, setEditTA] = useState('');
+  useEffect(() => {
+    if (settings?.tahun_ajaran) setEditTA(settings.tahun_ajaran);
+  }, [settings?.tahun_ajaran]);
 
   const publicUrl = `${window.location.origin}/spmb/daftar`;
   const cekStatusUrl = `${window.location.origin}/spmb/cek-status`;
@@ -140,7 +145,7 @@ export function PPDBSettingsPanel() {
           <Label className="text-sm">Tahun Ajaran</Label>
           <div className="flex gap-2">
             <Input
-              defaultValue={settings?.tahun_ajaran ?? ''}
+              value={editTA}
               placeholder="2025/2026"
               className="text-sm"
               onChange={(e) => setEditTA(e.target.value)}
@@ -149,13 +154,19 @@ export function PPDBSettingsPanel() {
               size="sm"
               variant="outline"
               onClick={() => {
-                if (editTA) updateMutation.mutate({ tahun_ajaran: editTA });
+                const v = editTA.trim();
+                if (!/^\d{4}\/\d{4}$/.test(v)) {
+                  toast.error('Format harus YYYY/YYYY, contoh 2026/2027');
+                  return;
+                }
+                updateMutation.mutate({ tahun_ajaran: v });
               }}
             >
               Simpan
             </Button>
           </div>
         </div>
+
 
         <div className="space-y-1.5">
           <Label className="text-sm">Link Pendaftaran</Label>

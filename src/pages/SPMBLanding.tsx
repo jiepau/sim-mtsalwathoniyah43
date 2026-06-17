@@ -36,7 +36,15 @@ const KEUNGGULAN = [
   { icon: GraduationCap, judul: 'Lingkungan Islami', deskripsi: 'Pembinaan akhlak dan kegiatan keagamaan yang terstruktur sebagai pondasi karakter siswa.' },
 ];
 
-function StatusBadge({ isOpen, isFinalized }: { isOpen: boolean; isFinalized: boolean }) {
+function StatusBadge({ isOpen, isFinalized, isError }: { isOpen: boolean; isFinalized: boolean; isError: boolean }) {
+  if (isError) {
+    return (
+      <span className="inline-flex items-center gap-2 bg-amber-100 text-amber-700 border border-amber-300 rounded-full px-4 py-1.5 text-sm font-semibold">
+        <AlertCircle className="h-4 w-4" />
+        Status sedang dimuat ulang…
+      </span>
+    );
+  }
   if (isFinalized) {
     return (
       <span className="inline-flex items-center gap-2 bg-amber-100 text-amber-700 border border-amber-300 rounded-full px-4 py-1.5 text-sm font-semibold">
@@ -62,7 +70,7 @@ function StatusBadge({ isOpen, isFinalized }: { isOpen: boolean; isFinalized: bo
 }
 
 export default function SPMBLanding() {
-  const { data: settings, isLoading } = useQuery({
+  const { data: settings, isLoading, isError } = useQuery({
     queryKey: ['ppdb-settings-public'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -72,11 +80,11 @@ export default function SPMBLanding() {
       if (error) throw error;
       return data;
     },
-    retry: false,
+    retry: 2,
   });
 
-  const isOpen = settings?.is_open ?? false;
-  const isFinalized = (settings as { is_finalized?: boolean } | null)?.is_finalized ?? false;
+  const isOpen = settings?.is_open === true;
+  const isFinalized = (settings as { is_finalized?: boolean } | null)?.is_finalized === true;
   const tahunAjaran = settings?.tahun_ajaran ?? '2026/2027';
 
   return (
@@ -134,7 +142,7 @@ export default function SPMBLanding() {
               {/* Status badge */}
               {!isLoading && (
                 <div className="animate-in fade-in duration-500">
-                  <StatusBadge isOpen={isOpen} isFinalized={isFinalized} />
+                  <StatusBadge isOpen={isOpen} isFinalized={isFinalized} isError={isError} />
                 </div>
               )}
               {isLoading && (

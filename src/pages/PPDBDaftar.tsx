@@ -123,13 +123,14 @@ export default function PPDBDaftar() {
   const [form, setForm] = useState<FormData>({ ...initialForm });
   const [showPreview, setShowPreview] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
-  const { data: settings, isLoading: loadingSettings } = useQuery({
+  const { data: settings, isLoading: loadingSettings, isError: errorSettings, refetch: refetchSettings } = useQuery({
     queryKey: ['ppdb-settings-public'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('ppdb_settings').select('*').limit(1).single();
+      const { data, error } = await supabase.from('ppdb_settings').select('*').limit(1).maybeSingle();
       if (error) throw error;
       return data;
     },
+    retry: 2,
   });
 
   const set = (key: string, val: string) => setForm((prev) => ({ ...prev, [key]: val }));
@@ -229,7 +230,8 @@ export default function PPDBDaftar() {
     );
   }
 
-  const isOpen = settings?.is_open ?? false;
+  const isOpen = settings?.is_open === true;
+  const hasSettings = !!settings;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background flex flex-col items-center justify-center p-4">
@@ -268,6 +270,17 @@ export default function PPDBDaftar() {
                 </Link>
               </div>
               {settings?.pesan_selamat && <p className="text-sm mt-4">{settings.pesan_selamat}</p>}
+            </div>
+          ) : errorSettings || !hasSettings ? (
+            <div className="text-center space-y-4 py-8">
+              <XCircle className="h-16 w-16 text-amber-500 mx-auto" />
+              <h2 className="text-lg font-semibold">Gagal Memuat Status Pendaftaran</h2>
+              <p className="text-sm text-muted-foreground">
+                Terjadi kendala saat memuat status SPMB. Cek koneksi Anda lalu coba lagi.
+              </p>
+              <Button onClick={() => refetchSettings()} variant="outline" size="sm">
+                Muat Ulang
+              </Button>
             </div>
           ) : !isOpen ? (
             <div className="text-center space-y-4 py-8">
