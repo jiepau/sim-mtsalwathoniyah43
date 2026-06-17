@@ -70,7 +70,7 @@ function StatusBadge({ isOpen, isFinalized, isError }: { isOpen: boolean; isFina
 }
 
 export default function SPMBLanding() {
-  const { data: settings, isLoading } = useQuery({
+  const { data: settings, isLoading, isError } = useQuery({
     queryKey: ['ppdb-settings-public'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -80,11 +80,11 @@ export default function SPMBLanding() {
       if (error) throw error;
       return data;
     },
-    retry: false,
+    retry: 2,
   });
 
-  const isOpen = settings?.is_open ?? false;
-  const isFinalized = (settings as { is_finalized?: boolean } | null)?.is_finalized ?? false;
+  const isOpen = settings?.is_open === true;
+  const isFinalized = (settings as { is_finalized?: boolean } | null)?.is_finalized === true;
   const tahunAjaran = settings?.tahun_ajaran ?? '2026/2027';
 
   return (
