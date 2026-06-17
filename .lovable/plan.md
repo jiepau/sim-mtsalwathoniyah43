@@ -1,72 +1,64 @@
-## Modul Gaji Guru
+# Audit SPMB & Rencana Perbaikan
 
-Menu baru **Keuangan → Gaji Guru** untuk mengelola penggajian bulanan: master komponen per guru, generate gaji bulanan dengan kehadiran auto dari Absensi GTK (bisa diedit), potongan, dan cetak slip PDF. Guru bisa lihat slip gajinya sendiri di halaman Profil Guru.
+## Hasil Audit
 
-### Alur penggunaan
+Saya cek menyeluruh: tabel `ppdb_settings`, RLS, halaman admin (`PPDB.tsx`, `PPDBSettingsPanel.tsx`), halaman publik (`SPMBLanding.tsx`, `PPDBDaftar.tsx`, `PPDBCekStatus.tsx`), dan edge function `cek-status-ppdb`.
 
-1. **Setup master gaji** (sekali per guru) — Bendahara buka tab "Master Gaji", isi gaji pokok + tunjangan tetap per guru (wali kelas, ekskul, dansos, piket, transport, dll). Komponen bisa custom (tidak hardcode).
-2. **Tarif kehadiran** — Set tarif default per hari hadir / potongan per alpa / potongan per izin di tab "Pengaturan".
-3. **Generate gaji bulanan** — Pilih bulan & tahun → klik "Generate" → sistem buat baris untuk semua guru aktif, isi otomatis: komponen dari master + jumlah hadir/izin/sakit/alpa dari `absensi_gtk` bulan tsb.
-4. **Review & edit** — Bendahara bisa edit nominal komponen, tambah potongan (kasbon, dll), atau ubah jumlah hadir bila perlu.
-5. **Finalisasi & cetak slip** — Klik "Finalkan" → status jadi `final`, slip PDF bisa dicetak (kop madrasah + ttd kepala/bendahara). Setelah final, guru bisa lihat slipnya di Profil Guru.
+**Status DB saat ini**: `is_open = true`, `tahun_ajaran = 2026/2027`. Policy `Anyone can view ppdb_settings` aktif untuk `anon` + `authenticated` (sudah saya verifikasi via curl pakai anon key → data terbaca, `is_open: true`). Jadi backend & policy sudah benar.
 
-### Halaman & UI
+### Bug yang ditemukan
 
-- **`/gaji-guru`** (admin, bendahara) — 4 tab:
-  - **Daftar Gaji**: filter bulan/tahun, tabel guru × komponen + total, badge status (draft/final/dibayar), tombol Generate, Edit, Cetak Slip, Tandai Dibayar.
-  - **Master Gaji**: per-guru, daftar komponen tetap (nama, nominal, kategori). Tambah/edit/hapus komponen.
-  - **Pengaturan**: tarif default kehadiran, format nomor slip, header slip.
-  - **Rekap**: total gaji per bulan/tahun untuk laporan keuangan.
-- **Profil Guru** (guru sendiri) — tab baru "Slip Gaji Saya" yang list slip berstatus `final`/`dibayar`, tombol unduh PDF.
-- **Sidebar** — item "Gaji Guru" di group Keuangan (admin + bendahara); item "Slip Gaji" di Profil Guru untuk role guru.
+**1. Kolom finalisasi tidak ada di tabel (CRITICAL)**
+`PPDBSettingsPanel` mengirim `update({ is_finalized, finalized_at, finalized_by })` saat tombol *Finalisasi* ditekan, tapi 3 kolom itu **tidak ada** di tabel `ppdb_settings`. Akibatnya: tombol Finalisasi error 400, dan UI badge "Finalized" tidak pernah aktif. Tipe `is_finalized?` di interface hanya menutupi error TypeScript, bukan menyelesaikan masalah DB.
 
-### Cetak slip PDF
+**2. Halaman publik fragile saat query error**
+- `PPDBDaftar.tsx:129` pakai `.limit(1).single()` — kalau Supabase melempar error (sekecil apapun, mis. timeout/cors transien), `settings` jadi `undefined`, `isOpen = false`, dan langsung tampil **"Pendaftaran Ditutup"** padahal pendaftaran DIBUKA di DB. Ini paling mungkin penyebab keluhan Anda.
+- `SPMBLanding.tsx` punya pola serupa: error → badge "DITUTUP" + tombol Daftar disabled. Tidak ada state "gagal memuat" yang membedakan "benar-benar tutup" vs "gagal fetch".
 
-Layout A5 portrait: kop madrasah + logo, identitas guru (nama, NIP/NUPTK, jabatan), periode, ringkasan kehadiran, rincian pendapatan (gaji pokok + tunjangan), rincian potongan, total bersih (terbilang), ttd kepala madrasah & bendahara. Menggunakan komponen `PrintKopMadrasah` yang sudah ada.
+**3. Tombol Simpan Tahun Ajaran bisa kirim nilai kosong**
+`editTA` mulai `""`. Kalau user clear field lalu klik Simpan, `if (editTA)` skip — tidak ada feedback. Minor.
 
-### Detail teknis
+**4. Edge function `cek-status-ppdb`** — sudah benar (service role + filter ketat). Tidak diubah.
 
-**Database (4 tabel baru):**
+---
 
-- `gaji_komponen_master` — komponen tetap per guru
-  - `gtk_id` (uuid), `nama_komponen` (text), `kategori` (`pendapatan`|`potongan`), `nominal` (numeric), `is_active` (bool)
-- `gaji_settings` — tarif & header slip (single row)
-  - `tarif_per_hadir`, `potongan_per_alpa`, `potongan_per_izin`, `potongan_per_sakit`, `format_nomor_slip`, `judul_slip`
-- `gaji_periode` — header gaji bulanan per guru
-  - `gtk_id`, `bulan` (int), `tahun` (int), `jumlah_hadir`, `jumlah_izin`, `jumlah_sakit`, `jumlah_alpa`, `hari_kerja`, `total_pendapatan`, `total_potongan`, `total_bersih`, `status` (`draft`|`final`|`dibayar`), `tanggal_bayar`, `nomor_slip`, `catatan`
-  - Unique: `(gtk_id, bulan, tahun)`
-- `gaji_detail` — baris komponen per slip (snapshot agar histori aman saat master diubah)
-  - `gaji_periode_id`, `nama_komponen`, `kategori`, `nominal`
+## Rencana Perbaikan
 
-**RLS:**
-- 3 tabel pertama: admin + bendahara full CRUD; guru tidak akses.
-- `gaji_periode` & `gaji_detail`: admin + bendahara full; **guru SELECT hanya baris miliknya sendiri** (`gtk_id IN (SELECT id FROM gtk_ptk WHERE user_id = auth.uid())`) dan **hanya yang status `final`/`dibayar`**.
-- Semua tabel: GRANT sesuai aturan project.
+### A. Migration: lengkapi kolom finalisasi
 
-**Integrasi Absensi GTK:** Saat Generate, query `absensi_gtk` filter `tanggal` di bulan target, group by `gtk_id` & `status`, hitung jumlah per status. Hari kerja dihitung dari jumlah hari di bulan tsb dikurangi `hari_libur` (Sabtu/Minggu sesuai kebijakan; bisa dikonfirmasi nanti).
+Tambah ke `public.ppdb_settings`:
+- `is_finalized boolean NOT NULL DEFAULT false`
+- `finalized_at timestamptz NULL`
+- `finalized_by uuid NULL` (no FK ke `auth.users`)
 
-**Files baru:**
-- `src/pages/GajiGuru.tsx` (halaman utama 4 tab)
-- `src/components/gaji/MasterGajiTab.tsx`
-- `src/components/gaji/DaftarGajiTab.tsx`
-- `src/components/gaji/PengaturanGajiTab.tsx`
-- `src/components/gaji/RekapGajiTab.tsx`
-- `src/components/gaji/GenerateGajiDialog.tsx`
-- `src/components/gaji/EditGajiDialog.tsx`
-- `src/components/gaji/SlipGajiPrint.tsx`
-- `src/components/gaji/SlipGajiSayaTab.tsx` (untuk Profil Guru)
+Tidak perlu policy baru (kolom ikut policy SELECT/UPDATE existing).
 
-**Files diubah:**
-- `src/App.tsx` — route `/gaji-guru` (admin, bendahara)
-- `src/components/layout/Sidebar.tsx` — menu baru di group Keuangan
-- `src/pages/ProfilGuru.tsx` — tab "Slip Gaji Saya"
-- `src/pages/PetaSitus.tsx` — daftarkan menu baru
+### B. Hardening halaman publik
 
-### Yang tidak termasuk (bisa fase berikutnya)
+**`src/pages/PPDBDaftar.tsx`**
+- Ganti `.limit(1).single()` → `.maybeSingle()`.
+- Tambah state `errorSettings`: jika query error, tampilkan panel "Gagal memuat status pendaftaran. Muat ulang halaman." dengan tombol retry — **bukan** "Pendaftaran Ditutup".
+- Hanya tampilkan "Ditutup" jika `settings` ada DAN `is_open === false`.
 
-- Integrasi bank/transfer otomatis
-- BPJS / pajak PPh21
-- Slip via WhatsApp otomatis (bisa tambah pakai Fonnte nanti)
-- Lembur per jam
+**`src/pages/SPMBLanding.tsx`**
+- `useQuery` tambahkan `retry: 2` (saat ini `retry: false`) supaya tahan blip.
+- Saat `isError`, badge & tombol Daftar pakai state "memuat ulang" (skeleton) — tidak ngunci "DITUTUP".
+- Hormati `is_finalized` baru dari DB (hapus cast `as { is_finalized?: boolean }` jadi tipe langsung dari `settings`).
 
-Konfirmasi plan ini untuk saya mulai bangun.
+### C. Polish `PPDBSettingsPanel`
+
+- Pakai `value` controlled untuk input Tahun Ajaran (bukan `defaultValue`) supaya tombol Simpan selalu kirim nilai field saat ini, dan validasi format `YYYY/YYYY` sederhana.
+- Tampilkan toast error spesifik dari Supabase (`error.message`) agar issue serupa di masa depan ketahuan.
+
+### D. Verifikasi
+
+Setelah migration & code update:
+- Buka `/spmb` di anonymous browser via Playwright → pastikan badge "DIBUKA" dan tombol Daftar aktif.
+- Toggle admin → pastikan publik ikut berubah.
+- Klik Finalisasi (setelah is_open=false) → pastikan kolom terisi & badge "Finalized" muncul.
+
+## Catatan Teknis
+
+- Tidak menambah RLS policy baru; policy existing sudah benar.
+- Tidak menyentuh edge function (sudah aman pakai service role).
+- Perubahan UI terbatas pada handling state error/loading — tidak mengubah desain landing.
