@@ -81,13 +81,17 @@ export function PPDBSettingsPanel() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['ppdb-settings'] });
+      qc.invalidateQueries({ queryKey: ['ppdb-settings-public'] });
       qc.invalidateQueries({ queryKey: ['ppdb-pendaftar'] });
       toast.success('SPMB telah difinalisasi. Pendaftaran ditutup.');
     },
-    onError: () => toast.error('Gagal finalisasi SPMB'),
+    onError: (e: Error) => toast.error(`Gagal finalisasi: ${e.message}`),
   });
 
   const [editTA, setEditTA] = useState('');
+  useEffect(() => {
+    if (settings?.tahun_ajaran) setEditTA(settings.tahun_ajaran);
+  }, [settings?.tahun_ajaran]);
 
   const publicUrl = `${window.location.origin}/spmb/daftar`;
   const cekStatusUrl = `${window.location.origin}/spmb/cek-status`;
