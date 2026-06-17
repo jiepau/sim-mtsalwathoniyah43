@@ -142,7 +142,7 @@ export default function SPMBLanding() {
               {/* Status badge */}
               {!isLoading && (
                 <div className="animate-in fade-in duration-500">
-                  <StatusBadge isOpen={isOpen} isFinalized={isFinalized} />
+                  <StatusBadge isOpen={isOpen} isFinalized={isFinalized} isError={isError} />
                 </div>
               )}
               {isLoading && (
