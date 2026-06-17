@@ -58,9 +58,10 @@ export function PPDBSettingsPanel() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['ppdb-settings'] });
+      qc.invalidateQueries({ queryKey: ['ppdb-settings-public'] });
       toast.success('Pengaturan SPMB disimpan');
     },
-    onError: () => toast.error('Gagal menyimpan pengaturan'),
+    onError: (e: Error) => toast.error(`Gagal menyimpan: ${e.message}`),
   });
 
   const finalizeMutation = useMutation({
