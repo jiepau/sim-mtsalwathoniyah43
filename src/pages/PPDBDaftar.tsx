@@ -123,13 +123,14 @@ export default function PPDBDaftar() {
   const [form, setForm] = useState<FormData>({ ...initialForm });
   const [showPreview, setShowPreview] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
-  const { data: settings, isLoading: loadingSettings } = useQuery({
+  const { data: settings, isLoading: loadingSettings, isError: errorSettings, refetch: refetchSettings } = useQuery({
     queryKey: ['ppdb-settings-public'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('ppdb_settings').select('*').limit(1).single();
+      const { data, error } = await supabase.from('ppdb_settings').select('*').limit(1).maybeSingle();
       if (error) throw error;
       return data;
     },
+    retry: 2,
   });
 
   const set = (key: string, val: string) => setForm((prev) => ({ ...prev, [key]: val }));
