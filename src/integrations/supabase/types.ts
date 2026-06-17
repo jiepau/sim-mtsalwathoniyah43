@@ -2246,7 +2246,10 @@ export type Database = {
       ppdb_settings: {
         Row: {
           created_at: string
+          finalized_at: string | null
+          finalized_by: string | null
           id: string
+          is_finalized: boolean
           is_open: boolean
           pesan_selamat: string | null
           tahun_ajaran: string | null
@@ -2254,7 +2257,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          finalized_at?: string | null
+          finalized_by?: string | null
           id?: string
+          is_finalized?: boolean
           is_open?: boolean
           pesan_selamat?: string | null
           tahun_ajaran?: string | null
@@ -2262,7 +2268,10 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          finalized_at?: string | null
+          finalized_by?: string | null
           id?: string
+          is_finalized?: boolean
           is_open?: boolean
           pesan_selamat?: string | null
           tahun_ajaran?: string | null
