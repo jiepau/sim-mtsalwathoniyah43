@@ -271,6 +271,17 @@ export default function PPDBDaftar() {
               </div>
               {settings?.pesan_selamat && <p className="text-sm mt-4">{settings.pesan_selamat}</p>}
             </div>
+          ) : errorSettings || !hasSettings ? (
+            <div className="text-center space-y-4 py-8">
+              <XCircle className="h-16 w-16 text-amber-500 mx-auto" />
+              <h2 className="text-lg font-semibold">Gagal Memuat Status Pendaftaran</h2>
+              <p className="text-sm text-muted-foreground">
+                Terjadi kendala saat memuat status SPMB. Cek koneksi Anda lalu coba lagi.
+              </p>
+              <Button onClick={() => refetchSettings()} variant="outline" size="sm">
+                Muat Ulang
+              </Button>
+            </div>
           ) : !isOpen ? (
             <div className="text-center space-y-4 py-8">
               <XCircle className="h-16 w-16 text-muted-foreground mx-auto" />
