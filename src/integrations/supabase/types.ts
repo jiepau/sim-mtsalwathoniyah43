@@ -2245,37 +2245,52 @@ export type Database = {
       }
       ppdb_settings: {
         Row: {
+          alamat: string | null
           created_at: string
           finalized_at: string | null
           finalized_by: string | null
           id: string
           is_finalized: boolean
           is_open: boolean
+          jadwal: Json
+          jam_layanan: string | null
+          persyaratan: Json
           pesan_selamat: string | null
           tahun_ajaran: string | null
           updated_at: string
+          whatsapp: string | null
         }
         Insert: {
+          alamat?: string | null
           created_at?: string
           finalized_at?: string | null
           finalized_by?: string | null
           id?: string
           is_finalized?: boolean
           is_open?: boolean
+          jadwal?: Json
+          jam_layanan?: string | null
+          persyaratan?: Json
           pesan_selamat?: string | null
           tahun_ajaran?: string | null
           updated_at?: string
+          whatsapp?: string | null
         }
         Update: {
+          alamat?: string | null
           created_at?: string
           finalized_at?: string | null
           finalized_by?: string | null
           id?: string
           is_finalized?: boolean
           is_open?: boolean
+          jadwal?: Json
+          jam_layanan?: string | null
+          persyaratan?: Json
           pesan_selamat?: string | null
           tahun_ajaran?: string | null
           updated_at?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }
