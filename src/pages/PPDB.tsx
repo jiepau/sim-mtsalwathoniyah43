@@ -204,6 +204,9 @@ export default function PPDB() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         <div className="lg:col-span-1">
           <PPDBSettingsPanel />
+          <PPDBLandingContentPanel />
+
+
 
           <Card className="mt-4">
             <CardContent className="pt-4 space-y-2">
