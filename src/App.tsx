@@ -9,7 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { UpdateChecker } from "@/components/UpdateChecker";
-import { WhatsNewDialog } from "@/components/WhatsNewDialog";
+
 
 // Auth pages
 import Login from "@/pages/auth/Login";
@@ -101,7 +101,7 @@ const App = () => {
         <TooltipProvider>
           {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
           <UpdateChecker />
-          <WhatsNewDialog />
+          
           <Toaster />
           <Sonner />
           <BrowserRouter>
