@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PPDBSettingsPanel } from '@/components/ppdb/PPDBSettingsPanel';
+import { PPDBLandingContentPanel } from '@/components/ppdb/PPDBLandingContentPanel';
 import { PPDBKonversiDialog } from '@/components/ppdb/PPDBKonversiDialog';
 import { PPDBInputOfflineDialog } from '@/components/ppdb/PPDBInputOfflineDialog';
 import { PPDBRekapPrintDialog } from '@/components/ppdb/PPDBRekapPrintDialog';
@@ -203,6 +204,9 @@ export default function PPDB() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         <div className="lg:col-span-1">
           <PPDBSettingsPanel />
+          <PPDBLandingContentPanel />
+
+
 
           <Card className="mt-4">
             <CardContent className="pt-4 space-y-2">
