@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PPDBSettingsPanel } from '@/components/ppdb/PPDBSettingsPanel';
+import { PPDBLandingContentPanel } from '@/components/ppdb/PPDBLandingContentPanel';
 import { PPDBKonversiDialog } from '@/components/ppdb/PPDBKonversiDialog';
 import { PPDBInputOfflineDialog } from '@/components/ppdb/PPDBInputOfflineDialog';
 import { PPDBRekapPrintDialog } from '@/components/ppdb/PPDBRekapPrintDialog';
