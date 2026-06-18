@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { CircleCheck as CheckCircle2, Circle as XCircle, Clock, ClipboardList, Search, Phone, MapPin, ChevronRight, FileText, Users, GraduationCap, Star, MessageCircle, LogIn, BookOpen, CircleAlert as AlertCircle } from 'lucide-react';
 
-const KONTAK = {
+const KONTAK_DEFAULT = {
   nama_madrasah: 'MTs Al Wathoniyah 43',
   nsm: '121231750043',
   alamat: 'Jl. Raya Madrasah, Bekasi',
@@ -12,14 +12,16 @@ const KONTAK = {
   jam_layanan: 'Senin – Sabtu, 07.30 – 14.00 WIB',
 };
 
-const JADWAL = [
+interface JadwalItem { fase: string; tanggal: string; status: string }
+
+const JADWAL_DEFAULT: JadwalItem[] = [
   { fase: 'Pendaftaran Online', tanggal: '1 Juli – 20 Juli 2026', status: 'aktif' },
   { fase: 'Seleksi Berkas', tanggal: '21 – 25 Juli 2026', status: 'akan-datang' },
   { fase: 'Pengumuman', tanggal: '28 Juli 2026', status: 'akan-datang' },
   { fase: 'Daftar Ulang', tanggal: '29 Juli – 5 Agustus 2026', status: 'akan-datang' },
 ];
 
-const PERSYARATAN = [
+const PERSYARATAN_DEFAULT = [
   'Fotokopi Akta Kelahiran',
   'Fotokopi Kartu Keluarga',
   'Fotokopi Ijazah / Surat Keterangan Lulus SD/MI',
