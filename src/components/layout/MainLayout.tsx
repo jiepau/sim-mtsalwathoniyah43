@@ -3,6 +3,7 @@ import { Sidebar } from './Sidebar';
 import { Footer } from './Footer';
 import { TopBar } from './TopBar';
 import { useIdleLogout } from '@/hooks/useIdleLogout';
+import { WhatsNewDialog } from '@/components/WhatsNewDialog';
 
 export function MainLayout() {
   useIdleLogout();
@@ -16,6 +17,7 @@ export function MainLayout() {
         </div>
       </main>
       <Footer />
+      <WhatsNewDialog />
     </div>
   );
 }
