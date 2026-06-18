@@ -101,7 +101,7 @@ const App = () => {
         <TooltipProvider>
           {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
           <UpdateChecker />
-          <WhatsNewDialog />
+          
           <Toaster />
           <Sonner />
           <BrowserRouter>
