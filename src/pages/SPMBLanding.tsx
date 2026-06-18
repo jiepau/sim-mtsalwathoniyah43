@@ -89,6 +89,24 @@ export default function SPMBLanding() {
   const isFinalized = (settings as { is_finalized?: boolean } | null)?.is_finalized === true;
   const tahunAjaran = settings?.tahun_ajaran ?? '2026/2027';
 
+  const s = settings as unknown as {
+    alamat?: string | null;
+    whatsapp?: string | null;
+    jam_layanan?: string | null;
+    jadwal?: JadwalItem[] | null;
+    persyaratan?: string[] | null;
+  } | null;
+
+  const KONTAK = {
+    ...KONTAK_DEFAULT,
+    alamat: s?.alamat || KONTAK_DEFAULT.alamat,
+    whatsapp: s?.whatsapp || KONTAK_DEFAULT.whatsapp,
+    jam_layanan: s?.jam_layanan || KONTAK_DEFAULT.jam_layanan,
+  };
+  const JADWAL: JadwalItem[] = Array.isArray(s?.jadwal) && s!.jadwal!.length > 0 ? s!.jadwal! : JADWAL_DEFAULT;
+  const PERSYARATAN: string[] = Array.isArray(s?.persyaratan) && s!.persyaratan!.length > 0 ? s!.persyaratan! : PERSYARATAN_DEFAULT;
+
+
   return (
     <>
       <Helmet>
