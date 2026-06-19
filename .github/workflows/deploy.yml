@@ -1,24 +1,48 @@
 name: Deploy to Hostinger
-on: [push]
+
+on:
+  push:
+  workflow_dispatch:
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with: { node-version: 20 }
-    - run: npm ci
-    - name: Create .env for build
-      run: |
-        echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" >> .env
-        echo "VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}" >> .env
-        echo "VITE_SUPABASE_PROJECT_ID=${{ secrets.VITE_SUPABASE_PROJECT_ID }}" >> .env
-    - run: npm run build
-    - name: Deploy
-      uses: burnett01/action-ftp-deploy-action@master
-      with:
-        host: ${{ secrets.HOSTINGER_HOST }}
-        user: ${{ secrets.HOSTINGER_USER }}
-        password: ${{ secrets.HOSTINGER_PASS }}
-        server_dir: /public_html
-        local_dir: ./dist
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate required secrets
+        run: |
+          test -n "${{ secrets.VITE_SUPABASE_URL }}" || (echo "Missing secret: VITE_SUPABASE_URL" && exit 1)
+          test -n "${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}" || (echo "Missing secret: VITE_SUPABASE_PUBLISHABLE_KEY" && exit 1)
+          test -n "${{ secrets.VITE_SUPABASE_PROJECT_ID }}" || (echo "Missing secret: VITE_SUPABASE_PROJECT_ID" && exit 1)
+          test -n "${{ secrets.HOSTINGER_HOST }}" || (echo "Missing secret: HOSTINGER_HOST" && exit 1)
+          test -n "${{ secrets.HOSTINGER_USER }}" || (echo "Missing secret: HOSTINGER_USER" && exit 1)
+          test -n "${{ secrets.HOSTINGER_PASS }}" || (echo "Missing secret: HOSTINGER_PASS" && exit 1)
+
+      - name: Create build environment file
+        run: |
+          echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" >> .env
+          echo "VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}" >> .env
+          echo "VITE_SUPABASE_PROJECT_ID=${{ secrets.VITE_SUPABASE_PROJECT_ID }}" >> .env
+
+      - name: Build application
+        run: npm run build
+
+      - name: Deploy to Hostinger FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          password: ${{ secrets.HOSTINGER_PASS }}
+          local-dir: ./dist/
+          server-dir: /public_html/
