@@ -814,128 +814,127 @@ export default function JadwalPage() {
       {/* Hidden printable: Semua Kelas (F4 landscape) */}
       <div id="print-all-kelas" style={{ position: "absolute", left: "-99999px", top: 0 }}>
         <PrintKopMadrasah judul="Jadwal Pelajaran" subjudul={`JADWAL PELAJARAN SEMESTER ${semester.toUpperCase()} — ${taList.find(t => t.id === taId)?.nama_ta || ""}`} />
-        {DAYS.map(d => {
-          const jamHari = jamList.filter(j => j.hari === d).sort((a, b) => a.jam_ke - b.jam_ke);
-          if (jamHari.length === 0) return null;
+        {(() => {
+          // Hitung beban + assign kode guru (G1, G2, ...) untuk hemat ruang di sel jadwal
+          const counts = new Map<string, number>();
+          jadwalList.forEach(j => {
+            if (!j.gtk_id) return;
+            const jam = jamByDayKe.get(`${j.hari}-${j.jam_ke}`);
+            if (jam?.is_istirahat) return;
+            counts.set(j.gtk_id, (counts.get(j.gtk_id) || 0) + 1);
+          });
+          const bebanRows = gtkList
+            .map(g => ({ g, jp: counts.get(g.id) || 0 }))
+            .filter(r => r.jp > 0)
+            .sort((a, b) => b.jp - a.jp);
+          const kodeMap = new Map<string, string>();
+          bebanRows.forEach((r, i) => kodeMap.set(r.g.id, `G${i + 1}`));
+
           return (
-            <div key={d} style={{ marginTop: 6 }}>
-              <div className="hari-sep">{HARI_LABEL[d]}</div>
-              <table>
-                <thead>
-                  <tr>
-                    <th style={{ width: "70px" }}>Jam</th>
-                    <th style={{ width: "60px" }}>Waktu</th>
-                    {kelasList.map(k => <th key={k.id}>{k.nama_kelas}</th>)}
-                  </tr>
-                </thead>
-                <tbody>
-                  {jamHari.map(j => (
-                    <tr key={j.id}>
-                      <td style={{ textAlign: "center" }}>{formatSlotLabel(d, j.jam_ke)}</td>
-                      <td style={{ textAlign: "center", whiteSpace: "nowrap" }}>{j.jam_mulai.slice(0,5)}–{j.jam_selesai.slice(0,5)}</td>
-                      {j.is_istirahat ? (
-                        <td className="istirahat" colSpan={kelasList.length}>{j.label || "Istirahat"}</td>
-                      ) : (
-                        kelasList.map(k => {
-                          const cell = jadwalByKelas.get(`${k.id}-${d}-${j.jam_ke}`);
-                          const g = cell?.gtk_id ? gtkList.find(x => x.id === cell.gtk_id) : null;
-                          return (
-                            <td key={k.id}>
-                              {cell ? (
-                                <>
-                                  <div className="mapel">{cell.mapel}</div>
-                                  {g && <div className="guru">{g.nama}</div>}
-                                </>
-                              ) : <span style={{ color: "#999" }}>-</span>}
+            <>
+              {DAYS.map(d => {
+                const jamHari = jamList.filter(j => j.hari === d).sort((a, b) => a.jam_ke - b.jam_ke);
+                if (jamHari.length === 0) return null;
+                return (
+                  <div key={d} style={{ marginTop: 3 }}>
+                    <div className="hari-sep">{HARI_LABEL[d]}</div>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th style={{ width: "42px" }}>Jam</th>
+                          <th style={{ width: "60px" }}>Waktu</th>
+                          {kelasList.map(k => <th key={k.id}>{k.nama_kelas}</th>)}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {jamHari.map(j => (
+                          <tr key={j.id}>
+                            <td style={{ textAlign: "center" }}>{formatSlotLabel(d, j.jam_ke)}</td>
+                            <td style={{ textAlign: "center", whiteSpace: "nowrap" }}>{j.jam_mulai.slice(0,5)}–{j.jam_selesai.slice(0,5)}</td>
+                            {j.is_istirahat ? (
+                              <td className="istirahat" colSpan={kelasList.length}>{j.label || "Istirahat"}</td>
+                            ) : (
+                              kelasList.map(k => {
+                                const cell = jadwalByKelas.get(`${k.id}-${d}-${j.jam_ke}`);
+                                const kode = cell?.gtk_id ? kodeMap.get(cell.gtk_id) : null;
+                                return (
+                                  <td key={k.id} style={{ textAlign: "center" }}>
+                                    {cell ? (
+                                      <>
+                                        <div className="mapel">{cell.mapel}</div>
+                                        {kode && <div className="guru">{kode}</div>}
+                                      </>
+                                    ) : <span style={{ color: "#999" }}>-</span>}
+                                  </td>
+                                );
+                              })
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })}
+
+              <div className="grid-2">
+                <div className="box">
+                  <h4>Beban Jam Mengajar Guru / Minggu (Kode = Inisial pada Jadwal)</h4>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th style={{ width: "30px" }}>Kode</th>
+                        <th style={{ textAlign: "left" }}>Nama Guru</th>
+                        <th style={{ textAlign: "left", width: "30%" }}>Mapel</th>
+                        <th style={{ width: "30px" }}>JP</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bebanRows.length === 0 ? (
+                        <tr><td colSpan={4} style={{ textAlign: "center", fontStyle: "italic" }}>Belum ada jadwal</td></tr>
+                      ) : bebanRows.map((r) => (
+                        <tr key={r.g.id}>
+                          <td style={{ textAlign: "center", fontWeight: 600 }}>{kodeMap.get(r.g.id)}</td>
+                          <td>{r.g.nama}</td>
+                          <td>{r.g.mapel || "-"}</td>
+                          <td style={{ textAlign: "center", fontWeight: 600 }}>{r.jp}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="box">
+                  <h4>Petugas Piket Harian</h4>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th style={{ width: "60px", textAlign: "left" }}>Hari</th>
+                        <th style={{ textAlign: "left" }}>Petugas Piket</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {DAYS.map(d => {
+                        const items = piketList.filter(p => p.hari === d);
+                        return (
+                          <tr key={d}>
+                            <td style={{ fontWeight: 600 }}>{HARI_LABEL[d]}</td>
+                            <td>
+                              {items.length === 0 ? <span style={{ fontStyle: "italic", color: "#888" }}>—</span> :
+                                items.map(it => gtkList.find(g => g.id === it.gtk_id)?.nama || "-").join(", ")}
                             </td>
-                          );
-                        })
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
           );
-        })}
+        })()}
+      </div>
 
-        <div className="grid-2">
-          {/* Beban Jam Guru */}
-          <div className="box">
-            <h4>Beban Jam Mengajar Guru / Minggu</h4>
-            <table>
-              <thead>
-                <tr>
-                  <th style={{ width: "20px" }}>No</th>
-                  <th style={{ textAlign: "left" }}>Nama Guru</th>
-                  <th style={{ textAlign: "left" }}>Mapel</th>
-                  <th style={{ width: "40px" }}>JP</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(() => {
-                  const counts = new Map<string, number>();
-                  jadwalList.forEach(j => {
-                    if (!j.gtk_id) return;
-                    const jam = jamByDayKe.get(`${j.hari}-${j.jam_ke}`);
-                    if (jam?.is_istirahat) return;
-                    counts.set(j.gtk_id, (counts.get(j.gtk_id) || 0) + 1);
-                  });
-                  const rows = gtkList
-                    .map(g => ({ g, jp: counts.get(g.id) || 0 }))
-                    .filter(r => r.jp > 0)
-                    .sort((a, b) => b.jp - a.jp);
-                  if (rows.length === 0) return <tr><td colSpan={4} style={{ textAlign: "center", fontStyle: "italic" }}>Belum ada jadwal</td></tr>;
-                  return rows.map((r, i) => (
-                    <tr key={r.g.id}>
-                      <td style={{ textAlign: "center" }}>{i + 1}</td>
-                      <td>{r.g.nama}</td>
-                      <td>{r.g.mapel || "-"}</td>
-                      <td style={{ textAlign: "center", fontWeight: 600 }}>{r.jp}</td>
-                    </tr>
-                  ));
-                })()}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Petugas Piket per Hari */}
-          <div className="box">
-            <h4>Petugas Piket Harian</h4>
-            <table>
-              <thead>
-                <tr>
-                  <th style={{ width: "70px", textAlign: "left" }}>Hari</th>
-                  <th style={{ textAlign: "left" }}>Petugas Piket</th>
-                </tr>
-              </thead>
-              <tbody>
-                {DAYS.map(d => {
-                  const items = piketList.filter(p => p.hari === d);
-                  return (
-                    <tr key={d}>
-                      <td style={{ fontWeight: 600 }}>{HARI_LABEL[d]}</td>
-                      <td>
-                        {items.length === 0 ? <span style={{ fontStyle: "italic", color: "#888" }}>—</span> :
-                          items.map(it => gtkList.find(g => g.id === it.gtk_id)?.nama || "-").join(", ")}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div style={{ marginTop: 14, display: "flex", justifyContent: "space-between", fontSize: 10 }}>
-          <div></div>
-          <div style={{ textAlign: "center" }}>
-            <div>Mengetahui,</div>
-            <div>Kepala Madrasah</div>
-            <div style={{ height: 50 }} />
-            <div style={{ borderTop: "1px solid #000", paddingTop: 2, minWidth: 180 }}>__________________________</div>
-          </div>
-        </div>
       </div>
 
       {/* Jam Dialog */}
