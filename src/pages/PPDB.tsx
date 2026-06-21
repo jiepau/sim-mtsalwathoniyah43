@@ -15,8 +15,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from '@/components/ui/sheet';
 import { toast } from 'sonner';
-import { UserPlus, Search, Download, Upload, ArrowRightCircle, Check, X, ClipboardList, UserCheck, FileSpreadsheet, ChevronRight, Printer, UserX, Clock, Trash2 } from 'lucide-react';
+import { UserPlus, Search, Download, Upload, ArrowRightCircle, Check, X, ClipboardList, UserCheck, FileSpreadsheet, ChevronRight, Printer, UserX, Clock, Trash2, Settings, LayoutTemplate } from 'lucide-react';
 import { formatDate } from '@/lib/supabase-helpers';
 import { exportEmisCSV, parseEmisCSV } from '@/lib/emis-field-map';
 
@@ -201,213 +202,241 @@ export default function PPDB() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <div className="lg:col-span-1">
-          <PPDBSettingsPanel />
-          <PPDBLandingContentPanel />
-
-
-
-          <Card className="mt-4">
-            <CardContent className="pt-4 space-y-2">
-              <div className="flex justify-between items-center pb-2 border-b">
-                <span className="text-sm font-semibold">Statistik Final SPMB</span>
-                <Badge variant="outline" className="text-xs">{spmbSettings?.tahun_ajaran ?? '-'}</Badge>
+      {/* Ringkasan statistik + chart asal sekolah dalam baris kompak */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="md:col-span-2">
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold">Statistik SPMB</span>
+              <Badge variant="outline" className="text-xs">{spmbSettings?.tahun_ajaran ?? '-'}</Badge>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              <div className="rounded-md border bg-background p-2 text-center">
+                <div className="text-[11px] text-muted-foreground">Total</div>
+                <div className="text-lg font-semibold">{pendaftar.length}</div>
               </div>
-              <div className="flex justify-between text-sm">
-                <span>Total Pendaftar</span>
-                <Badge variant="secondary">{pendaftar.length}</Badge>
+              <div className="rounded-md border bg-blue-50 p-2 text-center">
+                <div className="text-[11px] text-blue-700">📥 Baru</div>
+                <div className="text-lg font-semibold text-blue-800">{countByStatus('baru')}</div>
               </div>
-              <div className="flex justify-between text-sm">
-                <span>📥 Baru / Belum Diproses</span>
-                <Badge className="bg-blue-100 text-blue-800">{countByStatus('baru')}</Badge>
+              <div className="rounded-md border bg-green-50 p-2 text-center">
+                <div className="text-[11px] text-green-700">✅ Diterima</div>
+                <div className="text-lg font-semibold text-green-800">{countByStatus('diterima')}</div>
               </div>
-              <div className="flex justify-between text-sm">
-                <span>✅ Diterima</span>
-                <Badge className="bg-green-100 text-green-800">{countByStatus('diterima')}</Badge>
+              <div className="rounded-md border bg-red-50 p-2 text-center">
+                <div className="text-[11px] text-red-700">❌ Ditolak</div>
+                <div className="text-lg font-semibold text-red-800">{countByStatus('ditolak')}</div>
               </div>
-              <div className="flex justify-between text-sm">
-                <span>❌ Ditolak</span>
-                <Badge className="bg-red-100 text-red-800">{countByStatus('ditolak')}</Badge>
+              <div className="rounded-md border bg-amber-50 p-2 text-center">
+                <div className="text-[11px] text-amber-700">🚪 Mundur</div>
+                <div className="text-lg font-semibold text-amber-800">{countByStatus('batal')}</div>
               </div>
-              <div className="flex justify-between text-sm">
-                <span>🚪 Mengundurkan Diri</span>
-                <Badge className="bg-amber-100 text-amber-800">{countByStatus('batal')}</Badge>
-              </div>
-              {pendaftar.length > 0 && (
-                <div className="pt-2 mt-2 border-t space-y-1 text-xs text-muted-foreground">
-                  <div className="flex justify-between">
-                    <span>Tingkat Penerimaan</span>
-                    <span className="font-medium text-foreground">
-                      {Math.round((countByStatus('diterima') / pendaftar.length) * 100)}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Aktif Diproses</span>
-                    <span className="font-medium text-foreground">
-                      {pendaftar.length - countByStatus('batal')}
-                    </span>
-                  </div>
+            </div>
+            {pendaftar.length > 0 && (
+              <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-muted-foreground">
+                <div className="flex justify-between border-t pt-2">
+                  <span>Tingkat Penerimaan</span>
+                  <span className="font-medium text-foreground">{Math.round((countByStatus('diterima') / pendaftar.length) * 100)}%</span>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                <div className="flex justify-between border-t pt-2">
+                  <span>Aktif Diproses</span>
+                  <span className="font-medium text-foreground">{pendaftar.length - countByStatus('batal')}</span>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        <div className="md:col-span-1">
+          <PPDBAsalSekolahDonut {...asalBreakdown} />
+        </div>
+      </div>
 
-          <div className="mt-4">
-            <PPDBAsalSekolahDonut {...asalBreakdown} />
+      <div className="space-y-3">
+        <div className="flex flex-wrap gap-2 items-center">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Cari nama / no pendaftaran..."
+              className="pl-8 text-sm"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-[130px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="semua">Semua Status</SelectItem>
+              <SelectItem value="baru">Baru</SelectItem>
+              <SelectItem value="diterima">Diterima</SelectItem>
+              <SelectItem value="ditolak">Ditolak</SelectItem>
+              <SelectItem value="batal">Mengundurkan Diri</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Pengaturan SPMB dalam Sheet */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button size="sm" variant="outline">
+                <Settings className="h-4 w-4 mr-1" /> Pengaturan
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>Pengaturan SPMB</SheetTitle>
+                <SheetDescription>Atur status pendaftaran, tahun ajaran, dan finalisasi.</SheetDescription>
+              </SheetHeader>
+              <div className="mt-4">
+                <PPDBSettingsPanel />
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          {/* Konten Landing dalam Sheet */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button size="sm" variant="outline">
+                <LayoutTemplate className="h-4 w-4 mr-1" /> Konten Landing
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>Konten Landing SPMB</SheetTitle>
+                <SheetDescription>Edit info yang tampil di halaman publik /spmb.</SheetDescription>
+              </SheetHeader>
+              <div className="mt-4">
+                <PPDBLandingContentPanel />
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          <Button size="sm" variant="outline" onClick={handleExportEmis}>
+            <Download className="h-4 w-4 mr-1" /> Export EMIS
+          </Button>
+          <input type="file" accept=".csv" ref={fileInputRef} className="hidden" onChange={handleImportEmis} />
+          <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
+            <Upload className="h-4 w-4 mr-1" /> Import EMIS
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setShowRekap(true)}>
+            <Printer className="h-4 w-4 mr-1" /> Cetak Rekap
+          </Button>
+          <Button size="sm" onClick={() => setShowInputOffline(true)}>
+            <UserPlus className="h-4 w-4 mr-1" /> Tambah Pendaftar
+          </Button>
         </div>
 
-        <div className="lg:col-span-3 space-y-3">
-          <div className="flex flex-wrap gap-2 items-center">
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Cari nama / no pendaftaran..."
-                className="pl-8 text-sm"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-[130px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="semua">Semua Status</SelectItem>
-                <SelectItem value="baru">Baru</SelectItem>
-                <SelectItem value="diterima">Diterima</SelectItem>
-                <SelectItem value="ditolak">Ditolak</SelectItem>
-                <SelectItem value="batal">Mengundurkan Diri</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button size="sm" variant="outline" onClick={handleExportEmis}>
-              <Download className="h-4 w-4 mr-1" /> Export EMIS
+        {selected.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 p-2 bg-muted rounded-md text-sm">
+            <span>{selected.length} dipilih</span>
+            <Button size="sm" variant="outline" onClick={() => updateStatusMutation.mutate({ ids: selected, status: 'baru' })}>
+              <Clock className="h-3.5 w-3.5 mr-1" /> Set Baru
             </Button>
-            <input type="file" accept=".csv" ref={fileInputRef} className="hidden" onChange={handleImportEmis} />
-            <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
-              <Upload className="h-4 w-4 mr-1" /> Import EMIS
+            <Button size="sm" variant="outline" onClick={() => updateStatusMutation.mutate({ ids: selected, status: 'diterima' })}>
+              <Check className="h-3.5 w-3.5 mr-1" /> Terima
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setShowRekap(true)}>
-              <Printer className="h-4 w-4 mr-1" /> Cetak Rekap
+            <Button size="sm" variant="outline" onClick={() => updateStatusMutation.mutate({ ids: selected, status: 'ditolak' })}>
+              <X className="h-3.5 w-3.5 mr-1" /> Tolak
             </Button>
-            <Button size="sm" onClick={() => setShowInputOffline(true)}>
-              <UserPlus className="h-4 w-4 mr-1" /> Tambah Pendaftar
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-amber-700 border-amber-300 hover:bg-amber-50"
+              onClick={() => {
+                if (confirm(`Tandai ${selected.length} pendaftar sebagai MENGUNDURKAN DIRI?\n\nData tetap tersimpan, hanya statusnya yang berubah.`)) {
+                  updateStatusMutation.mutate({ ids: selected, status: 'batal' });
+                }
+              }}
+            >
+              <UserX className="h-3.5 w-3.5 mr-1" /> Mengundurkan Diri
+            </Button>
+            {selectedDiterima.length > 0 && (
+              <Button size="sm" onClick={() => setShowKonversi(true)}>
+                <ArrowRightCircle className="h-3.5 w-3.5 mr-1" /> Konversi ke Siswa ({selectedDiterima.length})
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => {
+                if (confirm(`Hapus permanen ${selected.length} data pendaftar SPMB?\n\nAksi ini tidak bisa dibatalkan.`)) {
+                  deleteMutation.mutate(selected);
+                }
+              }}
+              disabled={deleteMutation.isPending}
+            >
+              <Trash2 className="h-3.5 w-3.5 mr-1" /> Hapus
             </Button>
           </div>
+        )}
 
-          {selected.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 p-2 bg-muted rounded-md text-sm">
-              <span>{selected.length} dipilih</span>
-              <Button size="sm" variant="outline" onClick={() => updateStatusMutation.mutate({ ids: selected, status: 'baru' })}>
-                <Clock className="h-3.5 w-3.5 mr-1" /> Set Baru
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => updateStatusMutation.mutate({ ids: selected, status: 'diterima' })}>
-                <Check className="h-3.5 w-3.5 mr-1" /> Terima
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => updateStatusMutation.mutate({ ids: selected, status: 'ditolak' })}>
-                <X className="h-3.5 w-3.5 mr-1" /> Tolak
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-amber-700 border-amber-300 hover:bg-amber-50"
-                onClick={() => {
-                  if (confirm(`Tandai ${selected.length} pendaftar sebagai MENGUNDURKAN DIRI?\n\nData tetap tersimpan, hanya statusnya yang berubah.`)) {
-                    updateStatusMutation.mutate({ ids: selected, status: 'batal' });
-                  }
-                }}
-              >
-                <UserX className="h-3.5 w-3.5 mr-1" /> Mengundurkan Diri
-              </Button>
-              {selectedDiterima.length > 0 && (
-                <Button size="sm" onClick={() => setShowKonversi(true)}>
-                  <ArrowRightCircle className="h-3.5 w-3.5 mr-1" /> Konversi ke Siswa ({selectedDiterima.length})
-                </Button>
-              )}
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => {
-                  if (confirm(`Hapus permanen ${selected.length} data pendaftar SPMB?\n\nAksi ini tidak bisa dibatalkan.`)) {
-                    deleteMutation.mutate(selected);
-                  }
-                }}
-                disabled={deleteMutation.isPending}
-              >
-                <Trash2 className="h-3.5 w-3.5 mr-1" /> Hapus
-              </Button>
-            </div>
-          )}
-
-          <Card>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
+        <Card>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox checked={selected.length === filtered.length && filtered.length > 0} onCheckedChange={toggleAll} />
+                  </TableHead>
+                  <TableHead className="text-xs">No. Daftar</TableHead>
+                  <TableHead className="text-xs">Nama</TableHead>
+                  <TableHead className="text-xs">NISN</TableHead>
+                  <TableHead className="text-xs">L/P</TableHead>
+                  <TableHead className="text-xs">Asal Sekolah</TableHead>
+                  <TableHead className="text-xs">WA Ortu</TableHead>
+                  <TableHead className="text-xs">Tanggal Daftar</TableHead>
+                  <TableHead className="text-xs">Status</TableHead>
+                  <TableHead className="text-xs text-right">Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
                   <TableRow>
-                    <TableHead className="w-10">
-                      <Checkbox checked={selected.length === filtered.length && filtered.length > 0} onCheckedChange={toggleAll} />
-                    </TableHead>
-                    <TableHead className="text-xs">No. Daftar</TableHead>
-                    <TableHead className="text-xs">Nama</TableHead>
-                    <TableHead className="text-xs">NISN</TableHead>
-                    <TableHead className="text-xs">L/P</TableHead>
-                    <TableHead className="text-xs">Asal Sekolah</TableHead>
-                    <TableHead className="text-xs">WA Ortu</TableHead>
-                    <TableHead className="text-xs">Tanggal Daftar</TableHead>
-                    <TableHead className="text-xs">Status</TableHead>
-                    <TableHead className="text-xs text-right">Aksi</TableHead>
+                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Memuat...</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {isLoading ? (
-                    <TableRow>
-                      <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Memuat...</TableCell>
+                ) : filtered.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Belum ada pendaftar</TableCell>
+                  </TableRow>
+                ) : (
+                  filtered.map((p) => (
+                    <TableRow key={p.id}>
+                      <TableCell>
+                        <Checkbox checked={selected.includes(p.id)} onCheckedChange={() => toggleSelect(p.id)} />
+                      </TableCell>
+                      <TableCell className="text-xs font-mono">{p.nomor_pendaftaran}</TableCell>
+                      <TableCell className="text-sm font-medium">{p.nama}</TableCell>
+                      <TableCell className="text-xs">{p.nisn ?? '-'}</TableCell>
+                      <TableCell className="text-xs">{p.jenis_kelamin ?? '-'}</TableCell>
+                      <TableCell className="text-xs">{p.asal_sekolah ?? '-'}</TableCell>
+                      <TableCell className="text-xs">{p.wa_ortu ?? '-'}</TableCell>
+                      <TableCell className="text-xs">{formatDate(p.created_at)}</TableCell>
+                      <TableCell>
+                        <Badge className={`text-xs ${statusColors[p.status] ?? ''}`}>{statusLabels[p.status] ?? p.status}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          onClick={() => {
+                            if (confirm(`Hapus permanen data pendaftar ${p.nama}?\n\nAksi ini tidak bisa dibatalkan.`)) {
+                              deleteMutation.mutate([p.id]);
+                            }
+                          }}
+                          disabled={deleteMutation.isPending}
+                          title="Hapus pendaftar"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
-                  ) : filtered.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Belum ada pendaftar</TableCell>
-                    </TableRow>
-                  ) : (
-                    filtered.map((p) => (
-                      <TableRow key={p.id}>
-                        <TableCell>
-                          <Checkbox checked={selected.includes(p.id)} onCheckedChange={() => toggleSelect(p.id)} />
-                        </TableCell>
-                        <TableCell className="text-xs font-mono">{p.nomor_pendaftaran}</TableCell>
-                        <TableCell className="text-sm font-medium">{p.nama}</TableCell>
-                        <TableCell className="text-xs">{p.nisn ?? '-'}</TableCell>
-                        <TableCell className="text-xs">{p.jenis_kelamin ?? '-'}</TableCell>
-                        <TableCell className="text-xs">{p.asal_sekolah ?? '-'}</TableCell>
-                        <TableCell className="text-xs">{p.wa_ortu ?? '-'}</TableCell>
-                        <TableCell className="text-xs">{formatDate(p.created_at)}</TableCell>
-                        <TableCell>
-                          <Badge className={`text-xs ${statusColors[p.status] ?? ''}`}>{statusLabels[p.status] ?? p.status}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-8 w-8 text-destructive hover:text-destructive"
-                            onClick={() => {
-                              if (confirm(`Hapus permanen data pendaftar ${p.nama}?\n\nAksi ini tidak bisa dibatalkan.`)) {
-                                deleteMutation.mutate([p.id]);
-                              }
-                            }}
-                            disabled={deleteMutation.isPending}
-                            title="Hapus pendaftar"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </Card>
-        </div>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </Card>
       </div>
 
       <PPDBKonversiDialog
