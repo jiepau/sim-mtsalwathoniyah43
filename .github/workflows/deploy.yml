@@ -2,47 +2,53 @@ name: Deploy to Hostinger
 
 on:
   push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+      FTP_SERVER: ${{ secrets.HOSTINGER_HOST || secrets.FTP_SERVER || secrets.FTP_HOST }}
+      FTP_USERNAME: ${{ secrets.HOSTINGER_USER || secrets.FTP_USERNAME || secrets.FTP_USER }}
+      FTP_PASSWORD: ${{ secrets.HOSTINGER_PASS || secrets.FTP_PASSWORD || secrets.FTP_PASS }}
+      FTP_SERVER_DIR: ${{ secrets.HOSTINGER_DIR || '/public_html/' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 20
-          cache: npm
+          bun-version: latest
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: Validate required secrets
         run: |
-          test -n "${{ secrets.VITE_SUPABASE_URL }}" || (echo "Missing secret: VITE_SUPABASE_URL" && exit 1)
-          test -n "${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}" || (echo "Missing secret: VITE_SUPABASE_PUBLISHABLE_KEY" && exit 1)
-          test -n "${{ secrets.VITE_SUPABASE_PROJECT_ID }}" || (echo "Missing secret: VITE_SUPABASE_PROJECT_ID" && exit 1)
-          test -n "${{ secrets.HOSTINGER_HOST }}" || (echo "Missing secret: HOSTINGER_HOST" && exit 1)
-          test -n "${{ secrets.HOSTINGER_USER }}" || (echo "Missing secret: HOSTINGER_USER" && exit 1)
-          test -n "${{ secrets.HOSTINGER_PASS }}" || (echo "Missing secret: HOSTINGER_PASS" && exit 1)
-
-      - name: Create build environment file
-        run: |
-          echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" >> .env
-          echo "VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}" >> .env
-          echo "VITE_SUPABASE_PROJECT_ID=${{ secrets.VITE_SUPABASE_PROJECT_ID }}" >> .env
+          test -n "$VITE_SUPABASE_URL" || (echo "Missing secret: VITE_SUPABASE_URL" && exit 1)
+          test -n "$VITE_SUPABASE_PUBLISHABLE_KEY" || (echo "Missing secret: VITE_SUPABASE_PUBLISHABLE_KEY" && exit 1)
+          test -n "$VITE_SUPABASE_PROJECT_ID" || (echo "Missing secret: VITE_SUPABASE_PROJECT_ID" && exit 1)
+          test -n "$FTP_SERVER" || (echo "Missing FTP secret: add HOSTINGER_HOST or FTP_SERVER" && exit 1)
+          test -n "$FTP_USERNAME" || (echo "Missing FTP secret: add HOSTINGER_USER or FTP_USERNAME" && exit 1)
+          test -n "$FTP_PASSWORD" || (echo "Missing FTP secret: add HOSTINGER_PASS or FTP_PASSWORD" && exit 1)
 
       - name: Build application
-        run: npm run build
+        run: bun run build
+
+      - name: Verify build output
+        run: test -f dist/index.html || (echo "Build failed: dist/index.html was not created" && exit 1)
 
       - name: Deploy to Hostinger FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.HOSTINGER_HOST }}
-          username: ${{ secrets.HOSTINGER_USER }}
-          password: ${{ secrets.HOSTINGER_PASS }}
+          server: ${{ env.FTP_SERVER }}
+          username: ${{ env.FTP_USERNAME }}
+          password: ${{ env.FTP_PASSWORD }}
           local-dir: ./dist/
-          server-dir: /public_html/
+          server-dir: ${{ env.FTP_SERVER_DIR }}
