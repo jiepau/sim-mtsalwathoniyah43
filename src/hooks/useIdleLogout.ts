@@ -1,30 +1,31 @@
 import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
-const IDLE_MS = 30 * 60 * 1000; // 30 menit
+const IDLE_MS = 4 * 60 * 60 * 1000; // 4 jam
 const EVENTS = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'wheel'] as const;
 const STORAGE_KEY = 'lastActivityAt';
 
 /**
- * Auto-logout setelah idle 30 menit (tanpa peringatan).
+ * Auto-logout setelah idle 4 jam (tanpa peringatan).
  * Aktivitas disinkronkan antar-tab via localStorage.
  */
 export function useIdleLogout() {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!user) return;
 
     const triggerLogout = async () => {
-      toast.info('Sesi berakhir karena tidak ada aktivitas selama 30 menit. Silakan login ulang.');
+      toast.info('Sesi berakhir karena tidak ada aktivitas selama 4 jam. Silakan login ulang.');
       try {
         await signOut();
       } finally {
-        // Reload supaya semua cache React Query bersih
         localStorage.removeItem(STORAGE_KEY);
-        setTimeout(() => window.location.replace('/login'), 300);
+        setTimeout(() => navigate('/login', { replace: true }), 300);
       }
     };
 
@@ -58,5 +59,5 @@ export function useIdleLogout() {
       EVENTS.forEach((ev) => window.removeEventListener(ev, markActivity));
       window.removeEventListener('storage', onStorage);
     };
-  }, [user, signOut]);
+  }, [user, signOut, navigate]);
 }

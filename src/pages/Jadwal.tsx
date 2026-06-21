@@ -108,6 +108,38 @@ export default function JadwalPage() {
     return Array.from(set).sort((a, b) => a - b);
   }, [jamList]);
 
+  const slotMetaByDayKe = useMemo(() => {
+    const map = new Map<string, { display: string; time: string }>();
+    DAYS.forEach(hari => {
+      let noKbm = 0;
+      jamList
+        .filter(j => j.hari === hari)
+        .sort((a, b) => a.jam_ke - b.jam_ke)
+        .forEach(j => {
+          const label = (j.label || "").toLowerCase();
+          const isTadarus = label.includes("tadarus");
+          const countsAsJamPertama = label.includes("upacara") || label.includes("muhadhoroh");
+          let display: string;
+          if (isTadarus) display = "Pra-KBM";
+          else if (countsAsJamPertama) display = `Ke-${++noKbm}`;
+          else if (j.is_istirahat) display = j.label || "Istirahat";
+          else display = `Ke-${++noKbm}`;
+          map.set(`${hari}-${j.jam_ke}`, { display, time: `${j.jam_mulai.slice(0, 5)}–${j.jam_selesai.slice(0, 5)}` });
+        });
+    });
+    return map;
+  }, [jamList]);
+
+  const formatSlotLabel = (hari: number, jamKe: number) => slotMetaByDayKe.get(`${hari}-${jamKe}`)?.display || `Ke-${jamKe}`;
+  const formatRowLabel = (jamKe: number) => {
+    const labels = Array.from(new Set(DAYS.map(d => slotMetaByDayKe.get(`${d}-${jamKe}`)?.display).filter(Boolean) as string[]));
+    return labels.length === 1 ? labels[0] : labels.length > 1 ? labels.join(" / ") : `Ke-${jamKe}`;
+  };
+  const formatRowTime = (jamKe: number) => {
+    const times = Array.from(new Set(DAYS.map(d => slotMetaByDayKe.get(`${d}-${jamKe}`)?.time).filter(Boolean) as string[]));
+    return times.length === 1 ? times[0] : times.length > 1 ? "waktu bervariasi" : null;
+  };
+
   const jamByDayKe = useMemo(() => {
     const map = new Map<string, Jam>();
     jamList.forEach(j => map.set(`${j.hari}-${j.jam_ke}`, j));
@@ -320,11 +352,11 @@ export default function JadwalPage() {
 
     const rows: any[] = [];
     for (const hari of opts.days) {
-      let jamKe = 1;
+      let slotKe = 1;
       // Tadarus di awal hari
       if (opts.tadarus?.enabled) {
         rows.push({
-          ta_id: taId, hari, jam_ke: jamKe++,
+          ta_id: taId, hari, jam_ke: slotKe++,
           jam_mulai: opts.tadarus.mulai, jam_selesai: opts.tadarus.selesai,
           is_istirahat: true, label: opts.tadarus.label || "Tadarus",
         });
@@ -334,7 +366,7 @@ export default function JadwalPage() {
       if (opts.muhadhorohSenin?.enabled && hari === 1) {
         const dur = opts.muhadhorohSenin.durasiMenit || opts.durasiMenit;
         rows.push({
-          ta_id: taId, hari, jam_ke: jamKe++,
+          ta_id: taId, hari, jam_ke: slotKe++,
           jam_mulai: toTime(cursor), jam_selesai: toTime(cursor + dur),
           is_istirahat: true, label: opts.muhadhorohSenin.label || "Upacara/Muhadhoroh",
         });
@@ -343,11 +375,11 @@ export default function JadwalPage() {
       for (let i = 1; i <= opts.jumlahJam; i++) {
         const start = cursor;
         const end = cursor + opts.durasiMenit;
-        rows.push({ ta_id: taId, hari, jam_ke: jamKe++, jam_mulai: toTime(start), jam_selesai: toTime(end), is_istirahat: false, label: null });
+        rows.push({ ta_id: taId, hari, jam_ke: slotKe++, jam_mulai: toTime(start), jam_selesai: toTime(end), is_istirahat: false, label: null });
         cursor = end;
         const ist = opts.istirahat.filter(x => x.afterJamKe === i);
         for (const x of ist) {
-          rows.push({ ta_id: taId, hari, jam_ke: jamKe++, jam_mulai: toTime(cursor), jam_selesai: toTime(cursor + x.durasiMenit), is_istirahat: true, label: x.label || "Istirahat" });
+          rows.push({ ta_id: taId, hari, jam_ke: slotKe++, jam_mulai: toTime(cursor), jam_selesai: toTime(cursor + x.durasiMenit), is_istirahat: true, label: x.label || "Istirahat" });
           cursor += x.durasiMenit;
         }
       }
@@ -501,7 +533,7 @@ export default function JadwalPage() {
               <table className="w-full border text-sm">
                 <thead>
                   <tr>
-                    <th className="border bg-muted p-2 w-24">Jam</th>
+                    <th className="border bg-muted p-2 w-28">Jam</th>
                     {DAYS.map(d => <th key={d} className="border bg-muted p-2">{HARI_LABEL[d]}</th>)}
                   </tr>
                 </thead>
@@ -509,11 +541,8 @@ export default function JadwalPage() {
                   {jamKeList.map(jk => (
                     <tr key={jk}>
                       <td className="border p-2 text-center align-top">
-                        <div className="font-semibold">Ke-{jk}</div>
-                        {(() => {
-                          const j = jamList.find(x => x.jam_ke === jk);
-                          return j ? <div className="text-xs text-muted-foreground">{j.jam_mulai.slice(0,5)}–{j.jam_selesai.slice(0,5)}</div> : null;
-                        })()}
+                        <div className="font-semibold">{formatRowLabel(jk)}</div>
+                        {formatRowTime(jk) && <div className="text-xs text-muted-foreground">{formatRowTime(jk)}</div>}
                       </td>
                       {DAYS.map(d => {
                         const jam = jamByDayKe.get(`${d}-${jk}`);
@@ -594,7 +623,7 @@ export default function JadwalPage() {
             <table className="w-full border text-sm">
               <thead>
                 <tr>
-                  <th className="border bg-muted p-2 w-24">Jam</th>
+                    <th className="border bg-muted p-2 w-28">Jam</th>
                   {DAYS.map(d => <th key={d} className="border bg-muted p-2">{HARI_LABEL[d]}</th>)}
                 </tr>
               </thead>
@@ -602,11 +631,8 @@ export default function JadwalPage() {
                 {jamKeList.map(jk => (
                   <tr key={jk}>
                     <td className="border p-2 text-center align-top">
-                      <div className="font-semibold">Ke-{jk}</div>
-                      {(() => {
-                        const j = jamList.find(x => x.jam_ke === jk);
-                        return j ? <div className="text-xs text-muted-foreground">{j.jam_mulai.slice(0,5)}–{j.jam_selesai.slice(0,5)}</div> : null;
-                      })()}
+                      <div className="font-semibold">{formatRowLabel(jk)}</div>
+                      {formatRowTime(jk) && <div className="text-xs text-muted-foreground">{formatRowTime(jk)}</div>}
                     </td>
                     {DAYS.map(d => {
                       const items = (jadwalByGuru.get(`${gtkId}-${d}-${jk}`) || []);
@@ -800,7 +826,7 @@ export default function JadwalPage() {
                 <tbody>
                   {jamHari.map(j => (
                     <tr key={j.id}>
-                      <td style={{ textAlign: "center" }}>{j.is_istirahat ? (j.label || "Istirahat") : `Ke-${j.jam_ke}`}</td>
+                      <td style={{ textAlign: "center" }}>{formatSlotLabel(d, j.jam_ke)}</td>
                       <td style={{ textAlign: "center", whiteSpace: "nowrap" }}>{j.jam_mulai.slice(0,5)}–{j.jam_selesai.slice(0,5)}</td>
                       {j.is_istirahat ? (
                         <td className="istirahat" colSpan={kelasList.length}>{j.label || "Istirahat"}</td>
@@ -921,7 +947,7 @@ export default function JadwalPage() {
                 </Select>
               </div>
               <div>
-                <Label>Jam ke-</Label>
+                <Label>Urutan slot</Label>
                 <Input type="number" min={1} max={20} value={jamDialog.row.jam_ke || 1}
                   onChange={e => setJamDialog(s => ({ ...s, row: { ...s.row!, jam_ke: Number(e.target.value) } }))} />
               </div>
@@ -960,7 +986,7 @@ export default function JadwalPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {cellDialog.existing ? "Edit" : "Tambah"} Jadwal — {HARI_LABEL[cellDialog.hari]} jam ke-{cellDialog.jam_ke}
+              {cellDialog.existing ? "Edit" : "Tambah"} Jadwal — {HARI_LABEL[cellDialog.hari]} {formatSlotLabel(cellDialog.hari, cellDialog.jam_ke)}
             </DialogTitle>
           </DialogHeader>
           <CellForm
