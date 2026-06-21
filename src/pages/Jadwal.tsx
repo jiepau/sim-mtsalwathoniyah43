@@ -308,6 +308,8 @@ export default function JadwalPage() {
     days: number[]; jamMulai: string; jumlahJam: number; durasiMenit: number;
     istirahat: { afterJamKe: number; durasiMenit: number; label: string }[];
     replaceExisting: boolean;
+    tadarus?: { enabled: boolean; mulai: string; selesai: string; label: string };
+    muhadhorohSenin?: { enabled: boolean; durasiMenit: number; label: string };
   }) {
     if (!taId) { toast.error("Pilih Tahun Ajaran"); return; }
     if (opts.days.length === 0) { toast.error("Pilih minimal 1 hari"); return; }
@@ -318,8 +320,26 @@ export default function JadwalPage() {
 
     const rows: any[] = [];
     for (const hari of opts.days) {
-      let cursor = toMin(opts.jamMulai);
       let jamKe = 1;
+      // Tadarus di awal hari
+      if (opts.tadarus?.enabled) {
+        rows.push({
+          ta_id: taId, hari, jam_ke: jamKe++,
+          jam_mulai: opts.tadarus.mulai, jam_selesai: opts.tadarus.selesai,
+          is_istirahat: true, label: opts.tadarus.label || "Tadarus",
+        });
+      }
+      let cursor = toMin(opts.jamMulai);
+      // Upacara/Muhadhoroh hanya di hari Senin sebagai jam pertama KBM
+      if (opts.muhadhorohSenin?.enabled && hari === 1) {
+        const dur = opts.muhadhorohSenin.durasiMenit || opts.durasiMenit;
+        rows.push({
+          ta_id: taId, hari, jam_ke: jamKe++,
+          jam_mulai: toTime(cursor), jam_selesai: toTime(cursor + dur),
+          is_istirahat: true, label: opts.muhadhorohSenin.label || "Upacara/Muhadhoroh",
+        });
+        cursor += dur;
+      }
       for (let i = 1; i <= opts.jumlahJam; i++) {
         const start = cursor;
         const end = cursor + opts.durasiMenit;
@@ -358,6 +378,41 @@ export default function JadwalPage() {
       </style></head><body>${node.innerHTML}</body></html>`);
     w.document.close();
     setTimeout(() => { w.print(); }, 300);
+  }
+
+  function printAllKelasF4() {
+    const node = document.getElementById("print-all-kelas");
+    if (!node) return;
+    const w = window.open("", "_blank", "width=1200,height=800");
+    if (!w) return;
+    w.document.write(`<html><head><title>Cetak Jadwal Semua Kelas</title>
+      <style>
+        @page { size: 215mm 330mm landscape; margin: 8mm; }
+        body{font-family: Arial, sans-serif; padding: 0; margin: 0; color:#000;}
+        table{width:100%; border-collapse: collapse; font-size: 9px;}
+        th,td{border:1px solid #333; padding:2px 3px; vertical-align: top; line-height:1.15;}
+        th{background:#d8f3ec; text-align:center;}
+        .istirahat{background:#fff7d6; text-align:center; font-style: italic;}
+        .hari-sep{background:#0d9488; color:#fff; font-weight:bold; text-align:center; padding:3px;}
+        .mapel{font-weight:600;}
+        .guru{color:#444; font-size:8px;}
+        h1,h2,h3,h4{margin:2px 0;}
+        .grid-2{display:grid; grid-template-columns: 1.2fr 1fr; gap:8px; margin-top:6px;}
+        .box{border:1px solid #333; padding:4px;}
+        .box h4{font-size:10px; margin:0 0 3px 0; background:#0d9488; color:#fff; padding:2px 4px;}
+        .small{font-size:9px;}
+      </style></head><body>${node.innerHTML}</body></html>`);
+    w.document.close();
+    setTimeout(() => { w.print(); }, 400);
+  }
+
+  async function deleteAllJam() {
+    if (!taId) return;
+    if (!confirm("Hapus SEMUA slot jam pelajaran pada Tahun Ajaran ini?")) return;
+    if (!confirm("Konfirmasi sekali lagi: tindakan ini tidak bisa dibatalkan. Lanjutkan?")) return;
+    const { error } = await db.from("jadwal_jam").delete().eq("ta_id", taId);
+    if (error) toast.error(error.message);
+    else { toast.success("Semua slot jam dihapus"); loadAll(); }
   }
 
   const semesterUiValue = semester;
@@ -416,7 +471,8 @@ export default function JadwalPage() {
                 </SelectContent>
               </Select>
             </div>
-            <Button variant="outline" onClick={() => printArea("print-kelas")}><Printer className="h-4 w-4 mr-1" />Cetak</Button>
+            <Button variant="outline" onClick={() => printArea("print-kelas")}><Printer className="h-4 w-4 mr-1" />Cetak Kelas Ini</Button>
+            <Button onClick={printAllKelasF4}><Printer className="h-4 w-4 mr-1" />Cetak Semua Kelas (F4)</Button>
           </div>
 
           {canEdit && (
@@ -589,9 +645,14 @@ export default function JadwalPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-base">Slot Jam Pelajaran ({taList.find(t => t.id === taId)?.nama_ta})</CardTitle>
               {canEdit && (
-                <Button size="sm" onClick={() => setJamDialog({ open: true, row: { hari: 1, jam_ke: 1, jam_mulai: "07:00", jam_selesai: "07:40" } })}>
-                  <Plus className="h-4 w-4 mr-1" />Tambah
-                </Button>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="destructive" onClick={deleteAllJam} disabled={jamList.length === 0}>
+                    <Trash2 className="h-4 w-4 mr-1" />Hapus Semua Slot
+                  </Button>
+                  <Button size="sm" onClick={() => setJamDialog({ open: true, row: { hari: 1, jam_ke: 1, jam_mulai: "07:00", jam_selesai: "07:40" } })}>
+                    <Plus className="h-4 w-4 mr-1" />Tambah
+                  </Button>
+                </div>
               )}
             </CardHeader>
             <CardContent>
@@ -718,6 +779,133 @@ export default function JadwalPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Hidden printable: Semua Kelas (F4 landscape) */}
+      <div id="print-all-kelas" style={{ position: "absolute", left: "-99999px", top: 0 }}>
+        <PrintKopMadrasah judul="Jadwal Pelajaran" subjudul={`JADWAL PELAJARAN SEMESTER ${semester.toUpperCase()} — ${taList.find(t => t.id === taId)?.nama_ta || ""}`} />
+        {DAYS.map(d => {
+          const jamHari = jamList.filter(j => j.hari === d).sort((a, b) => a.jam_ke - b.jam_ke);
+          if (jamHari.length === 0) return null;
+          return (
+            <div key={d} style={{ marginTop: 6 }}>
+              <div className="hari-sep">{HARI_LABEL[d]}</div>
+              <table>
+                <thead>
+                  <tr>
+                    <th style={{ width: "70px" }}>Jam</th>
+                    <th style={{ width: "60px" }}>Waktu</th>
+                    {kelasList.map(k => <th key={k.id}>{k.nama_kelas}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {jamHari.map(j => (
+                    <tr key={j.id}>
+                      <td style={{ textAlign: "center" }}>{j.is_istirahat ? (j.label || "Istirahat") : `Ke-${j.jam_ke}`}</td>
+                      <td style={{ textAlign: "center", whiteSpace: "nowrap" }}>{j.jam_mulai.slice(0,5)}–{j.jam_selesai.slice(0,5)}</td>
+                      {j.is_istirahat ? (
+                        <td className="istirahat" colSpan={kelasList.length}>{j.label || "Istirahat"}</td>
+                      ) : (
+                        kelasList.map(k => {
+                          const cell = jadwalByKelas.get(`${k.id}-${d}-${j.jam_ke}`);
+                          const g = cell?.gtk_id ? gtkList.find(x => x.id === cell.gtk_id) : null;
+                          return (
+                            <td key={k.id}>
+                              {cell ? (
+                                <>
+                                  <div className="mapel">{cell.mapel}</div>
+                                  {g && <div className="guru">{g.nama}</div>}
+                                </>
+                              ) : <span style={{ color: "#999" }}>-</span>}
+                            </td>
+                          );
+                        })
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        })}
+
+        <div className="grid-2">
+          {/* Beban Jam Guru */}
+          <div className="box">
+            <h4>Beban Jam Mengajar Guru / Minggu</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th style={{ width: "20px" }}>No</th>
+                  <th style={{ textAlign: "left" }}>Nama Guru</th>
+                  <th style={{ textAlign: "left" }}>Mapel</th>
+                  <th style={{ width: "40px" }}>JP</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(() => {
+                  const counts = new Map<string, number>();
+                  jadwalList.forEach(j => {
+                    if (!j.gtk_id) return;
+                    const jam = jamByDayKe.get(`${j.hari}-${j.jam_ke}`);
+                    if (jam?.is_istirahat) return;
+                    counts.set(j.gtk_id, (counts.get(j.gtk_id) || 0) + 1);
+                  });
+                  const rows = gtkList
+                    .map(g => ({ g, jp: counts.get(g.id) || 0 }))
+                    .filter(r => r.jp > 0)
+                    .sort((a, b) => b.jp - a.jp);
+                  if (rows.length === 0) return <tr><td colSpan={4} style={{ textAlign: "center", fontStyle: "italic" }}>Belum ada jadwal</td></tr>;
+                  return rows.map((r, i) => (
+                    <tr key={r.g.id}>
+                      <td style={{ textAlign: "center" }}>{i + 1}</td>
+                      <td>{r.g.nama}</td>
+                      <td>{r.g.mapel || "-"}</td>
+                      <td style={{ textAlign: "center", fontWeight: 600 }}>{r.jp}</td>
+                    </tr>
+                  ));
+                })()}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Petugas Piket per Hari */}
+          <div className="box">
+            <h4>Petugas Piket Harian</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th style={{ width: "70px", textAlign: "left" }}>Hari</th>
+                  <th style={{ textAlign: "left" }}>Petugas Piket</th>
+                </tr>
+              </thead>
+              <tbody>
+                {DAYS.map(d => {
+                  const items = piketList.filter(p => p.hari === d);
+                  return (
+                    <tr key={d}>
+                      <td style={{ fontWeight: 600 }}>{HARI_LABEL[d]}</td>
+                      <td>
+                        {items.length === 0 ? <span style={{ fontStyle: "italic", color: "#888" }}>—</span> :
+                          items.map(it => gtkList.find(g => g.id === it.gtk_id)?.nama || "-").join(", ")}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 14, display: "flex", justifyContent: "space-between", fontSize: 10 }}>
+          <div></div>
+          <div style={{ textAlign: "center" }}>
+            <div>Mengetahui,</div>
+            <div>Kepala Madrasah</div>
+            <div style={{ height: 50 }} />
+            <div style={{ borderTop: "1px solid #000", paddingTop: 2, minWidth: 180 }}>__________________________</div>
+          </div>
+        </div>
+      </div>
 
       {/* Jam Dialog */}
       <Dialog open={jamDialog.open} onOpenChange={(o) => setJamDialog(s => ({ ...s, open: o }))}>
@@ -876,9 +1064,9 @@ function CellForm({ initial, hari, jam_ke, gtkList, onCancel, onSave, onDelete }
   );
 }
 
-function JamGenerator({ onGenerate }: { onGenerate: (opts: { days: number[]; jamMulai: string; jumlahJam: number; durasiMenit: number; istirahat: { afterJamKe: number; durasiMenit: number; label: string }[]; replaceExisting: boolean }) => void }) {
+function JamGenerator({ onGenerate }: { onGenerate: (opts: { days: number[]; jamMulai: string; jumlahJam: number; durasiMenit: number; istirahat: { afterJamKe: number; durasiMenit: number; label: string }[]; replaceExisting: boolean; tadarus?: { enabled: boolean; mulai: string; selesai: string; label: string }; muhadhorohSenin?: { enabled: boolean; durasiMenit: number; label: string } }) => void }) {
   const [days, setDays] = useState<number[]>([1, 2, 3, 4, 5, 6]);
-  const [jamMulai, setJamMulai] = useState("07:00");
+  const [jamMulai, setJamMulai] = useState("07:15");
   const [jumlahJam, setJumlahJam] = useState(9);
   const [durasiMenit, setDurasiMenit] = useState(40);
   const [replaceExisting, setReplaceExisting] = useState(true);
@@ -886,6 +1074,15 @@ function JamGenerator({ onGenerate }: { onGenerate: (opts: { days: number[]; jam
     { afterJamKe: 3, durasiMenit: 15, label: "Istirahat" },
     { afterJamKe: 6, durasiMenit: 30, label: "Sholat & Istirahat" },
   ]);
+  // Tadarus harian
+  const [tadarusEnabled, setTadarusEnabled] = useState(true);
+  const [tadarusMulai, setTadarusMulai] = useState("06:30");
+  const [tadarusSelesai, setTadarusSelesai] = useState("06:35");
+  const [tadarusLabel, setTadarusLabel] = useState("Tadarus");
+  // Upacara/Muhadhoroh Senin
+  const [muhEnabled, setMuhEnabled] = useState(true);
+  const [muhDurasi, setMuhDurasi] = useState(40);
+  const [muhLabel, setMuhLabel] = useState("Upacara/Muhadhoroh");
 
   function toggleDay(d: number) {
     setDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d].sort());
@@ -908,8 +1105,39 @@ function JamGenerator({ onGenerate }: { onGenerate: (opts: { days: number[]; jam
             ))}
           </div>
         </div>
+
+        {/* Tadarus Harian */}
+        <div className="border rounded-md p-3 bg-muted/30">
+          <label className="flex items-center gap-2 text-sm font-medium mb-2 cursor-pointer">
+            <Checkbox checked={tadarusEnabled} onCheckedChange={v => setTadarusEnabled(!!v)} />
+            Tadarus harian (sebelum jam KBM, berlaku di semua hari terpilih)
+          </label>
+          {tadarusEnabled && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div><Label className="text-xs">Mulai</Label><Input type="time" value={tadarusMulai} onChange={e => setTadarusMulai(e.target.value)} /></div>
+              <div><Label className="text-xs">Selesai</Label><Input type="time" value={tadarusSelesai} onChange={e => setTadarusSelesai(e.target.value)} /></div>
+              <div><Label className="text-xs">Label</Label><Input value={tadarusLabel} onChange={e => setTadarusLabel(e.target.value)} /></div>
+            </div>
+          )}
+        </div>
+
+        {/* Upacara/Muhadhoroh Senin */}
+        <div className="border rounded-md p-3 bg-muted/30">
+          <label className="flex items-center gap-2 text-sm font-medium mb-2 cursor-pointer">
+            <Checkbox checked={muhEnabled} onCheckedChange={v => setMuhEnabled(!!v)} />
+            Upacara/Muhadhoroh — jam pertama KBM khusus hari Senin
+          </label>
+          {muhEnabled && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div><Label className="text-xs">Durasi (menit)</Label><Input type="number" min={5} max={120} value={muhDurasi} onChange={e => setMuhDurasi(Number(e.target.value))} /></div>
+              <div className="md:col-span-2"><Label className="text-xs">Label</Label><Input value={muhLabel} onChange={e => setMuhLabel(e.target.value)} /></div>
+            </div>
+          )}
+          <p className="text-[11px] text-muted-foreground mt-2">Tip: jam KBM pertama dimulai pukul {jamMulai}. Saat Senin diaktifkan, slot {jamMulai}–{(() => { const [h,m]=jamMulai.split(":").map(Number); const t=h*60+m+muhDurasi; return `${String(Math.floor(t/60)).padStart(2,"0")}:${String(t%60).padStart(2,"0")}`; })()} dipakai untuk {muhLabel}, dan KBM Senin mulai sesudahnya.</p>
+        </div>
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div><Label className="text-xs">Jam Mulai</Label><Input type="time" value={jamMulai} onChange={e => setJamMulai(e.target.value)} /></div>
+          <div><Label className="text-xs">Jam KBM Mulai</Label><Input type="time" value={jamMulai} onChange={e => setJamMulai(e.target.value)} /></div>
           <div><Label className="text-xs">Jumlah Jam KBM</Label><Input type="number" min={1} max={20} value={jumlahJam} onChange={e => setJumlahJam(Number(e.target.value))} /></div>
           <div><Label className="text-xs">Durasi/Jam (menit)</Label><Input type="number" min={5} max={120} value={durasiMenit} onChange={e => setDurasiMenit(Number(e.target.value))} /></div>
           <div className="flex items-end"><label className="flex items-center gap-2 text-sm"><Checkbox checked={replaceExisting} onCheckedChange={v => setReplaceExisting(!!v)} />Ganti slot lama di hari terpilih</label></div>
@@ -934,7 +1162,11 @@ function JamGenerator({ onGenerate }: { onGenerate: (opts: { days: number[]; jam
           </div>
         </div>
         <div className="flex justify-end">
-          <Button onClick={() => onGenerate({ days, jamMulai, jumlahJam, durasiMenit, istirahat, replaceExisting })}>
+          <Button onClick={() => onGenerate({
+            days, jamMulai, jumlahJam, durasiMenit, istirahat, replaceExisting,
+            tadarus: { enabled: tadarusEnabled, mulai: tadarusMulai, selesai: tadarusSelesai, label: tadarusLabel },
+            muhadhorohSenin: { enabled: muhEnabled, durasiMenit: muhDurasi, label: muhLabel },
+          })}>
             <Wand2 className="h-4 w-4 mr-1" />Generate Slot Jam
           </Button>
         </div>
