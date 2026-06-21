@@ -471,7 +471,8 @@ export default function JadwalPage() {
                 </SelectContent>
               </Select>
             </div>
-            <Button variant="outline" onClick={() => printArea("print-kelas")}><Printer className="h-4 w-4 mr-1" />Cetak</Button>
+            <Button variant="outline" onClick={() => printArea("print-kelas")}><Printer className="h-4 w-4 mr-1" />Cetak Kelas Ini</Button>
+            <Button onClick={printAllKelasF4}><Printer className="h-4 w-4 mr-1" />Cetak Semua Kelas (F4)</Button>
           </div>
 
           {canEdit && (
