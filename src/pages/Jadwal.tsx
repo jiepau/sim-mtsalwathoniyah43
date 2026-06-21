@@ -308,6 +308,8 @@ export default function JadwalPage() {
     days: number[]; jamMulai: string; jumlahJam: number; durasiMenit: number;
     istirahat: { afterJamKe: number; durasiMenit: number; label: string }[];
     replaceExisting: boolean;
+    tadarus?: { enabled: boolean; mulai: string; selesai: string; label: string };
+    muhadhorohSenin?: { enabled: boolean; durasiMenit: number; label: string };
   }) {
     if (!taId) { toast.error("Pilih Tahun Ajaran"); return; }
     if (opts.days.length === 0) { toast.error("Pilih minimal 1 hari"); return; }
@@ -318,8 +320,26 @@ export default function JadwalPage() {
 
     const rows: any[] = [];
     for (const hari of opts.days) {
-      let cursor = toMin(opts.jamMulai);
       let jamKe = 1;
+      // Tadarus di awal hari
+      if (opts.tadarus?.enabled) {
+        rows.push({
+          ta_id: taId, hari, jam_ke: jamKe++,
+          jam_mulai: opts.tadarus.mulai, jam_selesai: opts.tadarus.selesai,
+          is_istirahat: true, label: opts.tadarus.label || "Tadarus",
+        });
+      }
+      let cursor = toMin(opts.jamMulai);
+      // Upacara/Muhadhoroh hanya di hari Senin sebagai jam pertama KBM
+      if (opts.muhadhorohSenin?.enabled && hari === 1) {
+        const dur = opts.muhadhorohSenin.durasiMenit || opts.durasiMenit;
+        rows.push({
+          ta_id: taId, hari, jam_ke: jamKe++,
+          jam_mulai: toTime(cursor), jam_selesai: toTime(cursor + dur),
+          is_istirahat: true, label: opts.muhadhorohSenin.label || "Upacara/Muhadhoroh",
+        });
+        cursor += dur;
+      }
       for (let i = 1; i <= opts.jumlahJam; i++) {
         const start = cursor;
         const end = cursor + opts.durasiMenit;
