@@ -2,12 +2,12 @@ import { useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
-const IDLE_MS = 30 * 60 * 1000; // 30 menit
+const IDLE_MS = 4 * 60 * 60 * 1000; // 4 jam
 const EVENTS = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'wheel'] as const;
 const STORAGE_KEY = 'lastActivityAt';
 
 /**
- * Auto-logout setelah idle 30 menit (tanpa peringatan).
+ * Auto-logout setelah idle 4 jam (tanpa peringatan).
  * Aktivitas disinkronkan antar-tab via localStorage.
  */
 export function useIdleLogout() {
@@ -18,7 +18,7 @@ export function useIdleLogout() {
     if (!user) return;
 
     const triggerLogout = async () => {
-      toast.info('Sesi berakhir karena tidak ada aktivitas selama 30 menit. Silakan login ulang.');
+      toast.info('Sesi berakhir karena tidak ada aktivitas selama 4 jam. Silakan login ulang.');
       try {
         await signOut();
       } finally {
