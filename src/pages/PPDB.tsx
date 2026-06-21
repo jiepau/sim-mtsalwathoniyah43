@@ -203,37 +203,37 @@ export default function PPDB() {
       </Card>
 
       {/* Ringkasan statistik + chart asal sekolah dalam baris kompak */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="md:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <Card className="lg:col-span-2">
           <CardContent className="pt-4">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-semibold">Statistik SPMB</span>
               <Badge variant="outline" className="text-xs">{spmbSettings?.tahun_ajaran ?? '-'}</Badge>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
               <div className="rounded-md border bg-background p-2 text-center">
                 <div className="text-[11px] text-muted-foreground">Total</div>
-                <div className="text-lg font-semibold">{pendaftar.length}</div>
+                <div className="text-base sm:text-lg font-semibold">{pendaftar.length}</div>
               </div>
               <div className="rounded-md border bg-blue-50 p-2 text-center">
                 <div className="text-[11px] text-blue-700">📥 Baru</div>
-                <div className="text-lg font-semibold text-blue-800">{countByStatus('baru')}</div>
+                <div className="text-base sm:text-lg font-semibold text-blue-800">{countByStatus('baru')}</div>
               </div>
               <div className="rounded-md border bg-green-50 p-2 text-center">
                 <div className="text-[11px] text-green-700">✅ Diterima</div>
-                <div className="text-lg font-semibold text-green-800">{countByStatus('diterima')}</div>
+                <div className="text-base sm:text-lg font-semibold text-green-800">{countByStatus('diterima')}</div>
               </div>
               <div className="rounded-md border bg-red-50 p-2 text-center">
                 <div className="text-[11px] text-red-700">❌ Ditolak</div>
-                <div className="text-lg font-semibold text-red-800">{countByStatus('ditolak')}</div>
+                <div className="text-base sm:text-lg font-semibold text-red-800">{countByStatus('ditolak')}</div>
               </div>
-              <div className="rounded-md border bg-amber-50 p-2 text-center">
+              <div className="rounded-md border bg-amber-50 p-2 text-center col-span-3 sm:col-span-1">
                 <div className="text-[11px] text-amber-700">🚪 Mundur</div>
-                <div className="text-lg font-semibold text-amber-800">{countByStatus('batal')}</div>
+                <div className="text-base sm:text-lg font-semibold text-amber-800">{countByStatus('batal')}</div>
               </div>
             </div>
             {pendaftar.length > 0 && (
-              <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-muted-foreground">
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs text-muted-foreground">
                 <div className="flex justify-between border-t pt-2">
                   <span>Tingkat Penerimaan</span>
                   <span className="font-medium text-foreground">{Math.round((countByStatus('diterima') / pendaftar.length) * 100)}%</span>
@@ -246,14 +246,14 @@ export default function PPDB() {
             )}
           </CardContent>
         </Card>
-        <div className="md:col-span-1">
+        <div className="lg:col-span-1">
           <PPDBAsalSekolahDonut {...asalBreakdown} />
         </div>
       </div>
 
       <div className="space-y-3">
         <div className="flex flex-wrap gap-2 items-center">
-          <div className="relative flex-1 min-w-[200px]">
+          <div className="relative w-full sm:flex-1 sm:w-auto sm:min-w-[200px]">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Cari nama / no pendaftaran..."
@@ -263,7 +263,7 @@ export default function PPDB() {
             />
           </div>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-[130px]">
+            <SelectTrigger className="flex-1 sm:flex-none sm:w-[130px] min-w-[130px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -275,11 +275,11 @@ export default function PPDB() {
             </SelectContent>
           </Select>
 
-          {/* Pengaturan SPMB dalam Sheet */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="sm" variant="outline">
-                <Settings className="h-4 w-4 mr-1" /> Pengaturan
+              <Button size="sm" variant="outline" title="Pengaturan SPMB">
+                <Settings className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Pengaturan</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
@@ -293,11 +293,11 @@ export default function PPDB() {
             </SheetContent>
           </Sheet>
 
-          {/* Konten Landing dalam Sheet */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="sm" variant="outline">
-                <LayoutTemplate className="h-4 w-4 mr-1" /> Konten Landing
+              <Button size="sm" variant="outline" title="Konten Landing">
+                <LayoutTemplate className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Konten Landing</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
@@ -311,18 +311,22 @@ export default function PPDB() {
             </SheetContent>
           </Sheet>
 
-          <Button size="sm" variant="outline" onClick={handleExportEmis}>
-            <Download className="h-4 w-4 mr-1" /> Export EMIS
+          <Button size="sm" variant="outline" onClick={handleExportEmis} title="Export EMIS">
+            <Download className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Export EMIS</span>
           </Button>
           <input type="file" accept=".csv" ref={fileInputRef} className="hidden" onChange={handleImportEmis} />
-          <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
-            <Upload className="h-4 w-4 mr-1" /> Import EMIS
+          <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()} title="Import EMIS">
+            <Upload className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Import EMIS</span>
           </Button>
-          <Button size="sm" variant="outline" onClick={() => setShowRekap(true)}>
-            <Printer className="h-4 w-4 mr-1" /> Cetak Rekap
+          <Button size="sm" variant="outline" onClick={() => setShowRekap(true)} title="Cetak Rekap">
+            <Printer className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Cetak Rekap</span>
           </Button>
-          <Button size="sm" onClick={() => setShowInputOffline(true)}>
-            <UserPlus className="h-4 w-4 mr-1" /> Tambah Pendaftar
+          <Button size="sm" onClick={() => setShowInputOffline(true)} className="ml-auto sm:ml-0">
+            <UserPlus className="h-4 w-4 mr-1" />
+            <span>Tambah</span><span className="hidden sm:inline">&nbsp;Pendaftar</span>
           </Button>
         </div>
 
