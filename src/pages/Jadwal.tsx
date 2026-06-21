@@ -1064,9 +1064,9 @@ function CellForm({ initial, hari, jam_ke, gtkList, onCancel, onSave, onDelete }
   );
 }
 
-function JamGenerator({ onGenerate }: { onGenerate: (opts: { days: number[]; jamMulai: string; jumlahJam: number; durasiMenit: number; istirahat: { afterJamKe: number; durasiMenit: number; label: string }[]; replaceExisting: boolean }) => void }) {
+function JamGenerator({ onGenerate }: { onGenerate: (opts: { days: number[]; jamMulai: string; jumlahJam: number; durasiMenit: number; istirahat: { afterJamKe: number; durasiMenit: number; label: string }[]; replaceExisting: boolean; tadarus?: { enabled: boolean; mulai: string; selesai: string; label: string }; muhadhorohSenin?: { enabled: boolean; durasiMenit: number; label: string } }) => void }) {
   const [days, setDays] = useState<number[]>([1, 2, 3, 4, 5, 6]);
-  const [jamMulai, setJamMulai] = useState("07:00");
+  const [jamMulai, setJamMulai] = useState("07:15");
   const [jumlahJam, setJumlahJam] = useState(9);
   const [durasiMenit, setDurasiMenit] = useState(40);
   const [replaceExisting, setReplaceExisting] = useState(true);
@@ -1074,6 +1074,15 @@ function JamGenerator({ onGenerate }: { onGenerate: (opts: { days: number[]; jam
     { afterJamKe: 3, durasiMenit: 15, label: "Istirahat" },
     { afterJamKe: 6, durasiMenit: 30, label: "Sholat & Istirahat" },
   ]);
+  // Tadarus harian
+  const [tadarusEnabled, setTadarusEnabled] = useState(true);
+  const [tadarusMulai, setTadarusMulai] = useState("06:30");
+  const [tadarusSelesai, setTadarusSelesai] = useState("06:35");
+  const [tadarusLabel, setTadarusLabel] = useState("Tadarus");
+  // Upacara/Muhadhoroh Senin
+  const [muhEnabled, setMuhEnabled] = useState(true);
+  const [muhDurasi, setMuhDurasi] = useState(40);
+  const [muhLabel, setMuhLabel] = useState("Upacara/Muhadhoroh");
 
   function toggleDay(d: number) {
     setDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d].sort());
@@ -1096,8 +1105,39 @@ function JamGenerator({ onGenerate }: { onGenerate: (opts: { days: number[]; jam
             ))}
           </div>
         </div>
+
+        {/* Tadarus Harian */}
+        <div className="border rounded-md p-3 bg-muted/30">
+          <label className="flex items-center gap-2 text-sm font-medium mb-2 cursor-pointer">
+            <Checkbox checked={tadarusEnabled} onCheckedChange={v => setTadarusEnabled(!!v)} />
+            Tadarus harian (sebelum jam KBM, berlaku di semua hari terpilih)
+          </label>
+          {tadarusEnabled && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div><Label className="text-xs">Mulai</Label><Input type="time" value={tadarusMulai} onChange={e => setTadarusMulai(e.target.value)} /></div>
+              <div><Label className="text-xs">Selesai</Label><Input type="time" value={tadarusSelesai} onChange={e => setTadarusSelesai(e.target.value)} /></div>
+              <div><Label className="text-xs">Label</Label><Input value={tadarusLabel} onChange={e => setTadarusLabel(e.target.value)} /></div>
+            </div>
+          )}
+        </div>
+
+        {/* Upacara/Muhadhoroh Senin */}
+        <div className="border rounded-md p-3 bg-muted/30">
+          <label className="flex items-center gap-2 text-sm font-medium mb-2 cursor-pointer">
+            <Checkbox checked={muhEnabled} onCheckedChange={v => setMuhEnabled(!!v)} />
+            Upacara/Muhadhoroh — jam pertama KBM khusus hari Senin
+          </label>
+          {muhEnabled && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div><Label className="text-xs">Durasi (menit)</Label><Input type="number" min={5} max={120} value={muhDurasi} onChange={e => setMuhDurasi(Number(e.target.value))} /></div>
+              <div className="md:col-span-2"><Label className="text-xs">Label</Label><Input value={muhLabel} onChange={e => setMuhLabel(e.target.value)} /></div>
+            </div>
+          )}
+          <p className="text-[11px] text-muted-foreground mt-2">Tip: jam KBM pertama dimulai pukul {jamMulai}. Saat Senin diaktifkan, slot {jamMulai}–{(() => { const [h,m]=jamMulai.split(":").map(Number); const t=h*60+m+muhDurasi; return `${String(Math.floor(t/60)).padStart(2,"0")}:${String(t%60).padStart(2,"0")}`; })()} dipakai untuk {muhLabel}, dan KBM Senin mulai sesudahnya.</p>
+        </div>
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div><Label className="text-xs">Jam Mulai</Label><Input type="time" value={jamMulai} onChange={e => setJamMulai(e.target.value)} /></div>
+          <div><Label className="text-xs">Jam KBM Mulai</Label><Input type="time" value={jamMulai} onChange={e => setJamMulai(e.target.value)} /></div>
           <div><Label className="text-xs">Jumlah Jam KBM</Label><Input type="number" min={1} max={20} value={jumlahJam} onChange={e => setJumlahJam(Number(e.target.value))} /></div>
           <div><Label className="text-xs">Durasi/Jam (menit)</Label><Input type="number" min={5} max={120} value={durasiMenit} onChange={e => setDurasiMenit(Number(e.target.value))} /></div>
           <div className="flex items-end"><label className="flex items-center gap-2 text-sm"><Checkbox checked={replaceExisting} onCheckedChange={v => setReplaceExisting(!!v)} />Ganti slot lama di hari terpilih</label></div>
@@ -1122,7 +1162,11 @@ function JamGenerator({ onGenerate }: { onGenerate: (opts: { days: number[]; jam
           </div>
         </div>
         <div className="flex justify-end">
-          <Button onClick={() => onGenerate({ days, jamMulai, jumlahJam, durasiMenit, istirahat, replaceExisting })}>
+          <Button onClick={() => onGenerate({
+            days, jamMulai, jumlahJam, durasiMenit, istirahat, replaceExisting,
+            tadarus: { enabled: tadarusEnabled, mulai: tadarusMulai, selesai: tadarusSelesai, label: tadarusLabel },
+            muhadhorohSenin: { enabled: muhEnabled, durasiMenit: muhDurasi, label: muhLabel },
+          })}>
             <Wand2 className="h-4 w-4 mr-1" />Generate Slot Jam
           </Button>
         </div>
