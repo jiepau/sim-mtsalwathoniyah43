@@ -108,6 +108,38 @@ export default function JadwalPage() {
     return Array.from(set).sort((a, b) => a - b);
   }, [jamList]);
 
+  const slotMetaByDayKe = useMemo(() => {
+    const map = new Map<string, { display: string; time: string }>();
+    DAYS.forEach(hari => {
+      let noKbm = 0;
+      jamList
+        .filter(j => j.hari === hari)
+        .sort((a, b) => a.jam_ke - b.jam_ke)
+        .forEach(j => {
+          const label = (j.label || "").toLowerCase();
+          const isTadarus = label.includes("tadarus");
+          const countsAsJamPertama = label.includes("upacara") || label.includes("muhadhoroh");
+          let display: string;
+          if (isTadarus) display = "Pra-KBM";
+          else if (countsAsJamPertama) display = `Ke-${++noKbm}`;
+          else if (j.is_istirahat) display = j.label || "Istirahat";
+          else display = `Ke-${++noKbm}`;
+          map.set(`${hari}-${j.jam_ke}`, { display, time: `${j.jam_mulai.slice(0, 5)}–${j.jam_selesai.slice(0, 5)}` });
+        });
+    });
+    return map;
+  }, [jamList]);
+
+  const formatSlotLabel = (hari: number, jamKe: number) => slotMetaByDayKe.get(`${hari}-${jamKe}`)?.display || `Ke-${jamKe}`;
+  const formatRowLabel = (jamKe: number) => {
+    const labels = Array.from(new Set(DAYS.map(d => slotMetaByDayKe.get(`${d}-${jamKe}`)?.display).filter(Boolean) as string[]));
+    return labels.length === 1 ? labels[0] : labels.length > 1 ? labels.join(" / ") : `Ke-${jamKe}`;
+  };
+  const formatRowTime = (jamKe: number) => {
+    const times = Array.from(new Set(DAYS.map(d => slotMetaByDayKe.get(`${d}-${jamKe}`)?.time).filter(Boolean) as string[]));
+    return times.length === 1 ? times[0] : times.length > 1 ? "waktu bervariasi" : null;
+  };
+
   const jamByDayKe = useMemo(() => {
     const map = new Map<string, Jam>();
     jamList.forEach(j => map.set(`${j.hari}-${j.jam_ke}`, j));
