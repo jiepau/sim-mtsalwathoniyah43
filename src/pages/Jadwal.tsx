@@ -352,11 +352,11 @@ export default function JadwalPage() {
 
     const rows: any[] = [];
     for (const hari of opts.days) {
-      let jamKe = 1;
+      let slotKe = 1;
       // Tadarus di awal hari
       if (opts.tadarus?.enabled) {
         rows.push({
-          ta_id: taId, hari, jam_ke: jamKe++,
+          ta_id: taId, hari, jam_ke: slotKe++,
           jam_mulai: opts.tadarus.mulai, jam_selesai: opts.tadarus.selesai,
           is_istirahat: true, label: opts.tadarus.label || "Tadarus",
         });
@@ -366,7 +366,7 @@ export default function JadwalPage() {
       if (opts.muhadhorohSenin?.enabled && hari === 1) {
         const dur = opts.muhadhorohSenin.durasiMenit || opts.durasiMenit;
         rows.push({
-          ta_id: taId, hari, jam_ke: jamKe++,
+          ta_id: taId, hari, jam_ke: slotKe++,
           jam_mulai: toTime(cursor), jam_selesai: toTime(cursor + dur),
           is_istirahat: true, label: opts.muhadhorohSenin.label || "Upacara/Muhadhoroh",
         });
@@ -375,11 +375,11 @@ export default function JadwalPage() {
       for (let i = 1; i <= opts.jumlahJam; i++) {
         const start = cursor;
         const end = cursor + opts.durasiMenit;
-        rows.push({ ta_id: taId, hari, jam_ke: jamKe++, jam_mulai: toTime(start), jam_selesai: toTime(end), is_istirahat: false, label: null });
+        rows.push({ ta_id: taId, hari, jam_ke: slotKe++, jam_mulai: toTime(start), jam_selesai: toTime(end), is_istirahat: false, label: null });
         cursor = end;
         const ist = opts.istirahat.filter(x => x.afterJamKe === i);
         for (const x of ist) {
-          rows.push({ ta_id: taId, hari, jam_ke: jamKe++, jam_mulai: toTime(cursor), jam_selesai: toTime(cursor + x.durasiMenit), is_istirahat: true, label: x.label || "Istirahat" });
+          rows.push({ ta_id: taId, hari, jam_ke: slotKe++, jam_mulai: toTime(cursor), jam_selesai: toTime(cursor + x.durasiMenit), is_istirahat: true, label: x.label || "Istirahat" });
           cursor += x.durasiMenit;
         }
       }
