@@ -419,24 +419,29 @@ export default function JadwalPage() {
     if (!w) return;
     w.document.write(`<html><head><title>Cetak Jadwal Semua Kelas</title>
       <style>
-        @page { size: 215mm 330mm landscape; margin: 8mm; }
-        body{font-family: Arial, sans-serif; padding: 0; margin: 0; color:#000;}
-        table{width:100%; border-collapse: collapse; font-size: 9px;}
-        th,td{border:1px solid #333; padding:2px 3px; vertical-align: top; line-height:1.15;}
-        th{background:#d8f3ec; text-align:center;}
-        .istirahat{background:#fff7d6; text-align:center; font-style: italic;}
-        .hari-sep{background:#0d9488; color:#fff; font-weight:bold; text-align:center; padding:3px;}
-        .mapel{font-weight:600;}
-        .guru{color:#444; font-size:8px;}
-        h1,h2,h3,h4{margin:2px 0;}
-        .grid-2{display:grid; grid-template-columns: 1.2fr 1fr; gap:8px; margin-top:6px;}
-        .box{border:1px solid #333; padding:4px;}
-        .box h4{font-size:10px; margin:0 0 3px 0; background:#0d9488; color:#fff; padding:2px 4px;}
-        .small{font-size:9px;}
+        @page { size: 330mm 215mm; margin: 6mm; }
+        html, body { width: 100%; }
+        body{font-family: Arial, sans-serif; padding: 0; margin: 0; color:#000; font-size: 8px;}
+        table{width:100%; border-collapse: collapse; font-size: 7.5px; table-layout: fixed;}
+        th,td{border:1px solid #333; padding:1px 2px; vertical-align: middle; line-height:1.1; word-wrap: break-word; overflow: hidden;}
+        th{background:#d8f3ec; text-align:center; font-size: 7.5px;}
+        .istirahat{background:#fff7d6; text-align:center; font-style: italic; font-size: 7px;}
+        .hari-sep{background:#0d9488; color:#fff; font-weight:bold; text-align:center; padding:1px 3px; font-size: 8.5px;}
+        .mapel{font-weight:600; font-size: 7.5px;}
+        .guru{color:#444; font-size:7px; font-weight:600;}
+        h1,h2,h3,h4{margin:1px 0;}
+        .grid-2{display:grid; grid-template-columns: 1.4fr 1fr; gap:5px; margin-top:4px;}
+        .box{border:1px solid #333; padding:3px;}
+        .box h4{font-size:8.5px; margin:0 0 2px 0; background:#0d9488; color:#fff; padding:1px 3px;}
+        .small{font-size:7px;}
+        .print-kop-wrapper, .print-kop { margin-bottom: 2px !important; }
+        .print-kop-wrapper *, .print-kop * { font-size: 9px !important; line-height: 1.15 !important; }
+        .print-kop img, .print-kop-wrapper img { max-height: 42px !important; }
       </style></head><body>${node.innerHTML}</body></html>`);
     w.document.close();
     setTimeout(() => { w.print(); }, 400);
   }
+
 
   async function deleteAllJam() {
     if (!taId) return;
