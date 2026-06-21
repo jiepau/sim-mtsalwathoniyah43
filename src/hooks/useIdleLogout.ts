@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
@@ -12,6 +13,7 @@ const STORAGE_KEY = 'lastActivityAt';
  */
 export function useIdleLogout() {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -22,9 +24,8 @@ export function useIdleLogout() {
       try {
         await signOut();
       } finally {
-        // Reload supaya semua cache React Query bersih
         localStorage.removeItem(STORAGE_KEY);
-        setTimeout(() => window.location.replace('/login'), 300);
+        setTimeout(() => navigate('/login', { replace: true }), 300);
       }
     };
 
@@ -58,5 +59,5 @@ export function useIdleLogout() {
       EVENTS.forEach((ev) => window.removeEventListener(ev, markActivity));
       window.removeEventListener('storage', onStorage);
     };
-  }, [user, signOut]);
+  }, [user, signOut, navigate]);
 }
