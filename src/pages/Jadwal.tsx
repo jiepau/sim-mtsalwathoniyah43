@@ -644,9 +644,14 @@ export default function JadwalPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-base">Slot Jam Pelajaran ({taList.find(t => t.id === taId)?.nama_ta})</CardTitle>
               {canEdit && (
-                <Button size="sm" onClick={() => setJamDialog({ open: true, row: { hari: 1, jam_ke: 1, jam_mulai: "07:00", jam_selesai: "07:40" } })}>
-                  <Plus className="h-4 w-4 mr-1" />Tambah
-                </Button>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="destructive" onClick={deleteAllJam} disabled={jamList.length === 0}>
+                    <Trash2 className="h-4 w-4 mr-1" />Hapus Semua Slot
+                  </Button>
+                  <Button size="sm" onClick={() => setJamDialog({ open: true, row: { hari: 1, jam_ke: 1, jam_mulai: "07:00", jam_selesai: "07:40" } })}>
+                    <Plus className="h-4 w-4 mr-1" />Tambah
+                  </Button>
+                </div>
               )}
             </CardHeader>
             <CardContent>
