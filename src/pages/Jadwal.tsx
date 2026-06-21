@@ -533,7 +533,7 @@ export default function JadwalPage() {
               <table className="w-full border text-sm">
                 <thead>
                   <tr>
-                    <th className="border bg-muted p-2 w-24">Jam</th>
+                    <th className="border bg-muted p-2 w-28">Jam</th>
                     {DAYS.map(d => <th key={d} className="border bg-muted p-2">{HARI_LABEL[d]}</th>)}
                   </tr>
                 </thead>
@@ -541,11 +541,8 @@ export default function JadwalPage() {
                   {jamKeList.map(jk => (
                     <tr key={jk}>
                       <td className="border p-2 text-center align-top">
-                        <div className="font-semibold">Ke-{jk}</div>
-                        {(() => {
-                          const j = jamList.find(x => x.jam_ke === jk);
-                          return j ? <div className="text-xs text-muted-foreground">{j.jam_mulai.slice(0,5)}–{j.jam_selesai.slice(0,5)}</div> : null;
-                        })()}
+                        <div className="font-semibold">{formatRowLabel(jk)}</div>
+                        {formatRowTime(jk) && <div className="text-xs text-muted-foreground">{formatRowTime(jk)}</div>}
                       </td>
                       {DAYS.map(d => {
                         const jam = jamByDayKe.get(`${d}-${jk}`);
@@ -626,7 +623,7 @@ export default function JadwalPage() {
             <table className="w-full border text-sm">
               <thead>
                 <tr>
-                  <th className="border bg-muted p-2 w-24">Jam</th>
+                    <th className="border bg-muted p-2 w-28">Jam</th>
                   {DAYS.map(d => <th key={d} className="border bg-muted p-2">{HARI_LABEL[d]}</th>)}
                 </tr>
               </thead>
@@ -634,11 +631,8 @@ export default function JadwalPage() {
                 {jamKeList.map(jk => (
                   <tr key={jk}>
                     <td className="border p-2 text-center align-top">
-                      <div className="font-semibold">Ke-{jk}</div>
-                      {(() => {
-                        const j = jamList.find(x => x.jam_ke === jk);
-                        return j ? <div className="text-xs text-muted-foreground">{j.jam_mulai.slice(0,5)}–{j.jam_selesai.slice(0,5)}</div> : null;
-                      })()}
+                      <div className="font-semibold">{formatRowLabel(jk)}</div>
+                      {formatRowTime(jk) && <div className="text-xs text-muted-foreground">{formatRowTime(jk)}</div>}
                     </td>
                     {DAYS.map(d => {
                       const items = (jadwalByGuru.get(`${gtkId}-${d}-${jk}`) || []);
