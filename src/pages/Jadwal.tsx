@@ -935,7 +935,7 @@ export default function JadwalPage() {
         })()}
       </div>
 
-      </div>
+
 
       {/* Jam Dialog */}
       <Dialog open={jamDialog.open} onOpenChange={(o) => setJamDialog(s => ({ ...s, open: o }))}>
