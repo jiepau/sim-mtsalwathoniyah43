@@ -826,7 +826,7 @@ export default function JadwalPage() {
                 <tbody>
                   {jamHari.map(j => (
                     <tr key={j.id}>
-                      <td style={{ textAlign: "center" }}>{j.is_istirahat ? (j.label || "Istirahat") : `Ke-${j.jam_ke}`}</td>
+                      <td style={{ textAlign: "center" }}>{formatSlotLabel(d, j.jam_ke)}</td>
                       <td style={{ textAlign: "center", whiteSpace: "nowrap" }}>{j.jam_mulai.slice(0,5)}–{j.jam_selesai.slice(0,5)}</td>
                       {j.is_istirahat ? (
                         <td className="istirahat" colSpan={kelasList.length}>{j.label || "Istirahat"}</td>
@@ -947,7 +947,7 @@ export default function JadwalPage() {
                 </Select>
               </div>
               <div>
-                <Label>Jam ke-</Label>
+                <Label>Urutan slot</Label>
                 <Input type="number" min={1} max={20} value={jamDialog.row.jam_ke || 1}
                   onChange={e => setJamDialog(s => ({ ...s, row: { ...s.row!, jam_ke: Number(e.target.value) } }))} />
               </div>
@@ -986,7 +986,7 @@ export default function JadwalPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {cellDialog.existing ? "Edit" : "Tambah"} Jadwal — {HARI_LABEL[cellDialog.hari]} jam ke-{cellDialog.jam_ke}
+              {cellDialog.existing ? "Edit" : "Tambah"} Jadwal — {HARI_LABEL[cellDialog.hari]} {formatSlotLabel(cellDialog.hari, cellDialog.jam_ke)}
             </DialogTitle>
           </DialogHeader>
           <CellForm
